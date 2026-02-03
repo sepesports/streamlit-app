@@ -88,23 +88,21 @@ def get_view() -> str | None:
 
 
 # ----------------------------
-# CSS (FULL BLEED REAL: 100vw/100dvh + overrides Streamlit containers)
+# CSS (FULL BLEED)
 # ----------------------------
 bg = IMG_DATA_URI if IMG_DATA_URI else IMG_URL
 
 st.markdown(
     f"""
 <style>
-/* 1) Fuerza el documento completo a ocupar viewport real */
 html, body {{
   height: 100%;
   width: 100%;
   margin: 0 !important;
   padding: 0 !important;
-  overflow: hidden; /* evita scroll por padding/margenes internos */
+  overflow: hidden;
 }}
 
-/* 2) Elimina el "container" centrado de Streamlit (principal causa de bordes blancos) */
 .stApp {{
   height: 100dvh !important;
   width: 100vw !important;
@@ -116,12 +114,11 @@ section.main {{
   padding: 0 !important;
   margin: 0 !important;
 }}
-
 section.main > div {{
   padding: 0 !important;
   margin: 0 !important;
-  max-width: 100vw !important;   /* clave */
-  width: 100vw !important;       /* clave */
+  max-width: 100vw !important;
+  width: 100vw !important;
 }}
 
 [data-testid="stAppViewContainer"] {{
@@ -133,8 +130,8 @@ section.main > div {{
 [data-testid="stMainBlockContainer"] {{
   padding: 0 !important;
   margin: 0 !important;
-  max-width: 100vw !important;   /* clave */
-  width: 100vw !important;       /* clave */
+  max-width: 100vw !important;
+  width: 100vw !important;
 }}
 
 [data-testid="stHeader"], header, footer {{
@@ -143,7 +140,6 @@ section.main > div {{
   visibility: hidden !important;
 }}
 
-/* 3) Layout full-height: imagen arriba + panel abajo */
 .page {{
   height: 100dvh;
   width: 100vw;
@@ -155,14 +151,12 @@ section.main > div {{
 .hero {{
   flex: 1 1 auto;
   width: 100%;
-  height: auto;
   background-image: url("{bg}");
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
 }}
 
-/* Panel: altura controlada para que SIEMPRE quepa en móvil y desktop */
 .panel {{
   flex: 0 0 auto;
   width: 100%;
@@ -172,7 +166,7 @@ section.main > div {{
 
 .panel-inner {{
   width: 100%;
-  max-width: 720px;  /* desktop sin estirar iconos */
+  max-width: 720px;
   margin: 0 auto;
 }}
 
@@ -229,7 +223,6 @@ section.main > div {{
   .panel {{ padding: 16px 12px 20px 12px; }}
 }}
 
-/* Views */
 .view-wrap {{
   height: 100dvh;
   width: 100vw;
@@ -277,8 +270,7 @@ if view:
     label_map = {k: lbl for (k, lbl, _ic) in MENU_ITEMS}
     shown = label_map.get(view, view)
 
-    st.markdown(
-        f"""
+    html_view = f"""
 <div class="view-wrap">
   <div class="view-card">
     <h1 class="view-title">Vista: {shown}</h1>
@@ -286,9 +278,9 @@ if view:
     <a class="back-btn" href="?">Volver al menú</a>
   </div>
 </div>
-""",
-        unsafe_allow_html=True,
-    )
+"""
+    st.components.v1.html(html_view, height=800, scrolling=False)
+
 else:
     tiles_html = []
     for key, label, icon_name in MENU_ITEMS:
@@ -303,8 +295,7 @@ else:
 """
         )
 
-    st.markdown(
-        f"""
+    html_home = f"""
 <div class="page">
   <div class="hero"></div>
   <div class="panel">
@@ -315,6 +306,6 @@ else:
     </div>
   </div>
 </div>
-""",
-        unsafe_allow_html=True,
-    )
+"""
+    # IMPORTANT: usar components.html evita que Streamlit "escape" partes del HTML como texto
+    st.components.v1.html(html_home, height=1000, scrolling=False)
