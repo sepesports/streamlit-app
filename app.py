@@ -1,5 +1,3 @@
-import base64
-import requests
 import streamlit as st
 import datetime
 import calendar
@@ -15,13 +13,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# URLs y colores
+# Colores corporativos
 PRIMARY_COLOR = "#F37021"
 SECONDARY_COLOR = "#2C3E50"
 BG_COLOR = "#F8F9FA"
-
-# Imagen de fondo
-BG_IMAGE_URL = "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
 
 # Datos de ejemplo para horarios
 SAMPLE_SCHEDULE = {
@@ -35,33 +30,17 @@ SAMPLE_SCHEDULE = {
 }
 
 # ----------------------------
-# FUNCIONES AUXILIARES
+# ESTILOS CSS OPTIMIZADOS
 # ----------------------------
-def get_background_image():
-    """Obtiene la imagen de fondo con manejo robusto de errores"""
-    try:
-        # Intentar obtener la imagen original
-        response = requests.get("https://files.catbox.moe/0mir4o.png", timeout=5)
-        if response.status_code == 200:
-            return "https://files.catbox.moe/0mir4o.png"
-    except:
-        pass
-    
-    # Usar imagen alternativa si falla
-    return BG_IMAGE_URL
-
 def apply_custom_css():
-    """Aplica estilos CSS personalizados responsive"""
-    bg_image_url = get_background_image()
-    
+    """Aplica estilos CSS personalizados sin espacios en blanco"""
     st.markdown(f"""
     <style>
-    /* RESET COMPLETO PARA STREAMLIT - SIN FRANJAS BLANCAS */
-    html, body {{
+    /* RESET TOTAL - SIN ESPACIOS BLANCOS */
+    html, body, #root, [class*="ViewContainer"] {{
         padding: 0 !important;
         margin: 0 !important;
         width: 100% !important;
-        height: 100% !important;
         overflow-x: hidden !important;
     }}
     
@@ -71,10 +50,9 @@ def apply_custom_css():
         padding: 0 !important;
         margin: 0 !important;
         min-height: 100vh !important;
-        width: 100% !important;
     }}
     
-    /* Eliminar TODOS los contenedores de Streamlit que crean espacios */
+    /* Eliminar TODOS los espacios de Streamlit */
     [data-testid="stAppViewContainer"] {{
         padding: 0 !important;
         margin: 0 !important;
@@ -89,10 +67,6 @@ def apply_custom_css():
         max-width: 100% !important;
     }}
     
-    [data-testid="stSidebar"] {{
-        display: none !important;
-    }}
-    
     .main .block-container {{
         padding: 0 !important;
         margin: 0 !important;
@@ -100,29 +74,24 @@ def apply_custom_css():
         max-width: 100% !important;
     }}
     
-    /* HEADER FIJADO ARRIBA - SIN ESPACIOS */
+    /* HEADER COMPACTO */
     .main-header {{
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(135deg, {SECONDARY_COLOR}, #1a2530);
+        background: {SECONDARY_COLOR};
         color: white;
         padding: 15px 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        z-index: 1000;
-        height: 70px;
-        width: 100%;
+        position: relative;
+        z-index: 100;
     }}
     
     .logo-container {{
         display: flex;
         align-items: center;
         gap: 10px;
-        font-size: 1.4rem;
+        font-size: 1.3rem;
         font-weight: 700;
     }}
     
@@ -142,203 +111,169 @@ def apply_custom_css():
         gap: 8px;
     }}
     
-    /* CONTENEDOR PRINCIPAL - SIN ESPACIOS */
+    /* CONTENIDO PRINCIPAL - SIN ESPACIOS */
     .main-content {{
-        margin-top: 70px; /* Para compensar header fijo */
         padding: 0 !important;
-        min-height: calc(100vh - 70px);
+        margin: 0 !important;
         width: 100%;
-        box-sizing: border-box;
     }}
     
-    /* HERO SECTION CON IMAGEN DE FONDO */
-    .hero-section {{
-        background: linear-gradient(rgba(44, 62, 80, 0.9), rgba(44, 62, 80, 0.7)),
-                    url('{bg_image_url}');
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        height: 250px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        color: white;
+    /* TÍTULO PRINCIPAL COMPACTO */
+    .page-title-section {{
+        background: white;
+        padding: 25px 20px;
         text-align: center;
-        position: relative;
-        overflow: hidden;
-        padding: 20px;
+        border-bottom: 3px solid {PRIMARY_COLOR};
+        margin-bottom: 0;
     }}
     
-    .hero-section::before {{
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(45deg, rgba(243, 112, 33, 0.3), rgba(44, 62, 80, 0.7));
-        z-index: 1;
-    }}
-    
-    .hero-content {{
-        position: relative;
-        z-index: 2;
-        padding: 20px;
-        width: 100%;
-        max-width: 1200px;
-        margin: 0 auto;
-    }}
-    
-    .hero-title {{
-        font-size: 2.2rem;
+    .page-title {{
+        color: {SECONDARY_COLOR};
+        font-size: 2rem;
         font-weight: 800;
-        margin-bottom: 10px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        font-family: 'Segoe UI', system-ui, sans-serif;
+        margin-bottom: 8px;
+        font-family: 'Segoe UI', sans-serif;
     }}
     
-    .hero-subtitle {{
+    .page-subtitle {{
+        color: #666;
         font-size: 1.1rem;
-        opacity: 0.9;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-family: 'Segoe UI', sans-serif;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.4;
     }}
     
-    /* DASHBOARD GRID - 2 FILAS DE 3 EN COMPUTADORA, 3 FILAS DE 2 EN MÓVIL */
+    /* GRID DE TARJETAS - COMPACTO */
     .dashboard-container {{
-        width: 100%;
+        padding: 25px 20px;
         max-width: 1200px;
         margin: 0 auto;
-        padding: 30px 20px;
+        width: 100%;
         box-sizing: border-box;
     }}
     
+    /* DESKTOP: 3 columnas x 2 filas */
     .dashboard-grid {{
         display: grid;
-        grid-template-columns: repeat(3, 1fr); /* 3 columnas en desktop */
-        gap: 25px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
         width: 100%;
     }}
     
-    /* TARJETAS DEL DASHBOARD */
+    /* TARJETAS COMPACTAS */
     .dashboard-card {{
         background: white;
-        border-radius: 15px;
-        padding: 25px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         transition: all 0.3s ease;
         cursor: pointer;
         border: 1px solid rgba(0,0,0,0.05);
         text-decoration: none !important;
         display: block;
-        box-sizing: border-box;
         height: 100%;
-        min-height: 220px;
+        min-height: 160px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
     }}
     
     .dashboard-card:hover {{
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
         border-color: {PRIMARY_COLOR};
     }}
     
     .card-icon {{
-        width: 70px;
-        height: 70px;
+        width: 60px;
+        height: 60px;
         background: linear-gradient(135deg, {PRIMARY_COLOR}, #ff944d);
-        border-radius: 15px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 20px;
-        font-size: 30px;
+        margin-bottom: 15px;
+        font-size: 26px;
         color: white;
     }}
     
     .card-title {{
-        font-size: 1.3rem;
+        font-size: 1.2rem;
         font-weight: 700;
         color: {SECONDARY_COLOR};
-        margin-bottom: 10px;
-        font-family: 'Segoe UI', system-ui, sans-serif;
+        margin-bottom: 8px;
+        font-family: 'Segoe UI', sans-serif;
     }}
     
     .card-desc {{
         color: #666;
-        font-size: 0.95rem;
-        line-height: 1.5;
-        font-family: 'Segoe UI', system-ui, sans-serif;
-        flex-grow: 1;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        font-family: 'Segoe UI', sans-serif;
     }}
     
-    /* ESTADÍSTICAS */
+    /* ESTADÍSTICAS COMPACTAS */
     .stats-container {{
         background: white;
-        border-radius: 15px;
-        padding: 30px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        margin-top: 30px;
-        width: 100%;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        margin: 25px auto 0;
         max-width: 1200px;
-        margin-left: auto;
-        margin-right: auto;
+        width: calc(100% - 40px);
         box-sizing: border-box;
     }}
     
     .stats-grid {{
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
+        gap: 15px;
         width: 100%;
     }}
     
     .stat-card {{
-        background: white;
-        border-radius: 10px;
-        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
         text-align: center;
         border-left: 4px solid;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
         transition: transform 0.3s ease;
     }}
     
     .stat-card:hover {{
-        transform: translateY(-3px);
+        transform: translateY(-2px);
     }}
     
     .stat-value {{
-        font-size: 2rem;
+        font-size: 1.8rem;
         font-weight: 700;
-        margin: 10px 0;
-        font-family: 'Segoe UI', system-ui, sans-serif;
+        margin: 8px 0;
+        font-family: 'Segoe UI', sans-serif;
     }}
     
-    /* CALENDARIO */
+    /* CALENDARIO OPTIMIZADO */
     .calendar-container {{
-        width: 100%;
+        padding: 25px 20px;
         max-width: 1200px;
         margin: 0 auto;
-        padding: 30px 20px;
+        width: 100%;
         box-sizing: border-box;
     }}
     
     .calendar-header {{
         background: white;
-        border-radius: 15px;
-        padding: 25px;
+        border-radius: 12px;
+        padding: 20px;
         margin-bottom: 20px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }}
     
     .month-navigation {{
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
         flex-wrap: wrap;
         gap: 10px;
     }}
@@ -347,28 +282,28 @@ def apply_custom_css():
         background: {PRIMARY_COLOR};
         color: white;
         border: none;
-        padding: 12px 25px;
-        border-radius: 10px;
+        padding: 10px 20px;
+        border-radius: 8px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s;
         display: flex;
         align-items: center;
         gap: 8px;
-        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-family: 'Segoe UI', sans-serif;
     }}
     
     .nav-btn:hover {{
         background: #e55a1a;
-        transform: scale(1.05);
+        transform: scale(1.03);
     }}
     
     .current-month {{
-        font-size: 1.8rem;
+        font-size: 1.6rem;
         font-weight: 700;
         color: {SECONDARY_COLOR};
         text-align: center;
-        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-family: 'Segoe UI', sans-serif;
     }}
     
     /* GRID DEL CALENDARIO */
@@ -377,7 +312,7 @@ def apply_custom_css():
         grid-template-columns: repeat(7, 1fr);
         gap: 2px;
         background: #e0e0e0;
-        border-radius: 10px;
+        border-radius: 8px;
         overflow: hidden;
         border: 2px solid #e0e0e0;
     }}
@@ -385,17 +320,17 @@ def apply_custom_css():
     .day-header {{
         background: {SECONDARY_COLOR};
         color: white;
-        padding: 15px 5px;
+        padding: 12px 5px;
         text-align: center;
         font-weight: 600;
-        font-size: 0.9rem;
-        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-size: 0.85rem;
+        font-family: 'Segoe UI', sans-serif;
     }}
     
     .calendar-day {{
         background: white;
-        min-height: 120px;
-        padding: 10px;
+        min-height: 100px;
+        padding: 8px;
         position: relative;
         transition: all 0.3s;
     }}
@@ -405,11 +340,11 @@ def apply_custom_css():
     }}
     
     .day-number {{
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 600;
         color: {SECONDARY_COLOR};
-        margin-bottom: 8px;
-        font-family: 'Segoe UI', system-ui, sans-serif;
+        margin-bottom: 6px;
+        font-family: 'Segoe UI', sans-serif;
     }}
     
     .today {{
@@ -427,32 +362,31 @@ def apply_custom_css():
     }}
     
     .has-events {{
-        border-left: 4px solid {PRIMARY_COLOR};
+        border-left: 3px solid {PRIMARY_COLOR};
     }}
     
     .event-badge {{
         background: {PRIMARY_COLOR};
         color: white;
-        padding: 4px 8px;
-        border-radius: 5px;
-        font-size: 0.8rem;
-        margin-top: 5px;
+        padding: 3px 6px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        margin-top: 4px;
         display: block;
         cursor: pointer;
         transition: all 0.3s;
-        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-family: 'Segoe UI', sans-serif;
     }}
     
     .event-badge:hover {{
         background: #e55a1a;
-        transform: translateX(2px);
     }}
     
-    /* BOTONES DE ACCIÓN */
+    /* BOTONES COMPACTOS */
     .action-buttons {{
         display: flex;
-        gap: 15px;
-        margin-top: 30px;
+        gap: 12px;
+        margin-top: 25px;
         justify-content: center;
         flex-wrap: wrap;
     }}
@@ -461,12 +395,12 @@ def apply_custom_css():
         background: {PRIMARY_COLOR};
         color: white;
         border: none;
-        padding: 15px 30px;
-        border-radius: 10px;
+        padding: 12px 24px;
+        border-radius: 8px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s;
-        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-family: 'Segoe UI', sans-serif;
         text-decoration: none;
         display: inline-block;
         text-align: center;
@@ -475,19 +409,19 @@ def apply_custom_css():
     .btn-primary:hover {{
         background: #e55a1a;
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(243, 112, 33, 0.3);
+        box-shadow: 0 4px 12px rgba(243, 112, 33, 0.3);
     }}
     
     .btn-secondary {{
         background: white;
         color: {PRIMARY_COLOR};
         border: 2px solid {PRIMARY_COLOR};
-        padding: 15px 30px;
-        border-radius: 10px;
+        padding: 12px 24px;
+        border-radius: 8px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s;
-        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-family: 'Segoe UI', sans-serif;
     }}
     
     .btn-secondary:hover {{
@@ -495,7 +429,7 @@ def apply_custom_css():
         transform: translateY(-2px);
     }}
     
-    /* MODAL DE DETALLES */
+    /* MODAL COMPACTO */
     .modal-overlay {{
         position: fixed;
         top: 0;
@@ -507,13 +441,13 @@ def apply_custom_css():
         align-items: center;
         justify-content: center;
         z-index: 2000;
-        padding: 20px;
+        padding: 15px;
     }}
     
     .modal-content {{
         background: white;
-        border-radius: 15px;
-        padding: 30px;
+        border-radius: 12px;
+        padding: 25px;
         max-width: 500px;
         width: 100%;
         max-height: 90vh;
@@ -523,60 +457,68 @@ def apply_custom_css():
     }}
     
     @keyframes modalSlide {{
-        from {{ transform: translateY(-30px); opacity: 0; }}
+        from {{ transform: translateY(-20px); opacity: 0; }}
         to {{ transform: translateY(0); opacity: 1; }}
     }}
     
     .modal-close {{
         position: absolute;
-        top: 15px;
-        right: 15px;
+        top: 12px;
+        right: 12px;
         background: none;
         border: none;
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         cursor: pointer;
         color: #666;
     }}
     
-    /* RESPONSIVE PARA MÓVIL - 3 FILAS DE 2 TARJETAS */
+    /* RESPONSIVE PARA MÓVIL - 2 columnas x 3 filas */
     @media (max-width: 768px) {{
-        .main-content {{
-            margin-top: 70px;
+        .main-header {{
+            padding: 12px 15px;
         }}
         
-        .hero-section {{
-            height: 200px;
-            padding: 15px;
+        .logo-container {{
+            font-size: 1.1rem;
         }}
         
-        .hero-title {{
-            font-size: 1.8rem;
+        .user-info {{
+            font-size: 0.8rem;
         }}
         
-        .hero-subtitle {{
+        .page-title-section {{
+            padding: 20px 15px;
+        }}
+        
+        .page-title {{
+            font-size: 1.6rem;
+        }}
+        
+        .page-subtitle {{
             font-size: 1rem;
+            padding: 0 10px;
         }}
         
         .dashboard-container {{
             padding: 20px 15px;
         }}
         
-        /* CAMBIO: 2 columnas en móvil (3 filas de 2) */
+        /* MÓVIL: 2 columnas x 3 filas */
         .dashboard-grid {{
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 15px;
         }}
         
         .dashboard-card {{
-            min-height: 200px;
-            padding: 20px;
+            min-height: 150px;
+            padding: 18px;
         }}
         
         .card-icon {{
-            width: 60px;
-            height: 60px;
-            font-size: 25px;
-            margin-bottom: 15px;
+            width: 50px;
+            height: 50px;
+            font-size: 22px;
+            margin-bottom: 12px;
         }}
         
         .card-title {{
@@ -589,16 +531,17 @@ def apply_custom_css():
         
         .stats-container {{
             padding: 20px;
-            margin-top: 20px;
+            margin: 20px auto 0;
+            width: calc(100% - 30px);
         }}
         
         .stats-grid {{
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            gap: 12px;
         }}
         
         .stat-card {{
-            padding: 15px;
+            padding: 12px;
         }}
         
         .stat-value {{
@@ -611,11 +554,11 @@ def apply_custom_css():
         
         .calendar-day {{
             min-height: 80px;
-            padding: 5px;
+            padding: 6px;
         }}
         
         .day-header {{
-            padding: 10px 2px;
+            padding: 10px 3px;
             font-size: 0.8rem;
         }}
         
@@ -625,16 +568,16 @@ def apply_custom_css():
         
         .event-badge {{
             font-size: 0.7rem;
-            padding: 3px 5px;
+            padding: 2px 4px;
         }}
         
         .nav-btn {{
-            padding: 10px 15px;
+            padding: 8px 15px;
             font-size: 0.9rem;
         }}
         
         .current-month {{
-            font-size: 1.4rem;
+            font-size: 1.3rem;
         }}
         
         .action-buttons {{
@@ -644,51 +587,25 @@ def apply_custom_css():
         
         .btn-primary, .btn-secondary {{
             width: 100%;
-            padding: 12px 20px;
+            padding: 10px 18px;
         }}
     }}
     
     @media (max-width: 480px) {{
-        .main-header {{
-            padding: 10px 15px;
-            height: 60px;
-        }}
-        
-        .main-content {{
-            margin-top: 60px;
-        }}
-        
-        .logo-container {{
-            font-size: 1.1rem;
-        }}
-        
-        .user-info {{
-            font-size: 0.8rem;
-        }}
-        
-        .hero-section {{
-            height: 150px;
-        }}
-        
-        .hero-title {{
-            font-size: 1.5rem;
-        }}
-        
         .dashboard-grid {{
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 12px;
         }}
         
         .dashboard-card {{
-            min-height: 180px;
+            min-height: 140px;
             padding: 15px;
         }}
         
         .card-icon {{
-            width: 50px;
-            height: 50px;
-            font-size: 22px;
-            margin-bottom: 10px;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
         }}
         
         .stats-grid {{
@@ -713,14 +630,14 @@ def apply_custom_css():
         display: none !important;
     }}
     
-    /* ANIMACIONES */
+    /* ANIMACIONES SUTILES */
     @keyframes fadeIn {{
-        from {{ opacity: 0; transform: translateY(20px); }}
-        to {{ opacity: 1; transform: translateY(0); }}
+        from {{ opacity: 0; }}
+        to {{ opacity: 1; }}
     }}
     
     .fade-in {{
-        animation: fadeIn 0.5s ease-out;
+        animation: fadeIn 0.4s ease-out;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -729,7 +646,7 @@ def apply_custom_css():
 # COMPONENTES DE LA APLICACIÓN
 # ----------------------------
 def create_header():
-    """Crea el encabezado de la aplicación"""
+    """Crea el encabezado compacto"""
     st.markdown(f"""
     <div class="main-header fade-in">
         <div class="logo-container">
@@ -747,20 +664,18 @@ def create_header():
     """, unsafe_allow_html=True)
 
 def create_dashboard():
-    """Crea el dashboard principal"""
+    """Crea el dashboard principal compacto"""
     st.markdown('<div class="main-content">', unsafe_allow_html=True)
     
-    # Hero section con imagen de fondo
+    # Título principal compacto
     st.markdown(f"""
-    <div class="hero-section fade-in">
-        <div class="hero-content">
-            <h1 class="hero-title">Panel de Control</h1>
-            <p class="hero-subtitle">Gestiona tus horarios, asistencia y más desde un solo lugar</p>
-        </div>
+    <div class="page-title-section fade-in">
+        <h1 class="page-title">Panel de Control</h1>
+        <p class="page-subtitle">Gestiona tus horarios, asistencia y más desde un solo lugar</p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Grid de tarjetas - 2 filas de 3 en desktop, 3 filas de 2 en móvil
+    # Grid de tarjetas - Desktop: 3 columnas x 2 filas, Móvil: 2 columnas x 3 filas
     st.markdown('<div class="dashboard-container fade-in">', unsafe_allow_html=True)
     st.markdown('<div class="dashboard-grid">', unsafe_allow_html=True)
     
@@ -785,39 +700,39 @@ def create_dashboard():
     
     st.markdown('</div></div>', unsafe_allow_html=True)
     
-    # Estadísticas rápidas
+    # Estadísticas rápidas compactas
     st.markdown(f"""
     <div class="stats-container fade-in">
-        <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif;">
+        <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 15px; font-family: 'Segoe UI', sans-serif; font-size: 1.3rem;">
             📊 Resumen Rápido
         </h3>
         <div class="stats-grid">
             <div class="stat-card" style="border-left-color: #4CAF50;">
-                <div style="color: #4CAF50; font-size: 1.2rem;">✅</div>
+                <div style="color: #4CAF50; font-size: 1.1rem;">✅</div>
                 <div class="stat-value" style="color: #4CAF50;">12</div>
-                <div style="color: #666; font-size: 0.9rem;">Turnos Completados</div>
+                <div style="color: #666; font-size: 0.85rem;">Turnos Completados</div>
             </div>
             <div class="stat-card" style="border-left-color: #2196F3;">
-                <div style="color: #2196F3; font-size: 1.2rem;">⏰</div>
+                <div style="color: #2196F3; font-size: 1.1rem;">⏰</div>
                 <div class="stat-value" style="color: #2196F3;">96h</div>
-                <div style="color: #666; font-size: 0.9rem;">Horas Totales</div>
+                <div style="color: #666; font-size: 0.85rem;">Horas Totales</div>
             </div>
             <div class="stat-card" style="border-left-color: #FF9800;">
-                <div style="color: #FF9800; font-size: 1.2rem;">📅</div>
+                <div style="color: #FF9800; font-size: 1.1rem;">📅</div>
                 <div class="stat-value" style="color: #FF9800;">6</div>
-                <div style="color: #666; font-size: 0.9rem;">Próximos Turnos</div>
+                <div style="color: #666; font-size: 0.85rem;">Próximos Turnos</div>
             </div>
             <div class="stat-card" style="border-left-color: #9C27B0;">
-                <div style="color: #9C27B0; font-size: 1.2rem;">💰</div>
+                <div style="color: #9C27B0; font-size: 1.1rem;">💰</div>
                 <div class="stat-value" style="color: #9C27B0;">€2,850</div>
-                <div style="color: #666; font-size: 0.9rem;">Salario Estimado</div>
+                <div style="color: #666; font-size: 0.85rem;">Salario Estimado</div>
             </div>
         </div>
     </div>
     
-    <div style="text-align: center; margin: 40px auto 20px; max-width: 1200px; padding: 0 20px;">
-        <p style="color: #666; font-size: 0.9rem;">
-            © {datetime.datetime.now().year} Socorrista Pro • Versión 2.1 • Todos los derechos reservados
+    <div style="text-align: center; margin: 25px auto; padding: 0 20px; max-width: 1200px;">
+        <p style="color: #666; font-size: 0.85rem;">
+            © {datetime.datetime.now().year} Socorrista Pro • Versión 2.1
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -825,7 +740,7 @@ def create_dashboard():
     st.markdown('</div>', unsafe_allow_html=True)
 
 def create_calendar():
-    """Crea y muestra el calendario interactivo"""
+    """Crea y muestra el calendario interactivo compacto"""
     # Inicializar estado del calendario
     if 'calendar_month' not in st.session_state:
         st.session_state.calendar_month = datetime.datetime.now().month
@@ -929,30 +844,30 @@ def create_calendar():
                       if datetime.datetime.strptime(date, "%Y-%m-%d").date().month == st.session_state.calendar_month)
     
     st.markdown(f"""
-    <div style="margin-top: 30px; background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.08);">
-        <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif;">
+    <div style="margin-top: 25px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 15px; font-family: 'Segoe UI', sans-serif; font-size: 1.3rem;">
             📈 Resumen del Mes
         </h3>
         <div class="stats-grid">
             <div class="stat-card" style="border-left-color: {PRIMARY_COLOR};">
-                <div style="color: {PRIMARY_COLOR}; font-size: 1.2rem;">📅</div>
+                <div style="color: {PRIMARY_COLOR}; font-size: 1.1rem;">📅</div>
                 <div class="stat-value" style="color: {PRIMARY_COLOR};">{total_turnos}</div>
-                <div style="color: #666; font-size: 0.9rem;">Turnos Programados</div>
+                <div style="color: #666; font-size: 0.85rem;">Turnos Programados</div>
             </div>
             <div class="stat-card" style="border-left-color: {PRIMARY_COLOR};">
-                <div style="color: {PRIMARY_COLOR}; font-size: 1.2rem;">⏰</div>
+                <div style="color: {PRIMARY_COLOR}; font-size: 1.1rem;">⏰</div>
                 <div class="stat-value" style="color: {PRIMARY_COLOR};">{total_turnos * 6}h</div>
-                <div style="color: #666; font-size: 0.9rem;">Horas Totales</div>
+                <div style="color: #666; font-size: 0.85rem;">Horas Totales</div>
             </div>
             <div class="stat-card" style="border-left-color: {PRIMARY_COLOR};">
-                <div style="color: {PRIMARY_COLOR}; font-size: 1.2rem;">👥</div>
+                <div style="color: {PRIMARY_COLOR}; font-size: 1.1rem;">👥</div>
                 <div class="stat-value" style="color: {PRIMARY_COLOR};">5</div>
-                <div style="color: #666; font-size: 0.9rem;">Socorristas Activos</div>
+                <div style="color: #666; font-size: 0.85rem;">Socorristas Activos</div>
             </div>
             <div class="stat-card" style="border-left-color: {PRIMARY_COLOR};">
-                <div style="color: {PRIMARY_COLOR}; font-size: 1.2rem;">✅</div>
+                <div style="color: {PRIMARY_COLOR}; font-size: 1.1rem;">✅</div>
                 <div class="stat-value" style="color: {PRIMARY_COLOR};">{total_turnos - 2}</div>
-                <div style="color: #666; font-size: 0.9rem;">Turnos Cubiertos</div>
+                <div style="color: #666; font-size: 0.85rem;">Turnos Cubiertos</div>
             </div>
         </div>
     </div>
@@ -963,7 +878,6 @@ def create_calendar():
     <div class="action-buttons">
         <a href="?" class="btn-primary">← Volver al Dashboard</a>
         <button class="btn-secondary" onclick="window.print()">🖨️ Imprimir Horario</button>
-        <button class="btn-secondary" onclick="alert('Generando PDF...')">📄 Exportar PDF</button>
     </div>
     """, unsafe_allow_html=True)
     
@@ -972,34 +886,34 @@ def create_calendar():
     <div id="event-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <button class="modal-close" onclick="document.getElementById('event-modal').style.display='none'">×</button>
-            <h3 style="color: #F37021; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <h3 style="color: #F37021; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; font-size: 1.4rem;">
                 📋 Detalles del Turno
             </h3>
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div style="background: #f8f9fa; padding: 18px; border-radius: 8px; margin-bottom: 18px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
                     <div>
-                        <div style="color: #666; font-size: 0.9rem; margin-bottom: 5px;">📅 Fecha</div>
+                        <div style="color: #666; font-size: 0.85rem; margin-bottom: 4px;">📅 Fecha</div>
                         <div style="font-weight: 700; color: #333;" id="selected-date"></div>
                     </div>
                     <div>
-                        <div style="color: #666; font-size: 0.9rem; margin-bottom: 5px;">🕒 Horario</div>
+                        <div style="color: #666; font-size: 0.85rem; margin-bottom: 4px;">🕒 Horario</div>
                         <div style="font-weight: 700; color: #333;" id="selected-time"></div>
                     </div>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
                     <div>
-                        <div style="color: #666; font-size: 0.9rem; margin-bottom: 5px;">🏷️ Tipo</div>
+                        <div style="color: #666; font-size: 0.85rem; margin-bottom: 4px;">🏷️ Tipo</div>
                         <div style="font-weight: 700; color: #333;" id="selected-type"></div>
                     </div>
                     <div>
-                        <div style="color: #666; font-size: 0.9rem; margin-bottom: 5px;">👤 Socorrista</div>
+                        <div style="color: #666; font-size: 0.85rem; margin-bottom: 4px;">👤 Socorrista</div>
                         <div style="font-weight: 700; color: #333;" id="selected-person"></div>
                     </div>
                 </div>
                 <div>
-                    <div style="color: #666; font-size: 0.9rem; margin-bottom: 5px;">📍 Ubicación</div>
+                    <div style="color: #666; font-size: 0.85rem; margin-bottom: 4px;">📍 Ubicación</div>
                     <div style="font-weight: 700; color: #333;">Piscina Municipal Central</div>
-                    <div style="color: #666; font-size: 0.85rem; margin-top: 3px;">Av. Deportes, 123</div>
+                    <div style="color: #666; font-size: 0.8rem; margin-top: 3px;">Av. Deportes, 123</div>
                 </div>
             </div>
             <div style="display: flex; gap: 10px;">
@@ -1043,29 +957,29 @@ def create_other_view(view_name):
     
     st.markdown(f"""
     <div class="main-content">
-        <div class="fade-in" style="max-width: 800px; margin: 0 auto; padding: 30px 20px;">
-            <div style="text-align: center; margin-bottom: 40px;">
-                <div style="font-size: 3rem; margin-bottom: 15px;">{icon}</div>
-                <h1 style="color: {SECONDARY_COLOR}; margin-bottom: 10px; font-family: 'Segoe UI', sans-serif;">
+        <div class="fade-in" style="max-width: 800px; margin: 0 auto; padding: 25px 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div style="font-size: 2.5rem; margin-bottom: 12px;">{icon}</div>
+                <h1 style="color: {SECONDARY_COLOR}; margin-bottom: 8px; font-family: 'Segoe UI', sans-serif; font-size: 1.8rem;">
                     {title}
                 </h1>
-                <p style="color: #666; font-size: 1.1rem;">
+                <p style="color: #666; font-size: 1rem;">
                     Esta funcionalidad está en desarrollo activo
                 </p>
             </div>
             
-            <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 30px;">
-                <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif;">
+            <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 25px;">
+                <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 15px; font-family: 'Segoe UI', sans-serif; font-size: 1.3rem;">
                     🚀 Próximamente
                 </h3>
-                <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+                <p style="color: #666; line-height: 1.5; margin-bottom: 15px; font-size: 0.95rem;">
                     Estamos trabajando arduamente para implementar esta funcionalidad. 
                     En las próximas semanas podrás acceder a todas las características de {title.lower()}.
                 </p>
                 
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 25px;">
-                    <h4 style="color: {PRIMARY_COLOR}; margin-bottom: 15px;">📅 Cronograma de Lanzamiento</h4>
-                    <ul style="color: #666; line-height: 1.8; padding-left: 20px;">
+                <div style="background: #f8f9fa; padding: 18px; border-radius: 8px; margin-top: 20px;">
+                    <h4 style="color: {PRIMARY_COLOR}; margin-bottom: 12px; font-size: 1.1rem;">📅 Cronograma de Lanzamiento</h4>
+                    <ul style="color: #666; line-height: 1.6; padding-left: 18px; font-size: 0.9rem;">
                         <li><strong>Fase 1:</strong> Diseño y planificación (Completado)</li>
                         <li><strong>Fase 2:</strong> Desarrollo del backend (En progreso)</li>
                         <li><strong>Fase 3:</strong> Pruebas y ajustes (Próximamente)</li>
@@ -1092,7 +1006,7 @@ def main():
     # Aplicar CSS personalizado
     apply_custom_css()
     
-    # Crear header fijo
+    # Crear header compacto
     create_header()
     
     # Obtener vista actual
