@@ -16,10 +16,12 @@ st.set_page_config(
 )
 
 # URLs y colores
-IMG_URL = "https://files.catbox.moe/0mir4o.png"
 PRIMARY_COLOR = "#F37021"
 SECONDARY_COLOR = "#2C3E50"
 BG_COLOR = "#F8F9FA"
+
+# Imagen de fondo optimizada (más confiable)
+BG_IMAGE_URL = "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
 
 # Datos de ejemplo para horarios
 SAMPLE_SCHEDULE = {
@@ -35,45 +37,66 @@ SAMPLE_SCHEDULE = {
 # ----------------------------
 # FUNCIONES AUXILIARES
 # ----------------------------
-@st.cache_data(show_spinner=False)
-def fetch_image_as_data_uri(url: str) -> str:
-    """Convierte imagen URL a Data URI con manejo de errores"""
+def get_background_image():
+    """Obtiene la imagen de fondo con manejo robusto de errores"""
     try:
-        if not url:
-            return ""
-        # Usar una imagen por defecto si falla la carga
-        r = requests.get(url, timeout=10)
-        r.raise_for_status()
-        content_type = r.headers.get("Content-Type", "image/png")
-        b64 = base64.b64encode(r.content).decode("utf-8")
-        return f"data:{content_type};base64,{b64}"
-    except Exception as e:
-        st.warning(f"Imagen no disponible, usando color de fondo: {str(e)}")
-        return ""
+        # Intentar obtener la imagen original
+        response = requests.get("https://files.catbox.moe/0mir4o.png", timeout=5)
+        if response.status_code == 200:
+            return "https://files.catbox.moe/0mir4o.png"
+    except:
+        pass
+    
+    # Usar imagen alternativa si falla
+    return BG_IMAGE_URL
 
 def apply_custom_css():
     """Aplica estilos CSS personalizados responsive"""
+    bg_image_url = get_background_image()
+    
     st.markdown(f"""
     <style>
-    /* RESET COMPLETO PARA STREAMLIT */
-    html, body, [data-testid="stAppViewContainer"], 
-    [data-testid="stMainBlockContainer"], [data-testid="block-container"] {{
+    /* RESET COMPLETO PARA STREAMLIT - ARREGLADO */
+    html, body, #root, [class*="ViewContainer"] {{
         padding: 0 !important;
         margin: 0 !important;
-        width: 100vw !important;
-        max-width: 100vw !important;
+        width: 100% !important;
+        height: 100% !important;
         overflow-x: hidden !important;
     }}
     
+    /* Contenedor principal */
     .stApp {{
         background: {BG_COLOR} !important;
         padding: 0 !important;
         margin: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
+        min-height: 100vh !important;
+        width: 100% !important;
     }}
     
-    /* HEADER FIJADO ARRIBA */
+    /* Eliminar contenedores de Streamlit */
+    [data-testid="stAppViewContainer"] {{
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }}
+    
+    [data-testid="stMainBlockContainer"] {{
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }}
+    
+    .main .block-container {{
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }}
+    
+    /* HEADER FIJADO ARRIBA - MEJORADO */
     .main-header {{
         position: fixed;
         top: 0;
@@ -88,6 +111,7 @@ def apply_custom_css():
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         z-index: 1000;
         height: 70px;
+        width: 100%;
     }}
     
     .logo-container {{
@@ -120,9 +144,63 @@ def apply_custom_css():
         padding: 20px;
         min-height: calc(100vh - 70px);
         width: 100%;
+        box-sizing: border-box;
     }}
     
-    /* DASHBOARD GRID RESPONSIVE */
+    /* HERO SECTION CON IMAGEN DE FONDO - ARREGLADO */
+    .hero-section {{
+        background: linear-gradient(rgba(44, 62, 80, 0.9), rgba(44, 62, 80, 0.7)),
+                    url('{bg_image_url}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        height: 300px;
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        text-align: center;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }}
+    
+    .hero-section::before {{
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(243, 112, 33, 0.3), rgba(44, 62, 80, 0.7));
+        z-index: 1;
+    }}
+    
+    .hero-content {{
+        position: relative;
+        z-index: 2;
+        padding: 20px;
+    }}
+    
+    .hero-title {{
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }}
+    
+    .hero-subtitle {{
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 20px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }}
+    
+    /* DASHBOARD GRID RESPONSIVE - ARREGLADO */
     .dashboard-grid {{
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -130,6 +208,7 @@ def apply_custom_css():
         width: 100%;
         max-width: 1200px;
         margin: 0 auto;
+        box-sizing: border-box;
     }}
     
     /* TARJETAS DEL DASHBOARD */
@@ -143,6 +222,7 @@ def apply_custom_css():
         border: 1px solid rgba(0,0,0,0.05);
         text-decoration: none !important;
         display: block;
+        box-sizing: border-box;
     }}
     
     .dashboard-card:hover {{
@@ -179,12 +259,13 @@ def apply_custom_css():
         font-family: 'Segoe UI', system-ui, sans-serif;
     }}
     
-    /* CALENDARIO COMPLETO */
+    /* CALENDARIO COMPLETO - ARREGLADO */
     .calendar-page {{
         padding: 20px;
         max-width: 1200px;
         margin: 0 auto;
         width: 100%;
+        box-sizing: border-box;
     }}
     
     .calendar-header {{
@@ -193,6 +274,7 @@ def apply_custom_css():
         padding: 25px;
         margin-bottom: 20px;
         box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        box-sizing: border-box;
     }}
     
     .month-navigation {{
@@ -200,6 +282,8 @@ def apply_custom_css():
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 10px;
     }}
     
     .nav-btn {{
@@ -215,6 +299,7 @@ def apply_custom_css():
         align-items: center;
         gap: 8px;
         font-family: 'Segoe UI', system-ui, sans-serif;
+        box-sizing: border-box;
     }}
     
     .nav-btn:hover {{
@@ -230,7 +315,7 @@ def apply_custom_css():
         font-family: 'Segoe UI', system-ui, sans-serif;
     }}
     
-    /* GRID DEL CALENDARIO */
+    /* GRID DEL CALENDARIO RESPONSIVE */
     .calendar-grid {{
         display: grid;
         grid-template-columns: repeat(7, 1fr);
@@ -239,6 +324,7 @@ def apply_custom_css():
         border-radius: 10px;
         overflow: hidden;
         border: 2px solid #e0e0e0;
+        box-sizing: border-box;
     }}
     
     .day-header {{
@@ -257,6 +343,7 @@ def apply_custom_css():
         padding: 10px;
         position: relative;
         transition: all 0.3s;
+        box-sizing: border-box;
     }}
     
     .calendar-day:hover {{
@@ -313,6 +400,7 @@ def apply_custom_css():
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 15px;
         margin-top: 25px;
+        box-sizing: border-box;
     }}
     
     .stat-card {{
@@ -321,6 +409,7 @@ def apply_custom_css():
         padding: 20px;
         text-align: center;
         box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        box-sizing: border-box;
     }}
     
     .stat-value {{
@@ -352,6 +441,7 @@ def apply_custom_css():
         text-decoration: none;
         display: inline-block;
         text-align: center;
+        box-sizing: border-box;
     }}
     
     .btn-primary:hover {{
@@ -370,6 +460,7 @@ def apply_custom_css():
         cursor: pointer;
         transition: all 0.3s;
         font-family: 'Segoe UI', system-ui, sans-serif;
+        box-sizing: border-box;
     }}
     
     .btn-secondary:hover {{
@@ -390,6 +481,7 @@ def apply_custom_css():
         justify-content: center;
         z-index: 2000;
         padding: 20px;
+        box-sizing: border-box;
     }}
     
     .modal-content {{
@@ -402,6 +494,7 @@ def apply_custom_css():
         overflow-y: auto;
         position: relative;
         animation: modalSlide 0.3s ease;
+        box-sizing: border-box;
     }}
     
     @keyframes modalSlide {{
@@ -420,41 +513,158 @@ def apply_custom_css():
         color: #666;
     }}
     
-    /* RESPONSIVE PARA MÓVIL */
+    /* RESPONSIVE PARA MÓVIL - MEJORADO */
     @media (max-width: 768px) {{
-        .main-content {{ padding: 15px; }}
-        .dashboard-grid {{ grid-template-columns: 1fr; gap: 15px; }}
-        .calendar-grid {{ grid-template-columns: repeat(7, 1fr); }}
-        .calendar-day {{ min-height: 80px; padding: 5px; }}
-        .day-header {{ padding: 10px 2px; font-size: 0.8rem; }}
-        .day-number {{ font-size: 0.9rem; }}
-        .event-badge {{ font-size: 0.7rem; padding: 3px 5px; }}
-        .nav-btn {{ padding: 10px 15px; font-size: 0.9rem; }}
-        .current-month {{ font-size: 1.4rem; }}
-        .stats-grid {{ grid-template-columns: repeat(2, 1fr); }}
-        .action-buttons {{ flex-direction: column; }}
-        .btn-primary, .btn-secondary {{ width: 100%; }}
+        .main-content {{ 
+            padding: 15px;
+            margin-top: 70px;
+        }}
+        
+        .hero-section {{
+            height: 200px;
+            margin-bottom: 20px;
+        }}
+        
+        .hero-title {{
+            font-size: 1.8rem;
+        }}
+        
+        .hero-subtitle {{
+            font-size: 1rem;
+        }}
+        
+        .dashboard-grid {{ 
+            grid-template-columns: 1fr; 
+            gap: 15px; 
+            padding: 0;
+        }}
+        
+        .calendar-grid {{ 
+            grid-template-columns: repeat(7, 1fr); 
+        }}
+        
+        .calendar-day {{ 
+            min-height: 80px; 
+            padding: 5px; 
+        }}
+        
+        .day-header {{ 
+            padding: 10px 2px; 
+            font-size: 0.8rem; 
+        }}
+        
+        .day-number {{ 
+            font-size: 0.9rem; 
+        }}
+        
+        .event-badge {{ 
+            font-size: 0.7rem; 
+            padding: 3px 5px; 
+        }}
+        
+        .nav-btn {{ 
+            padding: 10px 15px; 
+            font-size: 0.9rem; 
+        }}
+        
+        .current-month {{ 
+            font-size: 1.4rem; 
+        }}
+        
+        .stats-grid {{ 
+            grid-template-columns: repeat(2, 1fr); 
+        }}
+        
+        .action-buttons {{ 
+            flex-direction: column; 
+            gap: 10px;
+        }}
+        
+        .btn-primary, .btn-secondary {{ 
+            width: 100%; 
+            padding: 12px 20px;
+        }}
     }}
     
     @media (max-width: 480px) {{
-        .main-header {{ padding: 10px 15px; }}
-        .logo-container {{ font-size: 1.1rem; }}
-        .user-info {{ font-size: 0.8rem; }}
-        .calendar-grid {{ grid-template-columns: repeat(7, 1fr); }}
-        .calendar-day {{ min-height: 70px; }}
-        .stats-grid {{ grid-template-columns: 1fr; }}
+        .main-header {{ 
+            padding: 10px 15px; 
+            height: 60px;
+        }}
+        
+        .main-content {{
+            margin-top: 60px;
+        }}
+        
+        .logo-container {{ 
+            font-size: 1.1rem; 
+        }}
+        
+        .user-info {{ 
+            font-size: 0.8rem; 
+        }}
+        
+        .hero-section {{
+            height: 150px;
+        }}
+        
+        .hero-title {{
+            font-size: 1.5rem;
+        }}
+        
+        .calendar-grid {{ 
+            grid-template-columns: repeat(7, 1fr); 
+        }}
+        
+        .calendar-day {{ 
+            min-height: 70px; 
+        }}
+        
+        .stats-grid {{ 
+            grid-template-columns: 1fr; 
+        }}
     }}
     
     /* OCULTAR ELEMENTOS DE STREAMLIT */
-    [data-testid="stHeader"] {{ display: none !important; }}
-    footer {{ display: none !important; }}
-    .stDeployButton {{ display: none !important; }}
+    [data-testid="stHeader"] {{ 
+        display: none !important; 
+    }}
+    
+    footer {{ 
+        display: none !important; 
+    }}
+    
+    .stDeployButton {{ 
+        display: none !important; 
+    }}
     
     /* SCROLLBAR PERSONALIZADO */
-    ::-webkit-scrollbar {{ width: 8px; }}
-    ::-webkit-scrollbar-track {{ background: #f1f1f1; }}
-    ::-webkit-scrollbar-thumb {{ background: {PRIMARY_COLOR}; border-radius: 4px; }}
-    ::-webkit-scrollbar-thumb:hover {{ background: #e55a1a; }}
+    ::-webkit-scrollbar {{ 
+        width: 8px; 
+    }}
+    
+    ::-webkit-scrollbar-track {{ 
+        background: #f1f1f1; 
+    }}
+    
+    ::-webkit-scrollbar-thumb {{ 
+        background: {PRIMARY_COLOR}; 
+        border-radius: 4px; 
+    }}
+    
+    ::-webkit-scrollbar-thumb:hover {{ 
+        background: #e55a1a; 
+    }}
+    
+    /* ANIMACIONES */
+    @keyframes fadeIn {{
+        from {{ opacity: 0; transform: translateY(20px); }}
+        to {{ opacity: 1; transform: translateY(0); }}
+    }}
+    
+    .fade-in {{
+        animation: fadeIn 0.5s ease-out;
+    }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -464,7 +674,7 @@ def apply_custom_css():
 def create_header():
     """Crea el encabezado de la aplicación"""
     st.markdown(f"""
-    <div class="main-header">
+    <div class="main-header fade-in">
         <div class="logo-container">
             <span>🛟</span>
             <span>SOCORRISTA PRO</span>
@@ -483,19 +693,19 @@ def create_dashboard():
     """Crea el dashboard principal"""
     st.markdown('<div class="main-content">', unsafe_allow_html=True)
     
-    # Título del dashboard
+    # Hero section con imagen de fondo
     st.markdown(f"""
-    <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: {SECONDARY_COLOR}; margin-bottom: 10px; font-family: 'Segoe UI', sans-serif;">
-            🏊 Panel de Control
-        </h1>
-        <p style="color: #666; font-size: 1.1rem;">
-            Gestiona tus horarios, asistencia y más desde un solo lugar
-        </p>
+    <div class="hero-section fade-in">
+        <div class="hero-content">
+            <h1 class="hero-title">Panel de Control</h1>
+            <p class="hero-subtitle">Gestiona tus horarios, asistencia y más desde un solo lugar</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
     # Grid de tarjetas
+    st.markdown('<div class="dashboard-grid fade-in">', unsafe_allow_html=True)
+    
     cards = [
         ("Horarios", "📅", "Consulta y gestiona tus turnos programados", "horarios"),
         ("Control de Asistencia", "✅", "Registro de entrada y salida en tiempo real", "asistencia"),
@@ -505,22 +715,21 @@ def create_dashboard():
         ("Comunicados", "📢", "Últimas noticias y anuncios", "comunicados"),
     ]
     
-    # Crear grid de tarjetas
-    cols = st.columns(3)
-    for idx, (title, icon, desc, view) in enumerate(cards):
-        with cols[idx % 3]:
-            card_html = f"""
-            <a href="?view={view}" class="dashboard-card">
-                <div class="card-icon">{icon}</div>
-                <h3 class="card-title">{title}</h3>
-                <p class="card-desc">{desc}</p>
-            </a>
-            """
-            st.markdown(card_html, unsafe_allow_html=True)
+    for title, icon, desc, view in cards:
+        card_html = f"""
+        <a href="?view={view}" class="dashboard-card">
+            <div class="card-icon">{icon}</div>
+            <h3 class="card-title">{title}</h3>
+            <p class="card-desc">{desc}</p>
+        </a>
+        """
+        st.markdown(card_html, unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Estadísticas rápidas
     st.markdown(f"""
-    <div style="margin-top: 40px; background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.08);">
+    <div class="fade-in" style="margin-top: 40px; background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.08);">
         <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif;">
             📊 Resumen Rápido
         </h3>
@@ -565,12 +774,13 @@ def create_calendar():
     month_name = current_date.strftime("%B %Y").upper()
     
     # Crear interfaz del calendario
-    st.markdown('<div class="calendar-page">', unsafe_allow_html=True)
+    st.markdown('<div class="main-content">', unsafe_allow_html=True)
+    st.markdown('<div class="calendar-page fade-in">', unsafe_allow_html=True)
     
     # Cabecera con navegación
     col1, col2, col3 = st.columns([1, 2, 1])
     with col1:
-        if st.button("← Mes Anterior", use_container_width=True):
+        if st.button("← Mes Anterior", use_container_width=True, type="primary"):
             prev_month = current_date - relativedelta(months=1)
             st.session_state.calendar_month = prev_month.month
             st.session_state.calendar_year = prev_month.year
@@ -580,7 +790,7 @@ def create_calendar():
         st.markdown(f'<div class="current-month">{month_name}</div>', unsafe_allow_html=True)
     
     with col3:
-        if st.button("Siguiente Mes →", use_container_width=True):
+        if st.button("Siguiente Mes →", use_container_width=True, type="primary"):
             next_month = current_date + relativedelta(months=1)
             st.session_state.calendar_month = next_month.month
             st.session_state.calendar_year = next_month.year
@@ -749,7 +959,7 @@ def create_calendar():
     </script>
     """, unsafe_allow_html=True)
     
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div></div>', unsafe_allow_html=True)
 
 def create_other_view(view_name):
     """Crea vistas para otras secciones"""
@@ -772,7 +982,7 @@ def create_other_view(view_name):
     
     st.markdown(f"""
     <div class="main-content">
-        <div style="max-width: 800px; margin: 0 auto;">
+        <div class="fade-in" style="max-width: 800px; margin: 0 auto;">
             <div style="text-align: center; margin-bottom: 40px;">
                 <div style="font-size: 3rem; margin-bottom: 15px;">{icon}</div>
                 <h1 style="color: {SECONDARY_COLOR}; margin-bottom: 10px; font-family: 'Segoe UI', sans-serif;">
