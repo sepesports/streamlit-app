@@ -33,10 +33,10 @@ SAMPLE_SCHEDULE = {
 # ESTILOS CSS OPTIMIZADOS
 # ----------------------------
 def apply_custom_css():
-    """Aplica estilos CSS personalizados sin espacios en blanco"""
+    """Aplica estilos CSS personalizados"""
     st.markdown(f"""
     <style>
-    /* RESET TOTAL - SIN ESPACIOS BLANCOS */
+    /* RESET TOTAL */
     html, body, #root, [class*="ViewContainer"] {{
         padding: 0 !important;
         margin: 0 !important;
@@ -44,7 +44,7 @@ def apply_custom_css():
         overflow-x: hidden !important;
     }}
     
-    /* Contenedor principal SIN márgenes */
+    /* Contenedor principal */
     .stApp {{
         background: {BG_COLOR} !important;
         padding: 0 !important;
@@ -52,7 +52,7 @@ def apply_custom_css():
         min-height: 100vh !important;
     }}
     
-    /* Eliminar TODOS los espacios de Streamlit */
+    /* Eliminar espacios de Streamlit */
     [data-testid="stAppViewContainer"] {{
         padding: 0 !important;
         margin: 0 !important;
@@ -78,20 +78,18 @@ def apply_custom_css():
     .main-header {{
         background: {SECONDARY_COLOR};
         color: white;
-        padding: 15px 20px;
+        padding: 12px 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        position: relative;
-        z-index: 100;
     }}
     
     .logo-container {{
         display: flex;
         align-items: center;
         gap: 10px;
-        font-size: 1.3rem;
+        font-size: 1.2rem;
         font-weight: 700;
     }}
     
@@ -111,37 +109,56 @@ def apply_custom_css():
         gap: 8px;
     }}
     
-    /* CONTENIDO PRINCIPAL - SIN ESPACIOS */
+    /* CONTENIDO PRINCIPAL */
     .main-content {{
         padding: 0 !important;
         margin: 0 !important;
         width: 100%;
     }}
     
-    /* TÍTULO PRINCIPAL COMPACTO */
+    /* TÍTULO CON FONDO LLAMATIVO */
     .page-title-section {{
-        background: white;
+        background: linear-gradient(135deg, {PRIMARY_COLOR}, #FF8C42, #FFA366);
         padding: 25px 20px;
         text-align: center;
-        border-bottom: 3px solid {PRIMARY_COLOR};
         margin-bottom: 0;
+        position: relative;
+        overflow: hidden;
+    }}
+    
+    .page-title-section::before {{
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M20,20 L80,80 M80,20 L20,80" stroke="rgba(255,255,255,0.1)" stroke-width="2"/></svg>');
+        opacity: 0.3;
     }}
     
     .page-title {{
-        color: {SECONDARY_COLOR};
-        font-size: 2rem;
+        color: white;
+        font-size: 2.2rem;
         font-weight: 800;
         margin-bottom: 8px;
         font-family: 'Segoe UI', sans-serif;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        position: relative;
+        z-index: 1;
     }}
     
     .page-subtitle {{
-        color: #666;
+        color: white;
         font-size: 1.1rem;
         font-family: 'Segoe UI', sans-serif;
         max-width: 600px;
         margin: 0 auto;
         line-height: 1.4;
+        opacity: 0.95;
+        position: relative;
+        z-index: 1;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
     }}
     
     /* GRID DE TARJETAS - COMPACTO */
@@ -252,137 +269,211 @@ def apply_custom_css():
         font-family: 'Segoe UI', sans-serif;
     }}
     
-    /* CALENDARIO OPTIMIZADO */
-    .calendar-container {{
-        padding: 25px 20px;
-        max-width: 1200px;
-        margin: 0 auto;
-        width: 100%;
-        box-sizing: border-box;
-    }}
-    
-    .calendar-header {{
-        background: white;
-        border-radius: 12px;
+    /* MODAL DE CALENDARIO PROFESIONAL */
+    .calendar-modal-overlay {{
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.85);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
         padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        animation: fadeIn 0.3s ease;
     }}
     
-    .month-navigation {{
+    .calendar-modal {{
+        background: white;
+        border-radius: 16px;
+        width: 95%;
+        max-width: 1400px;
+        height: 85vh;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        animation: slideUp 0.4s ease;
+        display: flex;
+        flex-direction: column;
+    }}
+    
+    @keyframes slideUp {{
+        from {{ transform: translateY(50px); opacity: 0; }}
+        to {{ transform: translateY(0); opacity: 1; }}
+    }}
+    
+    .modal-header {{
+        background: {SECONDARY_COLOR};
+        color: white;
+        padding: 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
-        flex-wrap: wrap;
+        border-bottom: 3px solid {PRIMARY_COLOR};
+    }}
+    
+    .modal-title {{
+        font-size: 1.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
         gap: 10px;
     }}
     
-    .nav-btn {{
+    .modal-close {{
         background: {PRIMARY_COLOR};
         color: white;
         border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-weight: 600;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        font-size: 1.5rem;
         cursor: pointer;
-        transition: all 0.3s;
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-family: 'Segoe UI', sans-serif;
+        justify-content: center;
+        transition: all 0.3s;
     }}
     
-    .nav-btn:hover {{
+    .modal-close:hover {{
         background: #e55a1a;
-        transform: scale(1.03);
+        transform: rotate(90deg);
     }}
     
-    .current-month {{
-        font-size: 1.6rem;
-        font-weight: 700;
-        color: {SECONDARY_COLOR};
-        text-align: center;
-        font-family: 'Segoe UI', sans-serif;
+    .modal-body {{
+        flex: 1;
+        overflow: hidden;
+        padding: 0;
     }}
     
-    /* GRID DEL CALENDARIO */
-    .calendar-grid {{
+    /* CALENDARIO PROFESIONAL - MALLA DE TURNOS */
+    .professional-calendar {{
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: #f8f9fa;
+    }}
+    
+    .calendar-controls {{
+        background: white;
+        padding: 20px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }}
+    
+    .calendar-main {{
+        flex: 1;
+        overflow: auto;
+        padding: 20px;
+    }}
+    
+    /* Grid de días - Malla profesional */
+    .calendar-days-grid {{
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        gap: 2px;
+        gap: 1px;
         background: #e0e0e0;
         border-radius: 8px;
         overflow: hidden;
-        border: 2px solid #e0e0e0;
+        border: 1px solid #e0e0e0;
     }}
     
-    .day-header {{
+    .calendar-day-header {{
         background: {SECONDARY_COLOR};
         color: white;
-        padding: 12px 5px;
+        padding: 15px 5px;
         text-align: center;
         font-weight: 600;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         font-family: 'Segoe UI', sans-serif;
     }}
     
-    .calendar-day {{
+    .calendar-day-cell {{
         background: white;
-        min-height: 100px;
-        padding: 8px;
+        min-height: 120px;
+        padding: 10px;
         position: relative;
         transition: all 0.3s;
     }}
     
-    .calendar-day:hover {{
-        background: #fff9f5;
+    .calendar-day-cell:hover {{
+        background: #f8f9fa;
     }}
     
     .day-number {{
         font-size: 1rem;
         font-weight: 600;
         color: {SECONDARY_COLOR};
-        margin-bottom: 6px;
+        margin-bottom: 8px;
         font-family: 'Segoe UI', sans-serif;
     }}
     
-    .today {{
+    .today-cell {{
         background: rgba(243, 112, 33, 0.1) !important;
         border: 2px solid {PRIMARY_COLOR} !important;
     }}
     
-    .today .day-number {{
+    .today-cell .day-number {{
         color: {PRIMARY_COLOR};
         font-weight: 800;
     }}
     
-    .weekend {{
+    .weekend-cell {{
         background: #f9f9f9;
     }}
     
-    .has-events {{
-        border-left: 3px solid {PRIMARY_COLOR};
-    }}
-    
-    .event-badge {{
+    .shift-item {{
         background: {PRIMARY_COLOR};
         color: white;
-        padding: 3px 6px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        margin-top: 4px;
-        display: block;
+        padding: 6px 8px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        margin-top: 5px;
         cursor: pointer;
         transition: all 0.3s;
-        font-family: 'Segoe UI', sans-serif;
+        border-left: 3px solid #ff944d;
     }}
     
-    .event-badge:hover {{
+    .shift-item:hover {{
         background: #e55a1a;
+        transform: translateX(2px);
     }}
     
-    /* BOTONES COMPACTOS */
+    .shift-time {{
+        font-weight: 700;
+        font-size: 0.9rem;
+    }}
+    
+    .shift-type {{
+        font-size: 0.75rem;
+        opacity: 0.9;
+    }}
+    
+    .calendar-summary {{
+        background: white;
+        padding: 20px;
+        border-top: 1px solid #e0e0e0;
+    }}
+    
+    .summary-grid {{
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }}
+    
+    .summary-card {{
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid {PRIMARY_COLOR};
+    }}
+    
+    /* BOTONES */
     .action-buttons {{
         display: flex;
         gap: 12px;
@@ -429,53 +520,10 @@ def apply_custom_css():
         transform: translateY(-2px);
     }}
     
-    /* MODAL COMPACTO */
-    .modal-overlay {{
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 2000;
-        padding: 15px;
-    }}
-    
-    .modal-content {{
-        background: white;
-        border-radius: 12px;
-        padding: 25px;
-        max-width: 500px;
-        width: 100%;
-        max-height: 90vh;
-        overflow-y: auto;
-        position: relative;
-        animation: modalSlide 0.3s ease;
-    }}
-    
-    @keyframes modalSlide {{
-        from {{ transform: translateY(-20px); opacity: 0; }}
-        to {{ transform: translateY(0); opacity: 1; }}
-    }}
-    
-    .modal-close {{
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        background: none;
-        border: none;
-        font-size: 1.3rem;
-        cursor: pointer;
-        color: #666;
-    }}
-    
     /* RESPONSIVE PARA MÓVIL - 2 columnas x 3 filas */
     @media (max-width: 768px) {{
         .main-header {{
-            padding: 12px 15px;
+            padding: 10px 15px;
         }}
         
         .logo-container {{
@@ -491,7 +539,7 @@ def apply_custom_css():
         }}
         
         .page-title {{
-            font-size: 1.6rem;
+            font-size: 1.8rem;
         }}
         
         .page-subtitle {{
@@ -548,36 +596,38 @@ def apply_custom_css():
             font-size: 1.5rem;
         }}
         
-        .calendar-container {{
-            padding: 20px 15px;
+        .calendar-modal {{
+            width: 98%;
+            height: 90vh;
         }}
         
-        .calendar-day {{
-            min-height: 80px;
-            padding: 6px;
+        .modal-header {{
+            padding: 15px;
         }}
         
-        .day-header {{
-            padding: 10px 3px;
-            font-size: 0.8rem;
+        .modal-title {{
+            font-size: 1.4rem;
+        }}
+        
+        .calendar-controls {{
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            padding: 15px;
+        }}
+        
+        .calendar-day-cell {{
+            min-height: 100px;
+            padding: 8px;
         }}
         
         .day-number {{
             font-size: 0.9rem;
         }}
         
-        .event-badge {{
-            font-size: 0.7rem;
-            padding: 2px 4px;
-        }}
-        
-        .nav-btn {{
-            padding: 8px 15px;
-            font-size: 0.9rem;
-        }}
-        
-        .current-month {{
-            font-size: 1.3rem;
+        .shift-item {{
+            padding: 4px 6px;
+            font-size: 0.75rem;
         }}
         
         .action-buttons {{
@@ -612,8 +662,12 @@ def apply_custom_css():
             grid-template-columns: repeat(2, 1fr);
         }}
         
-        .calendar-day {{
-            min-height: 70px;
+        .calendar-days-grid {{
+            grid-template-columns: repeat(7, 1fr);
+        }}
+        
+        .calendar-day-cell {{
+            min-height: 90px;
         }}
     }}
     
@@ -630,7 +684,7 @@ def apply_custom_css():
         display: none !important;
     }}
     
-    /* ANIMACIONES SUTILES */
+    /* ANIMACIONES */
     @keyframes fadeIn {{
         from {{ opacity: 0; }}
         to {{ opacity: 1; }}
@@ -663,11 +717,268 @@ def create_header():
     </div>
     """, unsafe_allow_html=True)
 
+def create_professional_calendar():
+    """Crea un calendario profesional tipo malla de turnos"""
+    # Estado para el mes actual
+    if 'calendar_month' not in st.session_state:
+        st.session_state.calendar_month = datetime.datetime.now().month
+        st.session_state.calendar_year = datetime.datetime.now().year
+    
+    # Navegación del calendario
+    current_date = datetime.date(st.session_state.calendar_year, st.session_state.calendar_month, 1)
+    month_name = current_date.strftime("%B %Y").upper()
+    
+    # Generar grid del calendario
+    first_day = current_date
+    last_day = datetime.date(st.session_state.calendar_year, 
+                           st.session_state.calendar_month, 
+                           calendar.monthrange(st.session_state.calendar_year, 
+                                             st.session_state.calendar_month)[1])
+    
+    # Cabeceras de días
+    days_of_week = ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"]
+    
+    # Crear HTML del calendario
+    calendar_html = '<div class="calendar-days-grid">'
+    
+    # Mostrar cabeceras
+    for day in days_of_week:
+        calendar_html += f'<div class="calendar-day-header">{day}</div>'
+    
+    # Espacios en blanco para el primer día
+    first_weekday = (first_day.weekday() + 1) % 7  # Lunes = 0
+    for _ in range(first_weekday):
+        calendar_html += '<div class="calendar-day-cell"></div>'
+    
+    # Días del mes
+    current_day = first_day
+    while current_day <= last_day:
+        day_class = "calendar-day-cell"
+        
+        # Verificar si es fin de semana
+        if current_day.weekday() >= 5:
+            day_class += " weekend-cell"
+        
+        # Verificar si es hoy
+        if current_day == datetime.date.today():
+            day_class += " today-cell"
+        
+        # Verificar si tiene turnos
+        date_str = current_day.strftime("%Y-%m-%d")
+        has_shifts = date_str in SAMPLE_SCHEDULE
+        
+        # Crear el día
+        calendar_html += f'<div class="{day_class}">'
+        calendar_html += f'<div class="day-number">{current_day.day}</div>'
+        
+        # Mostrar turnos si existen
+        if has_shifts:
+            for schedule in SAMPLE_SCHEDULE[date_str]:
+                calendar_html += f"""
+                <div class="shift-item" onclick="
+                    document.getElementById('shift-date').textContent = '{date_str}';
+                    document.getElementById('shift-time').textContent = '{schedule['hora']}';
+                    document.getElementById('shift-type').textContent = '{schedule['tipo']}';
+                    document.getElementById('shift-person').textContent = '{schedule['socorrista']}';
+                    document.getElementById('shift-modal').style.display = 'flex';
+                ">
+                    <div class="shift-time">{schedule['hora'].split('-')[0]}</div>
+                    <div class="shift-type">{schedule['tipo']}</div>
+                </div>
+                """
+        
+        calendar_html += '</div>'
+        current_day += datetime.timedelta(days=1)
+    
+    calendar_html += '</div>'
+    
+    # Calcular estadísticas
+    total_turnos = sum(1 for date in SAMPLE_SCHEDULE 
+                      if datetime.datetime.strptime(date, "%Y-%m-%d").date().month == st.session_state.calendar_month)
+    
+    return calendar_html, month_name, total_turnos
+
+def create_calendar_modal():
+    """Crea el modal del calendario profesional"""
+    calendar_html, month_name, total_turnos = create_professional_calendar()
+    
+    modal_html = f"""
+    <div id="calendar-modal" class="calendar-modal-overlay" style="display: none;">
+        <div class="calendar-modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>📅</span> Calendario de Turnos - {month_name}
+                </div>
+                <button class="modal-close" onclick="closeCalendarModal()">×</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="professional-calendar">
+                    <div class="calendar-controls">
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="changeMonth(-1)" class="btn-primary" style="padding: 10px 20px;">
+                                ← Mes Anterior
+                            </button>
+                            <button onclick="changeMonth(1)" class="btn-primary" style="padding: 10px 20px;">
+                                Siguiente Mes →
+                            </button>
+                        </div>
+                        
+                        <div style="display: flex; gap: 15px; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 15px; height: 15px; background: {PRIMARY_COLOR}; border-radius: 3px;"></div>
+                                <span style="font-size: 0.9rem;">Turno asignado</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 15px; height: 15px; background: rgba(243, 112, 33, 0.1); border: 2px solid {PRIMARY_COLOR}; border-radius: 3px;"></div>
+                                <span style="font-size: 0.9rem;">Hoy</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="calendar-main">
+                        {calendar_html}
+                    </div>
+                    
+                    <div class="calendar-summary">
+                        <div class="summary-grid">
+                            <div class="summary-card">
+                                <div style="color: {SECONDARY_COLOR}; font-size: 1.1rem; margin-bottom: 5px;">📅 Turnos del Mes</div>
+                                <div style="color: {PRIMARY_COLOR}; font-size: 1.8rem; font-weight: 700;">{total_turnos}</div>
+                            </div>
+                            <div class="summary-card">
+                                <div style="color: {SECONDARY_COLOR}; font-size: 1.1rem; margin-bottom: 5px;">⏰ Horas Totales</div>
+                                <div style="color: {PRIMARY_COLOR}; font-size: 1.8rem; font-weight: 700;">{total_turnos * 6}h</div>
+                            </div>
+                            <div class="summary-card">
+                                <div style="color: {SECONDARY_COLOR}; font-size: 1.1rem; margin-bottom: 5px;">👥 Socorristas</div>
+                                <div style="color: {PRIMARY_COLOR}; font-size: 1.8rem; font-weight: 700;">5</div>
+                            </div>
+                            <div class="summary-card">
+                                <div style="color: {SECONDARY_COLOR}; font-size: 1.1rem; margin-bottom: 5px;">✅ Disponibilidad</div>
+                                <div style="color: {PRIMARY_COLOR}; font-size: 1.8rem; font-weight: 700;">95%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons" style="margin-top: 20px;">
+                            <button class="btn-secondary" onclick="window.print()">
+                                🖨️ Imprimir Calendario
+                            </button>
+                            <button class="btn-secondary" onclick="alert('Exportando a Excel...')">
+                                📊 Exportar Excel
+                            </button>
+                            <button class="btn-primary" onclick="closeCalendarModal()">
+                                Cerrar Calendario
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para detalles del turno -->
+    <div id="shift-modal" class="calendar-modal-overlay" style="display: none;">
+        <div class="calendar-modal" style="max-width: 500px; height: auto;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>📋</span> Detalles del Turno
+                </div>
+                <button class="modal-close" onclick="closeShiftModal()">×</button>
+            </div>
+            
+            <div class="modal-body" style="padding: 20px;">
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <div style="color: #666; font-size: 0.9rem; margin-bottom: 5px;">📅 Fecha</div>
+                            <div style="font-weight: 700; color: #333;" id="shift-date"></div>
+                        </div>
+                        <div>
+                            <div style="color: #666; font-size: 0.9rem; margin-bottom: 5px;">🕒 Horario</div>
+                            <div style="font-weight: 700; color: #333;" id="shift-time"></div>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <div style="color: #666; font-size: 0.9rem; margin-bottom: 5px;">🏷️ Tipo de Turno</div>
+                            <div style="font-weight: 700; color: #333;" id="shift-type"></div>
+                        </div>
+                        <div>
+                            <div style="color: #666; font-size: 0.9rem; margin-bottom: 5px;">👤 Socorrista</div>
+                            <div style="font-weight: 700; color: #333;" id="shift-person"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="color: #666; font-size: 0.9rem; margin-bottom: 5px;">📍 Ubicación</div>
+                        <div style="font-weight: 700; color: #333;">Piscina Municipal Central</div>
+                        <div style="color: #666; font-size: 0.85rem; margin-top: 3px;">Av. Deportes, 123 - Zona Centro</div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary" style="flex: 1;" onclick="alert('Solicitud enviada para cambio de turno')">
+                        🔄 Solicitar Cambio
+                    </button>
+                    <button class="btn-secondary" style="flex: 1;" onclick="closeShiftModal()">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    // Funciones para el calendario
+    function openCalendarModal() {{
+        document.getElementById('calendar-modal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }}
+    
+    function closeCalendarModal() {{
+        document.getElementById('calendar-modal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }}
+    
+    function closeShiftModal() {{
+        document.getElementById('shift-modal').style.display = 'none';
+    }}
+    
+    function changeMonth(direction) {{
+        // Esta función requeriría una recarga con Streamlit para cambiar el mes
+        // Por ahora solo muestra un mensaje
+        if(direction === -1) {{
+            alert('Navegando al mes anterior... (Funcionalidad completa requeriría recarga)');
+        }} else {{
+            alert('Navegando al mes siguiente... (Funcionalidad completa requeriría recarga)');
+        }}
+    }}
+    
+    // Cerrar modal con ESC
+    document.addEventListener('keydown', function(event) {{
+        if (event.key === 'Escape') {{
+            closeCalendarModal();
+            closeShiftModal();
+        }}
+    }});
+    
+    // Cerrar modal al hacer clic fuera
+    document.addEventListener('click', function(event) {{
+        if (event.target.classList.contains('calendar-modal-overlay')) {{
+            closeCalendarModal();
+            closeShiftModal();
+        }}
+    }});
+    </script>
+    """
+    
+    return modal_html
+
 def create_dashboard():
-    """Crea el dashboard principal compacto"""
+    """Crea el dashboard principal"""
     st.markdown('<div class="main-content">', unsafe_allow_html=True)
     
-    # Título principal compacto
+    # Título con fondo llamativo
     st.markdown(f"""
     <div class="page-title-section fade-in">
         <h1 class="page-title">Panel de Control</h1>
@@ -689,18 +1000,29 @@ def create_dashboard():
     ]
     
     for title, icon, desc, view in cards:
-        card_html = f"""
-        <a href="?view={view}" class="dashboard-card">
-            <div class="card-icon">{icon}</div>
-            <h3 class="card-title">{title}</h3>
-            <p class="card-desc">{desc}</p>
-        </a>
-        """
+        if view == "horarios":
+            # Para Horarios, usamos onclick para abrir el modal
+            card_html = f"""
+            <div class="dashboard-card" onclick="openCalendarModal()">
+                <div class="card-icon">{icon}</div>
+                <h3 class="card-title">{title}</h3>
+                <p class="card-desc">{desc}</p>
+            </div>
+            """
+        else:
+            # Para otras vistas, usamos enlace normal
+            card_html = f"""
+            <a href="?view={view}" class="dashboard-card">
+                <div class="card-icon">{icon}</div>
+                <h3 class="card-title">{title}</h3>
+                <p class="card-desc">{desc}</p>
+            </a>
+            """
         st.markdown(card_html, unsafe_allow_html=True)
     
     st.markdown('</div></div>', unsafe_allow_html=True)
     
-    # Estadísticas rápidas compactas
+    # Estadísticas rápidas
     st.markdown(f"""
     <div class="stats-container fade-in">
         <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 15px; font-family: 'Segoe UI', sans-serif; font-size: 1.3rem;">
@@ -737,204 +1059,11 @@ def create_dashboard():
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown('</div>', unsafe_allow_html=True)
-
-def create_calendar():
-    """Crea y muestra el calendario interactivo compacto"""
-    # Inicializar estado del calendario
-    if 'calendar_month' not in st.session_state:
-        st.session_state.calendar_month = datetime.datetime.now().month
-        st.session_state.calendar_year = datetime.datetime.now().year
-    
-    # Navegación del calendario
-    current_date = datetime.date(st.session_state.calendar_year, st.session_state.calendar_month, 1)
-    month_name = current_date.strftime("%B %Y").upper()
-    
-    # Crear interfaz del calendario
-    st.markdown('<div class="main-content">', unsafe_allow_html=True)
-    st.markdown('<div class="calendar-container fade-in">', unsafe_allow_html=True)
-    
-    # Cabecera con navegación
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col1:
-        if st.button("← Mes Anterior", use_container_width=True, type="primary"):
-            prev_month = current_date - relativedelta(months=1)
-            st.session_state.calendar_month = prev_month.month
-            st.session_state.calendar_year = prev_month.year
-            st.rerun()
-    
-    with col2:
-        st.markdown(f'<div class="current-month">{month_name}</div>', unsafe_allow_html=True)
-    
-    with col3:
-        if st.button("Siguiente Mes →", use_container_width=True, type="primary"):
-            next_month = current_date + relativedelta(months=1)
-            st.session_state.calendar_month = next_month.month
-            st.session_state.calendar_year = next_month.year
-            st.rerun()
-    
-    # Generar grid del calendario
-    first_day = current_date
-    last_day = datetime.date(st.session_state.calendar_year, 
-                           st.session_state.calendar_month, 
-                           calendar.monthrange(st.session_state.calendar_year, 
-                                             st.session_state.calendar_month)[1])
-    
-    # Cabeceras de días
-    days_of_week = ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"]
-    
-    st.markdown('<div class="calendar-grid">', unsafe_allow_html=True)
-    
-    # Mostrar cabeceras
-    for day in days_of_week:
-        st.markdown(f'<div class="day-header">{day}</div>', unsafe_allow_html=True)
-    
-    # Espacios en blanco para el primer día
-    first_weekday = (first_day.weekday() + 1) % 7  # Lunes = 0
-    for _ in range(first_weekday):
-        st.markdown('<div class="calendar-day"></div>', unsafe_allow_html=True)
-    
-    # Días del mes
-    current_day = first_day
-    while current_day <= last_day:
-        day_class = "calendar-day"
-        
-        # Verificar si es fin de semana
-        if current_day.weekday() >= 5:
-            day_class += " weekend"
-        
-        # Verificar si es hoy
-        if current_day == datetime.date.today():
-            day_class += " today"
-        
-        # Verificar si tiene eventos
-        date_str = current_day.strftime("%Y-%m-%d")
-        has_events = date_str in SAMPLE_SCHEDULE
-        if has_events:
-            day_class += " has-events"
-        
-        # Crear el día
-        day_html = f'<div class="{day_class}">'
-        day_html += f'<div class="day-number">{current_day.day}</div>'
-        
-        # Mostrar eventos si existen
-        if has_events:
-            for schedule in SAMPLE_SCHEDULE[date_str]:
-                day_html += f"""
-                <div class="event-badge" onclick="
-                    document.getElementById('selected-date').textContent = '{date_str}';
-                    document.getElementById('selected-time').textContent = '{schedule['hora']}';
-                    document.getElementById('selected-type').textContent = '{schedule['tipo']}';
-                    document.getElementById('selected-person').textContent = '{schedule['socorrista']}';
-                    document.getElementById('event-modal').style.display = 'flex';
-                ">
-                    {schedule['hora'].split('-')[0]}
-                </div>
-                """
-        
-        day_html += '</div>'
-        st.markdown(day_html, unsafe_allow_html=True)
-        
-        current_day += datetime.timedelta(days=1)
+    # Añadir el modal del calendario
+    calendar_modal_html = create_calendar_modal()
+    st.markdown(calendar_modal_html, unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Estadísticas del mes
-    total_turnos = sum(1 for date in SAMPLE_SCHEDULE 
-                      if datetime.datetime.strptime(date, "%Y-%m-%d").date().month == st.session_state.calendar_month)
-    
-    st.markdown(f"""
-    <div style="margin-top: 25px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-        <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 15px; font-family: 'Segoe UI', sans-serif; font-size: 1.3rem;">
-            📈 Resumen del Mes
-        </h3>
-        <div class="stats-grid">
-            <div class="stat-card" style="border-left-color: {PRIMARY_COLOR};">
-                <div style="color: {PRIMARY_COLOR}; font-size: 1.1rem;">📅</div>
-                <div class="stat-value" style="color: {PRIMARY_COLOR};">{total_turnos}</div>
-                <div style="color: #666; font-size: 0.85rem;">Turnos Programados</div>
-            </div>
-            <div class="stat-card" style="border-left-color: {PRIMARY_COLOR};">
-                <div style="color: {PRIMARY_COLOR}; font-size: 1.1rem;">⏰</div>
-                <div class="stat-value" style="color: {PRIMARY_COLOR};">{total_turnos * 6}h</div>
-                <div style="color: #666; font-size: 0.85rem;">Horas Totales</div>
-            </div>
-            <div class="stat-card" style="border-left-color: {PRIMARY_COLOR};">
-                <div style="color: {PRIMARY_COLOR}; font-size: 1.1rem;">👥</div>
-                <div class="stat-value" style="color: {PRIMARY_COLOR};">5</div>
-                <div style="color: #666; font-size: 0.85rem;">Socorristas Activos</div>
-            </div>
-            <div class="stat-card" style="border-left-color: {PRIMARY_COLOR};">
-                <div style="color: {PRIMARY_COLOR}; font-size: 1.1rem;">✅</div>
-                <div class="stat-value" style="color: {PRIMARY_COLOR};">{total_turnos - 2}</div>
-                <div style="color: #666; font-size: 0.85rem;">Turnos Cubiertos</div>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Botones de acción
-    st.markdown("""
-    <div class="action-buttons">
-        <a href="?" class="btn-primary">← Volver al Dashboard</a>
-        <button class="btn-secondary" onclick="window.print()">🖨️ Imprimir Horario</button>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Modal para detalles del evento
-    st.markdown("""
-    <div id="event-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <button class="modal-close" onclick="document.getElementById('event-modal').style.display='none'">×</button>
-            <h3 style="color: #F37021; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; font-size: 1.4rem;">
-                📋 Detalles del Turno
-            </h3>
-            <div style="background: #f8f9fa; padding: 18px; border-radius: 8px; margin-bottom: 18px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                    <div>
-                        <div style="color: #666; font-size: 0.85rem; margin-bottom: 4px;">📅 Fecha</div>
-                        <div style="font-weight: 700; color: #333;" id="selected-date"></div>
-                    </div>
-                    <div>
-                        <div style="color: #666; font-size: 0.85rem; margin-bottom: 4px;">🕒 Horario</div>
-                        <div style="font-weight: 700; color: #333;" id="selected-time"></div>
-                    </div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                    <div>
-                        <div style="color: #666; font-size: 0.85rem; margin-bottom: 4px;">🏷️ Tipo</div>
-                        <div style="font-weight: 700; color: #333;" id="selected-type"></div>
-                    </div>
-                    <div>
-                        <div style="color: #666; font-size: 0.85rem; margin-bottom: 4px;">👤 Socorrista</div>
-                        <div style="font-weight: 700; color: #333;" id="selected-person"></div>
-                    </div>
-                </div>
-                <div>
-                    <div style="color: #666; font-size: 0.85rem; margin-bottom: 4px;">📍 Ubicación</div>
-                    <div style="font-weight: 700; color: #333;">Piscina Municipal Central</div>
-                    <div style="color: #666; font-size: 0.8rem; margin-top: 3px;">Av. Deportes, 123</div>
-                </div>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn-primary" style="flex: 1;" onclick="alert('Cambio solicitado')">🔄 Solicitar Cambio</button>
-                <button class="btn-secondary" style="flex: 1;" onclick="document.getElementById('event-modal').style.display='none'">Cerrar</button>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-    // Asegurar que los enlaces funcionen correctamente
-    document.querySelectorAll('a[href^="?view="]').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = this.getAttribute('href');
-        });
-    });
-    </script>
-    """, unsafe_allow_html=True)
-    
-    st.markdown('</div></div>', unsafe_allow_html=True)
 
 def create_other_view(view_name):
     """Crea vistas para otras secciones"""
@@ -1006,7 +1135,7 @@ def main():
     # Aplicar CSS personalizado
     apply_custom_css()
     
-    # Crear header compacto
+    # Crear header
     create_header()
     
     # Obtener vista actual
@@ -1015,7 +1144,9 @@ def main():
     
     # Mostrar vista correspondiente
     if view == "horarios":
-        create_calendar()
+        # Si alguien accede directamente a ?view=horarios, mostramos el modal
+        st.markdown('<script>openCalendarModal();</script>', unsafe_allow_html=True)
+        create_dashboard()
     elif view in ["asistencia", "nomina", "incidencias", "formacion", "comunicados"]:
         create_other_view(view)
     else:
