@@ -1,7 +1,5 @@
 import streamlit as st
 import datetime
-import calendar
-from dateutil.relativedelta import relativedelta
 
 # ----------------------------
 # CONFIGURACIÓN PRINCIPAL
@@ -18,19 +16,8 @@ PRIMARY_COLOR = "#F37021"
 SECONDARY_COLOR = "#2C3E50"
 BG_COLOR = "#F8F9FA"
 
-# Datos de ejemplo para horarios
-SAMPLE_SCHEDULE = {
-    "2024-01-15": [{"hora": "08:00-14:00", "tipo": "Turno Mañana", "socorrista": "Juan Pérez"}],
-    "2024-01-16": [{"hora": "14:00-20:00", "tipo": "Turno Tarde", "socorrista": "María Gómez"}],
-    "2024-01-17": [{"hora": "08:00-14:00", "tipo": "Turno Mañana", "socorrista": "Carlos Ruiz"}],
-    "2024-01-18": [{"hora": "14:00-20:00", "tipo": "Turno Tarde", "socorrista": "Ana López"}],
-    "2024-01-19": [{"hora": "08:00-20:00", "tipo": "Doble Turno", "socorrista": "Pedro Sánchez"}],
-    "2024-01-22": [{"hora": "08:00-14:00", "tipo": "Turno Mañana", "socorrista": "Juan Pérez"}],
-    "2024-01-23": [{"hora": "14:00-20:00", "tipo": "Turno Tarde", "socorrista": "María Gómez"}],
-}
-
 # ----------------------------
-# ESTILOS CSS - SOLUCIÓN DEFINITIVA
+# ESTILOS CSS SIMPLIFICADOS Y EFECTIVOS
 # ----------------------------
 def apply_custom_css():
     """Aplica estilos CSS personalizados"""
@@ -38,16 +25,14 @@ def apply_custom_css():
     <style>
     /* RESET COMPLETO */
     .stApp {{
-        background: {BG_COLOR};
-        padding: 0;
-        margin: 0;
-        min-height: 100vh;
+        background: {BG_COLOR} !important;
+        padding: 0 !important;
+        margin: 0 !important;
     }}
     
-    /* ELIMINAR ESPACIOS DE STREAMLIT */
+    /* ELIMINAR ESPACIOS STREAMLIT */
     .block-container {{
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
+        padding: 0 !important;
         max-width: 100% !important;
     }}
     
@@ -55,203 +40,169 @@ def apply_custom_css():
         padding: 0 !important;
     }}
     
-    /* HEADER */
+    /* HEADER COMPACTO */
     .main-header {{
         background: linear-gradient(135deg, {SECONDARY_COLOR}, #1a2530);
         color: white;
-        padding: 15px 25px;
+        padding: 12px 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        position: sticky;
+        top: 0;
+        z-index: 100;
     }}
     
-    /* TÍTULO */
+    /* TÍTULO COMPACTO */
     .page-title-section {{
-        background: linear-gradient(135deg, #1a5276, #1c5c82, #1e6790, {PRIMARY_COLOR});
-        padding: 40px 25px;
+        background: linear-gradient(135deg, {SECONDARY_COLOR}, #1a2530);
+        padding: 25px 20px;
         text-align: center;
         margin-bottom: 0;
     }}
     
     .page-title {{
         color: white;
-        font-size: 2.8rem;
-        font-weight: 800;
-        margin-bottom: 15px;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }}
+    
+    .page-subtitle {{
+        color: rgba(255,255,255,0.9);
+        font-size: 0.95rem;
+        max-width: 500px;
+        margin: 0 auto;
     }}
     
     /* CONTENEDOR PRINCIPAL */
     .main-content {{
-        padding: 40px 25px;
+        padding: 30px 20px;
         max-width: 1200px;
         margin: 0 auto;
-        width: 100%;
-        box-sizing: border-box;
     }}
     
-    /* TARJETAS ESCRITORIO - ESTILOS BÁSICOS */
+    /* GRID UNIFICADO - FUNCIONA EN ESCRITORIO Y MÓVIL */
+    .dashboard-grid {{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        justify-content: center;
+    }}
+    
+    /* TARJETAS - ANCHO FIJO PARA CONTROL */
     .dashboard-card {{
-        background: linear-gradient(145deg, #ffffff, #f5f5f5);
-        border-radius: 20px;
-        padding: 25px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
-        cursor: pointer;
-        border: none;
-        text-decoration: none !important;
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         display: flex;
         flex-direction: column;
-        min-height: 220px;
-        width: 100%;
-        position: relative;
-        overflow: hidden;
-        box-sizing: border-box;
-        margin-bottom: 0 !important;
-    }}
-    
-    .dashboard-card::before {{
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 5px;
-        background: linear-gradient(90deg, {PRIMARY_COLOR}, #FF8C42);
-        border-radius: 20px 20px 0 0;
+        align-items: center;
+        text-align: center;
+        text-decoration: none !important;
+        border: 1px solid rgba(0,0,0,0.05);
+        width: 180px; /* ANCHO FIJO */
+        min-height: 150px;
+        transition: all 0.3s ease;
+        cursor: pointer;
     }}
     
     .dashboard-card:hover {{
         transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(243, 112, 33, 0.2);
+        box-shadow: 0 8px 25px rgba(243, 112, 33, 0.2);
+        border-color: {PRIMARY_COLOR};
     }}
     
     .card-icon {{
-        width: 60px;
-        height: 60px;
+        width: 50px;
+        height: 50px;
         background: linear-gradient(135deg, {PRIMARY_COLOR}, #ff944d);
-        border-radius: 15px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 15px;
-        font-size: 28px;
+        margin-bottom: 10px;
+        font-size: 22px;
         color: white;
     }}
     
     .card-title {{
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: {SECONDARY_COLOR};
-        margin-bottom: 10px;
-    }}
-    
-    .card-desc {{
-        color: #666;
         font-size: 0.95rem;
-        line-height: 1.5;
+        font-weight: 600;
+        color: {SECONDARY_COLOR};
+        margin: 0;
+        line-height: 1.2;
     }}
     
-    /* MÓVIL: ICONOS SIN CAJAS - 2 COLUMNAS, 3 FILAS */
-    @media (max-width: 768px) {{
-        /* Ocultar las columnas de Streamlit en móvil */
-        .st-emotion-cache-1v0mbdj {{
-            display: none !important;
+    /* ESCRITORIO: 3 columnas */
+    @media (min-width: 769px) {{
+        .dashboard-grid {{
+            justify-content: space-between;
         }}
         
-        /* Mostrar el grid de iconos en móvil */
-        .mobile-icons-grid {{
-            display: grid !important;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            width: 100%;
+        .dashboard-card {{
+            width: calc(33.333% - 10px);
+        }}
+    }}
+    
+    /* MÓVIL: 2 columnas */
+    @media (max-width: 768px) {{
+        .main-header {{
+            padding: 10px 15px;
+        }}
+        
+        .page-title-section {{
+            padding: 20px 15px;
+        }}
+        
+        .page-title {{
+            font-size: 1.6rem;
+        }}
+        
+        .page-subtitle {{
+            font-size: 0.9rem;
         }}
         
         .main-content {{
             padding: 20px 15px;
         }}
         
-        /* ICONOS PARA MÓVIL - SIN CAJAS */
-        .mobile-icon-item {{
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            text-decoration: none !important;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-            min-height: 140px;
-            cursor: pointer;
+        .dashboard-grid {{
+            gap: 10px;
         }}
         
-        .mobile-icon-item:hover {{
-            border-color: {PRIMARY_COLOR};
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(243, 112, 33, 0.15);
+        .dashboard-card {{
+            width: calc(50% - 5px);
+            min-height: 130px;
+            padding: 15px;
         }}
         
-        .mobile-icon {{
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, {PRIMARY_COLOR}, #ff944d);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 12px;
-            font-size: 26px;
-            color: white;
+        .card-icon {{
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
         }}
         
-        .mobile-icon-title {{
-            font-size: 1rem;
-            font-weight: 600;
-            color: {SECONDARY_COLOR};
-            margin: 0;
-            line-height: 1.2;
-        }}
-        
-        .mobile-icon-desc {{
-            display: none; /* Ocultar descripción en móvil */
-        }}
-        
-        .page-title {{
-            font-size: 2.2rem;
-        }}
-        
-        .page-title-section {{
-            padding: 25px 15px;
+        .card-title {{
+            font-size: 0.9rem;
         }}
     }}
     
-    /* ESCRITORIO: OCULTAR EL GRID MÓVIL */
-    @media (min-width: 769px) {{
-        .mobile-icons-grid {{
-            display: none !important;
-        }}
-    }}
-    
-    /* ESTADÍSTICAS */
+    /* ESTADÍSTICAS COMPACTAS */
     .stats-container {{
         background: white;
-        border-radius: 20px;
-        padding: 30px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        margin: 40px auto 0;
-        width: 100%;
-        box-sizing: border-box;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        margin-top: 25px;
     }}
     
     .stats-grid {{
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-        width: 100%;
+        gap: 15px;
     }}
     
     @media (max-width: 768px) {{
@@ -260,8 +211,7 @@ def apply_custom_css():
         }}
         
         .stats-container {{
-            padding: 20px;
-            margin-top: 25px;
+            padding: 15px;
         }}
     }}
     
@@ -269,39 +219,34 @@ def apply_custom_css():
         .stats-grid {{
             grid-template-columns: 1fr;
         }}
-        
-        .mobile-icons-grid {{
-            gap: 15px;
-        }}
-        
-        .mobile-icon-item {{
-            min-height: 120px;
-            padding: 15px;
-        }}
-        
-        .mobile-icon {{
-            width: 50px;
-            height: 50px;
-            font-size: 22px;
-        }}
     }}
     
     .stat-card {{
         background: #f8f9fa;
-        border-radius: 15px;
-        padding: 20px;
+        border-radius: 8px;
+        padding: 15px;
         text-align: center;
-        border-left: 4px solid {PRIMARY_COLOR};
+        border-left: 3px solid {PRIMARY_COLOR};
     }}
     
     .stat-value {{
-        font-size: 2.2rem;
-        font-weight: 800;
-        margin: 10px 0;
+        font-size: 1.5rem;
+        font-weight: 700;
         color: {SECONDARY_COLOR};
+        margin: 5px 0;
     }}
     
-    /* OCULTAR ELEMENTOS DE STREAMLIT */
+    /* FOOTER MINIMALISTA */
+    .footer {{
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(0,0,0,0.1);
+        color: #777;
+        font-size: 0.8rem;
+    }}
+    
+    /* OCULTAR ELEMENTOS STREAMLIT */
     [data-testid="stHeader"] {{ display: none !important; }}
     footer {{ display: none !important; }}
     .stDeployButton {{ display: none !important; }}
@@ -315,16 +260,16 @@ def create_header():
     """Crea el encabezado profesional"""
     st.markdown(f"""
     <div class="main-header">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-size: 1.5rem;">🛟</span>
-            <span style="font-size: 1.3rem; font-weight: 700;">SOCORRISTA PRO</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 1.3rem;">🛟</span>
+            <span style="font-size: 1.1rem; font-weight: 600;">SOCORRISTA PRO</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 25px; display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 1.1rem;">👤</span>
+        <div>
+            <div style="background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px;">
+                <span>👤</span>
                 <div>
-                    <div style="font-weight: 600;">Carlos Rodríguez</div>
-                    <div style="font-size: 0.8rem; opacity: 0.9;">Socorrista Principal</div>
+                    <div style="font-size: 0.85rem; font-weight: 500;">Carlos Rodríguez</div>
+                    <div style="font-size: 0.7rem; opacity: 0.9;">Socorrista Principal</div>
                 </div>
             </div>
         </div>
@@ -339,173 +284,94 @@ def create_dashboard():
     # Crear header
     create_header()
     
-    # Título principal
+    # Título principal compacto
     st.markdown(f"""
     <div class="page-title-section">
         <h1 class="page-title">Panel de Control</h1>
-        <p style="color: rgba(255,255,255,0.95); font-size: 1.2rem; max-width: 700px; margin: 0 auto;">
-            Gestiona tus horarios, asistencia y más desde un solo lugar
-        </p>
+        <p class="page-subtitle">Gestión centralizada de turnos y asistencia</p>
     </div>
     """, unsafe_allow_html=True)
     
     # Contenedor principal
     st.markdown('<div class="main-content">', unsafe_allow_html=True)
     
-    # **VERSIÓN ESCRITORIO: 3 columnas usando Streamlit**
-    # Fila 1: 3 tarjetas
-    col1, col2, col3 = st.columns(3, gap="large")
+    # **GRID UNIFICADO - FUNCIONA EN TODOS LOS DISPOSITIVOS**
+    st.markdown('<div class="dashboard-grid">', unsafe_allow_html=True)
     
-    with col1:
-        st.markdown(f"""
-        <div class="dashboard-card" onclick="openCalendarModal()">
-            <div class="card-icon">📅</div>
-            <h3 class="card-title">Horarios</h3>
-            <p class="card-desc">Consulta y gestiona tus turnos programados</p>
-        </div>
-        """, unsafe_allow_html=True)
+    # Tarjetas en el orden específico
+    cards = [
+        {"title": "Horarios", "icon": "📅", "desc": "Turnos programados", "view": "horarios", "onclick": "openCalendarModal()"},
+        {"title": "Control Asistencia", "icon": "✅", "desc": "Registro entrada/salida", "view": "asistencia", "onclick": None},
+        {"title": "Nómina y Pagos", "icon": "💰", "desc": "Recibos y estados", "view": "nomina", "onclick": None},
+        {"title": "Incidencias", "icon": "⚠️", "desc": "Reporte de incidencias", "view": "incidencias", "onclick": None},
+        {"title": "Formación", "icon": "🎓", "desc": "Cursos y certificaciones", "view": "formacion", "onclick": None},
+        {"title": "Comunicados", "icon": "📢", "desc": "Noticias y anuncios", "view": "comunicados", "onclick": None},
+    ]
     
-    with col2:
-        st.markdown(f"""
-        <a href="?view=asistencia" class="dashboard-card">
-            <div class="card-icon">✅</div>
-            <h3 class="card-title">Control de Asistencia</h3>
-            <p class="card-desc">Registro de entrada y salida en tiempo real</p>
-        </a>
-        """, unsafe_allow_html=True)
+    for card in cards:
+        if card["view"] == "horarios":
+            st.markdown(f"""
+            <div class="dashboard-card" onclick="{card['onclick']}">
+                <div class="card-icon">{card['icon']}</div>
+                <h3 class="card-title">{card['title']}</h3>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <a href="?view={card['view']}" class="dashboard-card">
+                <div class="card-icon">{card['icon']}</div>
+                <h3 class="card-title">{card['title']}</h3>
+            </a>
+            """, unsafe_allow_html=True)
     
-    with col3:
-        st.markdown(f"""
-        <a href="?view=nomina" class="dashboard-card">
-            <div class="card-icon">💰</div>
-            <h3 class="card-title">Nómina y Pagos</h3>
-            <p class="card-desc">Consulta tus recibos y estados de pago</p>
-        </a>
-        """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)  # Cierra dashboard-grid
     
-    # Fila 2: 3 tarjetas
-    col4, col5, col6 = st.columns(3, gap="large")
-    
-    with col4:
-        st.markdown(f"""
-        <a href="?view=incidencias" class="dashboard-card">
-            <div class="card-icon">⚠️</div>
-            <h3 class="card-title">Incidencias</h3>
-            <p class="card-desc">Reporta y consulta incidencias</p>
-        </a>
-        """, unsafe_allow_html=True)
-    
-    with col5:
-        st.markdown(f"""
-        <a href="?view=formacion" class="dashboard-card">
-            <div class="card-icon">🎓</div>
-            <h3 class="card-title">Formación</h3>
-            <p class="card-desc">Accede a cursos y certificaciones</p>
-        </a>
-        """, unsafe_allow_html=True)
-    
-    with col6:
-        st.markdown(f"""
-        <a href="?view=comunicados" class="dashboard-card">
-            <div class="card-icon">📢</div>
-            <h3 class="card-title">Comunicados</h3>
-            <p class="card-desc">Últimas noticias y anuncios</p>
-        </a>
-        """, unsafe_allow_html=True)
-    
-    # **VERSIÓN MÓVIL: Grid de iconos - 2 columnas, 3 filas**
-    st.markdown("""
-    <div class="mobile-icons-grid" style="display: none;">
-        <!-- Fila 1 móvil -->
-        <div class="mobile-icon-item" onclick="openCalendarModal()">
-            <div class="mobile-icon">📅</div>
-            <h3 class="mobile-icon-title">Horarios</h3>
-            <p class="mobile-icon-desc">Consulta y gestiona tus turnos programados</p>
-        </div>
-        
-        <a href="?view=asistencia" class="mobile-icon-item">
-            <div class="mobile-icon">✅</div>
-            <h3 class="mobile-icon-title">Control de Asistencia</h3>
-            <p class="mobile-icon-desc">Registro de entrada y salida en tiempo real</p>
-        </a>
-        
-        <!-- Fila 2 móvil -->
-        <a href="?view=nomina" class="mobile-icon-item">
-            <div class="mobile-icon">💰</div>
-            <h3 class="mobile-icon-title">Nómina y Pagos</h3>
-            <p class="mobile-icon-desc">Consulta tus recibos y estados de pago</p>
-        </a>
-        
-        <a href="?view=incidencias" class="mobile-icon-item">
-            <div class="mobile-icon">⚠️</div>
-            <h3 class="mobile-icon-title">Incidencias</h3>
-            <p class="mobile-icon-desc">Reporta y consulta incidencias</p>
-        </a>
-        
-        <!-- Fila 3 móvil -->
-        <a href="?view=formacion" class="mobile-icon-item">
-            <div class="mobile-icon">🎓</div>
-            <h3 class="mobile-icon-title">Formación</h3>
-            <p class="mobile-icon-desc">Accede a cursos y certificaciones</p>
-        </a>
-        
-        <a href="?view=comunicados" class="mobile-icon-item">
-            <div class="mobile-icon">📢</div>
-            <h3 class="mobile-icon-title">Comunicados</h3>
-            <p class="mobile-icon-desc">Últimas noticias y anuncios</p>
-        </a>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Estadísticas
+    # Estadísticas compactas
     st.markdown(f"""
     <div class="stats-container">
-        <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 25px; font-size: 1.5rem; font-weight: 700;">
-            📊 Resumen Rápido
-        </h3>
         <div class="stats-grid">
             <div class="stat-card">
-                <div style="color: #4CAF50; font-size: 1.3rem;">✅</div>
+                <div style="color: #4CAF50;">✅</div>
                 <div class="stat-value">12</div>
-                <div style="color: #666; font-size: 0.9rem;">Turnos Completados</div>
+                <div style="color: #666; font-size: 0.8rem;">Turnos Completados</div>
             </div>
             <div class="stat-card">
-                <div style="color: #2196F3; font-size: 1.3rem;">⏰</div>
+                <div style="color: #2196F3;">⏰</div>
                 <div class="stat-value">96h</div>
-                <div style="color: #666; font-size: 0.9rem;">Horas Totales</div>
+                <div style="color: #666; font-size: 0.8rem;">Horas Totales</div>
             </div>
             <div class="stat-card">
-                <div style="color: #FF9800; font-size: 1.3rem;">📅</div>
+                <div style="color: #FF9800;">📅</div>
                 <div class="stat-value">6</div>
-                <div style="color: #666; font-size: 0.9rem;">Próximos Turnos</div>
+                <div style="color: #666; font-size: 0.8rem;">Próximos Turnos</div>
             </div>
             <div class="stat-card">
-                <div style="color: #9C27B0; font-size: 1.3rem;">💰</div>
+                <div style="color: #9C27B0;">💰</div>
                 <div class="stat-value">€2,850</div>
-                <div style="color: #666; font-size: 0.9rem;">Salario Estimado</div>
+                <div style="color: #666; font-size: 0.8rem;">Salario Estimado</div>
             </div>
         </div>
     </div>
     
-    <div style="text-align: center; margin-top: 40px; color: #666; font-size: 0.9rem;">
-        © {datetime.datetime.now().year} Socorrista Pro • Versión 2.2 • Todos los derechos reservados
+    <div class="footer">
+        © {datetime.datetime.now().year} Socorrista Pro • Versión 2.2
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)  # Cierra main-content
     
-    # Modal del calendario
+    # Modal simple
     st.markdown("""
-    <div id="calendar-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
-        <div style="background: white; border-radius: 20px; padding: 30px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0; color: #333;">📅 Calendario de Turnos</h2>
-                <button onclick="closeCalendarModal()" style="background: #F37021; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer;">×</button>
+    <div id="calendar-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; padding: 15px;">
+        <div style="background: white; border-radius: 15px; padding: 20px; max-width: 400px; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: #333; font-size: 1.2rem;">📅 Calendario de Turnos</h3>
+                <button onclick="closeCalendarModal()" style="background: #F37021; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 1rem; cursor: pointer;">×</button>
             </div>
-            <div style="color: #666; margin-bottom: 20px;">
-                <p>Esta funcionalidad está en desarrollo. Próximamente podrás ver tu calendario completo aquí.</p>
+            <div style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">
+                <p>Próximamente podrás gestionar tus turnos de forma completa.</p>
             </div>
-            <button onclick="closeCalendarModal()" style="background: #F37021; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 600;">Cerrar</button>
+            <button onclick="closeCalendarModal()" style="background: #F37021; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%;">Cerrar</button>
         </div>
     </div>
     
@@ -537,7 +403,7 @@ def create_dashboard():
     """, unsafe_allow_html=True)
 
 def create_other_view(view_name):
-    """Crea vistas para otras secciones"""
+    """Crea vistas para otras secciones - Versión compacta"""
     view_titles = {
         "asistencia": "Control de Asistencia",
         "nomina": "Nómina y Pagos", 
@@ -555,28 +421,28 @@ def create_other_view(view_name):
     create_header()
     
     st.markdown(f"""
-    <div style="max-width: 800px; margin: 0 auto; padding: 40px 25px;">
-        <div style="text-align: center; margin-bottom: 40px;">
-            <div style="font-size: 3rem; margin-bottom: 20px; color: {PRIMARY_COLOR};">📋</div>
-            <h1 style="color: {SECONDARY_COLOR}; margin-bottom: 15px; font-size: 2.5rem; font-weight: 800;">
+    <div class="main-content" style="max-width: 800px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div style="font-size: 2rem; margin-bottom: 10px; color: {PRIMARY_COLOR};">📋</div>
+            <h2 style="color: {SECONDARY_COLOR}; margin-bottom: 8px; font-size: 1.4rem; font-weight: 700;">
                 {title}
-            </h1>
-            <p style="color: #666; font-size: 1.2rem;">
+            </h2>
+            <p style="color: #666; font-size: 0.9rem;">
                 Esta funcionalidad está en desarrollo activo
             </p>
         </div>
         
-        <div style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-bottom: 30px;">
-            <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 20px; font-size: 1.4rem; font-weight: 700;">
+        <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 20px;">
+            <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 15px; font-size: 1.1rem; font-weight: 700;">
                 🚀 Próximamente
             </h3>
-            <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
-                Estamos trabajando para implementar esta funcionalidad. En las próximas semanas podrás acceder a todas las características avanzadas.
+            <p style="color: #666; line-height: 1.5; margin-bottom: 15px; font-size: 0.9rem;">
+                Estamos trabajando para implementar esta funcionalidad con los más altos estándares de calidad.
             </p>
         </div>
         
         <div style="text-align: center;">
-            <a href="?" style="background: {PRIMARY_COLOR}; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; display: inline-block; font-weight: 600;">
+            <a href="?" style="background: {PRIMARY_COLOR}; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; font-weight: 600; font-size: 0.9rem;">
                 ← Volver al Dashboard
             </a>
         </div>
