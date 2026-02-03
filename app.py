@@ -30,7 +30,7 @@ SAMPLE_SCHEDULE = {
 }
 
 # ----------------------------
-# ESTILOS CSS OPTIMIZADOS - CORREGIDO
+# ESTILOS CSS SIMPLIFICADOS
 # ----------------------------
 def apply_custom_css():
     """Aplica estilos CSS personalizados"""
@@ -136,31 +136,6 @@ def apply_custom_css():
         box-shadow: 0 10px 30px rgba(26, 82, 118, 0.2);
     }}
     
-    .page-title-section::before {{
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: 
-            radial-gradient(circle at 20% 80%, rgba(243, 112, 33, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 40% 40%, rgba(255, 140, 66, 0.1) 0%, transparent 50%);
-        opacity: 0.6;
-    }}
-    
-    .page-title-section::after {{
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="wave" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M0,50 Q25,40 50,50 T100,50" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/></pattern></defs><rect width="100" height="100" fill="url(%23wave)"/></svg>');
-        opacity: 0.3;
-    }}
-    
     .page-title {{
         color: white;
         font-size: 2.8rem;
@@ -186,27 +161,23 @@ def apply_custom_css():
         font-weight: 300;
     }}
     
-    /* GRID DE TARJETAS - CORREGIDO DEFINITIVAMENTE */
-    .dashboard-container {{
-        padding: 40px 25px;
+    /* CONTENEDOR DE TARJETAS - SIMPLIFICADO */
+    .cards-container {{
         max-width: 1200px;
         margin: 0 auto;
-        width: 100%;
-        box-sizing: border-box;
-        position: relative;
+        padding: 40px 25px;
     }}
     
-    /* DESKTOP: 3 columnas x 2 filas - CORREGIDO */
-    .dashboard-grid {{
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
+    /* FILAS DE TARJETAS - ESCRITORIO */
+    .card-row {{
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 25px;
         gap: 25px;
         width: 100%;
-        justify-items: stretch;  /* Cambiado de center a stretch */
-        align-items: stretch;
     }}
     
-    /* TARJETAS PROFESIONALES - CORREGIDO */
+    /* TARJETAS INDIVIDUALES */
     .dashboard-card {{
         background: linear-gradient(145deg, #ffffff, #f5f5f5);
         border-radius: 20px;
@@ -221,10 +192,9 @@ def apply_custom_css():
         justify-content: space-between;
         height: 100%;
         min-height: 220px;
-        width: 100%;  /* Eliminado max-width */
+        flex: 1;
         position: relative;
         overflow: hidden;
-        box-sizing: border-box;  /* Añadido */
     }}
     
     .dashboard-card::before {{
@@ -281,7 +251,7 @@ def apply_custom_css():
         opacity: 0.9;
     }}
     
-    /* ESTADÍSTICAS PROFESIONALES */
+    /* ESTADÍSTICAS */
     .stats-container {{
         background: white;
         border-radius: 20px;
@@ -338,7 +308,7 @@ def apply_custom_css():
         background-clip: text;
     }}
     
-    /* MODAL DE CALENDARIO PROFESIONAL */
+    /* MODAL DE CALENDARIO */
     .calendar-modal-overlay {{
         position: fixed;
         top: 0;
@@ -416,14 +386,7 @@ def apply_custom_css():
         box-shadow: 0 8px 20px rgba(229, 90, 26, 0.4);
     }}
     
-    .modal-body {{
-        flex: 1;
-        overflow: hidden;
-        padding: 0;
-        background: #f5f7fa;
-    }}
-    
-    /* CALENDARIO PROFESIONAL - MALLA DE TURNOS */
+    /* CALENDARIO */
     .professional-calendar {{
         height: 100%;
         display: flex;
@@ -450,7 +413,6 @@ def apply_custom_css():
         background: linear-gradient(135deg, #f5f7fa 0%, #e8ecef 100%);
     }}
     
-    /* Grid de días - Malla profesional CORREGIDA */
     .calendar-days-grid {{
         display: grid;
         grid-template-columns: repeat(7, 1fr);
@@ -483,13 +445,6 @@ def apply_custom_css():
         border-bottom: 1px solid #f0f0f0;
     }}
     
-    .calendar-day-cell:hover {{
-        background: #f8f9fa;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        z-index: 1;
-    }}
-    
     .day-number {{
         font-size: 1.2rem;
         font-weight: 700;
@@ -512,10 +467,6 @@ def apply_custom_css():
         font-weight: 800;
     }}
     
-    .weekend-cell {{
-        background: #f9fafc;
-    }}
-    
     .shift-item {{
         background: linear-gradient(135deg, {PRIMARY_COLOR}, #ff8c42);
         color: white;
@@ -529,52 +480,7 @@ def apply_custom_css():
         box-shadow: 0 3px 10px rgba(243, 112, 33, 0.2);
     }}
     
-    .shift-item:hover {{
-        background: linear-gradient(135deg, #e55a1a, #f37021);
-        transform: translateX(3px);
-        box-shadow: 0 5px 15px rgba(229, 90, 26, 0.3);
-    }}
-    
-    .shift-time {{
-        font-weight: 700;
-        font-size: 0.95rem;
-        margin-bottom: 3px;
-    }}
-    
-    .shift-type {{
-        font-size: 0.8rem;
-        opacity: 0.9;
-        font-weight: 500;
-    }}
-    
-    .calendar-summary {{
-        background: white;
-        padding: 30px;
-        border-top: 1px solid #e8ecef;
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
-    }}
-    
-    .summary-grid {{
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-    }}
-    
-    .summary-card {{
-        background: linear-gradient(135deg, #f8f9fa, #ffffff);
-        padding: 20px;
-        border-radius: 12px;
-        border-left: 5px solid {PRIMARY_COLOR};
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        transition: transform 0.3s ease;
-    }}
-    
-    .summary-card:hover {{
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    }}
-    
-    /* BOTONES PROFESIONALES */
+    /* BOTONES */
     .action-buttons {{
         display: flex;
         gap: 15px;
@@ -608,26 +514,7 @@ def apply_custom_css():
         box-shadow: 0 10px 25px rgba(229, 90, 26, 0.4);
     }}
     
-    .btn-secondary {{
-        background: white;
-        color: {PRIMARY_COLOR};
-        border: 2px solid {PRIMARY_COLOR};
-        padding: 15px 30px;
-        border-radius: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-family: 'Segoe UI', sans-serif;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    }}
-    
-    .btn-secondary:hover {{
-        background: #fff9f5;
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(243, 112, 33, 0.2);
-    }}
-    
-    /* RESPONSIVE PARA MÓVIL - 2 columnas x 3 filas - CORREGIDO */
+    /* RESPONSIVE PARA MÓVIL */
     @media (max-width: 992px) {{
         .main-header {{
             padding: 12px 20px;
@@ -654,20 +541,20 @@ def apply_custom_css():
             padding: 0 15px;
         }}
         
-        .dashboard-container {{
+        .cards-container {{
             padding: 30px 20px;
         }}
         
-        /* MÓVIL: 2 columnas x 3 filas - AHORA SÍ FUNCIONA */
-        .dashboard-grid {{
-            grid-template-columns: repeat(2, 1fr) !important;
+        /* MÓVIL: 3 filas x 2 columnas */
+        .card-row {{
+            flex-direction: column;
+            margin-bottom: 20px;
             gap: 20px;
         }}
         
         .dashboard-card {{
             min-height: 200px;
             padding: 22px;
-            width: 100%;
         }}
         
         .card-icon {{
@@ -703,63 +590,9 @@ def apply_custom_css():
         .stat-value {{
             font-size: 2rem;
         }}
-        
-        .calendar-modal {{
-            width: 98%;
-            height: 90vh;
-        }}
-        
-        .modal-header {{
-            padding: 20px;
-        }}
-        
-        .modal-title {{
-            font-size: 1.6rem;
-        }}
-        
-        .calendar-controls {{
-            flex-direction: column;
-            align-items: stretch;
-            gap: 15px;
-            padding: 20px;
-        }}
-        
-        .calendar-days-grid {{
-            grid-template-columns: repeat(7, 1fr);
-        }}
-        
-        .calendar-day-cell {{
-            min-height: 120px;
-            padding: 12px;
-        }}
-        
-        .day-number {{
-            font-size: 1rem;
-        }}
-        
-        .shift-item {{
-            padding: 8px 10px;
-            font-size: 0.8rem;
-        }}
-        
-        .action-buttons {{
-            flex-direction: column;
-            gap: 12px;
-        }}
-        
-        .btn-primary, .btn-secondary {{
-            width: 100%;
-            padding: 14px 24px;
-        }}
     }}
     
     @media (max-width: 576px) {{
-        /* MÓVIL PEQUEÑO: 2 columnas x 3 filas - CORREGIDO */
-        .dashboard-grid {{
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 15px;
-        }}
-        
         .dashboard-card {{
             min-height: 180px;
             padding: 18px;
@@ -782,27 +615,6 @@ def apply_custom_css():
         .stats-grid {{
             grid-template-columns: repeat(2, 1fr);
         }}
-        
-        .calendar-days-grid {{
-            grid-template-columns: repeat(7, 1fr);
-        }}
-        
-        .calendar-day-cell {{
-            min-height: 100px;
-            padding: 10px;
-        }}
-        
-        .calendar-day-header {{
-            padding: 15px 5px;
-            font-size: 0.85rem;
-        }}
-        
-        /* Para pantallas muy pequeñas, cambiar a 1 columna */
-        @media (max-width: 400px) {{
-            .dashboard-grid {{
-                grid-template-columns: 1fr !important;
-            }}
-        }}
     }}
     
     /* OCULTAR ELEMENTOS DE STREAMLIT */
@@ -818,7 +630,7 @@ def apply_custom_css():
         display: none !important;
     }}
     
-    /* ANIMACIONES MEJORADAS */
+    /* ANIMACIONES */
     @keyframes fadeIn {{
         from {{ opacity: 0; transform: translateY(20px); }}
         to {{ opacity: 1; transform: translateY(0); }}
@@ -826,27 +638,6 @@ def apply_custom_css():
     
     .fade-in {{
         animation: fadeIn 0.6s ease-out;
-    }}
-    
-    /* SCROLLBAR PERSONALIZADO */
-    ::-webkit-scrollbar {{
-        width: 10px;
-        height: 10px;
-    }}
-    
-    ::-webkit-scrollbar-track {{
-        background: #f1f1f1;
-        border-radius: 10px;
-    }}
-    
-    ::-webkit-scrollbar-thumb {{
-        background: linear-gradient(135deg, {PRIMARY_COLOR}, #ff8c42);
-        border-radius: 10px;
-        border: 2px solid #f1f1f1;
-    }}
-    
-    ::-webkit-scrollbar-thumb:hover {{
-        background: linear-gradient(135deg, #e55a1a, #f37021);
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -876,58 +667,45 @@ def create_header():
 
 def create_professional_calendar():
     """Crea un calendario profesional tipo malla de turnos"""
-    # Estado para el mes actual
     if 'calendar_month' not in st.session_state:
         st.session_state.calendar_month = datetime.datetime.now().month
         st.session_state.calendar_year = datetime.datetime.now().year
     
-    # Navegación del calendario
     current_date = datetime.date(st.session_state.calendar_year, st.session_state.calendar_month, 1)
     month_name = current_date.strftime("%B %Y").upper()
     
-    # Generar grid del calendario
     first_day = current_date
     last_day = datetime.date(st.session_state.calendar_year, 
                            st.session_state.calendar_month, 
                            calendar.monthrange(st.session_state.calendar_year, 
                                              st.session_state.calendar_month)[1])
     
-    # Cabeceras de días
     days_of_week = ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"]
     
-    # Crear HTML del calendario
     calendar_html = '<div class="calendar-days-grid">'
     
-    # Mostrar cabeceras
     for day in days_of_week:
         calendar_html += f'<div class="calendar-day-header">{day}</div>'
     
-    # Espacios en blanco para el primer día
-    first_weekday = (first_day.weekday() + 1) % 7  # Lunes = 0
+    first_weekday = (first_day.weekday() + 1) % 7
     for _ in range(first_weekday):
         calendar_html += '<div class="calendar-day-cell"></div>'
     
-    # Días del mes
     current_day = first_day
     while current_day <= last_day:
         day_class = "calendar-day-cell"
         
-        # Verificar si es fin de semana
         if current_day.weekday() >= 5:
             day_class += " weekend-cell"
         
-        # Verificar si es hoy
         if current_day == datetime.date.today():
             day_class += " today-cell"
         
-        # Verificar si tiene turnos
         date_str = current_day.strftime("%Y-%m-%d")
         has_shifts = date_str in SAMPLE_SCHEDULE
         
-        # Crear el día
         calendar_html += f'<div class="{day_class}">'
         
-        # Número del día con indicador de fin de semana
         weekday_indicator = "⚪" if current_day.weekday() < 5 else "🔵"
         calendar_html += f'''
         <div class="day-number">
@@ -936,7 +714,6 @@ def create_professional_calendar():
         </div>
         '''
         
-        # Mostrar turnos si existen
         if has_shifts:
             for schedule in SAMPLE_SCHEDULE[date_str]:
                 calendar_html += f"""
@@ -952,7 +729,6 @@ def create_professional_calendar():
                 </div>
                 """
         else:
-            # Mostrar estado de no turnos
             calendar_html += '''
             <div style="color: #999; font-size: 0.8rem; padding: 8px 0; text-align: center;">
                 Sin turnos
@@ -964,7 +740,6 @@ def create_professional_calendar():
     
     calendar_html += '</div>'
     
-    # Calcular estadísticas
     total_turnos = sum(1 for date in SAMPLE_SCHEDULE 
                       if datetime.datetime.strptime(date, "%Y-%m-%d").date().month == st.session_state.calendar_month)
     
@@ -995,58 +770,10 @@ def create_calendar_modal():
                                 Siguiente Mes →
                             </button>
                         </div>
-                        
-                        <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 20px; height: 20px; background: linear-gradient(135deg, {PRIMARY_COLOR}, #ff8c42); border-radius: 4px;"></div>
-                                <span style="font-size: 0.95rem; font-weight: 500;">Turno asignado</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 20px; height: 20px; background: rgba(243, 112, 33, 0.15); border: 2px solid {PRIMARY_COLOR}; border-radius: 4px;"></div>
-                                <span style="font-size: 0.95rem; font-weight: 500;">Hoy</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 20px; height: 20px; background: #f9fafc; border: 1px solid #e0e0e0; border-radius: 4px;"></div>
-                                <span style="font-size: 0.95rem; font-weight: 500;">Fin de semana</span>
-                            </div>
-                        </div>
                     </div>
                     
                     <div class="calendar-main">
                         {calendar_html}
-                    </div>
-                    
-                    <div class="calendar-summary">
-                        <div class="summary-grid">
-                            <div class="summary-card">
-                                <div style="color: {SECONDARY_COLOR}; font-size: 1.1rem; margin-bottom: 8px; font-weight: 600;">📅 Turnos del Mes</div>
-                                <div style="color: {PRIMARY_COLOR}; font-size: 2.2rem; font-weight: 800;">{total_turnos}</div>
-                            </div>
-                            <div class="summary-card">
-                                <div style="color: {SECONDARY_COLOR}; font-size: 1.1rem; margin-bottom: 8px; font-weight: 600;">⏰ Horas Totales</div>
-                                <div style="color: {PRIMARY_COLOR}; font-size: 2.2rem; font-weight: 800;">{total_turnos * 6}h</div>
-                            </div>
-                            <div class="summary-card">
-                                <div style="color: {SECONDARY_COLOR}; font-size: 1.1rem; margin-bottom: 8px; font-weight: 600;">👥 Socorristas</div>
-                                <div style="color: {PRIMARY_COLOR}; font-size: 2.2rem; font-weight: 800;">5</div>
-                            </div>
-                            <div class="summary-card">
-                                <div style="color: {SECONDARY_COLOR}; font-size: 1.1rem; margin-bottom: 8px; font-weight: 600;">✅ Disponibilidad</div>
-                                <div style="color: {PRIMARY_COLOR}; font-size: 2.2rem; font-weight: 800;">95%</div>
-                            </div>
-                        </div>
-                        
-                        <div class="action-buttons" style="margin-top: 25px;">
-                            <button class="btn-secondary" onclick="window.print()" style="padding: 12px 24px;">
-                                🖨️ Imprimir Calendario
-                            </button>
-                            <button class="btn-secondary" onclick="alert('Exportando a Excel...')" style="padding: 12px 24px;">
-                                📊 Exportar Excel
-                            </button>
-                            <button class="btn-primary" onclick="closeCalendarModal()" style="padding: 12px 24px;">
-                                Cerrar Calendario
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1085,11 +812,6 @@ def create_calendar_modal():
                             <div style="font-weight: 700; color: #333; font-size: 1.1rem;" id="shift-person"></div>
                         </div>
                     </div>
-                    <div>
-                        <div style="color: #666; font-size: 0.95rem; margin-bottom: 8px; font-weight: 500;">📍 Ubicación</div>
-                        <div style="font-weight: 700; color: #333; font-size: 1.1rem;">Piscina Municipal Central</div>
-                        <div style="color: #666; font-size: 0.9rem; margin-top: 5px; opacity: 0.8;">Av. Deportes, 123 - Zona Centro</div>
-                    </div>
                 </div>
                 
                 <div style="display: flex; gap: 12px;">
@@ -1105,7 +827,6 @@ def create_calendar_modal():
     </div>
     
     <script>
-    // Funciones para el calendario
     function openCalendarModal() {{
         document.getElementById('calendar-modal').style.display = 'flex';
         document.body.style.overflow = 'hidden';
@@ -1121,15 +842,13 @@ def create_calendar_modal():
     }}
     
     function changeMonth(direction) {{
-        // Esta función requeriría una recarga con Streamlit para cambiar el mes
         if(direction === -1) {{
-            alert('Navegando al mes anterior... (Para funcionalidad completa se requiere integración con Streamlit)');
+            alert('Navegando al mes anterior...');
         }} else {{
-            alert('Navegando al mes siguiente... (Para funcionalidad completa se requiere integración con Streamlit)');
+            alert('Navegando al mes siguiente...');
         }}
     }}
     
-    // Cerrar modal con ESC
     document.addEventListener('keydown', function(event) {{
         if (event.key === 'Escape') {{
             closeCalendarModal();
@@ -1137,7 +856,6 @@ def create_calendar_modal():
         }}
     }});
     
-    // Cerrar modal al hacer clic fuera
     document.addEventListener('click', function(event) {{
         if (event.target.classList.contains('calendar-modal-overlay')) {{
             closeCalendarModal();
@@ -1161,41 +879,73 @@ def create_dashboard():
     </div>
     """, unsafe_allow_html=True)
     
-    # Grid de tarjetas - Desktop: 3 columnas x 2 filas, Móvil: 2 columnas x 3 filas
-    st.markdown('<div class="dashboard-container fade-in">', unsafe_allow_html=True)
-    st.markdown('<div class="dashboard-grid">', unsafe_allow_html=True)
+    # Contenedor de tarjetas
+    st.markdown('<div class="cards-container fade-in">', unsafe_allow_html=True)
     
-    cards = [
-        ("Horarios", "📅", "Consulta y gestiona tus turnos programados", "horarios"),
-        ("Control de Asistencia", "✅", "Registro de entrada y salida en tiempo real", "asistencia"),
-        ("Nómina y Pagos", "💰", "Consulta tus recibos y estados de pago", "nomina"),
-        ("Incidencias", "⚠️", "Reporta y consulta incidencias", "incidencias"),
-        ("Formación", "🎓", "Accede a cursos y certificaciones", "formacion"),
-        ("Comunicados", "📢", "Últimas noticias y anuncios", "comunicados"),
-    ]
+    # Fila 1: 3 tarjetas
+    st.markdown('<div class="card-row">', unsafe_allow_html=True)
     
-    for title, icon, desc, view in cards:
-        if view == "horarios":
-            # Para Horarios, usamos onclick para abrir el modal
-            card_html = f"""
-            <div class="dashboard-card" onclick="openCalendarModal()">
-                <div class="card-icon">{icon}</div>
-                <h3 class="card-title">{title}</h3>
-                <p class="card-desc">{desc}</p>
-            </div>
-            """
-        else:
-            # Para otras vistas, usamos enlace normal
-            card_html = f"""
-            <a href="?view={view}" class="dashboard-card">
-                <div class="card-icon">{icon}</div>
-                <h3 class="card-title">{title}</h3>
-                <p class="card-desc">{desc}</p>
-            </a>
-            """
-        st.markdown(card_html, unsafe_allow_html=True)
+    # Tarjeta 1: Horarios
+    st.markdown(f"""
+    <div class="dashboard-card" onclick="openCalendarModal()">
+        <div class="card-icon">📅</div>
+        <h3 class="card-title">Horarios</h3>
+        <p class="card-desc">Consulta y gestiona tus turnos programados</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    st.markdown('</div></div>', unsafe_allow_html=True)
+    # Tarjeta 2: Control de Asistencia
+    st.markdown(f"""
+    <a href="?view=asistencia" class="dashboard-card">
+        <div class="card-icon">✅</div>
+        <h3 class="card-title">Control de Asistencia</h3>
+        <p class="card-desc">Registro de entrada y salida en tiempo real</p>
+    </a>
+    """, unsafe_allow_html=True)
+    
+    # Tarjeta 3: Nómina y Pagos
+    st.markdown(f"""
+    <a href="?view=nomina" class="dashboard-card">
+        <div class="card-icon">💰</div>
+        <h3 class="card-title">Nómina y Pagos</h3>
+        <p class="card-desc">Consulta tus recibos y estados de pago</p>
+    </a>
+    """, unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)  # Cierra la primera fila
+    
+    # Fila 2: 3 tarjetas
+    st.markdown('<div class="card-row">', unsafe_allow_html=True)
+    
+    # Tarjeta 4: Incidencias
+    st.markdown(f"""
+    <a href="?view=incidencias" class="dashboard-card">
+        <div class="card-icon">⚠️</div>
+        <h3 class="card-title">Incidencias</h3>
+        <p class="card-desc">Reporta y consulta incidencias</p>
+    </a>
+    """, unsafe_allow_html=True)
+    
+    # Tarjeta 5: Formación
+    st.markdown(f"""
+    <a href="?view=formacion" class="dashboard-card">
+        <div class="card-icon">🎓</div>
+        <h3 class="card-title">Formación</h3>
+        <p class="card-desc">Accede a cursos y certificaciones</p>
+    </a>
+    """, unsafe_allow_html=True)
+    
+    # Tarjeta 6: Comunicados
+    st.markdown(f"""
+    <a href="?view=comunicados" class="dashboard-card">
+        <div class="card-icon">📢</div>
+        <h3 class="card-title">Comunicados</h3>
+        <p class="card-desc">Últimas noticias y anuncios</p>
+    </a>
+    """, unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)  # Cierra la segunda fila
+    st.markdown('</div>', unsafe_allow_html=True)  # Cierra cards-container
     
     # Estadísticas rápidas
     st.markdown(f"""
@@ -1251,19 +1001,12 @@ def create_other_view(view_name):
     }
     
     title = view_titles.get(view_name, view_name.capitalize())
-    icon = {
-        "asistencia": "✅",
-        "nomina": "💰",
-        "incidencias": "⚠️",
-        "formacion": "🎓",
-        "comunicados": "📢"
-    }.get(view_name, "📋")
     
     st.markdown(f"""
     <div class="main-content">
         <div class="fade-in" style="max-width: 800px; margin: 0 auto; padding: 40px 25px;">
             <div style="text-align: center; margin-bottom: 40px;">
-                <div style="font-size: 4rem; margin-bottom: 20px; color: {PRIMARY_COLOR};">{icon}</div>
+                <div style="font-size: 4rem; margin-bottom: 20px; color: {PRIMARY_COLOR};">📋</div>
                 <h1 style="color: {SECONDARY_COLOR}; margin-bottom: 15px; font-family: 'Montserrat', sans-serif; font-size: 2.5rem; font-weight: 800;">
                     {title}
                 </h1>
@@ -1272,9 +1015,7 @@ def create_other_view(view_name):
                 </p>
             </div>
             
-            <div style="background: linear-gradient(145deg, #ffffff, #f8f9fa); border-radius: 20px; padding: 40px; box-shadow: 0 15px 40px rgba(0,0,0,0.08); margin-bottom: 35px; position: relative; overflow: hidden;">
-                <div style="position: absolute; top: 0; right: 0; width: 100px; height: 100px; background: linear-gradient(135deg, rgba(243, 112, 33, 0.1), transparent); border-radius: 0 20px 0 100px;"></div>
-                
+            <div style="background: linear-gradient(145deg, #ffffff, #f8f9fa); border-radius: 20px; padding: 40px; box-shadow: 0 15px 40px rgba(0,0,0,0.08); margin-bottom: 35px;">
                 <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 25px; font-family: 'Segoe UI', sans-serif; font-size: 1.6rem; font-weight: 700;">
                     🚀 Próximamente
                 </h3>
@@ -1282,25 +1023,12 @@ def create_other_view(view_name):
                     Estamos trabajando arduamente para implementar esta funcionalidad con los más altos estándares de calidad. 
                     En las próximas semanas podrás acceder a todas las características avanzadas de <strong>{title.lower()}</strong>.
                 </p>
-                
-                <div style="background: linear-gradient(135deg, #f8f9fa, #e8ecef); padding: 25px; border-radius: 15px; margin-top: 30px; border-left: 5px solid {PRIMARY_COLOR};">
-                    <h4 style="color: {PRIMARY_COLOR}; margin-bottom: 20px; font-size: 1.3rem; font-weight: 700;">📅 Cronograma de Lanzamiento</h4>
-                    <ul style="color: #666; line-height: 1.8; padding-left: 25px; font-size: 1rem;">
-                        <li style="margin-bottom: 12px;"><strong>Fase 1:</strong> Diseño y planificación (Completado)</li>
-                        <li style="margin-bottom: 12px;"><strong>Fase 2:</strong> Desarrollo del backend (En progreso)</li>
-                        <li style="margin-bottom: 12px;"><strong>Fase 3:</strong> Pruebas y ajustes (Próximamente)</li>
-                        <li style="margin-bottom: 12px;"><strong>Fase 4:</strong> Lanzamiento oficial (Febrero 2024)</li>
-                    </ul>
-                </div>
             </div>
             
             <div class="action-buttons">
                 <a href="?" class="btn-primary" style="padding: 15px 35px;">
                     ← Volver al Dashboard
                 </a>
-                <button class="btn-secondary" style="padding: 15px 35px;" onclick="alert('Te notificaremos cuando esté disponible. ¡Gracias por tu paciencia!')">
-                    🔔 Notificarme
-                </button>
             </div>
         </div>
     </div>
@@ -1323,7 +1051,6 @@ def main():
     
     # Mostrar vista correspondiente
     if view == "horarios":
-        # Si alguien accede directamente a ?view=horarios, mostramos el modal
         st.markdown('<script>openCalendarModal();</script>', unsafe_allow_html=True)
         create_dashboard()
     elif view in ["asistencia", "nomina", "incidencias", "formacion", "comunicados"]:
