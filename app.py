@@ -30,29 +30,15 @@ SAMPLE_SCHEDULE = {
 }
 
 # ----------------------------
-# ESTILOS CSS - SOLUCIÓN DEFINITIVA
+# ESTILOS CSS - SOLO AJUSTES MÓVIL
 # ----------------------------
 def apply_custom_css():
-    """Aplica estilos CSS personalizados"""
+    """Aplica estilos CSS personalizados - SOLO AJUSTES MÓVIL"""
     st.markdown(f"""
     <style>
-    /* RESET COMPLETO */
+    /* RESET BÁSICO - NO TOCAR ESCRITORIO */
     .stApp {{
         background: {BG_COLOR};
-        padding: 0;
-        margin: 0;
-        min-height: 100vh;
-    }}
-    
-    /* ELIMINAR ESPACIOS DE STREAMLIT */
-    .block-container {{
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-        max-width: 100% !important;
-    }}
-    
-    [data-testid="stAppViewContainer"] {{
-        padding: 0 !important;
     }}
     
     /* HEADER */
@@ -90,7 +76,10 @@ def apply_custom_css():
         box-sizing: border-box;
     }}
     
-    /* TARJETAS ESCRITORIO - ESTILOS BÁSICOS */
+    /* ====== VERSIÓN ESCRITORIO (NO TOCAR) ====== */
+    /* Las tarjetas de escritorio funcionan perfecto - mantener igual */
+    
+    /* TARJETAS ESCRITORIO */
     .dashboard-card {{
         background: linear-gradient(145deg, #ffffff, #f5f5f5);
         border-radius: 20px;
@@ -152,30 +141,29 @@ def apply_custom_css():
         line-height: 1.5;
     }}
     
-    /* MÓVIL: ICONOS SIN CAJAS - 2 COLUMNAS, 3 FILAS */
+    /* ====== VERSIÓN MÓVIL - AJUSTES ESPECÍFICOS ====== */
     @media (max-width: 768px) {{
-        /* Ocultar las columnas de Streamlit en móvil */
-        .st-emotion-cache-1v0mbdj {{
-            display: none !important;
+        /* CONTENEDOR MÓVIL - NUEVO ENFOQUE */
+        .mobile-main-container {{
+            padding: 20px 15px !important;
+            max-width: 100% !important;
+            margin: 0 auto;
         }}
         
-        /* Mostrar el grid de iconos en móvil */
-        .mobile-icons-grid {{
+        /* GRID MÓVIL - 2 COLUMNAS, 3 FILAS */
+        .mobile-grid-container {{
             display: grid !important;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            width: 100%;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 12px !important;
+            width: 100% !important;
+            margin: 0 auto !important;
         }}
         
-        .main-content {{
-            padding: 20px 15px;
-        }}
-        
-        /* ICONOS PARA MÓVIL - SIN CAJAS */
-        .mobile-icon-item {{
+        /* TARJETA MÓVIL */
+        .mobile-card-item {{
             background: white;
             border-radius: 15px;
-            padding: 20px;
+            padding: 18px 12px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             display: flex;
             flex-direction: column;
@@ -183,60 +171,109 @@ def apply_custom_css():
             justify-content: center;
             text-align: center;
             text-decoration: none !important;
-            border: 2px solid transparent;
+            border: 1px solid rgba(0,0,0,0.05);
             transition: all 0.3s ease;
-            min-height: 140px;
-            cursor: pointer;
+            min-height: 130px;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }}
         
-        .mobile-icon-item:hover {{
+        .mobile-card-item:hover {{
             border-color: {PRIMARY_COLOR};
             transform: translateY(-3px);
             box-shadow: 0 8px 20px rgba(243, 112, 33, 0.15);
         }}
         
         .mobile-icon {{
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             background: linear-gradient(135deg, {PRIMARY_COLOR}, #ff944d);
-            border-radius: 15px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 12px;
-            font-size: 26px;
+            margin-bottom: 10px;
+            font-size: 22px;
             color: white;
         }}
         
-        .mobile-icon-title {{
-            font-size: 1rem;
+        .mobile-card-title {{
+            font-size: 0.85rem !important;
             font-weight: 600;
             color: {SECONDARY_COLOR};
             margin: 0;
             line-height: 1.2;
+            text-align: center;
+            padding: 0 5px;
         }}
         
-        .mobile-icon-desc {{
-            display: none; /* Ocultar descripción en móvil */
-        }}
-        
+        /* AJUSTES DE RESPONSIVIDAD */
         .page-title {{
-            font-size: 2.2rem;
+            font-size: 2.2rem !important;
         }}
         
         .page-title-section {{
-            padding: 25px 15px;
+            padding: 25px 15px !important;
         }}
-    }}
-    
-    /* ESCRITORIO: OCULTAR EL GRID MÓVIL */
-    @media (min-width: 769px) {{
-        .mobile-icons-grid {{
+        
+        .main-header {{
+            padding: 12px 15px !important;
+        }}
+        
+        /* OCULTAR VERSIÓN ESCRITORIO EN MÓVIL */
+        .desktop-version {{
             display: none !important;
         }}
+        
+        /* MOSTRAR VERSIÓN MÓVIL */
+        .mobile-version {{
+            display: block !important;
+        }}
+        
+        /* AJUSTES PARA PANTALLAS MUY PEQUEÑAS */
+        @media (max-width: 380px) {{
+            .mobile-grid-container {{
+                gap: 8px !important;
+            }}
+            
+            .mobile-card-item {{
+                padding: 15px 10px !important;
+                min-height: 120px !important;
+            }}
+            
+            .mobile-icon {{
+                width: 45px !important;
+                height: 45px !important;
+                font-size: 20px !important;
+            }}
+            
+            .mobile-card-title {{
+                font-size: 0.8rem !important;
+            }}
+        }}
+        
+        /* AJUSTES PARA PANTALLAS ENTRE 380px Y 480px */
+        @media (min-width: 381px) and (max-width: 480px) {{
+            .mobile-grid-container {{
+                gap: 10px !important;
+            }}
+        }}
     }}
     
-    /* ESTADÍSTICAS */
+    /* ====== VERSIÓN ESCRITORIO - MANTENER VISIBLE ====== */
+    @media (min-width: 769px) {{
+        /* OCULTAR VERSIÓN MÓVIL EN ESCRITORIO */
+        .mobile-version {{
+            display: none !important;
+        }}
+        
+        /* MOSTRAR VERSIÓN ESCRITORIO */
+        .desktop-version {{
+            display: block !important;
+        }}
+    }}
+    
+    /* ESTADÍSTICAS - COMÚN PARA AMBAS VERSIONES */
     .stats-container {{
         background: white;
         border-radius: 20px;
@@ -256,33 +293,19 @@ def apply_custom_css():
     
     @media (max-width: 768px) {{
         .stats-grid {{
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 15px !important;
         }}
         
         .stats-container {{
-            padding: 20px;
-            margin-top: 25px;
+            padding: 20px !important;
+            margin-top: 25px !important;
         }}
     }}
     
     @media (max-width: 480px) {{
         .stats-grid {{
-            grid-template-columns: 1fr;
-        }}
-        
-        .mobile-icons-grid {{
-            gap: 15px;
-        }}
-        
-        .mobile-icon-item {{
-            min-height: 120px;
-            padding: 15px;
-        }}
-        
-        .mobile-icon {{
-            width: 50px;
-            height: 50px;
-            font-size: 22px;
+            grid-template-columns: 1fr !important;
         }}
     }}
     
@@ -349,10 +372,12 @@ def create_dashboard():
     </div>
     """, unsafe_allow_html=True)
     
-    # Contenedor principal
+    # Contenedor principal - ESCRITORIO
     st.markdown('<div class="main-content">', unsafe_allow_html=True)
     
-    # **VERSIÓN ESCRITORIO: 3 columnas usando Streamlit**
+    # **VERSIÓN ESCRITORIO: 3 columnas usando Streamlit - NO MODIFICAR**
+    st.markdown('<div class="desktop-version">', unsafe_allow_html=True)
+    
     # Fila 1: 3 tarjetas
     col1, col2, col3 = st.columns(3, gap="large")
     
@@ -413,51 +438,51 @@ def create_dashboard():
         </a>
         """, unsafe_allow_html=True)
     
-    # **VERSIÓN MÓVIL: Grid de iconos - 2 columnas, 3 filas**
+    st.markdown('</div>', unsafe_allow_html=True)  # Cierra desktop-version
+    
+    # **VERSIÓN MÓVIL: Nuevo Grid CSS - 2 columnas, 3 filas**
     st.markdown("""
-    <div class="mobile-icons-grid" style="display: none;">
-        <!-- Fila 1 móvil -->
-        <div class="mobile-icon-item" onclick="openCalendarModal()">
-            <div class="mobile-icon">📅</div>
-            <h3 class="mobile-icon-title">Horarios</h3>
-            <p class="mobile-icon-desc">Consulta y gestiona tus turnos programados</p>
+    <div class="mobile-version">
+        <div class="mobile-main-container">
+            <div class="mobile-grid-container">
+                <!-- Fila 1 -->
+                <div class="mobile-card-item" onclick="openCalendarModal()">
+                    <div class="mobile-icon">📅</div>
+                    <h3 class="mobile-card-title">Horarios</h3>
+                </div>
+                
+                <a href="?view=asistencia" class="mobile-card-item">
+                    <div class="mobile-icon">✅</div>
+                    <h3 class="mobile-card-title">Control Asistencia</h3>
+                </a>
+                
+                <!-- Fila 2 -->
+                <a href="?view=nomina" class="mobile-card-item">
+                    <div class="mobile-icon">💰</div>
+                    <h3 class="mobile-card-title">Nómina y Pagos</h3>
+                </a>
+                
+                <a href="?view=incidencias" class="mobile-card-item">
+                    <div class="mobile-icon">⚠️</div>
+                    <h3 class="mobile-card-title">Incidencias</h3>
+                </a>
+                
+                <!-- Fila 3 -->
+                <a href="?view=formacion" class="mobile-card-item">
+                    <div class="mobile-icon">🎓</div>
+                    <h3 class="mobile-card-title">Formación</h3>
+                </a>
+                
+                <a href="?view=comunicados" class="mobile-card-item">
+                    <div class="mobile-icon">📢</div>
+                    <h3 class="mobile-card-title">Comunicados</h3>
+                </a>
+            </div>
         </div>
-        
-        <a href="?view=asistencia" class="mobile-icon-item">
-            <div class="mobile-icon">✅</div>
-            <h3 class="mobile-icon-title">Control de Asistencia</h3>
-            <p class="mobile-icon-desc">Registro de entrada y salida en tiempo real</p>
-        </a>
-        
-        <!-- Fila 2 móvil -->
-        <a href="?view=nomina" class="mobile-icon-item">
-            <div class="mobile-icon">💰</div>
-            <h3 class="mobile-icon-title">Nómina y Pagos</h3>
-            <p class="mobile-icon-desc">Consulta tus recibos y estados de pago</p>
-        </a>
-        
-        <a href="?view=incidencias" class="mobile-icon-item">
-            <div class="mobile-icon">⚠️</div>
-            <h3 class="mobile-icon-title">Incidencias</h3>
-            <p class="mobile-icon-desc">Reporta y consulta incidencias</p>
-        </a>
-        
-        <!-- Fila 3 móvil -->
-        <a href="?view=formacion" class="mobile-icon-item">
-            <div class="mobile-icon">🎓</div>
-            <h3 class="mobile-icon-title">Formación</h3>
-            <p class="mobile-icon-desc">Accede a cursos y certificaciones</p>
-        </a>
-        
-        <a href="?view=comunicados" class="mobile-icon-item">
-            <div class="mobile-icon">📢</div>
-            <h3 class="mobile-icon-title">Comunicados</h3>
-            <p class="mobile-icon-desc">Últimas noticias y anuncios</p>
-        </a>
     </div>
     """, unsafe_allow_html=True)
     
-    # Estadísticas
+    # Estadísticas (común para ambas versiones)
     st.markdown(f"""
     <div class="stats-container">
         <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 25px; font-size: 1.5rem; font-weight: 700;">
@@ -533,6 +558,27 @@ def create_dashboard():
             closeCalendarModal();
         }
     });
+    
+    // Detectar pantalla y mostrar versión correcta
+    function adjustForScreenSize() {
+        const isMobile = window.innerWidth <= 768;
+        const desktop = document.querySelector('.desktop-version');
+        const mobile = document.querySelector('.mobile-version');
+        
+        if (desktop && mobile) {
+            if (isMobile) {
+                desktop.style.display = 'none';
+                mobile.style.display = 'block';
+            } else {
+                desktop.style.display = 'block';
+                mobile.style.display = 'none';
+            }
+        }
+    }
+    
+    // Ejecutar al cargar y al cambiar tamaño
+    window.addEventListener('load', adjustForScreenSize);
+    window.addEventListener('resize', adjustForScreenSize);
     </script>
     """, unsafe_allow_html=True)
 
