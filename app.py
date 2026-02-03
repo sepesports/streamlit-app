@@ -30,7 +30,7 @@ SAMPLE_SCHEDULE = {
 }
 
 # ----------------------------
-# ESTILOS CSS FIJOS
+# ESTILOS CSS OPTIMIZADOS PARA MÓVIL Y ESCRITORIO
 # ----------------------------
 def apply_custom_css():
     """Aplica estilos CSS personalizados"""
@@ -39,21 +39,11 @@ def apply_custom_css():
     /* RESET BÁSICO */
     .stApp {{
         background: {BG_COLOR};
-        padding: 0;
-        margin: 0;
+        padding: 0 !important;
+        margin: 0 !important;
     }}
     
     /* ELIMINAR TODOS LOS ESPACIOS DE STREAMLIT */
-    .stApp > div:first-child {{
-        padding-top: 0 !important;
-    }}
-    
-    .block-container {{
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-        max-width: 100% !important;
-    }}
-    
     [data-testid="stAppViewContainer"] {{
         padding: 0 !important;
         margin: 0 !important;
@@ -64,23 +54,28 @@ def apply_custom_css():
         margin: 0 !important;
     }}
     
-    /* HEADER */
+    .block-container {{
+        padding: 0 !important;
+        max-width: 100% !important;
+    }}
+    
+    /* HEADER COMPACTO */
     .main-header {{
         background: linear-gradient(135deg, {SECONDARY_COLOR}, #1a2530);
         color: white;
-        padding: 15px 25px;
+        padding: 12px 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        box-shadow: 0 3px 15px rgba(0,0,0,0.1);
         width: 100%;
         box-sizing: border-box;
     }}
     
-    /* TÍTULO */
+    /* TÍTULO PROFESIONAL Y COMPACTO */
     .page-title-section {{
-        background: linear-gradient(135deg, #1a5276, #1c5c82, #1e6790, {PRIMARY_COLOR});
-        padding: 40px 25px;
+        background: linear-gradient(135deg, {SECONDARY_COLOR}, #1a2530);
+        padding: 30px 20px;
         text-align: center;
         margin-bottom: 0;
         width: 100%;
@@ -89,48 +84,57 @@ def apply_custom_css():
     
     .page-title {{
         color: white;
-        font-size: 2.8rem;
-        font-weight: 800;
-        margin-bottom: 15px;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        font-family: 'Segoe UI', sans-serif;
+    }}
+    
+    .page-subtitle {{
+        color: rgba(255,255,255,0.9);
+        font-size: 1rem;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.4;
+        font-weight: 300;
     }}
     
     /* CONTENEDOR PRINCIPAL */
     .main-content {{
-        padding: 40px 25px;
+        padding: 30px 20px;
         max-width: 1200px;
         margin: 0 auto;
         width: 100%;
         box-sizing: border-box;
     }}
     
-    /* FORZAR LAS COLUMNAS DE STREAMLIT A COMPORTARSE CORRECTAMENTE */
-    [data-testid="column"] {{
-        padding: 0 !important;
-        margin: 0 !important;
+    /* CONTENEDOR DE TARJETAS CON FLEXBOX */
+    .cards-container {{
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
     }}
     
-    .st-emotion-cache-1v0mbdj {{
-        width: 100% !important;
-    }}
-    
-    /* TARJETAS - ANCHO COMPLETO */
+    /* TARJETAS PARA ESCRITORIO: 3 por fila */
     .dashboard-card {{
-        background: linear-gradient(145deg, #ffffff, #f5f5f5);
-        border-radius: 20px;
+        background: white;
+        border-radius: 16px;
         padding: 25px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
         transition: all 0.3s ease;
         cursor: pointer;
         border: none;
         text-decoration: none !important;
         display: flex;
         flex-direction: column;
-        min-height: 220px;
-        width: 100%;
+        min-height: 200px;
+        width: calc(33.333% - 14px); /* 3 tarjetas por fila en escritorio */
         position: relative;
         overflow: hidden;
         box-sizing: border-box;
-        margin-bottom: 25px;
+        border: 1px solid rgba(243, 112, 33, 0.1);
     }}
     
     .dashboard-card::before {{
@@ -139,77 +143,206 @@ def apply_custom_css():
         top: 0;
         left: 0;
         right: 0;
-        height: 5px;
+        height: 4px;
         background: linear-gradient(90deg, {PRIMARY_COLOR}, #FF8C42);
-        border-radius: 20px 20px 0 0;
+        border-radius: 16px 16px 0 0;
     }}
     
     .dashboard-card:hover {{
         transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(243, 112, 33, 0.2);
+        box-shadow: 0 12px 25px rgba(243, 112, 33, 0.15);
+        border-color: {PRIMARY_COLOR};
     }}
     
     .card-icon {{
-        width: 60px;
-        height: 60px;
+        width: 55px;
+        height: 55px;
         background: linear-gradient(135deg, {PRIMARY_COLOR}, #ff944d);
-        border-radius: 15px;
+        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin-bottom: 15px;
-        font-size: 28px;
+        font-size: 26px;
         color: white;
     }}
     
     .card-title {{
-        font-size: 1.3rem;
+        font-size: 1.2rem;
         font-weight: 700;
         color: {SECONDARY_COLOR};
-        margin-bottom: 10px;
+        margin-bottom: 8px;
+        font-family: 'Segoe UI', sans-serif;
+        line-height: 1.3;
     }}
     
     .card-desc {{
         color: #666;
-        font-size: 0.95rem;
-        line-height: 1.5;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        font-family: 'Segoe UI', sans-serif;
+        opacity: 0.9;
     }}
     
-    /* ESTADÍSTICAS */
+    /* MÓVIL: 2 tarjetas por fila (3 filas) */
+    @media (max-width: 768px) {{
+        /* HEADER MÓVIL MÁS COMPACTO */
+        .main-header {{
+            padding: 10px 15px;
+        }}
+        
+        /* TÍTULO MÓVIL MÁS COMPACTO */
+        .page-title-section {{
+            padding: 20px 15px;
+        }}
+        
+        .page-title {{
+            font-size: 1.6rem;
+            margin-bottom: 5px;
+        }}
+        
+        .page-subtitle {{
+            font-size: 0.9rem;
+            line-height: 1.3;
+            padding: 0 10px;
+        }}
+        
+        /* CONTENEDOR MÓVIL */
+        .main-content {{
+            padding: 20px 15px;
+        }}
+        
+        /* TARJETAS MÓVIL: 2 por fila */
+        .cards-container {{
+            gap: 12px;
+        }}
+        
+        .dashboard-card {{
+            width: calc(50% - 6px); /* 2 tarjetas por fila en móvil */
+            min-height: 170px;
+            padding: 20px;
+            border-radius: 14px;
+        }}
+        
+        .card-icon {{
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+        }}
+        
+        .card-title {{
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+        }}
+        
+        .card-desc {{
+            font-size: 0.85rem;
+            line-height: 1.3;
+        }}
+    }}
+    
+    /* MÓVIL MUY PEQUEÑO: 1 columna */
+    @media (max-width: 480px) {{
+        .dashboard-card {{
+            width: 100%;
+        }}
+        
+        .page-title {{
+            font-size: 1.4rem;
+        }}
+        
+        .page-subtitle {{
+            font-size: 0.85rem;
+        }}
+    }}
+    
+    /* ESTADÍSTICAS PROFESIONALES */
     .stats-container {{
         background: white;
-        border-radius: 20px;
-        padding: 30px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        margin: 40px auto 0;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        margin: 35px auto 0;
         width: 100%;
         box-sizing: border-box;
+        border: 1px solid rgba(0,0,0,0.05);
+    }}
+    
+    .stats-title {{
+        color: {SECONDARY_COLOR};
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        text-align: center;
+        font-family: 'Segoe UI', sans-serif;
     }}
     
     .stats-grid {{
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
+        gap: 15px;
         width: 100%;
     }}
     
+    .stat-card {{
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 18px;
+        text-align: center;
+        border-left: 4px solid {PRIMARY_COLOR};
+        transition: transform 0.3s ease;
+    }}
+    
+    .stat-card:hover {{
+        transform: translateY(-3px);
+        background: #f0f2f5;
+    }}
+    
+    .stat-icon {{
+        font-size: 1.3rem;
+        margin-bottom: 8px;
+        display: block;
+    }}
+    
+    .stat-value {{
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin: 8px 0;
+        color: {SECONDARY_COLOR};
+        font-family: 'Segoe UI', sans-serif;
+    }}
+    
+    .stat-label {{
+        color: #666;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }}
+    
+    /* RESPONSIVE PARA ESTADÍSTICAS */
     @media (max-width: 768px) {{
+        .stats-container {{
+            padding: 20px;
+            margin: 25px auto 0;
+        }}
+        
         .stats-grid {{
             grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
         }}
         
-        .main-content {{
-            padding: 20px;
+        .stat-card {{
+            padding: 15px;
         }}
         
-        .dashboard-card {{
-            min-height: 200px;
-            padding: 20px;
+        .stat-value {{
+            font-size: 1.6rem;
+        }}
+        
+        .stats-title {{
+            font-size: 1.2rem;
             margin-bottom: 15px;
-        }}
-        
-        .page-title {{
-            font-size: 2.2rem;
         }}
     }}
     
@@ -217,25 +350,85 @@ def apply_custom_css():
         .stats-grid {{
             grid-template-columns: 1fr;
         }}
-        
-        .dashboard-card {{
-            min-height: 180px;
-        }}
     }}
     
-    .stat-card {{
-        background: #f8f9fa;
-        border-radius: 15px;
-        padding: 20px;
+    /* FOOTER PROFESIONAL */
+    .footer {{
         text-align: center;
-        border-left: 4px solid {PRIMARY_COLOR};
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(0,0,0,0.1);
+        color: #777;
+        font-size: 0.8rem;
+        font-family: 'Segoe UI', sans-serif;
     }}
     
-    .stat-value {{
-        font-size: 2.2rem;
-        font-weight: 800;
-        margin: 10px 0;
+    /* MODAL SIMPLE */
+    .modal-overlay {{
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.85);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 15px;
+    }}
+    
+    .modal-content {{
+        background: white;
+        border-radius: 18px;
+        padding: 25px;
+        max-width: 500px;
+        width: 100%;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        animation: modalSlide 0.3s ease;
+    }}
+    
+    @keyframes modalSlide {{
+        from {{ transform: translateY(30px); opacity: 0; }}
+        to {{ transform: translateY(0); opacity: 1; }}
+    }}
+    
+    .modal-header {{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid {PRIMARY_COLOR};
+    }}
+    
+    .modal-title {{
+        font-size: 1.4rem;
+        font-weight: 700;
         color: {SECONDARY_COLOR};
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }}
+    
+    .modal-close {{
+        background: {PRIMARY_COLOR};
+        color: white;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        font-size: 1.2rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }}
+    
+    .modal-close:hover {{
+        background: #e55a1a;
+        transform: rotate(90deg);
     }}
     
     /* OCULTAR ELEMENTOS DE STREAMLIT */
@@ -243,12 +436,19 @@ def apply_custom_css():
     footer {{ display: none !important; }}
     .stDeployButton {{ display: none !important; }}
     
-    /* FORZAR ANCHO COMPLETO PARA MÓVIL */
-    @media (max-width: 768px) {{
-        .st-emotion-cache-1r6slb0 {{
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-        }}
+    /* FORZAR QUE LAS TARJETAS SEAN VISIBLES */
+    a.dashboard-card {{
+        display: flex !important;
+    }}
+    
+    /* ANIMACIÓN SUAVE */
+    .fade-in {{
+        animation: fadeIn 0.5s ease;
+    }}
+    
+    @keyframes fadeIn {{
+        from {{ opacity: 0; }}
+        to {{ opacity: 1; }}
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -257,19 +457,19 @@ def apply_custom_css():
 # COMPONENTES DE LA APLICACIÓN
 # ----------------------------
 def create_header():
-    """Crea el encabezado profesional"""
+    """Crea el encabezado profesional y compacto"""
     st.markdown(f"""
-    <div class="main-header">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-size: 1.5rem;">🛟</span>
-            <span style="font-size: 1.3rem; font-weight: 700;">SOCORRISTA PRO</span>
+    <div class="main-header fade-in">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.3rem;">🛟</span>
+            <span style="font-size: 1.2rem; font-weight: 700;">SOCORRISTA PRO</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 25px; display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 1.1rem;">👤</span>
-                <div>
-                    <div style="font-weight: 600;">Carlos Rodríguez</div>
-                    <div style="font-size: 0.8rem; opacity: 0.9;">Socorrista Principal</div>
+        <div style="display: flex; align-items: center;">
+            <div style="background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1rem;">👤</span>
+                <div style="line-height: 1.2;">
+                    <div style="font-weight: 600; font-size: 0.9rem;">Carlos Rodríguez</div>
+                    <div style="font-size: 0.75rem; opacity: 0.9;">Socorrista Principal</div>
                 </div>
             </div>
         </div>
@@ -277,179 +477,152 @@ def create_header():
     """, unsafe_allow_html=True)
 
 def create_dashboard():
-    """Crea el dashboard principal usando columnas de Streamlit"""
+    """Crea el dashboard principal"""
     # Aplicar CSS
     apply_custom_css()
     
     # Crear header
     create_header()
     
-    # Título principal
+    # Título principal compacto y profesional
     st.markdown(f"""
-    <div class="page-title-section">
+    <div class="page-title-section fade-in">
         <h1 class="page-title">Panel de Control</h1>
-        <p style="color: rgba(255,255,255,0.95); font-size: 1.2rem; max-width: 700px; margin: 0 auto;">
-            Gestiona tus horarios, asistencia y más desde un solo lugar
-        </p>
+        <p class="page-subtitle">Gestión centralizada de turnos, asistencia y nómina</p>
     </div>
     """, unsafe_allow_html=True)
     
     # Contenedor principal
-    st.markdown('<div class="main-content">', unsafe_allow_html=True)
+    st.markdown('<div class="main-content fade-in">', unsafe_allow_html=True)
     
-    # **FILA 1: 3 tarjetas usando columnas de Streamlit**
-    col1, col2, col3 = st.columns(3, gap="large")
+    # **GRID DE TARJETAS USANDO FLEXBOX** - RESPONSIVE
+    st.markdown('<div class="cards-container">', unsafe_allow_html=True)
     
-    with col1:
-        # Tarjeta 1: Horarios
-        st.markdown(f"""
-        <div class="dashboard-card" onclick="openCalendarModal()">
-            <div class="card-icon">📅</div>
-            <h3 class="card-title">Horarios</h3>
-            <p class="card-desc">Consulta y gestiona tus turnos programados</p>
-        </div>
-        """, unsafe_allow_html=True)
+    # Tarjetas en el ORDEN ESPECÍFICO solicitado
+    cards_data = [
+        # Fila 1 en escritorio (3 tarjetas), 2 tarjetas en móvil
+        {"title": "Horarios", "icon": "📅", "desc": "Consulta y gestiona turnos", "view": "horarios", "onclick": "openCalendarModal()"},
+        {"title": "Control de Asistencia", "icon": "✅", "desc": "Registro entrada/salida", "view": "asistencia", "onclick": None},
+        {"title": "Nómina y Pagos", "icon": "💰", "desc": "Recibos y estados de pago", "view": "nomina", "onclick": None},
+        # Fila 2 en escritorio (3 tarjetas), 2 tarjetas en móvil
+        {"title": "Incidencias", "icon": "⚠️", "desc": "Reporta y consulta incidencias", "view": "incidencias", "onclick": None},
+        {"title": "Formación", "icon": "🎓", "desc": "Cursos y certificaciones", "view": "formacion", "onclick": None},
+        {"title": "Comunicados", "icon": "📢", "desc": "Noticias y anuncios", "view": "comunicados", "onclick": None},
+    ]
     
-    with col2:
-        # Tarjeta 2: Control de Asistencia
-        st.markdown(f"""
-        <a href="?view=asistencia" class="dashboard-card">
-            <div class="card-icon">✅</div>
-            <h3 class="card-title">Control de Asistencia</h3>
-            <p class="card-desc">Registro de entrada y salida en tiempo real</p>
-        </a>
-        """, unsafe_allow_html=True)
+    for card in cards_data:
+        if card["view"] == "horarios":
+            # Tarjeta especial para Horarios (abre modal)
+            card_html = f"""
+            <div class="dashboard-card" onclick="{card['onclick']}">
+                <div class="card-icon">{card['icon']}</div>
+                <h3 class="card-title">{card['title']}</h3>
+                <p class="card-desc">{card['desc']}</p>
+            </div>
+            """
+        else:
+            # Otras tarjetas (enlaces normales)
+            card_html = f"""
+            <a href="?view={card['view']}" class="dashboard-card">
+                <div class="card-icon">{card['icon']}</div>
+                <h3 class="card-title">{card['title']}</h3>
+                <p class="card-desc">{card['desc']}</p>
+            </a>
+            """
+        st.markdown(card_html, unsafe_allow_html=True)
     
-    with col3:
-        # Tarjeta 3: Nómina y Pagos
-        st.markdown(f"""
-        <a href="?view=nomina" class="dashboard-card">
-            <div class="card-icon">💰</div>
-            <h3 class="card-title">Nómina y Pagos</h3>
-            <p class="card-desc">Consulta tus recibos y estados de pago</p>
-        </a>
-        """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)  # Cierra cards-container
     
-    # **FILA 2: 3 tarjetas usando columnas de Streamlit**
-    col4, col5, col6 = st.columns(3, gap="large")
-    
-    with col4:
-        # Tarjeta 4: Incidencias
-        st.markdown(f"""
-        <a href="?view=incidencias" class="dashboard-card">
-            <div class="card-icon">⚠️</div>
-            <h3 class="card-title">Incidencias</h3>
-            <p class="card-desc">Reporta y consulta incidencias</p>
-        </a>
-        """, unsafe_allow_html=True)
-    
-    with col5:
-        # Tarjeta 5: Formación
-        st.markdown(f"""
-        <a href="?view=formacion" class="dashboard-card">
-            <div class="card-icon">🎓</div>
-            <h3 class="card-title">Formación</h3>
-            <p class="card-desc">Accede a cursos y certificaciones</p>
-        </a>
-        """, unsafe_allow_html=True)
-    
-    with col6:
-        # Tarjeta 6: Comunicados
-        st.markdown(f"""
-        <a href="?view=comunicados" class="dashboard-card">
-            <div class="card-icon">📢</div>
-            <h3 class="card-title">Comunicados</h3>
-            <p class="card-desc">Últimas noticias y anuncios</p>
-        </a>
-        """, unsafe_allow_html=True)
-    
-    # Estadísticas
+    # Estadísticas profesionales
     st.markdown(f"""
     <div class="stats-container">
-        <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 25px; font-size: 1.5rem; font-weight: 700;">
-            📊 Resumen Rápido
-        </h3>
+        <h3 class="stats-title">📊 Resumen del Mes</h3>
         <div class="stats-grid">
             <div class="stat-card">
-                <div style="color: #4CAF50; font-size: 1.3rem;">✅</div>
+                <span class="stat-icon" style="color: #4CAF50;">✅</span>
                 <div class="stat-value">12</div>
-                <div style="color: #666; font-size: 0.9rem;">Turnos Completados</div>
+                <div class="stat-label">Turnos Completados</div>
             </div>
             <div class="stat-card">
-                <div style="color: #2196F3; font-size: 1.3rem;">⏰</div>
+                <span class="stat-icon" style="color: #2196F3;">⏰</span>
                 <div class="stat-value">96h</div>
-                <div style="color: #666; font-size: 0.9rem;">Horas Totales</div>
+                <div class="stat-label">Horas Totales</div>
             </div>
             <div class="stat-card">
-                <div style="color: #FF9800; font-size: 1.3rem;">📅</div>
+                <span class="stat-icon" style="color: #FF9800;">📅</span>
                 <div class="stat-value">6</div>
-                <div style="color: #666; font-size: 0.9rem;">Próximos Turnos</div>
+                <div class="stat-label">Próximos Turnos</div>
             </div>
             <div class="stat-card">
-                <div style="color: #9C27B0; font-size: 1.3rem;">💰</div>
+                <span class="stat-icon" style="color: #9C27B0;">💰</span>
                 <div class="stat-value">€2,850</div>
-                <div style="color: #666; font-size: 0.9rem;">Salario Estimado</div>
+                <div class="stat-label">Salario Estimado</div>
             </div>
         </div>
     </div>
     
-    <div style="text-align: center; margin-top: 40px; color: #666; font-size: 0.9rem;">
-        © {datetime.datetime.now().year} Socorrista Pro • Versión 2.2 • Todos los derechos reservados
+    <div class="footer">
+        © {datetime.datetime.now().year} Socorrista Pro • Versión 2.2 • Sistema de Gestión Profesional
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)  # Cierra main-content
     
-    # Modal del calendario
-    st.markdown("""
-    <div id="calendar-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
-        <div style="background: white; border-radius: 20px; padding: 30px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0; color: #333;">📅 Calendario de Turnos</h2>
-                <button onclick="closeCalendarModal()" style="background: #F37021; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer;">×</button>
+    # Modal del calendario profesional
+    st.markdown(f"""
+    <div id="calendar-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>📅</span> Calendario de Turnos
+                </div>
+                <button class="modal-close" onclick="closeCalendarModal()">×</button>
             </div>
-            <div style="color: #666; margin-bottom: 20px;">
-                <p>Esta funcionalidad está en desarrollo. Próximamente podrás ver tu calendario completo aquí.</p>
+            <div style="color: #555; line-height: 1.5; margin-bottom: 20px;">
+                <p>Esta funcionalidad está en desarrollo activo. Próximamente podrás gestionar tus turnos de forma completa.</p>
             </div>
-            <button onclick="closeCalendarModal()" style="background: #F37021; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 600;">Cerrar</button>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeCalendarModal()" style="background: {PRIMARY_COLOR}; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; flex: 1;">
+                    Cerrar
+                </button>
+            </div>
         </div>
     </div>
     
     <script>
-    function openCalendarModal() {
+    function openCalendarModal() {{
         document.getElementById('calendar-modal').style.display = 'flex';
         document.body.style.overflow = 'hidden';
-    }
+    }}
     
-    function closeCalendarModal() {
+    function closeCalendarModal() {{
         document.getElementById('calendar-modal').style.display = 'none';
         document.body.style.overflow = 'auto';
-    }
+    }}
     
     // Cerrar modal al hacer clic fuera
-    document.addEventListener('click', function(event) {
-        if (event.target.classList.contains('calendar-modal-overlay')) {
+    document.addEventListener('click', function(event) {{
+        if (event.target.classList.contains('modal-overlay')) {{
             closeCalendarModal();
-        }
-    });
+        }}
+    }});
     
     // Cerrar con ESC
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
+    document.addEventListener('keydown', function(event) {{
+        if (event.key === 'Escape') {{
             closeCalendarModal();
-        }
-    });
+        }}
+    }});
     
-    // Ajustar para móvil automáticamente
-    if (window.innerWidth <= 768) {
-        // En móvil, Streamlit ya maneja las columnas como filas
-        // No necesitamos hacer nada adicional
-    }
+    // Ajustar layout para móvil al cargar
+    if (window.innerWidth <= 768) {{
+        // Ya está configurado por CSS
+    }}
     </script>
     """, unsafe_allow_html=True)
 
 def create_other_view(view_name):
-    """Crea vistas para otras secciones"""
+    """Crea vistas para otras secciones - Versión compacta"""
     view_titles = {
         "asistencia": "Control de Asistencia",
         "nomina": "Nómina y Pagos", 
@@ -467,28 +640,29 @@ def create_other_view(view_name):
     create_header()
     
     st.markdown(f"""
-    <div style="max-width: 800px; margin: 0 auto; padding: 40px 25px;">
-        <div style="text-align: center; margin-bottom: 40px;">
-            <div style="font-size: 3rem; margin-bottom: 20px; color: {PRIMARY_COLOR};">📋</div>
-            <h1 style="color: {SECONDARY_COLOR}; margin-bottom: 15px; font-size: 2.5rem; font-weight: 800;">
+    <div class="main-content fade-in" style="max-width: 800px;">
+        <div style="text-align: center; margin-bottom: 25px;">
+            <div style="font-size: 2.5rem; margin-bottom: 15px; color: {PRIMARY_COLOR};">📋</div>
+            <h1 style="color: {SECONDARY_COLOR}; margin-bottom: 10px; font-size: 1.8rem; font-weight: 700;">
                 {title}
             </h1>
-            <p style="color: #666; font-size: 1.2rem;">
+            <p style="color: #666; font-size: 1rem;">
                 Esta funcionalidad está en desarrollo activo
             </p>
         </div>
         
-        <div style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-bottom: 30px;">
-            <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 20px; font-size: 1.4rem; font-weight: 700;">
+        <div style="background: white; border-radius: 16px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); margin-bottom: 25px; border: 1px solid rgba(0,0,0,0.05);">
+            <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 15px; font-size: 1.3rem; font-weight: 700;">
                 🚀 Próximamente
             </h3>
-            <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
-                Estamos trabajando para implementar esta funcionalidad. En las próximas semanas podrás acceder a todas las características avanzadas.
+            <p style="color: #666; line-height: 1.5; margin-bottom: 15px; font-size: 0.95rem;">
+                Estamos trabajando para implementar esta funcionalidad con los más altos estándares de calidad. 
+                En las próximas semanas podrás acceder a todas las características avanzadas.
             </p>
         </div>
         
         <div style="text-align: center;">
-            <a href="?" style="background: {PRIMARY_COLOR}; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; display: inline-block; font-weight: 600;">
+            <a href="?" style="background: {PRIMARY_COLOR}; color: white; padding: 12px 25px; border-radius: 10px; text-decoration: none; display: inline-block; font-weight: 600; font-size: 0.95rem;">
                 ← Volver al Dashboard
             </a>
         </div>
