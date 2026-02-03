@@ -30,7 +30,7 @@ SAMPLE_SCHEDULE = {
 }
 
 # ----------------------------
-# ESTILOS CSS OPTIMIZADOS
+# ESTILOS CSS CORREGIDOS - GRID FUNCIONAL
 # ----------------------------
 def apply_custom_css():
     """Aplica estilos CSS personalizados"""
@@ -150,17 +150,6 @@ def apply_custom_css():
         opacity: 0.6;
     }}
     
-    .page-title-section::after {{
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="wave" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M0,50 Q25,40 50,50 T100,50" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/></pattern></defs><rect width="100" height="100" fill="url(%23wave)"/></svg>');
-        opacity: 0.3;
-    }}
-    
     .page-title {{
         color: white;
         font-size: 2.8rem;
@@ -186,23 +175,21 @@ def apply_custom_css():
         font-weight: 300;
     }}
     
-    /* GRID DE TARJETAS - CORREGIDO */
+    /* GRID DE TARJETAS - CORREGIDO DEFINITIVAMENTE */
     .dashboard-container {{
         padding: 40px 25px;
         max-width: 1200px;
         margin: 0 auto;
         width: 100%;
         box-sizing: border-box;
-        position: relative;
     }}
     
-    /* DESKTOP: 3 columnas x 2 filas - CORREGIDO */
+    /* DESKTOP: 3 columnas x 2 filas - DEFINITIVO */
     .dashboard-grid {{
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 25px;
-        width: 100%;
-        justify-items: center;
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 25px !important;
+        width: 100% !important;
     }}
     
     /* TARJETAS PROFESIONALES */
@@ -220,8 +207,6 @@ def apply_custom_css():
         justify-content: space-between;
         height: 100%;
         min-height: 220px;
-        width: 100%;
-        max-width: 350px;
         position: relative;
         overflow: hidden;
     }}
@@ -449,7 +434,7 @@ def apply_custom_css():
         background: linear-gradient(135deg, #f5f7fa 0%, #e8ecef 100%);
     }}
     
-    /* Grid de días - Malla profesional CORREGIDA */
+    /* Grid de días - Malla profesional */
     .calendar-days-grid {{
         display: grid;
         grid-template-columns: repeat(7, 1fr);
@@ -626,7 +611,7 @@ def apply_custom_css():
         box-shadow: 0 10px 25px rgba(243, 112, 33, 0.2);
     }}
     
-    /* RESPONSIVE PARA MÓVIL - 2 columnas x 3 filas - CORREGIDO */
+    /* RESPONSIVE PARA MÓVIL - 2 columnas x 3 filas */
     @media (max-width: 992px) {{
         .main-header {{
             padding: 12px 20px;
@@ -657,7 +642,7 @@ def apply_custom_css():
             padding: 30px 20px;
         }}
         
-        /* MÓVIL: 2 columnas x 3 filas - AHORA SÍ FUNCIONA */
+        /* MÓVIL: 2 columnas x 3 filas */
         .dashboard-grid {{
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 20px;
@@ -666,7 +651,6 @@ def apply_custom_css():
         .dashboard-card {{
             min-height: 200px;
             padding: 22px;
-            max-width: 100%;
         }}
         
         .card-icon {{
@@ -1142,7 +1126,7 @@ def create_calendar_modal():
     return modal_html
 
 def create_dashboard():
-    """Crea el dashboard principal"""
+    """Crea el dashboard principal con grid CORREGIDO"""
     st.markdown('<div class="main-content">', unsafe_allow_html=True)
     
     # Título con fondo profesional
@@ -1154,9 +1138,7 @@ def create_dashboard():
     """, unsafe_allow_html=True)
     
     # Grid de tarjetas - Desktop: 3 columnas x 2 filas, Móvil: 2 columnas x 3 filas
-    st.markdown('<div class="dashboard-container fade-in">', unsafe_allow_html=True)
-    st.markdown('<div class="dashboard-grid">', unsafe_allow_html=True)
-    
+    # VAMOS A CREAR EL GRID COMO UN SOLO BLOQUE HTML
     cards = [
         ("Horarios", "📅", "Consulta y gestiona tus turnos programados", "horarios"),
         ("Control de Asistencia", "✅", "Registro de entrada y salida en tiempo real", "asistencia"),
@@ -1166,10 +1148,13 @@ def create_dashboard():
         ("Comunicados", "📢", "Últimas noticias y anuncios", "comunicados"),
     ]
     
+    # Crear el HTML del grid completo
+    grid_html = '<div class="dashboard-container fade-in">'
+    grid_html += '<div class="dashboard-grid">'
+    
     for title, icon, desc, view in cards:
         if view == "horarios":
-            # Para Horarios, usamos onclick para abrir el modal
-            card_html = f"""
+            grid_html += f"""
             <div class="dashboard-card" onclick="openCalendarModal()">
                 <div class="card-icon">{icon}</div>
                 <h3 class="card-title">{title}</h3>
@@ -1177,17 +1162,18 @@ def create_dashboard():
             </div>
             """
         else:
-            # Para otras vistas, usamos enlace normal
-            card_html = f"""
+            grid_html += f"""
             <a href="?view={view}" class="dashboard-card">
                 <div class="card-icon">{icon}</div>
                 <h3 class="card-title">{title}</h3>
                 <p class="card-desc">{desc}</p>
             </a>
             """
-        st.markdown(card_html, unsafe_allow_html=True)
     
-    st.markdown('</div></div>', unsafe_allow_html=True)
+    grid_html += '</div></div>'
+    
+    # Mostrar el grid completo de una vez
+    st.markdown(grid_html, unsafe_allow_html=True)
     
     # Estadísticas rápidas
     st.markdown(f"""
