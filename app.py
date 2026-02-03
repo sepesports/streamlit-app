@@ -25,20 +25,20 @@ MENU_ITEMS = [
 ]
 
 # ----------------------------
-# IMAGE -> DATA URI (cache)
+# IMAGE CACHE (FAST)
 # ----------------------------
 @st.cache_data(show_spinner=False)
 def fetch_image_as_data_uri(url: str) -> str:
     r = requests.get(url, timeout=25)
     r.raise_for_status()
-    content_type = r.headers.get("Content-Type", "image/png")
+    ct = r.headers.get("Content-Type", "image/png")
     b64 = base64.b64encode(r.content).decode("utf-8")
-    return f"data:{content_type};base64,{b64}"
+    return f"data:{ct};base64,{b64}"
 
 try:
-    IMG_DATA_URI = fetch_image_as_data_uri(IMG_URL)
+    BG = fetch_image_as_data_uri(IMG_URL)
 except Exception:
-    IMG_DATA_URI = ""
+    BG = IMG_URL  # fallback
 
 
 # ----------------------------
@@ -47,32 +47,38 @@ except Exception:
 def svg_icon(name: str) -> str:
     if name == "wrench":
         return """<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M21 7.5a6 6 0 0 1-8.77 5.3L6.3 18.73a2 2 0 0 1-2.83 0l-.2-.2a2 2 0 0 1 0-2.83l5.93-5.93A6 6 0 0 1 16.5 3l-3 3 4.5 4.5 3-3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M21 7.5a6 6 0 0 1-8.77 5.3L6.3 18.73a2 2 0 0 1-2.83 0l-.2-.2a2 2 0 0 1 0-2.83l5.93-5.93A6 6 0 0 1 16.5 3l-3 3 4.5 4.5 3-3Z"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>"""
     if name == "user":
         return """<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <path d="M12 13a5 5 0 1 0-5-5 5 5 0 0 0 5 5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 13a5 5 0 1 0-5-5 5 5 0 0 0 5 5Z"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>"""
     if name == "lock":
         return """<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M17 11H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M17 11H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2Z"
+            stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
           <path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>"""
     if name == "file":
         return """<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"
+            stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
           <path d="M14 2v6h6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
           <path d="M8 13h8M8 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>"""
     if name == "bell":
         return """<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 7h18s-3 0-3-7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 7h18s-3 0-3-7Z"
+            stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
           <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>"""
     if name == "id":
         return """<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z"
+            stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
           <path d="M8 11h4M8 15h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           <path d="M16.5 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z" stroke="currentColor" stroke-width="2"/>
         </svg>"""
@@ -88,10 +94,8 @@ def get_view() -> str | None:
 
 
 # ----------------------------
-# CSS (FULL BLEED)
+# CSS (SIN components.html, y CON límites para SVG)
 # ----------------------------
-bg = IMG_DATA_URI if IMG_DATA_URI else IMG_URL
-
 st.markdown(
     f"""
 <style>
@@ -100,44 +104,14 @@ html, body {{
   width: 100%;
   margin: 0 !important;
   padding: 0 !important;
-  overflow: hidden;
 }}
+header, footer, [data-testid="stHeader"] {{ display:none !important; }}
 
-.stApp {{
-  height: 100dvh !important;
-  width: 100vw !important;
-  max-width: 100vw !important;
-  margin: 0 !important;
-}}
-
-section.main {{
-  padding: 0 !important;
-  margin: 0 !important;
-}}
-section.main > div {{
+.stApp, [data-testid="stAppViewContainer"], [data-testid="stMainBlockContainer"], section.main, section.main > div {{
   padding: 0 !important;
   margin: 0 !important;
   max-width: 100vw !important;
   width: 100vw !important;
-}}
-
-[data-testid="stAppViewContainer"] {{
-  padding: 0 !important;
-  margin: 0 !important;
-  max-width: 100vw !important;
-}}
-
-[data-testid="stMainBlockContainer"] {{
-  padding: 0 !important;
-  margin: 0 !important;
-  max-width: 100vw !important;
-  width: 100vw !important;
-}}
-
-[data-testid="stHeader"], header, footer {{
-  display: none !important;
-  height: 0 !important;
-  visibility: hidden !important;
 }}
 
 .page {{
@@ -151,9 +125,9 @@ section.main > div {{
 .hero {{
   flex: 1 1 auto;
   width: 100%;
-  background-image: url("{bg}");
+  background-image: url("{BG}");
   background-size: cover;
-  background-position: center center;
+  background-position: center;
   background-repeat: no-repeat;
 }}
 
@@ -184,7 +158,6 @@ section.main > div {{
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  width: 100%;
 }}
 
 .diamond {{
@@ -198,7 +171,7 @@ section.main > div {{
   box-shadow: 0 10px 26px rgba(0,0,0,.18);
 }}
 
-.diamond .icon {{
+.icon {{
   transform: rotate(-45deg);
   width: clamp(30px, 3.6vw, 42px);
   height: clamp(30px, 3.6vw, 42px);
@@ -206,7 +179,11 @@ section.main > div {{
   display: grid;
   place-items: center;
 }}
-.diamond svg {{ width: 100%; height: 100%; }}
+.icon svg {{
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}}
 
 .label {{
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -226,12 +203,12 @@ section.main > div {{
 .view-wrap {{
   height: 100dvh;
   width: 100vw;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 18px;
+  display: grid;
+  place-items: center;
   background: #f3f3f3;
+  padding: 18px;
 }}
+
 .view-card {{
   width: 100%;
   max-width: 720px;
@@ -241,11 +218,7 @@ section.main > div {{
   box-shadow: 0 10px 28px rgba(0,0,0,.12);
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }}
-.view-title {{
-  margin: 0 0 10px 0;
-  font-size: 20px;
-  font-weight: 800;
-}}
+
 .back-btn {{
   display: inline-block;
   margin-top: 10px;
@@ -262,7 +235,7 @@ section.main > div {{
 )
 
 # ----------------------------
-# ROUTING
+# UI
 # ----------------------------
 view = get_view()
 
@@ -270,42 +243,42 @@ if view:
     label_map = {k: lbl for (k, lbl, _ic) in MENU_ITEMS}
     shown = label_map.get(view, view)
 
-    html_view = f"""
+    st.markdown(
+        f"""
 <div class="view-wrap">
   <div class="view-card">
-    <h1 class="view-title">Vista: {shown}</h1>
+    <h2 style="margin:0 0 8px 0;">Vista: {shown}</h2>
     <div>Contenido placeholder.</div>
     <a class="back-btn" href="?">Volver al menú</a>
   </div>
 </div>
-"""
-    st.components.v1.html(html_view, height=800, scrolling=False)
-
+""",
+        unsafe_allow_html=True,
+    )
 else:
-    tiles_html = []
+    tiles = []
     for key, label, icon_name in MENU_ITEMS:
-        tiles_html.append(
+        tiles.append(
             f"""
 <a class="tile" href="?view={key}">
-  <div class="diamond">
-    <div class="icon">{svg_icon(icon_name)}</div>
-  </div>
+  <div class="diamond"><div class="icon">{svg_icon(icon_name)}</div></div>
   <div class="label">{label}</div>
 </a>
 """
         )
 
-    html_home = f"""
+    st.markdown(
+        f"""
 <div class="page">
   <div class="hero"></div>
   <div class="panel">
     <div class="panel-inner">
       <div class="grid">
-        {''.join(tiles_html)}
+        {''.join(tiles)}
       </div>
     </div>
   </div>
 </div>
-"""
-    # IMPORTANT: usar components.html evita que Streamlit "escape" partes del HTML como texto
-    st.components.v1.html(html_home, height=1000, scrolling=False)
+""",
+        unsafe_allow_html=True,
+    )
