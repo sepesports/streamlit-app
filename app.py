@@ -1,3 +1,5 @@
+import base64
+import requests
 import streamlit as st
 
 # ----------------------------
@@ -21,12 +23,31 @@ MENU_ITEMS = [
     ("nomina", "Nómina", "id"),
 ]
 
+ORANGE = "#F37021"
+
+
+# ----------------------------
+# IMAGE (FAST) -> DATA URI
+# ----------------------------
+@st.cache_data(show_spinner=False)
+def fetch_image_as_data_uri(url: str) -> str:
+    r = requests.get(url, timeout=20)
+    r.raise_for_status()
+    content_type = r.headers.get("Content-Type", "image/png")
+    b64 = base64.b64encode(r.content).decode("utf-8")
+    return f"data:{content_type};base64,{b64}"
+
+
+try:
+    IMG_DATA_URI = fetch_image_as_data_uri(IMG_URL)
+except Exception:
+    IMG_DATA_URI = ""  # fallback: no background image
+
+
 # ----------------------------
 # HELPERS
 # ----------------------------
 def svg_icon(name: str) -> str:
-    # Icons as inline SVG (stroke = orange via currentColor)
-    # Sized by CSS in .diamond svg
     if name == "wrench":
         return """
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -73,13 +94,6 @@ def svg_icon(name: str) -> str:
     return "<svg viewBox='0 0 24 24' fill='none'></svg>"
 
 
-def set_view(view: str | None):
-    if view:
-        st.query_params["view"] = view
-    else:
-        st.query_params.clear()
-
-
 def get_view() -> str | None:
     qp = st.query_params
     v = qp.get("view", None)
@@ -89,70 +103,67 @@ def get_view() -> str | None:
 
 
 # ----------------------------
-# CSS
+# CSS (RESPONSIVE REAL)
 # ----------------------------
+bg = IMG_DATA_URI if IMG_DATA_URI else IMG_URL
+
 st.markdown(
-    """
+    f"""
 <style>
-  :root{
-    --orange: #F37021;
+  :root {{
+    --orange: {ORANGE};
     --panelText: #ffffff;
     --diamondBg: #ffffff;
     --iconColor: var(--orange);
-  }
+  }}
 
-  /* Remove default paddings to allow true full-height */
-  .stApp {
-    background: #0000;
-  }
-  section.main > div { padding-top: 0rem; padding-bottom: 0rem; }
+  /* Full-bleed */
+  .stApp {{ background: transparent; }}
+  section.main > div {{ padding: 0 !important; }}
+  header, footer {{ visibility: hidden; height: 0px; }}
 
-  /* Full height container */
-  .page {
-    height: 100vh;
-    min-height: 100vh;
+  /* Page uses dynamic viewport height to fit mobile browsers */
+  .page {{
+    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-  }
+  }}
 
-  /* Top image area */
-  .hero {
-    flex: 0 0 auto;
+  /* Hero grows, panel fixed-ish by clamp */
+  .hero {{
+    flex: 1 1 auto;
     width: 100%;
-    position: relative;
-    background-image: url('""" + IMG_URL + """');
+    background-image: url('{bg}');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-  }
+  }}
 
-  /* Bottom menu panel */
-  .panel {
-    flex: 1 1 auto;
+  .panel {{
+    flex: 0 0 auto;
     width: 100%;
     background: var(--orange);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 18px 14px 22px 14px;
-  }
+    padding: 16px 14px 20px 14px;
+  }}
 
-  /* Centered inner panel to avoid stretch on desktop */
-  .panel-inner {
+  /* Panel height responsive: mobile bigger, desktop controlled */
+  .panel-inner {{
     width: 100%;
-    max-width: 560px;
-  }
+    margin: 0 auto;
+    max-width: 720px;
+  }}
 
-  .grid {
+  .grid {{
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 18px 14px;
     align-items: start;
     justify-items: center;
-  }
+  }}
 
-  .tile {
+  .tile {{
     text-decoration: none !important;
     color: var(--panelText) !important;
     display: flex;
@@ -160,82 +171,85 @@ st.markdown(
     align-items: center;
     gap: 8px;
     user-select: none;
-  }
+    width: 100%;
+  }}
 
-  .diamond {
-    width: 64px;
-    height: 64px;
+  .diamond {{
+    width: clamp(58px, 7.2vw, 84px);
+    height: clamp(58px, 7.2vw, 84px);
     background: var(--diamondBg);
     transform: rotate(45deg);
-    border-radius: 10px;
+    border-radius: 12px;
     display: grid;
     place-items: center;
-    box-shadow: 0 6px 18px rgba(0,0,0,.18);
-  }
+    box-shadow: 0 10px 26px rgba(0,0,0,.18);
+  }}
 
-  .diamond > .icon {
+  .diamond > .icon {{
     transform: rotate(-45deg);
-    width: 34px;
-    height: 34px;
+    width: clamp(30px, 3.4vw, 40px);
+    height: clamp(30px, 3.4vw, 40px);
     color: var(--iconColor);
     display: grid;
     place-items: center;
-  }
-  .diamond svg { width: 34px; height: 34px; }
+  }}
+  .diamond svg {{
+    width: 100%;
+    height: 100%;
+  }}
 
-  .label {
+  .label {{
     font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    font-size: 13px;
+    font-size: clamp(12.5px, 1.6vw, 16px);
     line-height: 1.1;
     text-align: center;
     color: var(--panelText);
-  }
+    white-space: nowrap;
+  }}
 
-  /* Hover / active */
-  .tile:hover .diamond { filter: brightness(0.98); transform: rotate(45deg) scale(1.02); }
-  .tile:active .diamond { transform: rotate(45deg) scale(0.99); }
+  .tile:hover .diamond {{
+    filter: brightness(0.985);
+    transform: rotate(45deg) scale(1.03);
+  }}
+  .tile:active .diamond {{
+    transform: rotate(45deg) scale(0.99);
+  }}
 
-  /* Responsive sizing */
-  @media (max-width: 768px){
-    .hero { height: 62vh; }
-    .panel { padding: 16px 12px 20px 12px; }
-    .grid { gap: 16px 12px; }
-    .diamond { width: 62px; height: 62px; border-radius: 10px; }
-    .diamond svg { width: 32px; height: 32px; }
-    .label { font-size: 12.5px; }
-  }
+  /* Mobile fine-tune */
+  @media (max-width: 520px) {{
+    .grid {{
+      gap: 14px 10px;
+    }}
+    .label {{
+      white-space: normal;
+    }}
+  }}
 
-  @media (min-width: 769px){
-    .hero { height: 58vh; }
-    .diamond { width: 78px; height: 78px; border-radius: 12px; }
-    .diamond svg { width: 38px; height: 38px; }
-    .label { font-size: 14.5px; }
-  }
-
-  /* View content */
-  .view-wrap {
-    height: 100vh;
-    min-height: 100vh;
+  /* Views */
+  .view-wrap {{
+    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 18px;
-  }
-  .view-card {
+    background: #f3f3f3;
+  }}
+  .view-card {{
     width: 100%;
-    max-width: 640px;
+    max-width: 720px;
     border-radius: 18px;
     padding: 18px 16px;
     background: #ffffff;
     box-shadow: 0 10px 28px rgba(0,0,0,.12);
     font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  }
-  .view-title {
+  }}
+  .view-title {{
     margin: 0 0 10px 0;
     font-size: 20px;
     font-weight: 800;
-  }
-  .back-btn {
+  }}
+  .back-btn {{
     display: inline-block;
     margin-top: 10px;
     background: var(--orange);
@@ -244,11 +258,7 @@ st.markdown(
     border-radius: 12px;
     text-decoration: none !important;
     font-weight: 700;
-  }
-  .back-btn:hover { filter: brightness(0.97); }
-
-  /* Hide Streamlit header/footer */
-  header, footer { visibility: hidden; height: 0px; }
+  }}
 </style>
 """,
     unsafe_allow_html=True,
@@ -260,7 +270,6 @@ st.markdown(
 view = get_view()
 
 if view:
-    # Map view -> label
     label_map = {k: lbl for (k, lbl, _ic) in MENU_ITEMS}
     shown = label_map.get(view, view)
 
@@ -277,7 +286,6 @@ if view:
         unsafe_allow_html=True,
     )
 else:
-    # HOME (image + orange menu)
     tiles_html = []
     for key, label, icon_name in MENU_ITEMS:
         tiles_html.append(
