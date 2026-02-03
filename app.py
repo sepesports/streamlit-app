@@ -30,17 +30,17 @@ SAMPLE_SCHEDULE = {
 }
 
 # ----------------------------
-# ESTILOS CSS - SIMPLIFICADO
+# ESTILOS CSS SIMPLIFICADOS
 # ----------------------------
 def apply_custom_css():
     """Aplica estilos CSS personalizados"""
     st.markdown(f"""
     <style>
-    /* RESET */
-    html, body, .stApp {{
-        margin: 0;
+    /* RESET BÁSICO */
+    .stApp {{
+        background: {BG_COLOR};
         padding: 0;
-        width: 100%;
+        margin: 0;
     }}
     
     /* HEADER */
@@ -52,9 +52,6 @@ def apply_custom_css():
         justify-content: space-between;
         align-items: center;
         box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        position: sticky;
-        top: 0;
-        z-index: 100;
     }}
     
     /* TÍTULO */
@@ -72,32 +69,23 @@ def apply_custom_css():
         margin-bottom: 15px;
     }}
     
-    /* CONTENEDOR PRINCIPAL */
-    .main-container {{
+    /* CONTENEDOR DE TARJETAS - FLEXBOX SIMPLE */
+    .cards-container {{
         max-width: 1200px;
         margin: 0 auto;
         padding: 40px 25px;
         width: 100%;
     }}
     
-    /* ESCRITORIO: 2 filas de 3 columnas */
-    .dashboard-grid {{
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(2, auto);
-        gap: 25px;
+    /* FILAS PARA ESCRITORIO - 2 filas de 3 tarjetas */
+    .row-desktop {{
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 25px;
         width: 100%;
     }}
     
-    /* Definir posiciones específicas para cada tarjeta en escritorio */
-    .card-1 {{ grid-column: 1 / 2; grid-row: 1 / 2; }}
-    .card-2 {{ grid-column: 2 / 3; grid-row: 1 / 2; }}
-    .card-3 {{ grid-column: 3 / 4; grid-row: 1 / 2; }}
-    .card-4 {{ grid-column: 1 / 2; grid-row: 2 / 3; }}
-    .card-5 {{ grid-column: 2 / 3; grid-row: 2 / 3; }}
-    .card-6 {{ grid-column: 3 / 4; grid-row: 2 / 3; }}
-    
-    /* TARJETAS */
+    /* TARJETAS - 33% de ancho en escritorio */
     .dashboard-card {{
         background: linear-gradient(145deg, #ffffff, #f5f5f5);
         border-radius: 20px;
@@ -109,8 +97,8 @@ def apply_custom_css():
         text-decoration: none !important;
         display: flex;
         flex-direction: column;
-        min-height: 200px;
-        width: 100%;
+        min-height: 220px;
+        width: 32%; /* 3 tarjetas por fila en escritorio */
         position: relative;
         overflow: hidden;
     }}
@@ -142,7 +130,6 @@ def apply_custom_css():
         margin-bottom: 15px;
         font-size: 28px;
         color: white;
-        transition: all 0.3s ease;
     }}
     
     .card-title {{
@@ -158,55 +145,42 @@ def apply_custom_css():
         line-height: 1.5;
     }}
     
-    /* MÓVIL: 3 filas de 2 columnas */
+    /* MÓVIL: 3 filas de 2 tarjetas */
     @media (max-width: 768px) {{
-        .dashboard-grid {{
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(3, auto);
-            gap: 15px;
+        .row-desktop {{
+            flex-direction: column;
+            margin-bottom: 0;
         }}
         
-        /* Redefinir posiciones para móvil */
-        .card-1 {{ grid-column: 1 / 2; grid-row: 1 / 2; }}
-        .card-2 {{ grid-column: 2 / 3; grid-row: 1 / 2; }}
-        .card-3 {{ grid-column: 1 / 2; grid-row: 2 / 3; }}
-        .card-4 {{ grid-column: 2 / 3; grid-row: 2 / 3; }}
-        .card-5 {{ grid-column: 1 / 2; grid-row: 3 / 4; }}
-        .card-6 {{ grid-column: 2 / 3; grid-row: 3 / 4; }}
-        
         .dashboard-card {{
-            padding: 20px;
+            width: 100%;
+            margin-bottom: 15px;
             min-height: 180px;
         }}
         
-        .card-icon {{
-            width: 50px;
-            height: 50px;
-            font-size: 24px;
+        .cards-container {{
+            padding: 20px;
         }}
         
-        .card-title {{
-            font-size: 1.1rem;
+        /* Crear estructura de 2 columnas en móvil usando FLEXBOX WRAP */
+        .mobile-grid {{
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            width: 100%;
         }}
         
-        .page-title {{
-            font-size: 2.2rem;
+        .mobile-grid .dashboard-card {{
+            width: 48%; /* 2 tarjetas por fila en móvil */
+            margin-bottom: 15px;
         }}
     }}
     
     /* MÓVIL PEQUEÑO: 1 columna */
     @media (max-width: 480px) {{
-        .dashboard-grid {{
-            grid-template-columns: 1fr;
-            grid-template-rows: repeat(6, auto);
+        .mobile-grid .dashboard-card {{
+            width: 100%;
         }}
-        
-        .card-1 {{ grid-column: 1 / 2; grid-row: 1 / 2; }}
-        .card-2 {{ grid-column: 1 / 2; grid-row: 2 / 3; }}
-        .card-3 {{ grid-column: 1 / 2; grid-row: 3 / 4; }}
-        .card-4 {{ grid-column: 1 / 2; grid-row: 4 / 5; }}
-        .card-5 {{ grid-column: 1 / 2; grid-row: 5 / 6; }}
-        .card-6 {{ grid-column: 1 / 2; grid-row: 6 / 7; }}
     }}
     
     /* ESTADÍSTICAS */
@@ -251,6 +225,21 @@ def apply_custom_css():
         font-weight: 800;
         margin: 10px 0;
         color: {SECONDARY_COLOR};
+    }}
+    
+    /* MODAL SIMPLE */
+    .calendar-modal-overlay {{
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 20px;
     }}
     
     /* OCULTAR ELEMENTOS DE STREAMLIT */
@@ -302,15 +291,14 @@ def create_dashboard():
     """, unsafe_allow_html=True)
     
     # Contenedor principal
-    st.markdown('<div class="main-container">', unsafe_allow_html=True)
+    st.markdown('<div class="cards-container">', unsafe_allow_html=True)
     
-    # Grid de tarjetas - AHORA ORDENADO CORRECTAMENTE
-    st.markdown('<div class="dashboard-grid">', unsafe_allow_html=True)
+    # **FILA 1 para ESCRITORIO** - 3 tarjetas en línea
+    st.markdown('<div class="row-desktop">', unsafe_allow_html=True)
     
-    # Fila 1 en escritorio (3 tarjetas en línea)
     # 1. Horarios
     st.markdown(f"""
-    <div class="dashboard-card card-1" onclick="openCalendarModal()">
+    <div class="dashboard-card" onclick="openCalendarModal()">
         <div class="card-icon">📅</div>
         <h3 class="card-title">Horarios</h3>
         <p class="card-desc">Consulta y gestiona tus turnos programados</p>
@@ -319,7 +307,7 @@ def create_dashboard():
     
     # 2. Control de Asistencia
     st.markdown(f"""
-    <a href="?view=asistencia" class="dashboard-card card-2">
+    <a href="?view=asistencia" class="dashboard-card">
         <div class="card-icon">✅</div>
         <h3 class="card-title">Control de Asistencia</h3>
         <p class="card-desc">Registro de entrada y salida en tiempo real</p>
@@ -328,17 +316,21 @@ def create_dashboard():
     
     # 3. Nómina y Pagos
     st.markdown(f"""
-    <a href="?view=nomina" class="dashboard-card card-3">
+    <a href="?view=nomina" class="dashboard-card">
         <div class="card-icon">💰</div>
         <h3 class="card-title">Nómina y Pagos</h3>
         <p class="card-desc">Consulta tus recibos y estados de pago</p>
     </a>
     """, unsafe_allow_html=True)
     
-    # Fila 2 en escritorio (3 tarjetas en línea)
+    st.markdown('</div>', unsafe_allow_html=True)  # Cierra fila 1
+    
+    # **FILA 2 para ESCRITORIO** - 3 tarjetas en línea
+    st.markdown('<div class="row-desktop">', unsafe_allow_html=True)
+    
     # 4. Incidencias
     st.markdown(f"""
-    <a href="?view=incidencias" class="dashboard-card card-4">
+    <a href="?view=incidencias" class="dashboard-card">
         <div class="card-icon">⚠️</div>
         <h3 class="card-title">Incidencias</h3>
         <p class="card-desc">Reporta y consulta incidencias</p>
@@ -347,7 +339,7 @@ def create_dashboard():
     
     # 5. Formación
     st.markdown(f"""
-    <a href="?view=formacion" class="dashboard-card card-5">
+    <a href="?view=formacion" class="dashboard-card">
         <div class="card-icon">🎓</div>
         <h3 class="card-title">Formación</h3>
         <p class="card-desc">Accede a cursos y certificaciones</p>
@@ -356,14 +348,79 @@ def create_dashboard():
     
     # 6. Comunicados
     st.markdown(f"""
-    <a href="?view=comunicados" class="dashboard-card card-6">
+    <a href="?view=comunicados" class="dashboard-card">
         <div class="card-icon">📢</div>
         <h3 class="card-title">Comunicados</h3>
         <p class="card-desc">Últimas noticias y anuncios</p>
     </a>
     """, unsafe_allow_html=True)
     
-    st.markdown('</div>', unsafe_allow_html=True)  # Cierra dashboard-grid
+    st.markdown('</div>', unsafe_allow_html=True)  # Cierra fila 2
+    
+    # **Versión MÓVIL usando FLEXBOX WRAP** - 3 filas de 2 tarjetas
+    st.markdown("""
+    <div class="mobile-grid" style="display: none;">
+        <!-- Fila 1 móvil -->
+        <div class="dashboard-card" onclick="openCalendarModal()">
+            <div class="card-icon">📅</div>
+            <h3 class="card-title">Horarios</h3>
+            <p class="card-desc">Consulta y gestiona tus turnos programados</p>
+        </div>
+        
+        <a href="?view=asistencia" class="dashboard-card">
+            <div class="card-icon">✅</div>
+            <h3 class="card-title">Control de Asistencia</h3>
+            <p class="card-desc">Registro de entrada y salida en tiempo real</p>
+        </a>
+        
+        <!-- Fila 2 móvil -->
+        <a href="?view=nomina" class="dashboard-card">
+            <div class="card-icon">💰</div>
+            <h3 class="card-title">Nómina y Pagos</h3>
+            <p class="card-desc">Consulta tus recibos y estados de pago</p>
+        </a>
+        
+        <a href="?view=incidencias" class="dashboard-card">
+            <div class="card-icon">⚠️</div>
+            <h3 class="card-title">Incidencias</h3>
+            <p class="card-desc">Reporta y consulta incidencias</p>
+        </a>
+        
+        <!-- Fila 3 móvil -->
+        <a href="?view=formacion" class="dashboard-card">
+            <div class="card-icon">🎓</div>
+            <h3 class="card-title">Formación</h3>
+            <p class="card-desc">Accede a cursos y certificaciones</p>
+        </a>
+        
+        <a href="?view=comunicados" class="dashboard-card">
+            <div class="card-icon">📢</div>
+            <h3 class="card-title">Comunicados</h3>
+            <p class="card-desc">Últimas noticias y anuncios</p>
+        </a>
+    </div>
+    
+    <script>
+    // Mostrar solo la versión correcta según el tamaño de pantalla
+    if (window.innerWidth <= 768) {{
+        document.querySelector('.row-desktop').style.display = 'none';
+        document.querySelector('.mobile-grid').style.display = 'flex';
+    }}
+    
+    // Actualizar al cambiar tamaño de ventana
+    window.addEventListener('resize', function() {{
+        if (window.innerWidth <= 768) {{
+            document.querySelector('.row-desktop').style.display = 'none';
+            document.querySelector('.mobile-grid').style.display = 'flex';
+        }} else {{
+            document.querySelector('.row-desktop').style.display = 'flex';
+            document.querySelector('.mobile-grid').style.display = 'none';
+        }}
+    }});
+    </script>
+    """, unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)  # Cierra cards-container
     
     # Estadísticas
     st.markdown(f"""
@@ -400,11 +457,9 @@ def create_dashboard():
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown('</div>', unsafe_allow_html=True)  # Cierra main-container
-    
-    # Modal del calendario (simplificado)
+    # Modal del calendario
     st.markdown("""
-    <div id="calendar-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center;">
+    <div id="calendar-modal" class="calendar-modal-overlay" style="display: none;">
         <div style="background: white; border-radius: 20px; padding: 30px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 style="margin: 0; color: #333;">📅 Calendario de Turnos</h2>
@@ -427,6 +482,20 @@ def create_dashboard():
         document.getElementById('calendar-modal').style.display = 'none';
         document.body.style.overflow = 'auto';
     }
+    
+    // Cerrar modal al hacer clic fuera
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('calendar-modal-overlay')) {
+            closeCalendarModal();
+        }
+    });
+    
+    // Cerrar con ESC
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeCalendarModal();
+        }
+    });
     </script>
     """, unsafe_allow_html=True)
 
