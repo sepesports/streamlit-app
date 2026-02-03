@@ -30,7 +30,7 @@ SAMPLE_SCHEDULE = {
 }
 
 # ----------------------------
-# ESTILOS CSS - FUNCIONA EN ESCRITORIO Y MÓVIL
+# ESTILOS CSS - SOLUCIÓN DEFINITIVA
 # ----------------------------
 def apply_custom_css():
     """Aplica estilos CSS personalizados"""
@@ -90,10 +90,7 @@ def apply_custom_css():
         box-sizing: border-box;
     }}
     
-    /* ESCRITORIO: USAR COLUMNAS DE STREAMLIT (3 columnas) */
-    /* Esto ya está funcionando bien */
-    
-    /* TARJETAS - ESTILOS BÁSICOS */
+    /* TARJETAS ESCRITORIO - ESTILOS BÁSICOS */
     .dashboard-card {{
         background: linear-gradient(145deg, #ffffff, #f5f5f5);
         border-radius: 20px;
@@ -155,18 +152,18 @@ def apply_custom_css():
         line-height: 1.5;
     }}
     
-    /* MÓVIL: 2 COLUMNAS Y 3 FILAS */
+    /* MÓVIL: ICONOS SIN CAJAS - 2 COLUMNAS, 3 FILAS */
     @media (max-width: 768px) {{
         /* Ocultar las columnas de Streamlit en móvil */
         .st-emotion-cache-1v0mbdj {{
             display: none !important;
         }}
         
-        /* Mostrar el grid de tarjetas en móvil */
-        .mobile-cards-grid {{
+        /* Mostrar el grid de iconos en móvil */
+        .mobile-icons-grid {{
             display: grid !important;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            gap: 20px;
             width: 100%;
         }}
         
@@ -174,19 +171,53 @@ def apply_custom_css():
             padding: 20px 15px;
         }}
         
-        .dashboard-card {{
-            min-height: 170px;
+        /* ICONOS PARA MÓVIL - SIN CAJAS */
+        .mobile-icon-item {{
+            background: white;
+            border-radius: 15px;
             padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            text-decoration: none !important;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            min-height: 140px;
+            cursor: pointer;
         }}
         
-        .card-icon {{
-            width: 50px;
-            height: 50px;
-            font-size: 24px;
+        .mobile-icon-item:hover {{
+            border-color: {PRIMARY_COLOR};
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(243, 112, 33, 0.15);
         }}
         
-        .card-title {{
-            font-size: 1.1rem;
+        .mobile-icon {{
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, {PRIMARY_COLOR}, #ff944d);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            font-size: 26px;
+            color: white;
+        }}
+        
+        .mobile-icon-title {{
+            font-size: 1rem;
+            font-weight: 600;
+            color: {SECONDARY_COLOR};
+            margin: 0;
+            line-height: 1.2;
+        }}
+        
+        .mobile-icon-desc {{
+            display: none; /* Ocultar descripción en móvil */
         }}
         
         .page-title {{
@@ -200,7 +231,7 @@ def apply_custom_css():
     
     /* ESCRITORIO: OCULTAR EL GRID MÓVIL */
     @media (min-width: 769px) {{
-        .mobile-cards-grid {{
+        .mobile-icons-grid {{
             display: none !important;
         }}
     }}
@@ -230,6 +261,7 @@ def apply_custom_css():
         
         .stats-container {{
             padding: 20px;
+            margin-top: 25px;
         }}
     }}
     
@@ -238,8 +270,19 @@ def apply_custom_css():
             grid-template-columns: 1fr;
         }}
         
-        .mobile-cards-grid {{
-            grid-template-columns: 1fr;
+        .mobile-icons-grid {{
+            gap: 15px;
+        }}
+        
+        .mobile-icon-item {{
+            min-height: 120px;
+            padding: 15px;
+        }}
+        
+        .mobile-icon {{
+            width: 50px;
+            height: 50px;
+            font-size: 22px;
         }}
     }}
     
@@ -309,7 +352,7 @@ def create_dashboard():
     # Contenedor principal
     st.markdown('<div class="main-content">', unsafe_allow_html=True)
     
-    # **VERSIÓN ESCRITORIO: 3 columnas usando Streamlit (funciona bien)**
+    # **VERSIÓN ESCRITORIO: 3 columnas usando Streamlit**
     # Fila 1: 3 tarjetas
     col1, col2, col3 = st.columns(3, gap="large")
     
@@ -370,46 +413,46 @@ def create_dashboard():
         </a>
         """, unsafe_allow_html=True)
     
-    # **VERSIÓN MÓVIL: Grid de 2 columnas x 3 filas (oculto en escritorio)**
+    # **VERSIÓN MÓVIL: Grid de iconos - 2 columnas, 3 filas**
     st.markdown("""
-    <div class="mobile-cards-grid" style="display: none;">
+    <div class="mobile-icons-grid" style="display: none;">
         <!-- Fila 1 móvil -->
-        <div class="dashboard-card" onclick="openCalendarModal()">
-            <div class="card-icon">📅</div>
-            <h3 class="card-title">Horarios</h3>
-            <p class="card-desc">Consulta y gestiona tus turnos programados</p>
+        <div class="mobile-icon-item" onclick="openCalendarModal()">
+            <div class="mobile-icon">📅</div>
+            <h3 class="mobile-icon-title">Horarios</h3>
+            <p class="mobile-icon-desc">Consulta y gestiona tus turnos programados</p>
         </div>
         
-        <a href="?view=asistencia" class="dashboard-card">
-            <div class="card-icon">✅</div>
-            <h3 class="card-title">Control de Asistencia</h3>
-            <p class="card-desc">Registro de entrada y salida en tiempo real</p>
+        <a href="?view=asistencia" class="mobile-icon-item">
+            <div class="mobile-icon">✅</div>
+            <h3 class="mobile-icon-title">Control de Asistencia</h3>
+            <p class="mobile-icon-desc">Registro de entrada y salida en tiempo real</p>
         </a>
         
         <!-- Fila 2 móvil -->
-        <a href="?view=nomina" class="dashboard-card">
-            <div class="card-icon">💰</div>
-            <h3 class="card-title">Nómina y Pagos</h3>
-            <p class="card-desc">Consulta tus recibos y estados de pago</p>
+        <a href="?view=nomina" class="mobile-icon-item">
+            <div class="mobile-icon">💰</div>
+            <h3 class="mobile-icon-title">Nómina y Pagos</h3>
+            <p class="mobile-icon-desc">Consulta tus recibos y estados de pago</p>
         </a>
         
-        <a href="?view=incidencias" class="dashboard-card">
-            <div class="card-icon">⚠️</div>
-            <h3 class="card-title">Incidencias</h3>
-            <p class="card-desc">Reporta y consulta incidencias</p>
+        <a href="?view=incidencias" class="mobile-icon-item">
+            <div class="mobile-icon">⚠️</div>
+            <h3 class="mobile-icon-title">Incidencias</h3>
+            <p class="mobile-icon-desc">Reporta y consulta incidencias</p>
         </a>
         
         <!-- Fila 3 móvil -->
-        <a href="?view=formacion" class="dashboard-card">
-            <div class="card-icon">🎓</div>
-            <h3 class="card-title">Formación</h3>
-            <p class="card-desc">Accede a cursos y certificaciones</p>
+        <a href="?view=formacion" class="mobile-icon-item">
+            <div class="mobile-icon">🎓</div>
+            <h3 class="mobile-icon-title">Formación</h3>
+            <p class="mobile-icon-desc">Accede a cursos y certificaciones</p>
         </a>
         
-        <a href="?view=comunicados" class="dashboard-card">
-            <div class="card-icon">📢</div>
-            <h3 class="card-title">Comunicados</h3>
-            <p class="card-desc">Últimas noticias y anuncios</p>
+        <a href="?view=comunicados" class="mobile-icon-item">
+            <div class="mobile-icon">📢</div>
+            <h3 class="mobile-icon-title">Comunicados</h3>
+            <p class="mobile-icon-desc">Últimas noticias y anuncios</p>
         </a>
     </div>
     """, unsafe_allow_html=True)
