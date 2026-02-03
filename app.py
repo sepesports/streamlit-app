@@ -30,7 +30,7 @@ SAMPLE_SCHEDULE = {
 }
 
 # ----------------------------
-# ESTILOS CSS OPTIMIZADOS
+# ESTILOS CSS OPTIMIZADOS - CORREGIDO
 # ----------------------------
 def apply_custom_css():
     """Aplica estilos CSS personalizados"""
@@ -186,7 +186,7 @@ def apply_custom_css():
         font-weight: 300;
     }}
     
-    /* GRID DE TARJETAS - CORREGIDO */
+    /* GRID DE TARJETAS - CORREGIDO DEFINITIVAMENTE */
     .dashboard-container {{
         padding: 40px 25px;
         max-width: 1200px;
@@ -202,10 +202,11 @@ def apply_custom_css():
         grid-template-columns: repeat(3, 1fr);
         gap: 25px;
         width: 100%;
-        justify-items: center;
+        justify-items: stretch;  /* Cambiado de center a stretch */
+        align-items: stretch;
     }}
     
-    /* TARJETAS PROFESIONALES */
+    /* TARJETAS PROFESIONALES - CORREGIDO */
     .dashboard-card {{
         background: linear-gradient(145deg, #ffffff, #f5f5f5);
         border-radius: 20px;
@@ -220,10 +221,10 @@ def apply_custom_css():
         justify-content: space-between;
         height: 100%;
         min-height: 220px;
-        width: 100%;
-        max-width: 350px;
+        width: 100%;  /* Eliminado max-width */
         position: relative;
         overflow: hidden;
+        box-sizing: border-box;  /* Añadido */
     }}
     
     .dashboard-card::before {{
@@ -666,7 +667,7 @@ def apply_custom_css():
         .dashboard-card {{
             min-height: 200px;
             padding: 22px;
-            max-width: 100%;
+            width: 100%;
         }}
         
         .card-icon {{
@@ -753,7 +754,7 @@ def apply_custom_css():
     }}
     
     @media (max-width: 576px) {{
-        /* MÓVIL PEQUEÑO: 2 columnas x 3 filas */
+        /* MÓVIL PEQUEÑO: 2 columnas x 3 filas - CORREGIDO */
         .dashboard-grid {{
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 15px;
@@ -794,6 +795,13 @@ def apply_custom_css():
         .calendar-day-header {{
             padding: 15px 5px;
             font-size: 0.85rem;
+        }}
+        
+        /* Para pantallas muy pequeñas, cambiar a 1 columna */
+        @media (max-width: 400px) {{
+            .dashboard-grid {{
+                grid-template-columns: 1fr !important;
+            }}
         }}
     }}
     
@@ -925,7 +933,7 @@ def create_professional_calendar():
         <div class="day-number">
             <span>{current_day.day}</span>
             <span style="font-size: 0.8rem; opacity: 0.7;">{weekday_indicator}</span>
-        </div>'
+        </div>
         '''
         
         # Mostrar turnos si existen
