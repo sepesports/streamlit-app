@@ -30,51 +30,20 @@ SAMPLE_SCHEDULE = {
 }
 
 # ----------------------------
-# ESTILOS CSS SIMPLIFICADOS
+# ESTILOS CSS - SIMPLIFICADO
 # ----------------------------
 def apply_custom_css():
     """Aplica estilos CSS personalizados"""
     st.markdown(f"""
     <style>
-    /* RESET TOTAL */
-    html, body, #root, [class*="ViewContainer"] {{
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100% !important;
-        overflow-x: hidden !important;
+    /* RESET */
+    html, body, .stApp {{
+        margin: 0;
+        padding: 0;
+        width: 100%;
     }}
     
-    /* Contenedor principal */
-    .stApp {{
-        background: {BG_COLOR} !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        min-height: 100vh !important;
-    }}
-    
-    /* Eliminar espacios de Streamlit */
-    [data-testid="stAppViewContainer"] {{
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
-    }}
-    
-    [data-testid="stMainBlockContainer"] {{
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
-    }}
-    
-    .main .block-container {{
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
-    }}
-    
-    /* HEADER COMPACTO */
+    /* HEADER */
     .main-header {{
         background: linear-gradient(135deg, {SECONDARY_COLOR}, #1a2530);
         color: white;
@@ -88,52 +57,12 @@ def apply_custom_css():
         z-index: 100;
     }}
     
-    .logo-container {{
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 1.3rem;
-        font-weight: 700;
-    }}
-    
-    .user-info {{
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 0.9rem;
-    }}
-    
-    .user-badge {{
-        background: rgba(255,255,255,0.15);
-        padding: 8px 16px;
-        border-radius: 25px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.2);
-    }}
-    
-    /* CONTENIDO PRINCIPAL */
-    .main-content {{
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100%;
-    }}
-    
-    /* TÍTULO CON FONDO PROFESIONAL */
+    /* TÍTULO */
     .page-title-section {{
-        background: linear-gradient(135deg, 
-            #1a5276, 
-            #1c5c82, 
-            #1e6790, 
-            {PRIMARY_COLOR});
+        background: linear-gradient(135deg, #1a5276, #1c5c82, #1e6790, {PRIMARY_COLOR});
         padding: 40px 25px;
         text-align: center;
         margin-bottom: 0;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(26, 82, 118, 0.2);
     }}
     
     .page-title {{
@@ -141,58 +70,47 @@ def apply_custom_css():
         font-size: 2.8rem;
         font-weight: 800;
         margin-bottom: 15px;
-        font-family: 'Montserrat', 'Segoe UI', sans-serif;
-        text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
-        position: relative;
-        z-index: 1;
-        letter-spacing: 0.5px;
     }}
     
-    .page-subtitle {{
-        color: rgba(255,255,255,0.95);
-        font-size: 1.3rem;
-        font-family: 'Segoe UI', sans-serif;
-        max-width: 700px;
-        margin: 0 auto;
-        line-height: 1.6;
-        position: relative;
-        z-index: 1;
-        text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
-        font-weight: 300;
-    }}
-    
-    /* CONTENEDOR DE TARJETAS - SIMPLIFICADO */
-    .cards-container {{
+    /* CONTENEDOR PRINCIPAL */
+    .main-container {{
         max-width: 1200px;
         margin: 0 auto;
         padding: 40px 25px;
+        width: 100%;
     }}
     
-    /* FILAS DE TARJETAS - ESCRITORIO */
-    .card-row {{
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 25px;
+    /* ESCRITORIO: 2 filas de 3 columnas */
+    .dashboard-grid {{
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(2, auto);
         gap: 25px;
         width: 100%;
     }}
     
-    /* TARJETAS INDIVIDUALES */
+    /* Definir posiciones específicas para cada tarjeta en escritorio */
+    .card-1 {{ grid-column: 1 / 2; grid-row: 1 / 2; }}
+    .card-2 {{ grid-column: 2 / 3; grid-row: 1 / 2; }}
+    .card-3 {{ grid-column: 3 / 4; grid-row: 1 / 2; }}
+    .card-4 {{ grid-column: 1 / 2; grid-row: 2 / 3; }}
+    .card-5 {{ grid-column: 2 / 3; grid-row: 2 / 3; }}
+    .card-6 {{ grid-column: 3 / 4; grid-row: 2 / 3; }}
+    
+    /* TARJETAS */
     .dashboard-card {{
         background: linear-gradient(145deg, #ffffff, #f5f5f5);
         border-radius: 20px;
         padding: 25px;
         box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transition: all 0.3s ease;
         cursor: pointer;
         border: none;
         text-decoration: none !important;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-        height: 100%;
-        min-height: 220px;
-        flex: 1;
+        min-height: 200px;
+        width: 100%;
         position: relative;
         overflow: hidden;
     }}
@@ -209,398 +127,61 @@ def apply_custom_css():
     }}
     
     .dashboard-card:hover {{
-        transform: translateY(-10px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(243, 112, 33, 0.25);
-        border-color: {PRIMARY_COLOR};
-    }}
-    
-    .dashboard-card:hover .card-icon {{
-        transform: scale(1.1) rotate(5deg);
-        box-shadow: 0 10px 25px rgba(243, 112, 33, 0.3);
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(243, 112, 33, 0.2);
     }}
     
     .card-icon {{
-        width: 75px;
-        height: 75px;
+        width: 60px;
+        height: 60px;
         background: linear-gradient(135deg, {PRIMARY_COLOR}, #ff944d);
-        border-radius: 18px;
+        border-radius: 15px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 20px;
-        font-size: 32px;
+        margin-bottom: 15px;
+        font-size: 28px;
         color: white;
-        transition: all 0.4s ease;
-        box-shadow: 0 8px 20px rgba(243, 112, 33, 0.2);
+        transition: all 0.3s ease;
     }}
     
     .card-title {{
-        font-size: 1.4rem;
+        font-size: 1.3rem;
         font-weight: 700;
         color: {SECONDARY_COLOR};
-        margin-bottom: 12px;
-        font-family: 'Segoe UI', sans-serif;
-        line-height: 1.3;
+        margin-bottom: 10px;
     }}
     
     .card-desc {{
         color: #666;
-        font-size: 1rem;
+        font-size: 0.95rem;
         line-height: 1.5;
-        font-family: 'Segoe UI', sans-serif;
-        opacity: 0.9;
     }}
     
-    /* ESTADÍSTICAS */
-    .stats-container {{
-        background: white;
-        border-radius: 20px;
-        padding: 35px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        margin: 40px auto 0;
-        max-width: 1200px;
-        width: calc(100% - 50px);
-        box-sizing: border-box;
-        position: relative;
-        overflow: hidden;
-    }}
-    
-    .stats-container::before {{
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, {PRIMARY_COLOR}, {SECONDARY_COLOR});
-    }}
-    
-    .stats-grid {{
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-        width: 100%;
-    }}
-    
-    .stat-card {{
-        background: linear-gradient(135deg, #f8f9fa, #ffffff);
-        border-radius: 15px;
-        padding: 25px;
-        text-align: center;
-        border-left: 5px solid;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    }}
-    
-    .stat-card:hover {{
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-    }}
-    
-    .stat-value {{
-        font-size: 2.5rem;
-        font-weight: 800;
-        margin: 15px 0;
-        font-family: 'Segoe UI', sans-serif;
-        background: linear-gradient(135deg, {SECONDARY_COLOR}, #1a2530);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }}
-    
-    /* MODAL DE CALENDARIO */
-    .calendar-modal-overlay {{
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.9);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        padding: 20px;
-        animation: fadeIn 0.4s ease;
-        backdrop-filter: blur(10px);
-    }}
-    
-    .calendar-modal {{
-        background: linear-gradient(145deg, #ffffff, #f8f9fa);
-        border-radius: 25px;
-        width: 95%;
-        max-width: 1400px;
-        height: 85vh;
-        overflow: hidden;
-        box-shadow: 0 30px 80px rgba(0,0,0,0.4);
-        animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        display: flex;
-        flex-direction: column;
-        border: 1px solid rgba(255,255,255,0.2);
-    }}
-    
-    @keyframes slideUp {{
-        from {{ transform: translateY(100px); opacity: 0; }}
-        to {{ transform: translateY(0); opacity: 1; }}
-    }}
-    
-    .modal-header {{
-        background: linear-gradient(135deg, {SECONDARY_COLOR}, #1a2530);
-        color: white;
-        padding: 25px 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 4px solid {PRIMARY_COLOR};
-        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    }}
-    
-    .modal-title {{
-        font-size: 2rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        font-family: 'Montserrat', sans-serif;
-    }}
-    
-    .modal-close {{
-        background: {PRIMARY_COLOR};
-        color: white;
-        border: none;
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        font-size: 1.5rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        box-shadow: 0 5px 15px rgba(243, 112, 33, 0.3);
-    }}
-    
-    .modal-close:hover {{
-        background: #e55a1a;
-        transform: rotate(90deg) scale(1.1);
-        box-shadow: 0 8px 20px rgba(229, 90, 26, 0.4);
-    }}
-    
-    /* CALENDARIO */
-    .professional-calendar {{
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        background: #f5f7fa;
-    }}
-    
-    .calendar-controls {{
-        background: white;
-        padding: 25px 30px;
-        border-bottom: 1px solid #e8ecef;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 20px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    }}
-    
-    .calendar-main {{
-        flex: 1;
-        overflow: auto;
-        padding: 30px;
-        background: linear-gradient(135deg, #f5f7fa 0%, #e8ecef 100%);
-    }}
-    
-    .calendar-days-grid {{
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 2px;
-        background: #d0d7e0;
-        border-radius: 15px;
-        overflow: hidden;
-        border: 2px solid #d0d7e0;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    }}
-    
-    .calendar-day-header {{
-        background: linear-gradient(135deg, {SECONDARY_COLOR}, #1a2530);
-        color: white;
-        padding: 20px 10px;
-        text-align: center;
-        font-weight: 700;
-        font-size: 1rem;
-        font-family: 'Segoe UI', sans-serif;
-        letter-spacing: 0.5px;
-    }}
-    
-    .calendar-day-cell {{
-        background: white;
-        min-height: 140px;
-        padding: 15px;
-        position: relative;
-        transition: all 0.3s ease;
-        border-right: 1px solid #f0f0f0;
-        border-bottom: 1px solid #f0f0f0;
-    }}
-    
-    .day-number {{
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: {SECONDARY_COLOR};
-        margin-bottom: 12px;
-        font-family: 'Segoe UI', sans-serif;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }}
-    
-    .today-cell {{
-        background: linear-gradient(135deg, rgba(243, 112, 33, 0.15), rgba(243, 112, 33, 0.05)) !important;
-        border: 2px solid {PRIMARY_COLOR} !important;
-        border-radius: 8px;
-    }}
-    
-    .today-cell .day-number {{
-        color: {PRIMARY_COLOR};
-        font-weight: 800;
-    }}
-    
-    .shift-item {{
-        background: linear-gradient(135deg, {PRIMARY_COLOR}, #ff8c42);
-        color: white;
-        padding: 10px 12px;
-        border-radius: 10px;
-        font-size: 0.85rem;
-        margin-top: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border-left: 4px solid rgba(255,255,255,0.5);
-        box-shadow: 0 3px 10px rgba(243, 112, 33, 0.2);
-    }}
-    
-    /* BOTONES */
-    .action-buttons {{
-        display: flex;
-        gap: 15px;
-        margin-top: 30px;
-        justify-content: center;
-        flex-wrap: wrap;
-    }}
-    
-    .btn-primary {{
-        background: linear-gradient(135deg, {PRIMARY_COLOR}, #ff8c42);
-        color: white;
-        border: none;
-        padding: 15px 30px;
-        border-radius: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-family: 'Segoe UI', sans-serif;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        box-shadow: 0 5px 15px rgba(243, 112, 33, 0.3);
-        letter-spacing: 0.5px;
-    }}
-    
-    .btn-primary:hover {{
-        background: linear-gradient(135deg, #e55a1a, #f37021);
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(229, 90, 26, 0.4);
-    }}
-    
-    /* RESPONSIVE PARA MÓVIL */
-    @media (max-width: 992px) {{
-        .main-header {{
-            padding: 12px 20px;
-        }}
-        
-        .logo-container {{
-            font-size: 1.1rem;
-        }}
-        
-        .user-info {{
-            font-size: 0.8rem;
-        }}
-        
-        .page-title-section {{
-            padding: 30px 20px;
-        }}
-        
-        .page-title {{
-            font-size: 2.2rem;
-        }}
-        
-        .page-subtitle {{
-            font-size: 1.1rem;
-            padding: 0 15px;
-        }}
-        
-        .cards-container {{
-            padding: 30px 20px;
-        }}
-        
-        /* MÓVIL: 3 filas x 2 columnas */
-        .card-row {{
-            flex-direction: column;
-            margin-bottom: 20px;
-            gap: 20px;
-        }}
-        
-        .dashboard-card {{
-            min-height: 200px;
-            padding: 22px;
-        }}
-        
-        .card-icon {{
-            width: 65px;
-            height: 65px;
-            font-size: 28px;
-            margin-bottom: 18px;
-        }}
-        
-        .card-title {{
-            font-size: 1.2rem;
-        }}
-        
-        .card-desc {{
-            font-size: 0.95rem;
-        }}
-        
-        .stats-container {{
-            padding: 25px;
-            margin: 30px auto 0;
-            width: calc(100% - 40px);
-        }}
-        
-        .stats-grid {{
+    /* MÓVIL: 3 filas de 2 columnas */
+    @media (max-width: 768px) {{
+        .dashboard-grid {{
             grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, auto);
             gap: 15px;
         }}
         
-        .stat-card {{
-            padding: 20px;
-        }}
+        /* Redefinir posiciones para móvil */
+        .card-1 {{ grid-column: 1 / 2; grid-row: 1 / 2; }}
+        .card-2 {{ grid-column: 2 / 3; grid-row: 1 / 2; }}
+        .card-3 {{ grid-column: 1 / 2; grid-row: 2 / 3; }}
+        .card-4 {{ grid-column: 2 / 3; grid-row: 2 / 3; }}
+        .card-5 {{ grid-column: 1 / 2; grid-row: 3 / 4; }}
+        .card-6 {{ grid-column: 2 / 3; grid-row: 3 / 4; }}
         
-        .stat-value {{
-            font-size: 2rem;
-        }}
-    }}
-    
-    @media (max-width: 576px) {{
         .dashboard-card {{
+            padding: 20px;
             min-height: 180px;
-            padding: 18px;
         }}
         
         .card-icon {{
-            width: 55px;
-            height: 55px;
+            width: 50px;
+            height: 50px;
             font-size: 24px;
         }}
         
@@ -608,37 +189,74 @@ def apply_custom_css():
             font-size: 1.1rem;
         }}
         
-        .card-desc {{
-            font-size: 0.9rem;
+        .page-title {{
+            font-size: 2.2rem;
+        }}
+    }}
+    
+    /* MÓVIL PEQUEÑO: 1 columna */
+    @media (max-width: 480px) {{
+        .dashboard-grid {{
+            grid-template-columns: 1fr;
+            grid-template-rows: repeat(6, auto);
         }}
         
+        .card-1 {{ grid-column: 1 / 2; grid-row: 1 / 2; }}
+        .card-2 {{ grid-column: 1 / 2; grid-row: 2 / 3; }}
+        .card-3 {{ grid-column: 1 / 2; grid-row: 3 / 4; }}
+        .card-4 {{ grid-column: 1 / 2; grid-row: 4 / 5; }}
+        .card-5 {{ grid-column: 1 / 2; grid-row: 5 / 6; }}
+        .card-6 {{ grid-column: 1 / 2; grid-row: 6 / 7; }}
+    }}
+    
+    /* ESTADÍSTICAS */
+    .stats-container {{
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        margin: 40px auto 0;
+        max-width: 1200px;
+        width: 100%;
+    }}
+    
+    .stats-grid {{
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }}
+    
+    @media (max-width: 768px) {{
         .stats-grid {{
             grid-template-columns: repeat(2, 1fr);
         }}
     }}
     
+    @media (max-width: 480px) {{
+        .stats-grid {{
+            grid-template-columns: 1fr;
+        }}
+    }}
+    
+    .stat-card {{
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        border-left: 4px solid {PRIMARY_COLOR};
+    }}
+    
+    .stat-value {{
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin: 10px 0;
+        color: {SECONDARY_COLOR};
+    }}
+    
     /* OCULTAR ELEMENTOS DE STREAMLIT */
-    [data-testid="stHeader"] {{
-        display: none !important;
-    }}
-    
-    footer {{
-        display: none !important;
-    }}
-    
-    .stDeployButton {{
-        display: none !important;
-    }}
-    
-    /* ANIMACIONES */
-    @keyframes fadeIn {{
-        from {{ opacity: 0; transform: translateY(20px); }}
-        to {{ opacity: 1; transform: translateY(0); }}
-    }}
-    
-    .fade-in {{
-        animation: fadeIn 0.6s ease-out;
-    }}
+    [data-testid="stHeader"] {{ display: none !important; }}
+    footer {{ display: none !important; }}
+    .stDeployButton {{ display: none !important; }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -648,353 +266,175 @@ def apply_custom_css():
 def create_header():
     """Crea el encabezado profesional"""
     st.markdown(f"""
-    <div class="main-header fade-in">
-        <div class="logo-container">
+    <div class="main-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
             <span style="font-size: 1.5rem;">🛟</span>
-            <span>SOCORRISTA PRO</span>
+            <span style="font-size: 1.3rem; font-weight: 700;">SOCORRISTA PRO</span>
         </div>
-        <div class="user-info">
-            <div class="user-badge">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 25px; display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 1.1rem;">👤</span>
-                <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                    <span style="font-weight: 600;">Carlos Rodríguez</span>
-                    <span style="font-size: 0.8rem; opacity: 0.9;">Socorrista Principal</span>
+                <div>
+                    <div style="font-weight: 600;">Carlos Rodríguez</div>
+                    <div style="font-size: 0.8rem; opacity: 0.9;">Socorrista Principal</div>
                 </div>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
-
-def create_professional_calendar():
-    """Crea un calendario profesional tipo malla de turnos"""
-    if 'calendar_month' not in st.session_state:
-        st.session_state.calendar_month = datetime.datetime.now().month
-        st.session_state.calendar_year = datetime.datetime.now().year
-    
-    current_date = datetime.date(st.session_state.calendar_year, st.session_state.calendar_month, 1)
-    month_name = current_date.strftime("%B %Y").upper()
-    
-    first_day = current_date
-    last_day = datetime.date(st.session_state.calendar_year, 
-                           st.session_state.calendar_month, 
-                           calendar.monthrange(st.session_state.calendar_year, 
-                                             st.session_state.calendar_month)[1])
-    
-    days_of_week = ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"]
-    
-    calendar_html = '<div class="calendar-days-grid">'
-    
-    for day in days_of_week:
-        calendar_html += f'<div class="calendar-day-header">{day}</div>'
-    
-    first_weekday = (first_day.weekday() + 1) % 7
-    for _ in range(first_weekday):
-        calendar_html += '<div class="calendar-day-cell"></div>'
-    
-    current_day = first_day
-    while current_day <= last_day:
-        day_class = "calendar-day-cell"
-        
-        if current_day.weekday() >= 5:
-            day_class += " weekend-cell"
-        
-        if current_day == datetime.date.today():
-            day_class += " today-cell"
-        
-        date_str = current_day.strftime("%Y-%m-%d")
-        has_shifts = date_str in SAMPLE_SCHEDULE
-        
-        calendar_html += f'<div class="{day_class}">'
-        
-        weekday_indicator = "⚪" if current_day.weekday() < 5 else "🔵"
-        calendar_html += f'''
-        <div class="day-number">
-            <span>{current_day.day}</span>
-            <span style="font-size: 0.8rem; opacity: 0.7;">{weekday_indicator}</span>
-        </div>
-        '''
-        
-        if has_shifts:
-            for schedule in SAMPLE_SCHEDULE[date_str]:
-                calendar_html += f"""
-                <div class="shift-item" onclick="
-                    document.getElementById('shift-date').textContent = '{date_str}';
-                    document.getElementById('shift-time').textContent = '{schedule['hora']}';
-                    document.getElementById('shift-type').textContent = '{schedule['tipo']}';
-                    document.getElementById('shift-person').textContent = '{schedule['socorrista']}';
-                    document.getElementById('shift-modal').style.display = 'flex';
-                ">
-                    <div class="shift-time">{schedule['hora'].split('-')[0]}</div>
-                    <div class="shift-type">{schedule['tipo']}</div>
-                </div>
-                """
-        else:
-            calendar_html += '''
-            <div style="color: #999; font-size: 0.8rem; padding: 8px 0; text-align: center;">
-                Sin turnos
-            </div>
-            '''
-        
-        calendar_html += '</div>'
-        current_day += datetime.timedelta(days=1)
-    
-    calendar_html += '</div>'
-    
-    total_turnos = sum(1 for date in SAMPLE_SCHEDULE 
-                      if datetime.datetime.strptime(date, "%Y-%m-%d").date().month == st.session_state.calendar_month)
-    
-    return calendar_html, month_name, total_turnos
-
-def create_calendar_modal():
-    """Crea el modal del calendario profesional"""
-    calendar_html, month_name, total_turnos = create_professional_calendar()
-    
-    modal_html = f"""
-    <div id="calendar-modal" class="calendar-modal-overlay" style="display: none;">
-        <div class="calendar-modal">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <span>📅</span> Calendario de Turnos - {month_name}
-                </div>
-                <button class="modal-close" onclick="closeCalendarModal()">×</button>
-            </div>
-            
-            <div class="modal-body">
-                <div class="professional-calendar">
-                    <div class="calendar-controls">
-                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                            <button onclick="changeMonth(-1)" class="btn-primary" style="padding: 12px 24px;">
-                                ← Mes Anterior
-                            </button>
-                            <button onclick="changeMonth(1)" class="btn-primary" style="padding: 12px 24px;">
-                                Siguiente Mes →
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="calendar-main">
-                        {calendar_html}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal para detalles del turno -->
-    <div id="shift-modal" class="calendar-modal-overlay" style="display: none;">
-        <div class="calendar-modal" style="max-width: 550px; height: auto;">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <span>📋</span> Detalles del Turno
-                </div>
-                <button class="modal-close" onclick="closeShiftModal()">×</button>
-            </div>
-            
-            <div class="modal-body" style="padding: 25px;">
-                <div style="background: linear-gradient(135deg, #f8f9fa, #ffffff); padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                        <div>
-                            <div style="color: #666; font-size: 0.95rem; margin-bottom: 8px; font-weight: 500;">📅 Fecha</div>
-                            <div style="font-weight: 700; color: #333; font-size: 1.1rem;" id="shift-date"></div>
-                        </div>
-                        <div>
-                            <div style="color: #666; font-size: 0.95rem; margin-bottom: 8px; font-weight: 500;">🕒 Horario</div>
-                            <div style="font-weight: 700; color: #333; font-size: 1.1rem;" id="shift-time"></div>
-                        </div>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                        <div>
-                            <div style="color: #666; font-size: 0.95rem; margin-bottom: 8px; font-weight: 500;">🏷️ Tipo de Turno</div>
-                            <div style="font-weight: 700; color: #333; font-size: 1.1rem;" id="shift-type"></div>
-                        </div>
-                        <div>
-                            <div style="color: #666; font-size: 0.95rem; margin-bottom: 8px; font-weight: 500;">👤 Socorrista</div>
-                            <div style="font-weight: 700; color: #333; font-size: 1.1rem;" id="shift-person"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="display: flex; gap: 12px;">
-                    <button class="btn-primary" style="flex: 1; padding: 14px 24px;" onclick="alert('Solicitud enviada para cambio de turno')">
-                        🔄 Solicitar Cambio
-                    </button>
-                    <button class="btn-secondary" style="flex: 1; padding: 14px 24px;" onclick="closeShiftModal()">
-                        Cerrar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-    function openCalendarModal() {{
-        document.getElementById('calendar-modal').style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }}
-    
-    function closeCalendarModal() {{
-        document.getElementById('calendar-modal').style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }}
-    
-    function closeShiftModal() {{
-        document.getElementById('shift-modal').style.display = 'none';
-    }}
-    
-    function changeMonth(direction) {{
-        if(direction === -1) {{
-            alert('Navegando al mes anterior...');
-        }} else {{
-            alert('Navegando al mes siguiente...');
-        }}
-    }}
-    
-    document.addEventListener('keydown', function(event) {{
-        if (event.key === 'Escape') {{
-            closeCalendarModal();
-            closeShiftModal();
-        }}
-    }});
-    
-    document.addEventListener('click', function(event) {{
-        if (event.target.classList.contains('calendar-modal-overlay')) {{
-            closeCalendarModal();
-            closeShiftModal();
-        }}
-    }});
-    </script>
-    """
-    
-    return modal_html
 
 def create_dashboard():
     """Crea el dashboard principal"""
-    st.markdown('<div class="main-content">', unsafe_allow_html=True)
+    # Aplicar CSS
+    apply_custom_css()
     
-    # Título con fondo profesional
+    # Crear header
+    create_header()
+    
+    # Título principal
     st.markdown(f"""
-    <div class="page-title-section fade-in">
+    <div class="page-title-section">
         <h1 class="page-title">Panel de Control</h1>
-        <p class="page-subtitle">Gestiona tus horarios, asistencia y más desde un solo lugar</p>
+        <p style="color: rgba(255,255,255,0.95); font-size: 1.2rem; max-width: 700px; margin: 0 auto;">
+            Gestiona tus horarios, asistencia y más desde un solo lugar
+        </p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Contenedor de tarjetas
-    st.markdown('<div class="cards-container fade-in">', unsafe_allow_html=True)
+    # Contenedor principal
+    st.markdown('<div class="main-container">', unsafe_allow_html=True)
     
-    # Fila 1: 3 tarjetas
-    st.markdown('<div class="card-row">', unsafe_allow_html=True)
+    # Grid de tarjetas - AHORA ORDENADO CORRECTAMENTE
+    st.markdown('<div class="dashboard-grid">', unsafe_allow_html=True)
     
-    # Tarjeta 1: Horarios
+    # Fila 1 en escritorio (3 tarjetas en línea)
+    # 1. Horarios
     st.markdown(f"""
-    <div class="dashboard-card" onclick="openCalendarModal()">
+    <div class="dashboard-card card-1" onclick="openCalendarModal()">
         <div class="card-icon">📅</div>
         <h3 class="card-title">Horarios</h3>
         <p class="card-desc">Consulta y gestiona tus turnos programados</p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Tarjeta 2: Control de Asistencia
+    # 2. Control de Asistencia
     st.markdown(f"""
-    <a href="?view=asistencia" class="dashboard-card">
+    <a href="?view=asistencia" class="dashboard-card card-2">
         <div class="card-icon">✅</div>
         <h3 class="card-title">Control de Asistencia</h3>
         <p class="card-desc">Registro de entrada y salida en tiempo real</p>
     </a>
     """, unsafe_allow_html=True)
     
-    # Tarjeta 3: Nómina y Pagos
+    # 3. Nómina y Pagos
     st.markdown(f"""
-    <a href="?view=nomina" class="dashboard-card">
+    <a href="?view=nomina" class="dashboard-card card-3">
         <div class="card-icon">💰</div>
         <h3 class="card-title">Nómina y Pagos</h3>
         <p class="card-desc">Consulta tus recibos y estados de pago</p>
     </a>
     """, unsafe_allow_html=True)
     
-    st.markdown('</div>', unsafe_allow_html=True)  # Cierra la primera fila
-    
-    # Fila 2: 3 tarjetas
-    st.markdown('<div class="card-row">', unsafe_allow_html=True)
-    
-    # Tarjeta 4: Incidencias
+    # Fila 2 en escritorio (3 tarjetas en línea)
+    # 4. Incidencias
     st.markdown(f"""
-    <a href="?view=incidencias" class="dashboard-card">
+    <a href="?view=incidencias" class="dashboard-card card-4">
         <div class="card-icon">⚠️</div>
         <h3 class="card-title">Incidencias</h3>
         <p class="card-desc">Reporta y consulta incidencias</p>
     </a>
     """, unsafe_allow_html=True)
     
-    # Tarjeta 5: Formación
+    # 5. Formación
     st.markdown(f"""
-    <a href="?view=formacion" class="dashboard-card">
+    <a href="?view=formacion" class="dashboard-card card-5">
         <div class="card-icon">🎓</div>
         <h3 class="card-title">Formación</h3>
         <p class="card-desc">Accede a cursos y certificaciones</p>
     </a>
     """, unsafe_allow_html=True)
     
-    # Tarjeta 6: Comunicados
+    # 6. Comunicados
     st.markdown(f"""
-    <a href="?view=comunicados" class="dashboard-card">
+    <a href="?view=comunicados" class="dashboard-card card-6">
         <div class="card-icon">📢</div>
         <h3 class="card-title">Comunicados</h3>
         <p class="card-desc">Últimas noticias y anuncios</p>
     </a>
     """, unsafe_allow_html=True)
     
-    st.markdown('</div>', unsafe_allow_html=True)  # Cierra la segunda fila
-    st.markdown('</div>', unsafe_allow_html=True)  # Cierra cards-container
+    st.markdown('</div>', unsafe_allow_html=True)  # Cierra dashboard-grid
     
-    # Estadísticas rápidas
+    # Estadísticas
     st.markdown(f"""
-    <div class="stats-container fade-in">
-        <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 25px; font-family: 'Segoe UI', sans-serif; font-size: 1.5rem; font-weight: 700;">
+    <div class="stats-container">
+        <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 25px; font-size: 1.5rem; font-weight: 700;">
             📊 Resumen Rápido
         </h3>
         <div class="stats-grid">
-            <div class="stat-card" style="border-left-color: #4CAF50;">
+            <div class="stat-card">
                 <div style="color: #4CAF50; font-size: 1.3rem;">✅</div>
                 <div class="stat-value">12</div>
-                <div style="color: #666; font-size: 0.95rem; font-weight: 500;">Turnos Completados</div>
+                <div style="color: #666; font-size: 0.9rem;">Turnos Completados</div>
             </div>
-            <div class="stat-card" style="border-left-color: #2196F3;">
+            <div class="stat-card">
                 <div style="color: #2196F3; font-size: 1.3rem;">⏰</div>
                 <div class="stat-value">96h</div>
-                <div style="color: #666; font-size: 0.95rem; font-weight: 500;">Horas Totales</div>
+                <div style="color: #666; font-size: 0.9rem;">Horas Totales</div>
             </div>
-            <div class="stat-card" style="border-left-color: #FF9800;">
+            <div class="stat-card">
                 <div style="color: #FF9800; font-size: 1.3rem;">📅</div>
                 <div class="stat-value">6</div>
-                <div style="color: #666; font-size: 0.95rem; font-weight: 500;">Próximos Turnos</div>
+                <div style="color: #666; font-size: 0.9rem;">Próximos Turnos</div>
             </div>
-            <div class="stat-card" style="border-left-color: #9C27B0;">
+            <div class="stat-card">
                 <div style="color: #9C27B0; font-size: 1.3rem;">💰</div>
                 <div class="stat-value">€2,850</div>
-                <div style="color: #666; font-size: 0.95rem; font-weight: 500;">Salario Estimado</div>
+                <div style="color: #666; font-size: 0.9rem;">Salario Estimado</div>
             </div>
         </div>
     </div>
     
-    <div style="text-align: center; margin: 40px auto 30px; padding: 0 25px; max-width: 1200px;">
-        <p style="color: #666; font-size: 0.9rem; opacity: 0.8;">
-            © {datetime.datetime.now().year} Socorrista Pro • Versión 2.2 • Todos los derechos reservados
-        </p>
+    <div style="text-align: center; margin-top: 40px; color: #666; font-size: 0.9rem;">
+        © {datetime.datetime.now().year} Socorrista Pro • Versión 2.2 • Todos los derechos reservados
     </div>
     """, unsafe_allow_html=True)
     
-    # Añadir el modal del calendario
-    calendar_modal_html = create_calendar_modal()
-    st.markdown(calendar_modal_html, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)  # Cierra main-container
     
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Modal del calendario (simplificado)
+    st.markdown("""
+    <div id="calendar-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 20px; padding: 30px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: #333;">📅 Calendario de Turnos</h2>
+                <button onclick="closeCalendarModal()" style="background: #F37021; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer;">×</button>
+            </div>
+            <div style="color: #666; margin-bottom: 20px;">
+                <p>Esta funcionalidad está en desarrollo. Próximamente podrás ver tu calendario completo aquí.</p>
+            </div>
+            <button onclick="closeCalendarModal()" style="background: #F37021; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 600;">Cerrar</button>
+        </div>
+    </div>
+    
+    <script>
+    function openCalendarModal() {
+        document.getElementById('calendar-modal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeCalendarModal() {
+        document.getElementById('calendar-modal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+    </script>
+    """, unsafe_allow_html=True)
 
 def create_other_view(view_name):
     """Crea vistas para otras secciones"""
     view_titles = {
         "asistencia": "Control de Asistencia",
-        "nomina": "Nómina y Pagos",
+        "nomina": "Nómina y Pagos", 
         "incidencias": "Reporte de Incidencias",
         "formacion": "Formación y Certificaciones",
         "comunicados": "Comunicados y Noticias"
@@ -1002,34 +442,37 @@ def create_other_view(view_name):
     
     title = view_titles.get(view_name, view_name.capitalize())
     
+    # Aplicar CSS
+    apply_custom_css()
+    
+    # Crear header
+    create_header()
+    
     st.markdown(f"""
-    <div class="main-content">
-        <div class="fade-in" style="max-width: 800px; margin: 0 auto; padding: 40px 25px;">
-            <div style="text-align: center; margin-bottom: 40px;">
-                <div style="font-size: 4rem; margin-bottom: 20px; color: {PRIMARY_COLOR};">📋</div>
-                <h1 style="color: {SECONDARY_COLOR}; margin-bottom: 15px; font-family: 'Montserrat', sans-serif; font-size: 2.5rem; font-weight: 800;">
-                    {title}
-                </h1>
-                <p style="color: #666; font-size: 1.2rem; max-width: 600px; margin: 0 auto;">
-                    Esta funcionalidad está en desarrollo activo
-                </p>
-            </div>
-            
-            <div style="background: linear-gradient(145deg, #ffffff, #f8f9fa); border-radius: 20px; padding: 40px; box-shadow: 0 15px 40px rgba(0,0,0,0.08); margin-bottom: 35px;">
-                <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 25px; font-family: 'Segoe UI', sans-serif; font-size: 1.6rem; font-weight: 700;">
-                    🚀 Próximamente
-                </h3>
-                <p style="color: #666; line-height: 1.7; margin-bottom: 25px; font-size: 1.05rem;">
-                    Estamos trabajando arduamente para implementar esta funcionalidad con los más altos estándares de calidad. 
-                    En las próximas semanas podrás acceder a todas las características avanzadas de <strong>{title.lower()}</strong>.
-                </p>
-            </div>
-            
-            <div class="action-buttons">
-                <a href="?" class="btn-primary" style="padding: 15px 35px;">
-                    ← Volver al Dashboard
-                </a>
-            </div>
+    <div style="max-width: 800px; margin: 0 auto; padding: 40px 25px;">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <div style="font-size: 3rem; margin-bottom: 20px; color: {PRIMARY_COLOR};">📋</div>
+            <h1 style="color: {SECONDARY_COLOR}; margin-bottom: 15px; font-size: 2.5rem; font-weight: 800;">
+                {title}
+            </h1>
+            <p style="color: #666; font-size: 1.2rem;">
+                Esta funcionalidad está en desarrollo activo
+            </p>
+        </div>
+        
+        <div style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-bottom: 30px;">
+            <h3 style="color: {SECONDARY_COLOR}; margin-bottom: 20px; font-size: 1.4rem; font-weight: 700;">
+                🚀 Próximamente
+            </h3>
+            <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+                Estamos trabajando para implementar esta funcionalidad. En las próximas semanas podrás acceder a todas las características avanzadas.
+            </p>
+        </div>
+        
+        <div style="text-align: center;">
+            <a href="?" style="background: {PRIMARY_COLOR}; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; display: inline-block; font-weight: 600;">
+                ← Volver al Dashboard
+            </a>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -1039,18 +482,13 @@ def create_other_view(view_name):
 # ----------------------------
 def main():
     """Función principal de la aplicación"""
-    # Aplicar CSS personalizado
-    apply_custom_css()
-    
-    # Crear header
-    create_header()
-    
     # Obtener vista actual
     query_params = st.query_params.to_dict()
     view = query_params.get("view", [""])[0] if query_params.get("view") else ""
     
     # Mostrar vista correspondiente
     if view == "horarios":
+        # Si alguien accede directamente a ?view=horarios
         st.markdown('<script>openCalendarModal();</script>', unsafe_allow_html=True)
         create_dashboard()
     elif view in ["asistencia", "nomina", "incidencias", "formacion", "comunicados"]:
