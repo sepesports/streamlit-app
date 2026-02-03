@@ -30,7 +30,7 @@ SAMPLE_SCHEDULE = {
 }
 
 # ----------------------------
-# ESTILOS CSS SIMPLIFICADOS
+# ESTILOS CSS FIJOS
 # ----------------------------
 def apply_custom_css():
     """Aplica estilos CSS personalizados"""
@@ -43,6 +43,27 @@ def apply_custom_css():
         margin: 0;
     }}
     
+    /* ELIMINAR TODOS LOS ESPACIOS DE STREAMLIT */
+    .stApp > div:first-child {{
+        padding-top: 0 !important;
+    }}
+    
+    .block-container {{
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        max-width: 100% !important;
+    }}
+    
+    [data-testid="stAppViewContainer"] {{
+        padding: 0 !important;
+        margin: 0 !important;
+    }}
+    
+    [data-testid="stMainBlockContainer"] {{
+        padding: 0 !important;
+        margin: 0 !important;
+    }}
+    
     /* HEADER */
     .main-header {{
         background: linear-gradient(135deg, {SECONDARY_COLOR}, #1a2530);
@@ -52,6 +73,8 @@ def apply_custom_css():
         justify-content: space-between;
         align-items: center;
         box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        width: 100%;
+        box-sizing: border-box;
     }}
     
     /* TÍTULO */
@@ -60,6 +83,8 @@ def apply_custom_css():
         padding: 40px 25px;
         text-align: center;
         margin-bottom: 0;
+        width: 100%;
+        box-sizing: border-box;
     }}
     
     .page-title {{
@@ -69,23 +94,26 @@ def apply_custom_css():
         margin-bottom: 15px;
     }}
     
-    /* CONTENEDOR DE TARJETAS - FLEXBOX SIMPLE */
-    .cards-container {{
+    /* CONTENEDOR PRINCIPAL */
+    .main-content {{
+        padding: 40px 25px;
         max-width: 1200px;
         margin: 0 auto;
-        padding: 40px 25px;
         width: 100%;
+        box-sizing: border-box;
     }}
     
-    /* FILAS PARA ESCRITORIO - 2 filas de 3 tarjetas */
-    .row-desktop {{
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 25px;
-        width: 100%;
+    /* FORZAR LAS COLUMNAS DE STREAMLIT A COMPORTARSE CORRECTAMENTE */
+    [data-testid="column"] {{
+        padding: 0 !important;
+        margin: 0 !important;
     }}
     
-    /* TARJETAS - 33% de ancho en escritorio */
+    .st-emotion-cache-1v0mbdj {{
+        width: 100% !important;
+    }}
+    
+    /* TARJETAS - ANCHO COMPLETO */
     .dashboard-card {{
         background: linear-gradient(145deg, #ffffff, #f5f5f5);
         border-radius: 20px;
@@ -98,9 +126,11 @@ def apply_custom_css():
         display: flex;
         flex-direction: column;
         min-height: 220px;
-        width: 32%; /* 3 tarjetas por fila en escritorio */
+        width: 100%;
         position: relative;
         overflow: hidden;
+        box-sizing: border-box;
+        margin-bottom: 25px;
     }}
     
     .dashboard-card::before {{
@@ -145,44 +175,6 @@ def apply_custom_css():
         line-height: 1.5;
     }}
     
-    /* MÓVIL: 3 filas de 2 tarjetas */
-    @media (max-width: 768px) {{
-        .row-desktop {{
-            flex-direction: column;
-            margin-bottom: 0;
-        }}
-        
-        .dashboard-card {{
-            width: 100%;
-            margin-bottom: 15px;
-            min-height: 180px;
-        }}
-        
-        .cards-container {{
-            padding: 20px;
-        }}
-        
-        /* Crear estructura de 2 columnas en móvil usando FLEXBOX WRAP */
-        .mobile-grid {{
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            width: 100%;
-        }}
-        
-        .mobile-grid .dashboard-card {{
-            width: 48%; /* 2 tarjetas por fila en móvil */
-            margin-bottom: 15px;
-        }}
-    }}
-    
-    /* MÓVIL PEQUEÑO: 1 columna */
-    @media (max-width: 480px) {{
-        .mobile-grid .dashboard-card {{
-            width: 100%;
-        }}
-    }}
-    
     /* ESTADÍSTICAS */
     .stats-container {{
         background: white;
@@ -190,25 +182,44 @@ def apply_custom_css():
         padding: 30px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.08);
         margin: 40px auto 0;
-        max-width: 1200px;
         width: 100%;
+        box-sizing: border-box;
     }}
     
     .stats-grid {{
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 20px;
+        width: 100%;
     }}
     
     @media (max-width: 768px) {{
         .stats-grid {{
             grid-template-columns: repeat(2, 1fr);
         }}
+        
+        .main-content {{
+            padding: 20px;
+        }}
+        
+        .dashboard-card {{
+            min-height: 200px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }}
+        
+        .page-title {{
+            font-size: 2.2rem;
+        }}
     }}
     
     @media (max-width: 480px) {{
         .stats-grid {{
             grid-template-columns: 1fr;
+        }}
+        
+        .dashboard-card {{
+            min-height: 180px;
         }}
     }}
     
@@ -227,25 +238,18 @@ def apply_custom_css():
         color: {SECONDARY_COLOR};
     }}
     
-    /* MODAL SIMPLE */
-    .calendar-modal-overlay {{
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.9);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        padding: 20px;
-    }}
-    
     /* OCULTAR ELEMENTOS DE STREAMLIT */
     [data-testid="stHeader"] {{ display: none !important; }}
     footer {{ display: none !important; }}
     .stDeployButton {{ display: none !important; }}
+    
+    /* FORZAR ANCHO COMPLETO PARA MÓVIL */
+    @media (max-width: 768px) {{
+        .st-emotion-cache-1r6slb0 {{
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }}
+    }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -273,7 +277,7 @@ def create_header():
     """, unsafe_allow_html=True)
 
 def create_dashboard():
-    """Crea el dashboard principal"""
+    """Crea el dashboard principal usando columnas de Streamlit"""
     # Aplicar CSS
     apply_custom_css()
     
@@ -291,136 +295,73 @@ def create_dashboard():
     """, unsafe_allow_html=True)
     
     # Contenedor principal
-    st.markdown('<div class="cards-container">', unsafe_allow_html=True)
+    st.markdown('<div class="main-content">', unsafe_allow_html=True)
     
-    # **FILA 1 para ESCRITORIO** - 3 tarjetas en línea
-    st.markdown('<div class="row-desktop">', unsafe_allow_html=True)
+    # **FILA 1: 3 tarjetas usando columnas de Streamlit**
+    col1, col2, col3 = st.columns(3, gap="large")
     
-    # 1. Horarios
-    st.markdown(f"""
-    <div class="dashboard-card" onclick="openCalendarModal()">
-        <div class="card-icon">📅</div>
-        <h3 class="card-title">Horarios</h3>
-        <p class="card-desc">Consulta y gestiona tus turnos programados</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # 2. Control de Asistencia
-    st.markdown(f"""
-    <a href="?view=asistencia" class="dashboard-card">
-        <div class="card-icon">✅</div>
-        <h3 class="card-title">Control de Asistencia</h3>
-        <p class="card-desc">Registro de entrada y salida en tiempo real</p>
-    </a>
-    """, unsafe_allow_html=True)
-    
-    # 3. Nómina y Pagos
-    st.markdown(f"""
-    <a href="?view=nomina" class="dashboard-card">
-        <div class="card-icon">💰</div>
-        <h3 class="card-title">Nómina y Pagos</h3>
-        <p class="card-desc">Consulta tus recibos y estados de pago</p>
-    </a>
-    """, unsafe_allow_html=True)
-    
-    st.markdown('</div>', unsafe_allow_html=True)  # Cierra fila 1
-    
-    # **FILA 2 para ESCRITORIO** - 3 tarjetas en línea
-    st.markdown('<div class="row-desktop">', unsafe_allow_html=True)
-    
-    # 4. Incidencias
-    st.markdown(f"""
-    <a href="?view=incidencias" class="dashboard-card">
-        <div class="card-icon">⚠️</div>
-        <h3 class="card-title">Incidencias</h3>
-        <p class="card-desc">Reporta y consulta incidencias</p>
-    </a>
-    """, unsafe_allow_html=True)
-    
-    # 5. Formación
-    st.markdown(f"""
-    <a href="?view=formacion" class="dashboard-card">
-        <div class="card-icon">🎓</div>
-        <h3 class="card-title">Formación</h3>
-        <p class="card-desc">Accede a cursos y certificaciones</p>
-    </a>
-    """, unsafe_allow_html=True)
-    
-    # 6. Comunicados
-    st.markdown(f"""
-    <a href="?view=comunicados" class="dashboard-card">
-        <div class="card-icon">📢</div>
-        <h3 class="card-title">Comunicados</h3>
-        <p class="card-desc">Últimas noticias y anuncios</p>
-    </a>
-    """, unsafe_allow_html=True)
-    
-    st.markdown('</div>', unsafe_allow_html=True)  # Cierra fila 2
-    
-    # **Versión MÓVIL usando FLEXBOX WRAP** - 3 filas de 2 tarjetas
-    st.markdown("""
-    <div class="mobile-grid" style="display: none;">
-        <!-- Fila 1 móvil -->
+    with col1:
+        # Tarjeta 1: Horarios
+        st.markdown(f"""
         <div class="dashboard-card" onclick="openCalendarModal()">
             <div class="card-icon">📅</div>
             <h3 class="card-title">Horarios</h3>
             <p class="card-desc">Consulta y gestiona tus turnos programados</p>
         </div>
-        
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        # Tarjeta 2: Control de Asistencia
+        st.markdown(f"""
         <a href="?view=asistencia" class="dashboard-card">
             <div class="card-icon">✅</div>
             <h3 class="card-title">Control de Asistencia</h3>
             <p class="card-desc">Registro de entrada y salida en tiempo real</p>
         </a>
-        
-        <!-- Fila 2 móvil -->
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        # Tarjeta 3: Nómina y Pagos
+        st.markdown(f"""
         <a href="?view=nomina" class="dashboard-card">
             <div class="card-icon">💰</div>
             <h3 class="card-title">Nómina y Pagos</h3>
             <p class="card-desc">Consulta tus recibos y estados de pago</p>
         </a>
-        
+        """, unsafe_allow_html=True)
+    
+    # **FILA 2: 3 tarjetas usando columnas de Streamlit**
+    col4, col5, col6 = st.columns(3, gap="large")
+    
+    with col4:
+        # Tarjeta 4: Incidencias
+        st.markdown(f"""
         <a href="?view=incidencias" class="dashboard-card">
             <div class="card-icon">⚠️</div>
             <h3 class="card-title">Incidencias</h3>
             <p class="card-desc">Reporta y consulta incidencias</p>
         </a>
-        
-        <!-- Fila 3 móvil -->
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        # Tarjeta 5: Formación
+        st.markdown(f"""
         <a href="?view=formacion" class="dashboard-card">
             <div class="card-icon">🎓</div>
             <h3 class="card-title">Formación</h3>
             <p class="card-desc">Accede a cursos y certificaciones</p>
         </a>
-        
+        """, unsafe_allow_html=True)
+    
+    with col6:
+        # Tarjeta 6: Comunicados
+        st.markdown(f"""
         <a href="?view=comunicados" class="dashboard-card">
             <div class="card-icon">📢</div>
             <h3 class="card-title">Comunicados</h3>
             <p class="card-desc">Últimas noticias y anuncios</p>
         </a>
-    </div>
-    
-    <script>
-    // Mostrar solo la versión correcta según el tamaño de pantalla
-    if (window.innerWidth <= 768) {{
-        document.querySelector('.row-desktop').style.display = 'none';
-        document.querySelector('.mobile-grid').style.display = 'flex';
-    }}
-    
-    // Actualizar al cambiar tamaño de ventana
-    window.addEventListener('resize', function() {{
-        if (window.innerWidth <= 768) {{
-            document.querySelector('.row-desktop').style.display = 'none';
-            document.querySelector('.mobile-grid').style.display = 'flex';
-        }} else {{
-            document.querySelector('.row-desktop').style.display = 'flex';
-            document.querySelector('.mobile-grid').style.display = 'none';
-        }}
-    }});
-    </script>
-    """, unsafe_allow_html=True)
-    
-    st.markdown('</div>', unsafe_allow_html=True)  # Cierra cards-container
+        """, unsafe_allow_html=True)
     
     # Estadísticas
     st.markdown(f"""
@@ -457,10 +398,12 @@ def create_dashboard():
     </div>
     """, unsafe_allow_html=True)
     
+    st.markdown('</div>', unsafe_allow_html=True)  # Cierra main-content
+    
     # Modal del calendario
     st.markdown("""
-    <div id="calendar-modal" class="calendar-modal-overlay" style="display: none;">
-        <div style="background: white; border-radius: 20px; padding: 30px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
+    <div id="calendar-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: white; border-radius: 20px; padding: 30px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 style="margin: 0; color: #333;">📅 Calendario de Turnos</h2>
                 <button onclick="closeCalendarModal()" style="background: #F37021; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer;">×</button>
@@ -496,6 +439,12 @@ def create_dashboard():
             closeCalendarModal();
         }
     });
+    
+    // Ajustar para móvil automáticamente
+    if (window.innerWidth <= 768) {
+        // En móvil, Streamlit ya maneja las columnas como filas
+        // No necesitamos hacer nada adicional
+    }
     </script>
     """, unsafe_allow_html=True)
 
