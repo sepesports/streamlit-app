@@ -17,32 +17,26 @@ SECONDARY_COLOR = "#2C3E50"
 BG_COLOR = "#F8F9FA"
 
 # ----------------------------
-# ESTILOS CSS ÚNICOS - SOLUCIÓN COMPLETA
+# ESTILOS CSS ÚNICOS - SOLO ARREGLOS MÓVIL
 # ----------------------------
 def apply_custom_css():
-    """Aplica estilos CSS personalizados con solución móvil robusta"""
+    """Aplica estilos CSS personalizados solo para móvil"""
     st.markdown(f"""
     <style>
     /* ELIMINAR MÁRGENES SUPERIORES */
-    .stApp > header {{
-        display: none !important;
+    [data-testid="stHeader"] {{ 
+        display: none !important; 
     }}
     
     div.stApp {{
         background: {BG_COLOR};
-        padding-top: 0 !important;
-        margin-top: 0 !important;
-    }}
-    
-    #MainMenu {{
-        visibility: hidden;
     }}
     
     /* HEADER */
     .custom-header {{
         background: linear-gradient(135deg, {SECONDARY_COLOR}, #1a2530);
         color: white;
-        padding: 10px 20px;
+        padding: 12px 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -52,39 +46,155 @@ def apply_custom_css():
     /* TÍTULO */
     .custom-title-section {{
         background: linear-gradient(135deg, #1a5276, #1c5c82, {PRIMARY_COLOR});
-        padding: 25px 20px;
+        padding: 30px 20px;
         text-align: center;
-        margin-top: 0;
     }}
     
     .custom-title {{
         color: white;
-        font-size: 2rem;
+        font-size: 2.2rem;
         font-weight: 700;
         margin-bottom: 5px;
     }}
     
     .custom-subtitle {{
         color: rgba(255,255,255,0.9);
-        font-size: 0.95rem;
+        font-size: 1rem;
     }}
     
     /* CONTENEDOR PRINCIPAL */
     .custom-container {{
-        padding: 25px 15px;
+        padding: 30px 20px;
         max-width: 1200px;
         margin: 0 auto;
     }}
     
-    /* ESCRITORIO: 3 COLUMNAS */
-    @media (min-width: 769px) {{
-        .desktop-grid {{
-            display: grid !important;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            width: 100%;
+    /* ESCRITORIO: MANTENER ST.COLUMNS NORMAL - NO TOCAR */
+    /* Versión escritorio funciona perfecto */
+    
+    /* MÓVIL: SOLUCIÓN COMPLETA CON FLEXBOX */
+    @media (max-width: 768px) {{
+        /* Ocultar todo lo de escritorio */
+        .stApp [data-testid="column"] {{
+            width: 100% !important;
+            flex: 1 1 100% !important;
         }}
         
+        .desktop-version {{
+            display: none !important;
+        }}
+        
+        /* Mostrar nuestra versión móvil */
+        .mobile-version {{
+            display: block !important;
+        }}
+        
+        .mobile-grid {{
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }}
+        
+        .mobile-card-wrapper {{
+            width: calc(50% - 5px) !important;
+            flex: 0 0 calc(50% - 5px) !important;
+            margin-bottom: 10px !important;
+            box-sizing: border-box !important;
+        }}
+        
+        .mobile-card {{
+            background: white;
+            border-radius: 12px;
+            padding: 15px 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            text-align: center;
+            text-decoration: none !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0,0,0,0.05);
+            height: 120px;
+            width: 100% !important;
+            transition: all 0.3s ease;
+        }}
+        
+        .mobile-card:hover {{
+            border-color: {PRIMARY_COLOR};
+            box-shadow: 0 6px 15px rgba(243, 112, 33, 0.15);
+        }}
+        
+        .mobile-icon {{
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, {PRIMARY_COLOR}, #ff944d);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            font-size: 20px;
+            color: white;
+        }}
+        
+        .mobile-card-title {{
+            font-size: 0.8rem !important;
+            font-weight: 600;
+            color: {SECONDARY_COLOR};
+            margin: 0;
+            line-height: 1.2;
+            text-align: center;
+            padding: 0 5px;
+        }}
+        
+        .custom-container {{
+            padding: 20px 15px !important;
+        }}
+        
+        .custom-title {{
+            font-size: 1.8rem !important;
+        }}
+        
+        .custom-subtitle {{
+            font-size: 0.9rem !important;
+        }}
+        
+        .custom-header {{
+            padding: 10px 15px !important;
+        }}
+        
+        /* Asegurar que las columnas de streamlit no interfieran */
+        [data-testid="column"] {{
+            min-width: 0 !important;
+        }}
+        
+        /* Ajustes específicos para pantallas muy pequeñas */
+        @media (max-width: 380px) {{
+            .mobile-card-wrapper {{
+                width: 100% !important;
+                flex: 0 0 100% !important;
+            }}
+            
+            .mobile-card {{
+                height: 110px !important;
+            }}
+        }}
+    }}
+    
+    /* ESCRITORIO: OCULTAR VERSIÓN MÓVIL */
+    @media (min-width: 769px) {{
+        .mobile-version {{
+            display: none !important;
+        }}
+        
+        .desktop-version {{
+            display: block !important;
+        }}
+        
+        /* Estilos para tarjetas en escritorio (igual que antes) */
         .desktop-card {{
             background: white;
             border-radius: 15px;
@@ -131,113 +241,6 @@ def apply_custom_css():
             font-size: 0.9rem;
             line-height: 1.4;
         }}
-        
-        /* OCULTAR VERSIÓN MÓVIL */
-        .mobile-grid {{
-            display: none !important;
-        }}
-    }}
-    
-    /* MÓVIL: 2 COLUMNAS CON FLEXBOX ROBUSTO */
-    @media (max-width: 768px) {{
-        /* ELIMINAR MÁRGENES DE STREAMLIT */
-        .block-container {{
-            padding-top: 0 !important;
-            padding-left: 10px !important;
-            padding-right: 10px !important;
-        }}
-        
-        .custom-container {{
-            padding: 15px 10px !important;
-            width: 100% !important;
-            max-width: 100% !important;
-        }}
-        
-        /* OCULTAR VERSIÓN ESCRITORIO */
-        .desktop-grid {{
-            display: none !important;
-        }}
-        
-        /* SISTEMA MÓVIL CON FLEXBOX - 2 COLUMNAS */
-        .mobile-grid {{
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 10px !important;
-            width: 100% !important;
-            justify-content: space-between !important;
-        }}
-        
-        .mobile-card-container {{
-            width: calc(50% - 5px) !important;
-            min-width: calc(50% - 5px) !important;
-            flex: 0 0 calc(50% - 5px) !important;
-            margin-bottom: 10px !important;
-        }}
-        
-        .custom-card {{
-            background: white;
-            border-radius: 12px;
-            padding: 15px 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            text-align: center;
-            text-decoration: none !important;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border: 1px solid rgba(0,0,0,0.05);
-            height: 100% !important;
-            min-height: 120px;
-            width: 100% !important;
-        }}
-        
-        .custom-card:hover {{
-            border-color: {PRIMARY_COLOR};
-            box-shadow: 0 6px 15px rgba(243, 112, 33, 0.15);
-        }}
-        
-        .custom-icon {{
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(135deg, {PRIMARY_COLOR}, #ff944d);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 8px;
-            font-size: 20px;
-            color: white;
-            flex-shrink: 0;
-        }}
-        
-        .custom-card-title {{
-            font-size: 0.8rem !important;
-            font-weight: 600;
-            color: {SECONDARY_COLOR};
-            margin: 0;
-            line-height: 1.2;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }}
-        
-        .custom-title {{
-            font-size: 1.6rem !important;
-        }}
-        
-        .custom-subtitle {{
-            font-size: 0.85rem !important;
-        }}
-        
-        .custom-header {{
-            padding: 8px 15px !important;
-        }}
-    }}
-    
-    /* MÓVIL MUY PEQUEÑO - 1 COLUMNA */
-    @media (max-width: 380px) {{
-        .mobile-card-container {{
-            width: 100% !important;
-            flex: 0 0 100% !important;
-        }}
     }}
     
     /* ESTADÍSTICAS */
@@ -257,7 +260,7 @@ def apply_custom_css():
     
     @media (max-width: 768px) {{
         .custom-stats {{
-            padding: 15px !important;
+            padding: 20px !important;
             margin-top: 20px !important;
         }}
         
@@ -307,26 +310,12 @@ def apply_custom_css():
     }}
     
     /* OCULTAR ELEMENTOS STREAMLIT */
-    [data-testid="stHeader"] {{ 
-        display: none !important; 
-        height: 0 !important;
-    }}
-    
     footer {{ 
         display: none !important; 
     }}
     
     .stDeployButton {{ 
         display: none !important; 
-    }}
-    
-    /* FIX PARA STREAMLIT PADDING */
-    section.main.st-emotion-cache-uf99v8.ea3mdgi5 {{
-        padding-top: 0 !important;
-    }}
-    
-    div.st-emotion-cache-1v0mbdj.e115fcil1 {{
-        padding-top: 0 !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -354,7 +343,7 @@ def create_header():
     """, unsafe_allow_html=True)
 
 def create_dashboard():
-    """Dashboard con soluciones separadas para escritorio y móvil"""
+    """Dashboard con versiones separadas para escritorio y móvil"""
     # Aplicar CSS
     apply_custom_css()
     
@@ -372,95 +361,119 @@ def create_dashboard():
     # Contenedor principal
     st.markdown('<div class="custom-container">', unsafe_allow_html=True)
     
-    # **VERSIÓN ESCRITORIO: Grid CSS (NO st.columns)**
-    st.markdown("""
-    <div class="desktop-grid">
-        <!-- Fila 1 -->
+    # **VERSIÓN ESCRITORIO ORIGINAL - FUNCIONA BIEN**
+    st.markdown('<div class="desktop-version">', unsafe_allow_html=True)
+    
+    # Fila 1
+    col1, col2, col3 = st.columns(3, gap="large")
+    
+    with col1:
+        st.markdown(f"""
         <div class="desktop-card" onclick="openCalendarModal()">
             <div class="desktop-icon">📅</div>
             <h3 class="desktop-title">Horarios</h3>
             <p class="desktop-desc">Consulta y gestiona tus turnos</p>
         </div>
-        
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
         <a href="?view=asistencia" class="desktop-card">
             <div class="desktop-icon">✅</div>
             <h3 class="desktop-title">Control Asistencia</h3>
             <p class="desktop-desc">Registro entrada/salida</p>
         </a>
-        
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
         <a href="?view=nomina" class="desktop-card">
             <div class="desktop-icon">💰</div>
             <h3 class="desktop-title">Nómina y Pagos</h3>
             <p class="desktop-desc">Recibos y estados de pago</p>
         </a>
-        
-        <!-- Fila 2 -->
+        """, unsafe_allow_html=True)
+    
+    # Fila 2
+    col4, col5, col6 = st.columns(3, gap="large")
+    
+    with col4:
+        st.markdown(f"""
         <a href="?view=incidencias" class="desktop-card">
             <div class="desktop-icon">⚠️</div>
             <h3 class="desktop-title">Incidencias</h3>
             <p class="desktop-desc">Reporta y consulta incidencias</p>
         </a>
-        
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        st.markdown(f"""
         <a href="?view=formacion" class="desktop-card">
             <div class="desktop-icon">🎓</div>
             <h3 class="desktop-title">Formación</h3>
             <p class="desktop-desc">Cursos y certificaciones</p>
         </a>
-        
+        """, unsafe_allow_html=True)
+    
+    with col6:
+        st.markdown(f"""
         <a href="?view=comunicados" class="desktop-card">
             <div class="desktop-icon">📢</div>
             <h3 class="desktop-title">Comunicados</h3>
             <p class="desktop-desc">Noticias y anuncios</p>
         </a>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
     
-    # **VERSIÓN MÓVIL: Flexbox con contenedores (2 columnas)**
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # **VERSIÓN MÓVIL NUEVA - USANDO FLEXBOX**
     st.markdown("""
-    <div class="mobile-grid">
-        <!-- Fila 1 -->
-        <div class="mobile-card-container">
-            <div class="custom-card" onclick="openCalendarModal()">
-                <div class="custom-icon">📅</div>
-                <h3 class="custom-card-title">Horarios</h3>
+    <div class="mobile-version" style="display: none;">
+        <div class="mobile-grid">
+            <!-- Fila 1 -->
+            <div class="mobile-card-wrapper">
+                <div class="mobile-card" onclick="openCalendarModal()">
+                    <div class="mobile-icon">📅</div>
+                    <h3 class="mobile-card-title">Horarios</h3>
+                </div>
             </div>
-        </div>
-        
-        <div class="mobile-card-container">
-            <a href="?view=asistencia" class="custom-card">
-                <div class="custom-icon">✅</div>
-                <h3 class="custom-card-title">Control Asistencia</h3>
-            </a>
-        </div>
-        
-        <!-- Fila 2 -->
-        <div class="mobile-card-container">
-            <a href="?view=nomina" class="custom-card">
-                <div class="custom-icon">💰</div>
-                <h3 class="custom-card-title">Nómina y Pagos</h3>
-            </a>
-        </div>
-        
-        <div class="mobile-card-container">
-            <a href="?view=incidencias" class="custom-card">
-                <div class="custom-icon">⚠️</div>
-                <h3 class="custom-card-title">Incidencias</h3>
-            </a>
-        </div>
-        
-        <!-- Fila 3 -->
-        <div class="mobile-card-container">
-            <a href="?view=formacion" class="custom-card">
-                <div class="custom-icon">🎓</div>
-                <h3 class="custom-card-title">Formación</h3>
-            </a>
-        </div>
-        
-        <div class="mobile-card-container">
-            <a href="?view=comunicados" class="custom-card">
-                <div class="custom-icon">📢</div>
-                <h3 class="custom-card-title">Comunicados</h3>
-            </a>
+            
+            <div class="mobile-card-wrapper">
+                <a href="?view=asistencia" class="mobile-card">
+                    <div class="mobile-icon">✅</div>
+                    <h3 class="mobile-card-title">Control Asistencia</h3>
+                </a>
+            </div>
+            
+            <!-- Fila 2 -->
+            <div class="mobile-card-wrapper">
+                <a href="?view=nomina" class="mobile-card">
+                    <div class="mobile-icon">💰</div>
+                    <h3 class="mobile-card-title">Nómina y Pagos</h3>
+                </a>
+            </div>
+            
+            <div class="mobile-card-wrapper">
+                <a href="?view=incidencias" class="mobile-card">
+                    <div class="mobile-icon">⚠️</div>
+                    <h3 class="mobile-card-title">Incidencias</h3>
+                </a>
+            </div>
+            
+            <!-- Fila 3 -->
+            <div class="mobile-card-wrapper">
+                <a href="?view=formacion" class="mobile-card">
+                    <div class="mobile-icon">🎓</div>
+                    <h3 class="mobile-card-title">Formación</h3>
+                </a>
+            </div>
+            
+            <div class="mobile-card-wrapper">
+                <a href="?view=comunicados" class="mobile-card">
+                    <div class="mobile-icon">📢</div>
+                    <h3 class="mobile-card-title">Comunicados</h3>
+                </a>
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -525,7 +538,24 @@ def create_dashboard():
         document.body.style.overflow = 'auto';
     }
     
-    // Detectar clic fuera del modal para cerrar
+    // Detectar tamaño de pantalla y mostrar versión correcta
+    function checkScreenSize() {
+        if (window.innerWidth <= 768) {
+            // Móvil: ocultar escritorio, mostrar móvil
+            document.querySelector('.desktop-version').style.display = 'none';
+            document.querySelector('.mobile-version').style.display = 'block';
+        } else {
+            // Escritorio: ocultar móvil, mostrar escritorio
+            document.querySelector('.mobile-version').style.display = 'none';
+            document.querySelector('.desktop-version').style.display = 'block';
+        }
+    }
+    
+    // Ejecutar al cargar y al cambiar tamaño
+    window.addEventListener('load', checkScreenSize);
+    window.addEventListener('resize', checkScreenSize);
+    
+    // Cerrar modal
     document.addEventListener('click', function(event) {
         if (event.target.id === 'calendar-modal') {
             closeCalendarModal();
@@ -541,15 +571,14 @@ def create_dashboard():
     // Asegurar que las tarjetas móviles mantengan su tamaño
     function fixMobileCards() {
         if (window.innerWidth <= 768) {
-            const cards = document.querySelectorAll('.mobile-card-container');
-            cards.forEach(card => {
-                card.style.flex = '0 0 calc(50% - 5px)';
-                card.style.width = 'calc(50% - 5px)';
+            const wrappers = document.querySelectorAll('.mobile-card-wrapper');
+            wrappers.forEach(wrapper => {
+                wrapper.style.flex = '0 0 calc(50% - 5px)';
+                wrapper.style.width = 'calc(50% - 5px)';
             });
         }
     }
     
-    window.addEventListener('load', fixMobileCards);
     window.addEventListener('resize', fixMobileCards);
     </script>
     """, unsafe_allow_html=True)
