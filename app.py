@@ -17,18 +17,20 @@ SECONDARY_COLOR = "#2C3E50"
 BG_COLOR = "#F8F9FA"
 
 # ----------------------------
-# ESTILOS CSS - ENFOQUE COMPLETAMENTE NUEVO
+# ESTILOS CSS - ENFOQUE DEFINITIVO
 # ----------------------------
 def apply_custom_css():
-    """Aplica estilos CSS con enfoque moderno sin conflictos"""
+    """Aplica estilos CSS con solución definitiva para móvil"""
     st.markdown(f"""
     <style>
-    /* RESET BÁSICO */
+    /* RESET COMPLETO */
     .stApp {{
         background: {BG_COLOR};
+        padding: 0 !important;
+        margin: 0 !important;
     }}
     
-    /* ELIMINAR ESPACIOS DE STREAMLIT */
+    /* ELIMINAR HEADER DE STREAMLIT */
     header {{ 
         display: none !important; 
     }}
@@ -37,16 +39,8 @@ def apply_custom_css():
         display: none !important; 
     }}
     
-    /* CONTENEDOR PRINCIPAL SIN MÁRGENES */
-    .main-block {{
-        width: 100%;
-        max-width: 100%;
-        margin: 0;
-        padding: 0;
-    }}
-    
     /* HEADER PERSONALIZADO */
-    .custom-header {{
+    .main-header {{
         background: linear-gradient(135deg, {SECONDARY_COLOR}, #1a2530);
         color: white;
         padding: 15px 25px;
@@ -56,43 +50,37 @@ def apply_custom_css():
         box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     }}
     
-    /* TÍTULO PRINCIPAL */
-    .title-section {{
+    /* TÍTULO */
+    .page-title-section {{
         background: linear-gradient(135deg, #1a5276, #1c5c82, {PRIMARY_COLOR});
         padding: 35px 20px;
         text-align: center;
     }}
     
-    .main-title {{
+    .page-title {{
         color: white;
         font-size: 2.3rem;
         font-weight: 800;
         margin: 0 0 10px 0;
     }}
     
-    .subtitle {{
+    .page-subtitle {{
         color: rgba(255,255,255,0.95);
         font-size: 1rem;
         margin: 0;
     }}
     
-    /* CONTENEDOR PARA TARJETAS */
-    .cards-wrapper {{
+    /* CONTENEDOR PRINCIPAL */
+    .dashboard-container {{
         max-width: 1200px;
         margin: 0 auto;
-        padding: 25px 20px;
+        padding: 30px 20px;
     }}
     
-    /* ====== VERSIÓN ESCRITORIO ====== */
-    .desktop-layout {{
+    /* ===== ESCRITORIO ===== */
+    /* No cambiar nada de la versión escritorio */
+    .desktop-view {{
         display: block;
-    }}
-    
-    .desktop-grid {{
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 25px;
-        margin-bottom: 30px;
     }}
     
     .desktop-card {{
@@ -110,6 +98,8 @@ def apply_custom_css():
         position: relative;
         overflow: hidden;
         border: 1px solid rgba(0,0,0,0.05);
+        width: 100%;
+        box-sizing: border-box;
     }}
     
     .desktop-card::before {{
@@ -155,51 +145,51 @@ def apply_custom_css():
         margin: 0;
     }}
     
-    /* ====== VERSIÓN MÓVIL ====== */
+    /* ===== MÓVIL ===== */
     @media (max-width: 768px) {{
-        /* OCULTAR VERSIÓN ESCRITORIO */
-        .desktop-layout {{
+        /* Ocultar versión escritorio */
+        .desktop-view {{
             display: none !important;
         }}
         
-        /* MOSTRAR VERSIÓN MÓVIL */
-        .mobile-layout {{
+        /* Mostrar versión móvil */
+        .mobile-view {{
             display: block !important;
         }}
         
-        .cards-wrapper {{
-            padding: 20px 15px;
-        }}
-        
+        /* GRID MÓVIL - 2 COLUMNAS DEFINITIVO */
         .mobile-grid {{
             display: grid !important;
             grid-template-columns: repeat(2, 1fr) !important;
-            gap: 15px !important;
+            gap: 12px !important;
             width: 100% !important;
             margin: 0 auto !important;
+            padding: 0 !important;
         }}
         
-        /* AJUSTES PARA GARANTIZAR 2 COLUMNAS */
+        /* Forzar que cada elemento ocupe 1 columna */
         .mobile-grid > * {{
             grid-column: span 1 !important;
-            width: 100% !important;
+            min-width: 0 !important;
         }}
         
+        /* TARJETA MÓVIL */
         .mobile-card {{
             background: white;
             border-radius: 15px;
-            padding: 20px 15px;
+            padding: 18px 12px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             text-decoration: none !important;
-            display: flex;
+            display: flex !important;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            min-height: 135px;
-            transition: all 0.3s ease;
             border: 1px solid rgba(0,0,0,0.05);
+            min-height: 130px;
             width: 100% !important;
+            box-sizing: border-box !important;
             position: relative;
+            transition: all 0.3s ease;
         }}
         
         .mobile-card::before {{
@@ -224,7 +214,7 @@ def apply_custom_css():
             height: 50px;
             background: linear-gradient(135deg, {PRIMARY_COLOR}, #ff944d);
             border-radius: 12px;
-            display: flex;
+            display: flex !important;
             align-items: center;
             justify-content: center;
             margin-bottom: 10px;
@@ -238,60 +228,44 @@ def apply_custom_css():
             color: {SECONDARY_COLOR};
             margin: 0;
             line-height: 1.2;
+            text-align: center;
         }}
         
-        .title-section {{
-            padding: 25px 15px;
+        /* AJUSTES DE RESPONSIVIDAD */
+        .dashboard-container {{
+            padding: 20px 15px !important;
         }}
         
-        .main-title {{
-            font-size: 1.9rem;
+        .page-title-section {{
+            padding: 25px 15px !important;
         }}
         
-        .subtitle {{
-            font-size: 0.9rem;
+        .page-title {{
+            font-size: 1.9rem !important;
         }}
         
-        .custom-header {{
-            padding: 12px 15px;
+        .page-subtitle {{
+            font-size: 0.9rem !important;
         }}
         
-        /* Asegurar que no haya desbordamiento horizontal */
-        html, body, .stApp {{
+        .main-header {{
+            padding: 12px 15px !important;
+        }}
+        
+        /* Asegurar que no haya scroll horizontal */
+        body, html, .stApp {{
             overflow-x: hidden !important;
             max-width: 100% !important;
-        }}
-        
-        /* Forzar 2 columnas incluso en pantallas muy pequeñas */
-        @media (max-width: 380px) {{
-            .mobile-grid {{
-                gap: 10px !important;
-            }}
-            
-            .mobile-card {{
-                padding: 15px 10px !important;
-                min-height: 125px !important;
-            }}
-            
-            .mobile-icon {{
-                width: 45px !important;
-                height: 45px !important;
-                font-size: 20px !important;
-            }}
-            
-            .mobile-card-title {{
-                font-size: 0.85rem !important;
-            }}
         }}
     }}
     
     /* ESCRITORIO: OCULTAR VERSIÓN MÓVIL */
     @media (min-width: 769px) {{
-        .mobile-layout {{
+        .mobile-view {{
             display: none !important;
         }}
         
-        .desktop-layout {{
+        .desktop-view {{
             display: block;
         }}
     }}
@@ -314,19 +288,19 @@ def apply_custom_css():
     
     @media (max-width: 768px) {{
         .stats-container {{
-            padding: 20px;
-            margin-top: 25px;
+            padding: 20px !important;
+            margin-top: 25px !important;
         }}
         
         .stats-grid {{
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 15px !important;
         }}
     }}
     
     @media (max-width: 480px) {{
         .stats-grid {{
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr !important;
         }}
     }}
     
@@ -345,18 +319,13 @@ def apply_custom_css():
         color: {SECONDARY_COLOR};
     }}
     
-    /* OCULTAR ELEMENTOS DE STREAMLIT */
+    /* OCULTAR ELEMENTOS STREAMLIT */
     footer {{ 
         display: none !important; 
     }}
     
     .stDeployButton {{ 
         display: none !important; 
-    }}
-    
-    /* FIX PARA LAS COLUMNAS DE STREAMLIT */
-    [data-testid="column"] {{
-        min-width: 0 !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -367,7 +336,7 @@ def apply_custom_css():
 def create_header():
     """Crea el encabezado"""
     st.markdown(f"""
-    <div class="custom-header">
+    <div class="main-header">
         <div style="display: flex; align-items: center; gap: 12px;">
             <span style="font-size: 1.5rem;">🛟</span>
             <span style="font-size: 1.3rem; font-weight: 700;">SOCORRISTA PRO</span>
@@ -394,17 +363,16 @@ def create_dashboard():
     
     # Título principal
     st.markdown(f"""
-    <div class="title-section">
-        <h1 class="main-title">Panel de Control</h1>
-        <p class="subtitle">Gestión centralizada de turnos y asistencia</p>
+    <div class="page-title-section">
+        <h1 class="page-title">Panel de Control</h1>
+        <p class="page-subtitle">Gestión centralizada de turnos y asistencia</p>
     </div>
     
-    <div class="cards-wrapper">
+    <div class="dashboard-container">
     """, unsafe_allow_html=True)
     
-    # ====== VERSIÓN ESCRITORIO ======
-    # Usamos st.columns para escritorio - NO TOCAR ESTO
-    st.markdown('<div class="desktop-layout">', unsafe_allow_html=True)
+    # ===== VERSIÓN ESCRITORIO (Columnas de Streamlit) =====
+    st.markdown('<div class="desktop-view">', unsafe_allow_html=True)
     
     # Fila 1
     col1, col2, col3 = st.columns(3, gap="large")
@@ -466,50 +434,19 @@ def create_dashboard():
         </a>
         """, unsafe_allow_html=True)
     
-    st.markdown('</div>', unsafe_allow_html=True)  # Cierra desktop-layout
+    st.markdown('</div>', unsafe_allow_html=True)
     
-    # ====== VERSIÓN MÓVIL ======
-    # Grid CSS puro para móvil - ESTA ES LA SOLUCIÓN
+    # ===== VERSIÓN MÓVIL (Grid CSS puro) =====
+    # Inyectar el HTML de la versión móvil dinámicamente con JavaScript
     st.markdown("""
-    <div class="mobile-layout" style="display: none;">
-        <div class="mobile-grid">
-            <!-- Fila 1 - 2 tarjetas -->
-            <div class="mobile-card" onclick="openCalendarModal()">
-                <div class="mobile-icon">📅</div>
-                <h3 class="mobile-card-title">Horarios</h3>
-            </div>
-            
-            <a href="?view=asistencia" class="mobile-card">
-                <div class="mobile-icon">✅</div>
-                <h3 class="mobile-card-title">Control Asistencia</h3>
-            </a>
-            
-            <!-- Fila 2 - 2 tarjetas -->
-            <a href="?view=nomina" class="mobile-card">
-                <div class="mobile-icon">💰</div>
-                <h3 class="mobile-card-title">Nómina y Pagos</h3>
-            </a>
-            
-            <a href="?view=incidencias" class="mobile-card">
-                <div class="mobile-icon">⚠️</div>
-                <h3 class="mobile-card-title">Incidencias</h3>
-            </a>
-            
-            <!-- Fila 3 - 2 tarjetas -->
-            <a href="?view=formacion" class="mobile-card">
-                <div class="mobile-icon">🎓</div>
-                <h3 class="mobile-card-title">Formación</h3>
-            </a>
-            
-            <a href="?view=comunicados" class="mobile-card">
-                <div class="mobile-icon">📢</div>
-                <h3 class="mobile-card-title">Comunicados</h3>
-            </a>
+    <div class="mobile-view" style="display: none;">
+        <div class="mobile-grid" id="mobile-grid-container">
+            <!-- Este contenido será reemplazado por JavaScript -->
         </div>
     </div>
     """, unsafe_allow_html=True)
     
-    # Cerrar cards-wrapper
+    # Cerrar dashboard-container
     st.markdown('</div>', unsafe_allow_html=True)
     
     # Estadísticas
@@ -543,17 +480,17 @@ def create_dashboard():
     </div>
     
     <div style="text-align: center; margin-top: 40px; color: #666; font-size: 0.9rem;">
-        © {datetime.datetime.now().year} Socorrista Pro • Versión 2.2 • Todos los derechos reservados
+        © {datetime.datetime.now().year} Socorrista Pro • Versión 2.3 • Todos los derechos reservados
     </div>
     """, unsafe_allow_html=True)
     
-    # Modal del calendario (oculto por defecto)
+    # Modal del calendario
     st.markdown("""
     <div id="calendar-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
         <div style="background: white; border-radius: 20px; padding: 30px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 style="margin: 0; color: #333; font-size: 1.5rem;">📅 Calendario de Turnos</h2>
-                <button onclick="closeCalendarModal()" style="background: #F37021; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">×</button>
+                <button onclick="closeCalendarModal()" style="background: #F37021; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer;">×</button>
             </div>
             <div style="color: #666; margin-bottom: 20px; line-height: 1.6;">
                 <p>Esta funcionalidad está en desarrollo. Próximamente podrás ver tu calendario completo aquí.</p>
@@ -561,9 +498,12 @@ def create_dashboard():
             <button onclick="closeCalendarModal()" style="background: #F37021; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%;">Cerrar</button>
         </div>
     </div>
+    """, unsafe_allow_html=True)
     
+    # JavaScript definitivo para solucionar todos los problemas
+    st.markdown("""
     <script>
-    // Funciones para el modal
+    // Funciones del modal
     function openCalendarModal() {
         document.getElementById('calendar-modal').style.display = 'flex';
         document.body.style.overflow = 'hidden';
@@ -574,53 +514,117 @@ def create_dashboard():
         document.body.style.overflow = 'auto';
     }
     
-    // Cerrar modal al hacer clic fuera
-    document.addEventListener('click', function(event) {
-        if (event.target.id === 'calendar-modal') {
-            closeCalendarModal();
-        }
-    });
+    // Crear el grid móvil dinámicamente
+    function createMobileGrid() {
+        const mobileGrid = document.getElementById('mobile-grid-container');
+        if (!mobileGrid) return;
+        
+        const cards = [
+            {icon: '📅', title: 'Horarios', onClick: 'openCalendarModal()'},
+            {icon: '✅', title: 'Control Asistencia', href: '?view=asistencia'},
+            {icon: '💰', title: 'Nómina y Pagos', href: '?view=nomina'},
+            {icon: '⚠️', title: 'Incidencias', href: '?view=incidencias'},
+            {icon: '🎓', title: 'Formación', href: '?view=formacion'},
+            {icon: '📢', title: 'Comunicados', href: '?view=comunicados'}
+        ];
+        
+        let html = '';
+        
+        cards.forEach(card => {
+            if (card.onClick) {
+                html += `
+                <div class="mobile-card" onclick="${card.onClick}">
+                    <div class="mobile-icon">${card.icon}</div>
+                    <h3 class="mobile-card-title">${card.title}</h3>
+                </div>
+                `;
+            } else {
+                html += `
+                <a href="${card.href}" class="mobile-card">
+                    <div class="mobile-icon">${card.icon}</div>
+                    <h3 class="mobile-card-title">${card.title}</h3>
+                </a>
+                `;
+            }
+        });
+        
+        mobileGrid.innerHTML = html;
+    }
     
-    // Cerrar con ESC
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            closeCalendarModal();
-        }
-    });
-    
-    // Detectar tamaño de pantalla y mostrar versión correcta
-    function adjustLayout() {
+    // Controlar visibilidad de versiones
+    function adjustView() {
         const isMobile = window.innerWidth <= 768;
-        const desktopLayout = document.querySelector('.desktop-layout');
-        const mobileLayout = document.querySelector('.mobile-layout');
+        const desktopView = document.querySelector('.desktop-view');
+        const mobileView = document.querySelector('.mobile-view');
         
         if (isMobile) {
-            // Móvil: mostrar grid, ocultar columnas
-            if (desktopLayout) desktopLayout.style.display = 'none';
-            if (mobileLayout) mobileLayout.style.display = 'block';
+            if (desktopView) desktopView.style.display = 'none';
+            if (mobileView) {
+                mobileView.style.display = 'block';
+                // Asegurar que el grid se muestre
+                const mobileGrid = document.querySelector('.mobile-grid');
+                if (mobileGrid) {
+                    mobileGrid.style.display = 'grid';
+                    mobileGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+                }
+            }
         } else {
-            // Escritorio: mostrar columnas, ocultar grid
-            if (desktopLayout) desktopLayout.style.display = 'block';
-            if (mobileLayout) mobileLayout.style.display = 'none';
+            if (desktopView) desktopView.style.display = 'block';
+            if (mobileView) mobileView.style.display = 'none';
         }
     }
     
-    // Ejecutar al cargar y al cambiar tamaño
-    window.addEventListener('load', adjustLayout);
-    window.addEventListener('resize', adjustLayout);
-    
-    // Asegurar que el grid móvil mantenga 2 columnas
-    function fixMobileGrid() {
+    // Forzar grid de 2 columnas en móvil
+    function enforceMobileGrid() {
         if (window.innerWidth <= 768) {
             const mobileGrid = document.querySelector('.mobile-grid');
             if (mobileGrid) {
-                mobileGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
-                mobileGrid.style.display = 'grid';
+                mobileGrid.style.gridTemplateColumns = 'repeat(2, 1fr) !important';
+                mobileGrid.style.display = 'grid !important';
+                
+                // Asegurar que cada tarjeta ocupe el ancho correcto
+                const cards = mobileGrid.querySelectorAll('.mobile-card');
+                cards.forEach(card => {
+                    card.style.width = '100% !important';
+                    card.style.minWidth = '0 !important';
+                });
             }
         }
     }
     
-    window.addEventListener('resize', fixMobileGrid);
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', function() {
+        createMobileGrid();
+        adjustView();
+        enforceMobileGrid();
+        
+        // Event listeners
+        window.addEventListener('resize', function() {
+            adjustView();
+            enforceMobileGrid();
+        });
+        
+        // Cerrar modal al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            if (event.target.id === 'calendar-modal') {
+                closeCalendarModal();
+            }
+        });
+        
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeCalendarModal();
+            }
+        });
+    });
+    
+    // Ejecutar también cuando la página termine de cargar
+    window.addEventListener('load', function() {
+        createMobileGrid();
+        adjustView();
+        enforceMobileGrid();
+    });
     </script>
     """, unsafe_allow_html=True)
 
