@@ -14,7 +14,7 @@ TOP_ROW = {
     "left": 2,        # inicio X (%) Distancia desde la Izquierda
     "right": 2,       # fin X (%) Distancia desde la Derecha
     "top": 15,        # Y (%) que tan abajo Distancia del alto
-    "height": 10,     # alto (%) Alto de la caja
+    "height": 20,     # alto (%) Alto de la caja
     "gap": 2,         # separación entre cajas (%)
     "prefix": "BTN"   # etiqueta
 }
