@@ -3,7 +3,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # ===== AJUSTES (EDITA SOLO ESTO) =====
-PADDING_PX = 400          # margen interno contra los bordes de la pantalla (mínimo)
+PADDING_PX = 4000          # margen interno contra los bordes de la pantalla (mínimo)
 BORDER_PX = 10            # grosor del borde del cuadrado
 BORDER_COLOR = "#111111" # color borde
 BG_COLOR = "#FFFFFF"     # fondo
