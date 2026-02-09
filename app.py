@@ -9,16 +9,21 @@ BORDER_PX = 2
 BORDER_COLOR = "#111111"
 BG_COLOR = "#FFFFFF"
 
-# Layout superior en grilla (todo automático)
 TOP_ROW = {
     "count": 4,       # cantidad de cajas
-    "left": 3,       # inicio X (%) Distancia desde la Izquierda 
-    "right": 3,      # fin X (%)
+    "left": 3,        # inicio X (%) Distancia desde la Izquierda
+    "right": 3,       # fin X (%) Distancia desde la Derecha
     "top": 10,        # Y (%) que tan abajo
     "height": 10,     # alto (%)
     "gap": 2,         # separación entre cajas (%)
     "prefix": "BTN"   # etiqueta
 }
+
+# Reglas anti-ruptura (móvil/tablet)
+MIN_BOX_W_PX = 64      # ancho mínimo por caja en píxeles
+MOBILE_MAX_W_PX = 520  # <= esto se considera móvil
+MOBILE_MIN_LR = 3      # left/right mínimo en móvil (%)
+MOBILE_MIN_GAP = 2     # gap mínimo en móvil (%)
 # ====================================
 
 st.set_page_config(layout="wide")
@@ -51,7 +56,6 @@ html = """
     html, body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:var(--bg);}
     #stage{position:fixed;inset:0;width:100vw;height:100vh;background:var(--bg);}
 
-    /* Marco (izq/der/sup) */
     #frame{
       position:absolute;
       left:var(--padx); right:var(--padx);
@@ -63,7 +67,6 @@ html = """
       pointer-events:none;
     }
 
-    /* Plano */
     #overlay{position:absolute;inset:0;pointer-events:none;}
     .grid{
       position:absolute;inset:0;
@@ -119,7 +122,6 @@ html = """
 
   <script>
     (function(){
-      // Full-screen real del iframe
       var fe = window.frameElement;
       if (fe){
         fe.style.position = "fixed";
@@ -134,10 +136,24 @@ html = """
       }
 
       var cfg = __TOP_ROW__;
+      var MIN_BOX_W_PX = __MIN_BOX_W_PX__;
+      var MOBILE_MAX_W_PX = __MOBILE_MAX_W_PX__;
+      var MOBILE_MIN_LR = __MOBILE_MIN_LR__;
+      var MOBILE_MIN_GAP = __MOBILE_MIN_GAP__;
+
       var container = document.getElementById("top-row");
+      var hud = document.getElementById("hud");
+
+      function clamp(v, lo, hi){
+        v = Number(v);
+        if (isNaN(v)) v = lo;
+        return Math.max(lo, Math.min(hi, v));
+      }
 
       function buildTopRow(){
         container.innerHTML = "";
+
+        var vw = window.innerWidth;
 
         var n = Math.max(1, Number(cfg.count || 1));
         var left = Number(cfg.left || 0);
@@ -147,11 +163,29 @@ html = """
         var gap = Number(cfg.gap || 0);
         var prefix = String(cfg.prefix || "BTN");
 
-        // ancho util disponible en %
-        var usable = 100 - left - right;
+        // En móvil, evita valores demasiado pequeños que vuelven ilegibles / rompen layout
+        if (vw <= MOBILE_MAX_W_PX){
+          left = Math.max(left, MOBILE_MIN_LR);
+          right = Math.max(right, MOBILE_MIN_LR);
+          gap = Math.max(gap, MOBILE_MIN_GAP);
+        }
 
-        // ancho por caja (todas iguales)
+        // Calcula usable% y ancho% por caja
+        var usable = 100 - left - right;
+        if (usable < 1) usable = 1;
+
+        // Auto-reduce columnas hasta que el ancho en px sea >= MIN_BOX_W_PX
+        // (mantiene cajas iguales, nunca la última más pequeña)
+        while (n > 1){
+          var wPct = (usable - (gap * (n - 1))) / n;
+          var wPx = (wPct / 100) * vw;
+          if (wPct > 0 && wPx >= MIN_BOX_W_PX) break;
+          n -= 1;
+        }
+
+        // Recalcula final
         var w = (usable - (gap * (n - 1))) / n;
+        if (w < 0) w = 0;
 
         for (var i = 0; i < n; i++){
           var x = left + i * (w + gap);
@@ -165,30 +199,20 @@ html = """
 
           var lab = document.createElement("span");
           lab.className = "blk-label";
-          lab.textContent = prefix + (i+1) + " x=" + x.toFixed(2) + " w=" + w.toFixed(2);
+          lab.textContent = prefix + (i+1) + " | n=" + n + " | x=" + x.toFixed(2) + " w=" + w.toFixed(2);
           d.appendChild(lab);
 
           container.appendChild(d);
         }
-      }
 
-      var hud = document.getElementById("hud");
-      function updateHud(){
-        var vw = Math.round(window.innerWidth);
-        var vh = Math.round(window.innerHeight);
         hud.textContent =
-          "Viewport(px): " + vw + " x " + vh +
-          " | Mitad: " + Math.round(vw/2) + " x " + Math.round(vh/2) +
-          " | 10%=" + Math.round(vw*0.10) + "px";
+          "Viewport(px): " + Math.round(vw) + " x " + Math.round(window.innerHeight) +
+          " | LR=" + left + "/" + right + " gap=" + gap +
+          " | cajas=" + n + " | w=" + w.toFixed(2) + "% (" + Math.round((w/100)*vw) + "px)";
       }
 
-      window.addEventListener("resize", function(){
-        buildTopRow();
-        updateHud();
-      });
-
+      window.addEventListener("resize", buildTopRow);
       buildTopRow();
-      updateHud();
     })();
   </script>
 </body>
@@ -202,6 +226,10 @@ html = (
         .replace("__BC__", BORDER_COLOR)
         .replace("__BG__", BG_COLOR)
         .replace("__TOP_ROW__", str(TOP_ROW).replace("'", '"'))
+        .replace("__MIN_BOX_W_PX__", str(MIN_BOX_W_PX))
+        .replace("__MOBILE_MAX_W_PX__", str(MOBILE_MAX_W_PX))
+        .replace("__MOBILE_MIN_LR__", str(MOBILE_MIN_LR))
+        .replace("__MOBILE_MIN_GAP__", str(MOBILE_MIN_GAP))
 )
 
 components.html(html, height=10, scrolling=False)
