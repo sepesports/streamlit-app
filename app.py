@@ -11,7 +11,7 @@ BG_COLOR = "#FFFFFF"
 
 st.set_page_config(layout="wide")
 
-# Quitar padding/márgenes Streamlit (por si quedan alrededor)
+# Quitar padding/márgenes de Streamlit
 st.markdown(
     """
     <style>
@@ -23,27 +23,26 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-components.html(
-    f"""
+html = """
 <!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root {{
-      --pad: {PADDING_PX}px;
-      --b: {BORDER_PX}px;
-      --bc: {BORDER_COLOR};
-      --bg: {BG_COLOR};
-    }}
-    html, body {{
+    :root {
+      --pad: __PAD__px;
+      --b: __B__px;
+      --bc: __BC__;
+      --bg: __BG__;
+    }
+    html, body {
       margin:0; padding:0;
       width:100%; height:100%;
       overflow:hidden;
       background: var(--bg);
-    }}
-    #stage {{
+    }
+    #stage {
       position: fixed;
       inset: 0;
       width: 100vw;
@@ -52,14 +51,14 @@ components.html(
       display: flex;
       align-items: center;
       justify-content: center;
-    }}
-    #sq {{
+    }
+    #sq {
       width: calc(min(100vw, 100vh) - (2 * var(--pad)));
       height: calc(min(100vw, 100vh) - (2 * var(--pad)));
       border: var(--b) solid var(--bc);
       box-sizing: border-box;
       background: var(--bg);
-    }}
+    }
   </style>
 </head>
 <body>
@@ -69,7 +68,7 @@ components.html(
     (function(){
       // Fuerza el IFRAME (este componente) a full-screen real
       var fe = window.frameElement;
-      if (fe) {{
+      if (fe) {
         fe.style.position = "fixed";
         fe.style.inset = "0";
         fe.style.width = "100vw";
@@ -79,14 +78,20 @@ components.html(
         fe.style.padding = "0";
         fe.style.zIndex = "999999";
         fe.style.background = "transparent";
-      }}
+      }
       document.documentElement.style.height = "100%";
       document.body.style.height = "100%";
     })();
   </script>
 </body>
 </html>
-""",
-    height=10,          # da igual: el script fija 100vh
-    scrolling=False,
+"""
+
+html = (
+    html.replace("__PAD__", str(PADDING_PX))
+        .replace("__B__", str(BORDER_PX))
+        .replace("__BC__", BORDER_COLOR)
+        .replace("__BG__", BG_COLOR)
 )
+
+components.html(html, height=10, scrolling=False)
