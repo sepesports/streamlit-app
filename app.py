@@ -3,7 +3,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # ===== AJUSTES (EDITA SOLO ESTO) =====
-PADDING_PX = 12
+PADDING_PX = 120
 BORDER_PX = 6
 BORDER_COLOR = "#111111"
 BG_COLOR = "#FFFFFF"
