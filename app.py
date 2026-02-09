@@ -11,8 +11,8 @@ BG_COLOR = "#FFFFFF"
 
 TOP_ROW = {
     "count": 4,       # cantidad de cajas
-    "left": 3,        # inicio X (%) Distancia desde la Izquierda
-    "right": 3,       # fin X (%) Distancia desde la Derecha
+    "left": 2,        # inicio X (%) Distancia desde la Izquierda
+    "right": 2,       # fin X (%) Distancia desde la Derecha
     "top": 10,        # Y (%) que tan abajo
     "height": 10,     # alto (%)
     "gap": 2,         # separación entre cajas (%)
