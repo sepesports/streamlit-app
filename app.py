@@ -15,7 +15,7 @@ TOP_ROW = {
     "left": 10,       # inicio X (%)
     "right": 10,      # fin X (%)
     "top": 10,        # Y (%)
-    "height": 10,     # alto (%)
+    "height": 30,     # alto (%)
     "gap": 2,         # separación entre cajas (%)
     "prefix": "BTN"   # etiqueta
 }
