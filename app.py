@@ -2,135 +2,96 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
+# ===== AJUSTES (EDITA SOLO ESTO) =====
+PADDING_PX = 12          # margen interno contra los bordes de la pantalla (mínimo)
+BORDER_PX = 3            # grosor del borde del cuadrado
+BORDER_COLOR = "#111111" # color borde
+BG_COLOR = "#FFFFFF"     # fondo
+# ====================================
+
 st.set_page_config(layout="wide")
 
-# 1) Quitar márgenes/padding de Streamlit y forzar el componente a ocupar TODO el viewport
+# Forzar el iframe del componente a ocupar toda la pantalla (sin márgenes de Streamlit)
 st.markdown(
     """
     <style>
-      html, body { height: 100%; }
+      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
+      section.main > div{padding:0 !important;margin:0 !important;}
+      header, footer{display:none !important;}
 
-      /* Quita padding/márgenes del layout Streamlit */
-      .block-container{
-        padding: 0 !important;
-        margin: 0 !important;
-        max-width: 100% !important;
-      }
-      section.main > div{
-        padding: 0 !important;
-        margin: 0 !important;
-      }
-
-      /* Oculta header/footer de Streamlit (la franja superior) */
-      header, footer { display: none !important; }
-
-      /* Fuerza el custom component (iframe) a full-screen real */
       div[data-testid="stCustomComponentV1"]{
-        position: fixed !important;
-        inset: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        z-index: 999999 !important;
-        background: transparent !important;
+        position:fixed !important;
+        inset:0 !important;
+        width:100vw !important;
+        height:100vh !important;
+        margin:0 !important;
+        padding:0 !important;
+        z-index:999999 !important;
+        background:transparent !important;
       }
       div[data-testid="stCustomComponentV1"] iframe{
-        width: 100% !important;
-        height: 100% !important;
-        border: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
+        width:100% !important;
+        height:100% !important;
+        border:0 !important;
+        margin:0 !important;
+        padding:0 !important;
       }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# 2) HTML interno (grid + etiqueta de medidas)
 components.html(
-    """
+    f"""
 <!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    html, body{
+    :root {{
+      --pad: {PADDING_PX}px;
+      --b: {BORDER_PX}px;
+      --bc: {BORDER_COLOR};
+      --bg: {BG_COLOR};
+    }}
+
+    html, body {{
       margin:0; padding:0;
       width:100%; height:100%;
       overflow:hidden;
-      background:#fff;
-    }
-    #calib-wrapper{
+      background: var(--bg);
+    }}
+
+    /* Lienzo full-screen */
+    #stage {{
       position:fixed;
       inset:0;
       width:100vw;
       height:100vh;
-      overflow:hidden;
-      background:#fff;
-    }
-    #calib-grid{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      background-image:
-        linear-gradient(to right, rgba(0,0,0,0.12) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0,0,0,0.12) 1px, transparent 1px);
-      background-size: 24px 24px;
-      background-position: 0 0;
-    }
-    #calib-border{
-      position:absolute;
-      inset:0;
-      border:2px solid rgba(0,0,0,0.35);
-      box-sizing:border-box;
-      pointer-events:none;
-    }
-    #calib-label{
-      position:absolute;
-      top:10px;
-      left:10px;
-      padding:6px 10px;
-      font: 12px/1.2 Arial, sans-serif;
-      background: rgba(255,255,255,0.92);
-      border:1px solid rgba(0,0,0,0.2);
-      border-radius:6px;
-    }
-    @media (min-width: 481px) and (max-width: 1024px){
-      #calib-grid{ background-size: 32px 32px; }
-    }
-    @media (max-width: 480px){
-      #calib-grid{ background-size: 40px 40px; }
-      #calib-label{ font-size: 11px; }
-    }
+      background: var(--bg);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }}
+
+    /* Cuadrado perfecto responsivo */
+    #sq {{
+      width: calc(min(100vw, 100vh) - (2 * var(--pad)));
+      height: calc(min(100vw, 100vh) - (2 * var(--pad)));
+      border: var(--b) solid var(--bc);
+      box-sizing: border-box;
+      background: var(--bg);
+    }}
   </style>
 </head>
 <body>
-  <div id="calib-wrapper">
-    <div id="calib-grid"></div>
-    <div id="calib-border"></div>
-    <div id="calib-label">Cargando medidas...</div>
+  <div id="stage">
+    <div id="sq"></div>
   </div>
-
-  <script>
-    (function(){
-      const label = document.getElementById('calib-label');
-      function update(){
-        const vw = Math.round(window.innerWidth);
-        const vh = Math.round(window.innerHeight);
-        const dpr = window.devicePixelRatio || 1;
-        label.textContent = "Ventana gráfica: " + vw + " x " + vh + " px | DPR: " + dpr;
-      }
-      window.addEventListener('resize', update);
-      update();
-    })();
-  </script>
 </body>
 </html>
 """,
-    height=1,       # el CSS de arriba fuerza el iframe a 100vh
+    height=1,
     scrolling=False,
 )
-
