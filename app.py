@@ -12,8 +12,8 @@ BG_COLOR = "#FFFFFF"
 # Layout superior en grilla (todo automático)
 TOP_ROW = {
     "count": 4,       # cantidad de cajas
-    "left": 3,       # inicio X (%)
-    "right": 3,      # fin X (%)
+    "left": 1,       # inicio X (%)
+    "right": 1,      # fin X (%)
     "top": 10,        # Y (%)
     "height": 10,     # alto (%)
     "gap": 2,         # separación entre cajas (%)
