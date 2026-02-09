@@ -14,7 +14,7 @@ TOP_ROW = {
     "count": 4,       # cantidad de cajas
     "left": 1,       # inicio X (%)
     "right": 1,      # fin X (%)
-    "top": 30,        # Y (%)
+    "top": 5,        # Y (%)
     "height": 10,     # alto (%)
     "gap": 2,         # separación entre cajas (%)
     "prefix": "BTN"   # etiqueta
