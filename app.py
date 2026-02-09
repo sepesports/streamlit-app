@@ -57,8 +57,11 @@ html = """
       left: var(--padx);
       right: var(--padx);
       top: var(--padtop);
-      bottom: 0;                 /* sin margen inferior */
-      border: var(--b) solid var(--bc);
+      bottom: 0;
+      border-left: var(--b) solid var(--bc);
+      border-right: var(--b) solid var(--bc);
+      border-top: var(--b) solid var(--bc);
+      border-bottom: none;   /* sin borde inferior */
       box-sizing:border-box;
       background: var(--bg);
     }
