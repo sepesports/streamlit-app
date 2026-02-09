@@ -12,9 +12,9 @@ BG_COLOR = "#FFFFFF"
 # Layout superior en grilla (todo automático)
 TOP_ROW = {
     "count": 4,       # cantidad de cajas
-    "left": 1,       # inicio X (%)
+    "left": 1,       # inicio X (%) Distancia desde la Izquierda 
     "right": 1,      # fin X (%)
-    "top": 2,        # Y (%)
+    "top": 10,        # Y (%) que tan abajo
     "height": 10,     # alto (%)
     "gap": 2,         # separación entre cajas (%)
     "prefix": "BTN"   # etiqueta
