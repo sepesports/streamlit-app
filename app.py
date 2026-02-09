@@ -13,7 +13,7 @@ BG_COLOR = "#FFFFFF"
 TOP_ROW = {
     "count": 4,       # cantidad de cajas
     "left": 10,       # inicio X (%)
-    "right": 30,      # fin X (%)
+    "right": 10,      # fin X (%)
     "top": 10,        # Y (%)
     "height": 10,     # alto (%)
     "gap": 2,         # separación entre cajas (%)
