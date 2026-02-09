@@ -10,19 +10,20 @@ BORDER_COLOR = "#111111"
 BG_COLOR = "#FFFFFF"
 
 TOP_ROW = {
-    "count": 4,
-    "left": 5,      # prueba 3 vs 5 aquí
-    "right": 5,     # prueba 3 vs 5 aquí
-    "top": 10,
-    "height": 10,
-    "gap": 2,
-    "prefix": "BTN"
+    "count": 4,       # cantidad de cajas
+    "left": 3,        # inicio X (%) Distancia desde la Izquierda
+    "right": 3,       # fin X (%) Distancia desde la Derecha
+    "top": 10,        # Y (%) que tan abajo
+    "height": 10,     # alto (%)
+    "gap": 2,         # separación entre cajas (%)
+    "prefix": "BTN"   # etiqueta
 }
 
-MIN_BOX_W_PX = 64
-MOBILE_MAX_W_PX = 520
-MOBILE_MIN_LR = 3
-MOBILE_MIN_GAP = 2
+# Reglas anti-ruptura (móvil/tablet)
+MIN_BOX_W_PX = 64      # ancho mínimo por caja en píxeles
+MOBILE_MAX_W_PX = 520  # <= esto se considera móvil
+MOBILE_MIN_LR = 3      # left/right mínimo en móvil (%)
+MOBILE_MIN_GAP = 2     # gap mínimo en móvil (%)
 # ====================================
 
 st.set_page_config(layout="wide")
@@ -67,32 +68,23 @@ html = """
     }
 
     #overlay{position:absolute;inset:0;pointer-events:none;}
-
     .grid{
       position:absolute;inset:0;
       background-image:
-        linear-gradient(to right, rgba(0,0,0,0.08) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0,0,0,0.08) 1px, transparent 1px);
+        linear-gradient(to right, rgba(0,0,0,0.10) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.10) 1px, transparent 1px);
       background-size: 10% 10%;
     }
-
-    /* Bandas de LEFT/RIGHT para ver el % real */
-    #band-left{
-      position:absolute; top:0; bottom:0; left:0;
-      background: rgba(0,0,0,0.05);
-    }
-    #band-right{
-      position:absolute; top:0; bottom:0; right:0;
-      background: rgba(0,0,0,0.05);
-    }
+    .mid-v{position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(0,0,0,.25);}
+    .mid-h{position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(0,0,0,.25);}
 
     #hud{
       position:absolute; top:8px; left:8px;
-      font: 14px Arial, sans-serif;
-      background: rgba(255,255,255,.95);
-      border: 1px solid rgba(0,0,0,.25);
+      font: 12px Arial, sans-serif;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.2);
       border-radius: 6px;
-      padding: 8px 12px;
+      padding: 6px 10px;
       pointer-events:none;
     }
 
@@ -100,7 +92,7 @@ html = """
       position:absolute;
       border: 2px dashed rgba(0,0,0,.55);
       box-sizing:border-box;
-      background: rgba(0,0,0,.02);
+      background: rgba(0,0,0,.03);
     }
     .blk-label{
       position:absolute; top:2px; left:2px;
@@ -119,11 +111,11 @@ html = """
 
     <div id="overlay">
       <div class="grid"></div>
-
-      <div id="band-left"></div>
-      <div id="band-right"></div>
+      <div class="mid-v"></div>
+      <div class="mid-h"></div>
 
       <div id="top-row"></div>
+
       <div id="hud">Cargando...</div>
     </div>
   </div>
@@ -151,16 +143,19 @@ html = """
 
       var container = document.getElementById("top-row");
       var hud = document.getElementById("hud");
-      var bandL = document.getElementById("band-left");
-      var bandR = document.getElementById("band-right");
 
-      function build(){
+      function clamp(v, lo, hi){
+        v = Number(v);
+        if (isNaN(v)) v = lo;
+        return Math.max(lo, Math.min(hi, v));
+      }
+
+      function buildTopRow(){
         container.innerHTML = "";
 
         var vw = window.innerWidth;
-        var vh = window.innerHeight;
 
-        var n0 = Math.max(1, Number(cfg.count || 1));
+        var n = Math.max(1, Number(cfg.count || 1));
         var left = Number(cfg.left || 0);
         var right = Number(cfg.right || 0);
         var top = Number(cfg.top || 0);
@@ -168,29 +163,27 @@ html = """
         var gap = Number(cfg.gap || 0);
         var prefix = String(cfg.prefix || "BTN");
 
-        // Clamp solo para móvil si vienen más bajos que el mínimo
+        // En móvil, evita valores demasiado pequeños que vuelven ilegibles / rompen layout
         if (vw <= MOBILE_MAX_W_PX){
-          if (left < MOBILE_MIN_LR) left = MOBILE_MIN_LR;
-          if (right < MOBILE_MIN_LR) right = MOBILE_MIN_LR;
-          if (gap < MOBILE_MIN_GAP) gap = MOBILE_MIN_GAP;
+          left = Math.max(left, MOBILE_MIN_LR);
+          right = Math.max(right, MOBILE_MIN_LR);
+          gap = Math.max(gap, MOBILE_MIN_GAP);
         }
 
-        // Bandas visuales de left/right
-        bandL.style.width = left + "%";
-        bandR.style.width = right + "%";
-
+        // Calcula usable% y ancho% por caja
         var usable = 100 - left - right;
         if (usable < 1) usable = 1;
 
-        // Auto-reduce columnas si no cabe por px
-        var n = n0;
+        // Auto-reduce columnas hasta que el ancho en px sea >= MIN_BOX_W_PX
+        // (mantiene cajas iguales, nunca la última más pequeña)
         while (n > 1){
-          var wPctTry = (usable - (gap * (n - 1))) / n;
-          var wPxTry = (wPctTry / 100) * vw;
-          if (wPctTry > 0 && wPxTry >= MIN_BOX_W_PX) break;
+          var wPct = (usable - (gap * (n - 1))) / n;
+          var wPx = (wPct / 100) * vw;
+          if (wPct > 0 && wPx >= MIN_BOX_W_PX) break;
           n -= 1;
         }
 
+        // Recalcula final
         var w = (usable - (gap * (n - 1))) / n;
         if (w < 0) w = 0;
 
@@ -206,21 +199,20 @@ html = """
 
           var lab = document.createElement("span");
           lab.className = "blk-label";
-          lab.textContent = prefix + (i+1) + " | x=" + x.toFixed(2) + " w=" + w.toFixed(2);
+          lab.textContent = prefix + (i+1) + " | n=" + n + " | x=" + x.toFixed(2) + " w=" + w.toFixed(2);
           d.appendChild(lab);
 
           container.appendChild(d);
         }
 
         hud.textContent =
-          "VW×VH=" + Math.round(vw) + "×" + Math.round(vh) +
-          " | cfg(L,R,gap)=(" + cfg.left + "," + cfg.right + "," + cfg.gap + ")" +
-          " | usado(L,R,gap)=(" + left + "," + right + "," + gap + ")" +
-          " | cajas=" + n + "/" + n0;
+          "Viewport(px): " + Math.round(vw) + " x " + Math.round(window.innerHeight) +
+          " | LR=" + left + "/" + right + " gap=" + gap +
+          " | cajas=" + n + " | w=" + w.toFixed(2) + "% (" + Math.round((w/100)*vw) + "px)";
       }
 
-      window.addEventListener("resize", build);
-      build();
+      window.addEventListener("resize", buildTopRow);
+      buildTopRow();
     })();
   </script>
 </body>
