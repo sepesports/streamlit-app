@@ -3,7 +3,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # ===== AJUSTES (EDITA SOLO ESTO) =====
-PADDING_PX = 10
+PAD_X_PX = 10           # margen izquierda/derecha
+PAD_Y_PX = 10           # margen arriba/abajo
 BORDER_PX = 2
 BORDER_COLOR = "#111111"
 BG_COLOR = "#FFFFFF"
@@ -11,7 +12,6 @@ BG_COLOR = "#FFFFFF"
 
 st.set_page_config(layout="wide")
 
-# Quitar padding/márgenes de Streamlit
 st.markdown(
     """
     <style>
@@ -30,45 +30,52 @@ html = """
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root {
-      --pad: __PAD__px;
+    :root{
+      --padx: __PADX__px;
+      --pady: __PADY__px;
       --b: __B__px;
       --bc: __BC__;
       --bg: __BG__;
     }
-    html, body {
+    html, body{
       margin:0; padding:0;
       width:100%; height:100%;
       overflow:hidden;
       background: var(--bg);
     }
-    #stage {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
+
+    /* Full viewport */
+    #stage{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
       background: var(--bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
-    #sq {
-      width: calc(min(100vw, 100vh) - (2 * var(--pad)));
-      height: calc(min(100vw, 100vh) - (2 * var(--pad)));
+
+    /* Marco ajustable: ocupa TODO menos padding */
+    #box{
+      position:absolute;
+      left: var(--padx);
+      right: var(--padx);
+      top: var(--pady);
+      bottom: var(--pady);
       border: var(--b) solid var(--bc);
-      box-sizing: border-box;
+      box-sizing:border-box;
       background: var(--bg);
     }
   </style>
 </head>
 <body>
-  <div id="stage"><div id="sq"></div></div>
+  <div id="stage">
+    <div id="box"></div>
+  </div>
 
   <script>
     (function(){
-      // Fuerza el IFRAME (este componente) a full-screen real
+      // Full-screen real del iframe
       var fe = window.frameElement;
-      if (fe) {
+      if (fe){
         fe.style.position = "fixed";
         fe.style.inset = "0";
         fe.style.width = "100vw";
@@ -88,7 +95,8 @@ html = """
 """
 
 html = (
-    html.replace("__PAD__", str(PADDING_PX))
+    html.replace("__PADX__", str(PAD_X_PX))
+        .replace("__PADY__", str(PAD_Y_PX))
         .replace("__B__", str(BORDER_PX))
         .replace("__BC__", BORDER_COLOR)
         .replace("__BG__", BG_COLOR)
