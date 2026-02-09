@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 
 # ===== AJUSTES (EDITA SOLO ESTO) =====
 PAD_X_PX = 10           # margen izquierda/derecha
-PAD_Y_PX = 10           # margen arriba/abajo
+PAD_TOP_PX = 10         # margen superior
 BORDER_PX = 2
 BORDER_COLOR = "#111111"
 BG_COLOR = "#FFFFFF"
@@ -32,7 +32,7 @@ html = """
   <style>
     :root{
       --padx: __PADX__px;
-      --pady: __PADY__px;
+      --padtop: __PADTOP__px;
       --b: __B__px;
       --bc: __BC__;
       --bg: __BG__;
@@ -44,7 +44,6 @@ html = """
       background: var(--bg);
     }
 
-    /* Full viewport */
     #stage{
       position:fixed;
       inset:0;
@@ -53,13 +52,12 @@ html = """
       background: var(--bg);
     }
 
-    /* Marco ajustable: ocupa TODO menos padding */
     #box{
       position:absolute;
       left: var(--padx);
       right: var(--padx);
-      top: var(--pady);
-      bottom: var(--pady);
+      top: var(--padtop);
+      bottom: 0;                 /* sin margen inferior */
       border: var(--b) solid var(--bc);
       box-sizing:border-box;
       background: var(--bg);
@@ -73,7 +71,6 @@ html = """
 
   <script>
     (function(){
-      // Full-screen real del iframe
       var fe = window.frameElement;
       if (fe){
         fe.style.position = "fixed";
@@ -96,7 +93,7 @@ html = """
 
 html = (
     html.replace("__PADX__", str(PAD_X_PX))
-        .replace("__PADY__", str(PAD_Y_PX))
+        .replace("__PADTOP__", str(PAD_TOP_PX))
         .replace("__B__", str(BORDER_PX))
         .replace("__BC__", BORDER_COLOR)
         .replace("__BG__", BG_COLOR)
