@@ -1,6 +1,7 @@
-# admin.py
+# pages/admin.py
 import streamlit as st
 import streamlit.components.v1 as components
+import requests
 
 # ==============================================================================
 # PLANO RESPONSIVO — LOGIN (según mockup)
@@ -46,21 +47,119 @@ LABEL_SIZE_PX = 14
 LINK_SIZE_PX = 13
 BTN_TEXT_SIZE_PX = 14
 
+AUTH_URL = "https://camilo27.pythonanywhere.com/api/auth"
+
 st.set_page_config(layout="wide")
 
+# Oculta chrome de Streamlit (sidebar incl.)
 st.markdown(
     """
     <style>
       .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
       section.main > div{padding:0 !important;margin:0 !important;}
       header, footer{display:none !important;}
-      /* Oculta sidebar de multipage */
       [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
+# ==========================
+# UI REAL (CAPTURA + BOTÓN)
+# ==========================
+# Se renderiza ARRIBA del HTML con z-index alto, pero visualmente queda alineado con el mockup.
+st.markdown(
+    """
+    <style>
+      /* Contenedor flotante para inputs reales (encima del mockup) */
+      .auth-overlay{
+        position:fixed;
+        left:0; top:0;
+        width:100vw; height:100vh;
+        pointer-events:none;
+        z-index:1000000;
+      }
+      .auth-overlay .inner{
+        position:absolute;
+        left:10px; right:10px;
+        top:10px; bottom:0;
+      }
+      /* Hacemos que los widgets sí reciban click */
+      .auth-overlay *{ pointer-events:auto; }
+
+      /* Quita márgenes internos de widgets */
+      .auth-overlay [data-testid="stTextInput"]{ margin:0 !important; padding:0 !important; }
+      .auth-overlay [data-testid="stTextInput"] label{ display:none !important; }
+      .auth-overlay [data-testid="stTextInput"] input{
+        border:2px solid #000 !important;
+        border-radius:10px !important;
+        height:54px !important;
+        font-weight:700 !important;
+      }
+      .auth-overlay [data-testid="stButton"] button{
+        border:2px solid #000 !important;
+        border-radius:10px !important;
+        background:#fff !important;
+        height:48px !important;
+        font-weight:700 !important;
+        width:100% !important;
+      }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Overlay: colocación aproximada sobre el mockup (misma lógica porcentual del CUADRO)
+# Para no romper tu diseño, mantenemos el mockup como fondo y ponemos inputs reales encima.
+overlay = st.container()
+with overlay:
+    st.markdown('<div class="auth-overlay"><div class="inner">', unsafe_allow_html=True)
+
+    # Spacers para bajar hasta donde están los campos del mockup
+    # (No tocamos el mockup; solo superponemos inputs)
+    top_pad = int((PAD_TOP_PX + 60))
+    st.markdown(f"<div style='height:{top_pad}px'></div>", unsafe_allow_html=True)
+
+    # Inputs reales
+    usuario = st.text_input("", key="auth_user")
+    st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+    password = st.text_input("", type="password", key="auth_pass")
+
+    st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+
+    # Botón real
+    login_clicked = st.button("Login", key="auth_btn")
+
+    st.markdown("</div></div>", unsafe_allow_html=True)
+
+# Acción server-side
+if login_clicked:
+    try:
+        r = requests.post(
+            AUTH_URL,
+            json={"usuario": usuario, "password": password},
+            timeout=20,
+        )
+        data = r.json() if r.headers.get("content-type", "").lower().startswith("application/json") else {}
+        if data.get("ok") is True:
+            st.session_state["auth_ok"] = True
+            try:
+                st.switch_page("app.py")
+            except Exception:
+                st.experimental_set_query_params(auth="ok")
+                st.markdown(
+                    "<script>window.location.href='/?auth=ok';</script>",
+                    unsafe_allow_html=True,
+                )
+            st.stop()
+        else:
+            st.error("Credenciales inválidas")
+    except Exception:
+        st.error("Error de conexión")
+
+# ==========================
+# MOCKUP ORIGINAL (FONDO)
+# ==========================
 html = """
 <!doctype html>
 <html>
@@ -132,8 +231,7 @@ html = """
       color:#000;
     }
 
-    /* MISMA CLASE field, SOLO QUE AHORA ES <input> */
-    input.field{
+    .field{
       position:absolute;
       left: __IN_L__%;
       right: __IN_R__%;
@@ -142,11 +240,6 @@ html = """
       border-radius: var(--r_in);
       box-sizing:border-box;
       background:#fff;
-      padding: 0 10px;
-      font: 14px Arial, sans-serif;
-      font-weight: 700;
-      color:#000;
-      outline: none;
     }
 
     .btn{
@@ -164,8 +257,6 @@ html = """
       font: __BTN_TXT__px Arial, sans-serif;
       font-weight: 700;
       color:#000;
-      cursor:pointer;
-      user-select:none;
     }
 
     .link{
@@ -198,12 +289,12 @@ html = """
         <div class="title">¡BIENVENIDO!</div>
 
         <div class="label" style="top: __USER_L_Y__%;">Usuario:</div>
-        <input id="user" class="field" style="top: __USER_I_Y__%;" autocomplete="username"/>
+        <div class="field" style="top: __USER_I_Y__%;"></div>
 
         <div class="label" style="top: __PASS_L_Y__%;">Contraseña:</div>
-        <input id="pass" class="field" style="top: __PASS_I_Y__%;" type="password" autocomplete="current-password"/>
+        <div class="field" style="top: __PASS_I_Y__%;"></div>
 
-        <div class="btn" style="top: __BTN_Y__%;" onclick="doLogin()">Login</div>
+        <div class="btn" style="top: __BTN_Y__%;">Login</div>
 
         <div class="link" style="top: __LINKS_Y__%; left: __LINK_L_X__%;">Politicas:</div>
         <div class="link" style="top: __LINKS_Y__%; left: __LINK_R_X__%;">Registrarse:</div>
@@ -214,29 +305,6 @@ html = """
   </div>
 
   <script>
-    async function doLogin(){
-      const u = (document.getElementById("user").value || "").trim();
-      const p = (document.getElementById("pass").value || "").trim();
-
-      try{
-        const r = await fetch("https://camilo27.pythonanywhere.com/api/auth", {
-          method: "POST",
-          headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({usuario: u, password: p})
-        });
-
-        const j = await r.json();
-
-        if (j && j.ok === true){
-          window.top.location.href = "/?auth=ok";
-        } else {
-          alert("Credenciales inválidas");
-        }
-      }catch(e){
-        alert("Error de conexión");
-      }
-    }
-
     (function(){
       var fe = window.frameElement;
       if (fe){
