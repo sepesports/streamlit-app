@@ -1,105 +1,37 @@
 # app.py
 import streamlit as st
 import streamlit.components.v1 as components
-import requests
 
-# ================= LOGIN / SESIÓN =================
-API_URL = "https://camilo27.pythonanywhere.com/api/auth"
+# =======================
+# GUARD (NO MOSTRAR LOGIN GRIS)
+# =======================
+if not st.session_state.get("auth"):
+    st.switch_page("pages/admin.py")
 
-if "auth" not in st.session_state:
-    st.session_state.auth = False
-if "user" not in st.session_state:
-    st.session_state.user = ""
-if "role" not in st.session_state:
-    st.session_state.role = ""
-
-def do_login(correo: str, dni: str):
-    r = requests.post(API_URL, data={"correo": correo, "dni": dni}, timeout=15)
-    # El endpoint devuelve JSON
-    data = r.json()
-    return r.status_code, data
-
-# Si NO está autenticado, mostramos SOLO login (no renderizamos el iframe fullscreen)
-if not st.session_state.auth:
-    st.set_page_config(layout="centered")
-    st.title("Login")
-
-    correo = st.text_input("Correo")
-    dni = st.text_input("DNI", type="password")
-
-    if st.button("Entrar"):
-        try:
-            status, data = do_login(correo, dni)
-            if status == 200 and data.get("ok") is True:
-                st.session_state.auth = True
-                st.session_state.user = data.get("usuario", correo) or correo
-                st.session_state.role = data.get("rol", "") or ""
-                st.success("Acceso concedido")
-                st.rerun()
-            else:
-                st.error(data.get("error", "Credenciales inválidas"))
-        except Exception:
-            st.error("Error conectando con el servidor")
-
-    st.stop()
+# =======================
+# DATOS (MOSTRAR EN HEADER)
+# =======================
+USER_EMAIL = (
+    st.session_state.get("user", "")
+    or st.session_state.get("usuario", "")
+    or st.session_state.get("email", "")
+    or ""
+)
+USER_ROLE = (
+    st.session_state.get("role", "")
+    or st.session_state.get("rol", "")
+    or st.session_state.get("rol_usuario", "")
+    or ""
+)
+LOGIN_CELL_TEXT = (f"{USER_EMAIL} | {USER_ROLE}").strip(" |") if (USER_EMAIL or USER_ROLE) else "Login"
 
 # ==============================================================================
 # PLANO RESPONSIVO (BASE) — MISMA VERSIÓN QUE SUBISTE (SIN CAMBIAR LAYOUT)
 # ==============================================================================
-# REGLAS IMPORTANTES (para ajustar con precisión):
-#
-# A) UNIDADES
-# 1) PAD_X_PX / PAD_TOP_PX están en PIXELES (px).
-#    - Controlan el “cuadro” (plan) dentro del viewport.
-#    - Si quieres que el marco quede más pegado a la pantalla: baja PAD_X_PX / PAD_TOP_PX.
-#
-# 2) La mayoría de medidas del layout están en PORCENTAJE (%) DEL CUADRO.
-#    - Ej: IMG_LEFT = 6 significa “6% del ANCHO del cuadro”, no del viewport.
-#    - Ej: IMG_TOP = 12 significa “12% del ALTO del cuadro desde arriba”.
-#
-# 3) MIN_BTN_W_PX está en PIXELES (px) y es la regla más importante del responsivo:
-#    - Define el ANCHO MÍNIMO permitido por botón.
-#    - Si en móvil no caben 3 columnas con ese mínimo, el layout baja automáticamente a 2 o 1.
-#
-# B) CÓMO MOVER/ESCALAR CADA SECCIÓN (sin romper nada)
-# 1) HEADER:
-#    - HEADER_TOP: normalmente 0.
-#    - HEADER_HEIGHT: sube/baja el alto del header (8–12 suele ser rango sano).
-#
-# 2) IMAGEN:
-#    - IMG_LEFT/IMG_RIGHT: “margen interno” lateral de la imagen.
-#      (más grande = imagen más angosta, más aire a los lados)
-#    - IMG_TOP: qué tan abajo arranca la imagen.
-#    - IMG_HEIGHT: qué tan alta es la imagen.
-#
-# 3) ZONA BOTONES:
-#    - BTN_AREA_TOP: desde qué % vertical empieza “Fondo 2” (zona verde inferior).
-#      (más grande = zona botones arranca más abajo, menos espacio para botones)
-#    - BTN_LEFT/BTN_RIGHT: márgenes laterales del grid de botones.
-#    - BTN_H: alto de cada botón (por fila).
-#    - BTN_GAP_X: separación horizontal entre botones.
-#    - BTN_GAP_Y: separación vertical entre filas.
-#
-# 4) FOOTER:
-#    - FOOTER_LEFT/FOOTER_RIGHT: márgenes laterales del footer.
-#    - FOOTER_H: alto del footer.
-#    - FOOTER_BOTTOM: separación desde abajo del cuadro.
-#
-# C) “FONDO 2”
-# - El texto "Fondo 2" se posiciona con __F2_BOTTOM__ (por ahora fijo a "22").
-#   Si quieres que sea editable como variable, lo dejo en comentarios listo.
-#
-# D) LECTURA / DEBUG (HUD)
-# - El HUD muestra:
-#   Viewport(px)  -> tamaño real de la pantalla
-#   Plan(px)      -> ancho del cuadro (planW)
-#   cols/rows     -> columnas/filas calculadas por el responsivo
-#   btnW          -> ancho real de cada botón en % y en px
-# ==============================================================================
 
 # ================== AJUSTES (EDITA SOLO ESTO) ==================
 
-# (1) CUADRO / MARCO (px) — Ajuste fino contra bordes de la pantalla
+# (1) CUADRO / MARCO (px)
 PAD_X_PX = 8   # px | margen externo izquierda/derecha del CUADRO
 PAD_TOP_PX = 8 # px | margen externo superior del CUADRO
 
@@ -142,17 +74,15 @@ BTN_TEXTS = [
 ]
 
 # (7) FOOTER (todo en % DEL CUADRO)
-FOOTER_H = 18         # % | alto del footer Estoy aqui
+FOOTER_H = 18        # % | alto del footer
 FOOTER_BOTTOM = 5    # % | separación desde abajo del cuadro (sube el footer si sube)
 FOOTER_LEFT = 6      # % | margen lateral del footer
 FOOTER_RIGHT = 6     # % | margen lateral del footer
 
 # (8) RESPONSIVO (px)
-MIN_BTN_W_PX = 130   # px | ancho mínimo por botón antes de bajar columnas (3 -> 2 -> 1)
+MIN_BTN_W_PX = 130     # px | ancho mínimo por botón antes de bajar columnas (3 -> 2 -> 1)
 MOBILE_MAX_W_PX = 500  # px | umbral para aplicar mínimos de gap en móvil
 
-# (9) (Opcional) Si quieres controlar la posición del texto "Fondo 2" desde Python:
-# FONDO2_BOTTOM = 30  # % | cuanto más grande, más arriba aparece el texto
 # ===============================================================
 
 st.set_page_config(layout="wide")
@@ -163,15 +93,14 @@ st.markdown(
       .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
       section.main > div{padding:0 !important;margin:0 !important;}
       header, footer{display:none !important;}
+
+      /* Ocultar sidebar/nav de multipage */
+      [data-testid="stSidebar"]{display:none !important;}
+      [data-testid="collapsedControl"]{display:none !important;}
     </style>
     """,
     unsafe_allow_html=True,
 )
-
-# Etiqueta de login en header (ahora muestra usuario/rol)
-login_label = st.session_state.user
-if st.session_state.role:
-    login_label = f"{login_label} | {st.session_state.role}"
 
 html = """
 <!doctype html>
@@ -208,6 +137,7 @@ html = """
       box-sizing:border-box;
       pointer-events:none;
       background: transparent;
+      z-index:2;
     }
 
     /* Plano dentro del cuadro: nada se sale */
@@ -216,6 +146,8 @@ html = """
       left:var(--padx); right:var(--padx);
       top:var(--padtop); bottom:0;
       overflow:hidden;
+      background: var(--bg);
+      z-index:1;
     }
 
     /* Header */
@@ -297,13 +229,11 @@ html = """
       font-weight: 700;
       color:#000;
       overflow:hidden;
-      cursor:pointer;
-      user-select:none;
     }
     .btn span{
       display:block;
       line-height:1.05;
-      white-space: pre-line; /* respeta \\n */
+      white-space: pre-line;
     }
 
     /* Label Fondo 2 */
@@ -331,7 +261,7 @@ html = """
       display:flex;
       align-items:center;
       justify-content:center;
-      font: 13px Arial, sans-serif;
+      font: 14px Arial, sans-serif;
       font-weight: 700;
       color:#000;
     }
@@ -340,12 +270,13 @@ html = """
     #hud{
       position:absolute; top:8px; left:8px;
       font: 12px Arial, sans-serif;
-      background: rgba(255,255,255,.92);
-      border: 1px solid rgba(0,0,0,.2);
+      background: rgba(255,255,255,92);
+      border: 1px solid rgba(0,0,0,2);
       border-radius: 6px;
       padding: 6px 10px;
       white-space: nowrap;
       pointer-events:none;
+      z-index:3;
     }
   </style>
 </head>
@@ -363,13 +294,13 @@ html = """
         <div id="footer">Pie de pagina</div>
       </div>
 
-      <div id="hud">Cargando...</div>
+      <div id="hud">Cargando.</div>
     </div>
   </div>
 
   <script>
     (function(){
-      // Full-screen real del iframe
+      // Full-screen real del iframe (Streamlit Cloud)
       var fe = window.frameElement;
       if (fe){
         fe.style.position = "fixed";
@@ -386,18 +317,17 @@ html = """
       var BTN_TEXTS = __BTN_TEXTS__;
       var MIN_BTN_W_PX = __MIN_BTN_W_PX__;
       var MOBILE_MAX_W_PX = __MOBILE_MAX_W_PX__;
+      var LOGIN_TEXT = "__LOGIN_TEXT__";
 
-      var LOGIN_LABEL = "__LOGIN_LABEL__";
-
-      // Header cells (5 columnas como imagen: margen, Logo, Fondo1, Login, margen)
+      // Header cells (5 columnas: margen, Logo, Fondo1, Login, margen)
       var hdr = document.getElementById("hdr");
       hdr.innerHTML = "";
       var cells = [
-        {w: 6,  t:"",        white:false},
-        {w: 22, t:"Logo",    white:true},
-        {w: 44, t:"Fondo 1", white:false},
-        {w: 22, t:LOGIN_LABEL, white:true},
-        {w: 6,  t:"",        white:false},
+        {w: 6,  t:"",           white:false},
+        {w: 22, t:"Logo",       white:true},
+        {w: 44, t:"Fondo 1",    white:false},
+        {w: 22, t: LOGIN_TEXT,  white:true},
+        {w: 6,  t:"",           white:false},
       ];
       cells.forEach(function(c){
         var d = document.createElement("div");
@@ -420,14 +350,12 @@ html = """
         var r = plan.getBoundingClientRect();
         var planW = r.width;
 
-        // Config grilla (en % del cuadro)
         var left = __BTN_L__;
         var right = __BTN_R__;
         var gapX = __BTN_GAP_X__;
         var gapY = __BTN_GAP_Y__;
         var btnH = __BTN_H__;
 
-        // En móvil: asegura mínimos para que no se peguen demasiado
         if (vw <= MOBILE_MAX_W_PX){
           if (gapX < 2) gapX = 2;
           if (gapY < 3) gapY = 3;
@@ -435,7 +363,6 @@ html = """
 
         var count = BTN_TEXTS.length;
 
-        // Intentar 3 columnas (desktop) -> si no cumple MIN_BTN_W_PX baja a 2 -> si no a 1
         var cols = 3;
         var usable = 100 - left - right;
 
@@ -463,32 +390,19 @@ html = """
           d.style.top = y + "%";
           d.style.width = w + "%";
           d.style.height = btnH + "%";
-
-          var sp = document.createElement("span");
-          sp.textContent = BTN_TEXTS[i];
-          d.appendChild(sp);
-
-          // Ejemplo mínimo: cualquier botón manda a /admin
-          d.addEventListener("click", function(){
-            window.top.location.href = "/admin";
-          });
-
+          d.innerHTML = "<span>" + BTN_TEXTS[i] + "</span>";
           grid.appendChild(d);
         }
 
         hud.textContent =
           "Viewport(px): " + Math.round(window.innerWidth) + " x " + Math.round(window.innerHeight) +
-          " | Plan(px): " + Math.round(planW) +
+          " | Plan(px): " + Math.round(r.width) + " x " + Math.round(r.height) +
           " | cols=" + cols + " rows=" + rows +
           " | btnW=" + w.toFixed(2) + "% (" + Math.round((w/100)*planW) + "px)";
       }
 
-      function update(){
-        buildButtons();
-      }
-
-      window.addEventListener("resize", update);
-      update();
+      window.addEventListener("resize", buildButtons);
+      buildButtons();
     })();
   </script>
 </body>
@@ -517,15 +431,15 @@ html = (
         .replace("__BTN_H__", str(BTN_H))
         .replace("__BTN_GAP_X__", str(BTN_GAP_X))
         .replace("__BTN_GAP_Y__", str(BTN_GAP_Y))
-        .replace("__F2_BOTTOM__", "22")  # % desde abajo del cuadro: sube/baja el texto "Fondo 2"
         .replace("__FOOT_L__", str(FOOTER_LEFT))
         .replace("__FOOT_R__", str(FOOTER_RIGHT))
         .replace("__FOOT_H__", str(FOOTER_H))
         .replace("__FOOT_BOTTOM__", str(FOOTER_BOTTOM))
+        .replace("__F2_BOTTOM__", "22")
         .replace("__BTN_TEXTS__", str(BTN_TEXTS).replace("'", '"'))
         .replace("__MIN_BTN_W_PX__", str(MIN_BTN_W_PX))
         .replace("__MOBILE_MAX_W_PX__", str(MOBILE_MAX_W_PX))
-        .replace("__LOGIN_LABEL__", login_label.replace('"', '\\"'))
+        .replace("__LOGIN_TEXT__", LOGIN_CELL_TEXT.replace('"', '\\"'))
 )
 
 components.html(html, height=10, scrolling=False)
