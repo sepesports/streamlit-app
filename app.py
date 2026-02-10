@@ -18,7 +18,7 @@ def login_dialog():
 
     if st.button("Entrar"):
         try:
-            r = requests.post(API_URL, json={"correo": correo, "dni": dni}, timeout=10)
+            r = requests.post(API_URL, data={"correo": correo, "dni": dni}, timeout=10)
             data = r.json()
             if data.get("ok"):
                 st.session_state.auth = True
