@@ -59,8 +59,8 @@ import streamlit.components.v1 as components
 # ================== AJUSTES (EDITA SOLO ESTO) ==================
 
 # (1) CUADRO / MARCO (px) — Ajuste fino contra bordes de la pantalla
-PAD_X_PX = 10   # px | margen externo izquierda/derecha del CUADRO
-PAD_TOP_PX = 10 # px | margen externo superior del CUADRO
+PAD_X_PX = 8   # px | margen externo izquierda/derecha del CUADRO
+PAD_TOP_PX = 8 # px | margen externo superior del CUADRO
 
 # (2) BORDES (px + color)
 BORDER_PX = 2
