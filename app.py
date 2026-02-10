@@ -85,7 +85,7 @@ HEADER_HEIGHT = 12   # % | alto del header
 
 # (6) BOTONES (todo en % DEL CUADRO)
 BTN_AREA_TOP = 55    # % | desde aquí empieza la sección inferior (Fondo2 + botones + footer)
-BTN_H = 25           # % | alto de cada botón
+BTN_H = 23           # % | alto de cada botón
 BTN_GAP_X = 2        # % | separación horizontal entre botones
 BTN_GAP_Y = 2        # % | separación vertical entre filas  
 BTN_LEFT = 5         # % | margen interno izquierdo del grid de botones
