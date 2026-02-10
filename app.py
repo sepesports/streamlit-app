@@ -22,7 +22,7 @@ IMG_TOP = 5     # % (desde arriba del cuadro)
 IMG_HEIGHT = 30  # % (alto del bloque imagen)
 
 # Header (en % del cuadro)
-HEADER_TOP = 10
+HEADER_TOP = 0
 HEADER_HEIGHT = 2
 
 # Sección botones (en % del cuadro)
