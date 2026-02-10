@@ -2,98 +2,36 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# =============================================================================
-# PLANTILLA "PLANO" RESPONSIVO (STREAMLIT CLOUD)
-# - Todas las medidas del layout (header/imagen/botones/footer) están en % DEL CUADRO.
-# - El "CUADRO" es el área interior delimitada por el marco (izq/der/sup) que ya calibraste.
-# - Regla: 0%..100% siempre se interpreta RELATIVO al ancho/alto del CUADRO, no del viewport.
-#
-# CÓMO AJUSTAR RÁPIDO (preciso):
-# 1) Espacios externos del CUADRO (px):
-#    - PAD_X_PX  : separa el cuadro de los bordes laterales del viewport (en px).
-#    - PAD_TOP_PX: separa el cuadro de la parte superior del viewport (en px).
-#
-# 2) Bordes (px / color):
-#    - BORDER_PX / BORDER_COLOR
-#
-# 3) HEADER (en % del CUADRO):
-#    - HEADER_TOP      : 0 normalmente (arranca en el borde superior del cuadro)
-#    - HEADER_HEIGHT   : alto del header (ej 8–12)
-#    - HEADER_CELLS    : distribución horizontal en % (suma ideal ~100)
-#
-# 4) IMAGEN (en % del CUADRO):
-#    - IMG_LEFT/IMG_RIGHT : margen lateral dentro del cuadro
-#    - IMG_TOP            : distancia desde arriba del cuadro (debajo del header)
-#    - IMG_HEIGHT         : alto del bloque imagen
-#
-# 5) ÁREA DE BOTONES (en % del CUADRO):
-#    - BTN_AREA_TOP    : desde qué % vertical empieza la sección inferior (botones/fondo2/footer)
-#    - BTN_LEFT/RIGHT  : márgenes laterales del grid de botones dentro del cuadro
-#    - BTN_H           : alto de cada botón (por fila) en % del cuadro
-#    - BTN_GAP_X/Y     : separación horizontal/vertical entre botones en % del cuadro
-#    - MIN_BTN_W_PX    : ancho mínimo por botón en px -> si no caben 3, baja a 2 o 1 automáticamente
-#
-# 6) FOOTER (en % del CUADRO):
-#    - FOOTER_LEFT/RIGHT : márgenes laterales del footer
-#    - FOOTER_H          : alto del footer
-#    - FOOTER_BOTTOM     : distancia desde abajo del cuadro hacia arriba
-#
-# 7) Colores:
-#    - BG_COLOR   : fondo general (verde)
-#    - HEADER_BG  : fondo header (amarillo)
-#    - IMG_BG     : fondo imagen (blanco)
-#    - BTN_BG     : fondo botones (blanco)
-#    - FOOTER_BG  : fondo footer (blanco)
-#
-# HUD (arriba izquierda) muestra: viewport, ancho del cuadro (Plan), columnas calculadas y ancho px.
-# =============================================================================
-
 # ================== AJUSTES (EDITA SOLO ESTO) ==================
-# 0) CUADRO (px) -> precisión fina
-PAD_X_PX = 10          # px: margen exterior lateral del cuadro (viewport -> cuadro)
-PAD_TOP_PX = 10        # px: margen exterior superior del cuadro (viewport -> cuadro)
+PAD_X_PX = 10
+PAD_TOP_PX = 10
 
-# 1) Bordes
-BORDER_PX = 2          # px: grosor bordes
+BORDER_PX = 2
 BORDER_COLOR = "#111111"
 
-# 2) Colores de secciones
 BG_COLOR = "#CFE3BF"        # verde claro (fondo general)
 HEADER_BG = "#FFF200"       # amarillo (Fondo 1)
 IMG_BG = "#FFFFFF"          # blanco (Imagen)
 BTN_BG = "#FFFFFF"          # blanco (botones)
 FOOTER_BG = "#FFFFFF"       # blanco (pie)
 
-# 3) HEADER (en % del CUADRO)
-HEADER_TOP = 0              # %: distancia desde arriba del cuadro
-HEADER_HEIGHT = 10          # %: alto del header
+# Margen interno del área "Imagen" respecto al cuadro (en % del cuadro)
+IMG_LEFT = 6     # %
+IMG_RIGHT = 6    # %
+IMG_TOP = 12     # % (desde arriba del cuadro)
+IMG_HEIGHT = 38  # % (alto del bloque imagen)
 
-# Distribución horizontal del header (en % del ancho del CUADRO)
-# Orden: [margen_izq, Logo, Fondo 1, Login, margen_der]
-# Recomendación: que sumen 100 (o cercano).
-HEADER_CELLS = [
-    {"w": 6,  "t": "",        "white": False},
-    {"w": 22, "t": "Logo",    "white": True},
-    {"w": 44, "t": "Fondo 1", "white": False},
-    {"w": 22, "t": "Login",   "white": True},
-    {"w": 6,  "t": "",        "white": False},
-]
+# Header (en % del cuadro)
+HEADER_TOP = 0
+HEADER_HEIGHT = 10
 
-# 4) IMAGEN (en % del CUADRO)
-IMG_LEFT = 6          # %: margen lateral interno (cuadro -> bloque imagen)
-IMG_RIGHT = 6         # %: margen lateral interno
-IMG_TOP = 12          # %: distancia desde arriba del cuadro (debajo del header)
-IMG_HEIGHT = 38       # %: alto del bloque imagen
-
-# 5) BOTONES (en % del CUADRO)
-BTN_AREA_TOP = 55     # %: desde aquí inicia la sección inferior (botones + "Fondo 2" + footer)
-
-BTN_LEFT = 6          # %: margen izquierdo del grid de botones dentro del cuadro
-BTN_RIGHT = 6         # %: margen derecho del grid de botones dentro del cuadro
-
-BTN_H = 10            # %: alto de cada botón por fila (más alto = más aire)
-BTN_GAP_X = 3         # %: separación horizontal entre botones
-BTN_GAP_Y = 5         # %: separación vertical entre filas de botones
+# Sección botones (en % del cuadro)
+BTN_AREA_TOP = 55
+BTN_H = 10
+BTN_GAP_X = 3
+BTN_GAP_Y = 5
+BTN_LEFT = 6
+BTN_RIGHT = 6
 
 BTN_TEXTS = [
     "Horarios",
@@ -104,23 +42,19 @@ BTN_TEXTS = [
     "Comunicados",
 ]
 
-# Texto "Fondo 2" (posición vertical dentro de la sección inferior, en % del CUADRO)
-FONDO2_BOTTOM = 22    # %: sube/baja el texto "Fondo 2" (mayor = más arriba)
+# Footer (en % del cuadro)
+FOOTER_H = 8
+FOOTER_BOTTOM = 3  # separación desde abajo
+FOOTER_LEFT = 6
+FOOTER_RIGHT = 6
 
-# 6) FOOTER (en % del CUADRO)
-FOOTER_LEFT = 6       # %: margen lateral del footer
-FOOTER_RIGHT = 6      # %: margen lateral del footer
-FOOTER_H = 8          # %: alto del footer
-FOOTER_BOTTOM = 3     # %: separación desde abajo del cuadro
-
-# 7) Responsivo / reglas de ruptura (px)
-MIN_BTN_W_PX = 150     # px: ancho mínimo por botón. Si no cabe 3, baja a 2; si no, a 1.
-MOBILE_MAX_W_PX = 520  # px: umbral para tratar como móvil (aplica mínimos de gaps si quieres)
+# Responsivo
+MIN_BTN_W_PX = 150     # si no caben 3, baja a 2 o 1 por fila
+MOBILE_MAX_W_PX = 520
 # ===============================================================
 
 st.set_page_config(layout="wide")
 
-# Quitar padding/márgenes de Streamlit
 st.markdown(
     """
     <style>
@@ -156,7 +90,7 @@ html = """
     html, body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:var(--bg);}
     #stage{position:fixed;inset:0;width:100vw;height:100vh;background:var(--bg);}
 
-    /* Marco visible (izq/der/sup) */
+    /* Marco (izq/der/sup) */
     #frame{
       position:absolute;
       left:var(--padx); right:var(--padx);
@@ -167,16 +101,14 @@ html = """
       box-sizing:border-box;
       pointer-events:none;
       background: transparent;
-      z-index: 2;
     }
 
-    /* CUADRO/PLAN: todo el layout vive aquí dentro y NO puede salirse */
+    /* Plano dentro del cuadro: nada se sale */
     #plan{
       position:absolute;
       left:var(--padx); right:var(--padx);
       top:var(--padtop); bottom:0;
       overflow:hidden;
-      z-index: 1;
     }
 
     /* Header */
@@ -227,7 +159,7 @@ html = """
       color:#000;
     }
 
-    /* Sección inferior (Fondo 2 + botones + footer) */
+    /* Fondo 2 (área botones) */
     #btn-area{
       position:absolute;
       left:0; right:0;
@@ -236,8 +168,6 @@ html = """
       background: var(--bg);
       box-sizing:border-box;
     }
-
-    /* Grid de botones */
     #btn-grid{
       position:absolute;
       left: __BTN_L__%;
@@ -267,7 +197,7 @@ html = """
       white-space: pre-line; /* respeta \n */
     }
 
-    /* Texto "Fondo 2" */
+    /* Label Fondo 2 */
     #fondo2{
       position:absolute;
       left:0; right:0;
@@ -307,7 +237,6 @@ html = """
       padding: 6px 10px;
       white-space: nowrap;
       pointer-events:none;
-      z-index: 3;
     }
   </style>
 </head>
@@ -331,7 +260,7 @@ html = """
 
   <script>
     (function(){
-      // Full-screen real del iframe (Streamlit Cloud)
+      // Full-screen real del iframe
       var fe = window.frameElement;
       if (fe){
         fe.style.position = "fixed";
@@ -345,28 +274,33 @@ html = """
         fe.style.background = "transparent";
       }
 
-      var HEADER_CELLS = __HEADER_CELLS__;
       var BTN_TEXTS = __BTN_TEXTS__;
       var MIN_BTN_W_PX = __MIN_BTN_W_PX__;
       var MOBILE_MAX_W_PX = __MOBILE_MAX_W_PX__;
 
-      var hud = document.getElementById("hud");
+      // Header cells (5 columnas como imagen: margen, Logo, Fondo1, Login, margen)
       var hdr = document.getElementById("hdr");
+      hdr.innerHTML = "";
+      var cells = [
+        {w: 6,  t:"",        white:false},
+        {w: 22, t:"Logo",    white:true},
+        {w: 44, t:"Fondo 1", white:false},
+        {w: 22, t:"Login",   white:true},
+        {w: 6,  t:"",        white:false},
+      ];
+      cells.forEach(function(c){
+        var d = document.createElement("div");
+        d.className = "hdr-cell" + (c.white ? " white" : "");
+        d.style.width = c.w + "%";
+        d.textContent = c.t;
+        hdr.appendChild(d);
+      });
+
+      var hud = document.getElementById("hud");
       var grid = document.getElementById("btn-grid");
       var plan = document.getElementById("plan");
 
       function ceilDiv(a,b){ return Math.floor((a + b - 1) / b); }
-
-      function buildHeader(){
-        hdr.innerHTML = "";
-        HEADER_CELLS.forEach(function(c){
-          var d = document.createElement("div");
-          d.className = "hdr-cell" + (c.white ? " white" : "");
-          d.style.width = c.w + "%";
-          d.textContent = c.t || "";
-          hdr.appendChild(d);
-        });
-      }
 
       function buildButtons(){
         grid.innerHTML = "";
@@ -375,14 +309,14 @@ html = """
         var r = plan.getBoundingClientRect();
         var planW = r.width;
 
-        // Config grilla (en % del CUADRO)
+        // Config grilla (en % del cuadro)
         var left = __BTN_L__;
         var right = __BTN_R__;
         var gapX = __BTN_GAP_X__;
         var gapY = __BTN_GAP_Y__;
         var btnH = __BTN_H__;
 
-        // En móvil, evita gaps demasiado pequeños
+        // En móvil: si hace falta, asegura mínimos de separación
         if (vw <= MOBILE_MAX_W_PX){
           if (gapX < 2) gapX = 2;
           if (gapY < 3) gapY = 3;
@@ -390,7 +324,7 @@ html = """
 
         var count = BTN_TEXTS.length;
 
-        // Intento: 3 columnas. Si el ancho en px cae por debajo del mínimo, baja a 2 o 1.
+        // Intentar 3 columnas (desktop), si no caben, bajar a 2 o 1
         var cols = 3;
         var usable = 100 - left - right;
 
@@ -428,13 +362,12 @@ html = """
 
         hud.textContent =
           "Viewport(px): " + Math.round(window.innerWidth) + " x " + Math.round(window.innerHeight) +
-          " | PlanW(px): " + Math.round(planW) +
+          " | Plan(px): " + Math.round(planW) +
           " | cols=" + cols + " rows=" + rows +
-          " | btnW(px)=" + Math.round((w/100)*planW);
+          " | btnW=" + w.toFixed(2) + "% (" + Math.round((w/100)*planW) + "px)";
       }
 
       function update(){
-        buildHeader();
         buildButtons();
       }
 
@@ -458,7 +391,6 @@ html = (
         .replace("__FOOTERBG__", FOOTER_BG)
         .replace("__HDR_TOP__", str(HEADER_TOP))
         .replace("__HDR_H__", str(HEADER_HEIGHT))
-        .replace("__HEADER_CELLS__", str(HEADER_CELLS).replace("'", '"'))
         .replace("__IMG_L__", str(IMG_LEFT))
         .replace("__IMG_R__", str(IMG_RIGHT))
         .replace("__IMG_T__", str(IMG_TOP))
@@ -469,7 +401,7 @@ html = (
         .replace("__BTN_H__", str(BTN_H))
         .replace("__BTN_GAP_X__", str(BTN_GAP_X))
         .replace("__BTN_GAP_Y__", str(BTN_GAP_Y))
-        .replace("__F2_BOTTOM__", str(FONDO2_BOTTOM))
+        .replace("__F2_BOTTOM__", "22")  # posición visual del texto "Fondo 2"
         .replace("__FOOT_L__", str(FOOTER_LEFT))
         .replace("__FOOT_R__", str(FOOTER_RIGHT))
         .replace("__FOOT_H__", str(FOOTER_H))
