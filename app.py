@@ -67,8 +67,8 @@ BORDER_PX = 2
 BORDER_COLOR = "#111111"
 
 # (3) COLORES (hex)
-BG_COLOR = "#CFE3BF"        # Fondo general (verde)
-HEADER_BG = "#FFF200"       # Fondo header (amarillo)
+BG_COLOR = "#FFFFFF"        # Fondo general (verde)
+HEADER_BG = "#FFFFFF"       # Fondo header (amarillo)
 IMG_BG = "#FFFFFF"          # Fondo imagen (blanco)
 BTN_BG = "#FFFFFF"          # Fondo botones (blanco)
 FOOTER_BG = "#FFFFFF"       # Fondo footer (blanco)
