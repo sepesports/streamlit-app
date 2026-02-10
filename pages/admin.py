@@ -1,408 +1,343 @@
 # pages/admin.py
+import os
+import json
+import urllib.parse
+import urllib.request
 import streamlit as st
 import streamlit.components.v1 as components
 
-# ==============================================================================
-# LOGIN (RESPONSIVE) — NO CAMBIAR DIMENSIONES DEL PLANO
-# Ajusta SOLO colores/textos desde la sección "AJUSTES".
-# ==============================================================================
+# =========================
+# CONFIG
+# =========================
+AUTH_URL = os.environ.get("AUTH_URL", "https://camilo27.pythonanywhere.com/api/auth")
+TIMEOUT_SEC = float(os.environ.get("AUTH_TIMEOUT", "12"))
 
-# ================== AJUSTES (SOLO COLORES/TEXTOS) ==================
+# =========================
+# HELPERS
+# =========================
+def _safe_get_query_params():
+    try:
+        qp = st.query_params  # streamlit >=1.30
+        return dict(qp)
+    except Exception:
+        return st.experimental_get_query_params()
 
-# Fondo (rojo tipo mockup)
-BG_GRAD_A = "#8c1010"
-BG_GRAD_B = "#220404"
-BG_HILIGHT = "rgba(255,255,255,0.10)"
+def _safe_set_query_params(**kwargs):
+    try:
+        st.query_params.clear()
+        for k, v in kwargs.items():
+            if v is None:
+                continue
+            st.query_params[k] = v
+    except Exception:
+        st.experimental_set_query_params(**kwargs)
 
-# Card (glass)
-CARD_BG = "rgba(0,0,0,0.22)"
-CARD_BORDER = "rgba(255,255,255,0.18)"
-TXT_WHITE = "#ffffff"
-TXT_MUTED = "rgba(255,255,255,0.78)"
-FIELD_BG = "rgba(255,255,255,0.92)"
-FIELD_TXT = "#111111"
+def _call_auth(correo: str, dni: str):
+    payload = json.dumps({"correo": correo, "dni": dni}).encode("utf-8")
+    req = urllib.request.Request(
+        AUTH_URL,
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=TIMEOUT_SEC) as resp:
+        body = resp.read().decode("utf-8", errors="replace")
+        code = getattr(resp, "status", 200)
+    try:
+        data = json.loads(body)
+    except Exception:
+        data = {"ok": False, "raw": body}
+    return code, data
 
-# Botón
-BTN_GRAD_A = "#ff3a3a"
-BTN_GRAD_B = "#b50b0b"
-BTN_TXT_COLOR = "#ffffff"
+# =========================
+# PAGE CONFIG (FULLSCREEN)
+# =========================
+st.set_page_config(page_title="Admin - Login", layout="wide")
 
-# Error
-ERROR_BG = "rgba(255,60,60,0.18)"
-ERROR_TXT = "#ffd7d7"
-
-# Textos
-TITLE_TEXT = "Welcome"
-BTN_TEXT = "Login to my account"
-LABEL_CORREO = "Correo"
-LABEL_DNI = "DNI"
-LINK_LEFT = "Forgot password?"
-LINK_RIGHT = "Create account"
-
-# API
-AUTH_URL = "https://camilo27.pythonanywhere.com/api/auth"
-
-# ================== STREAMLIT BASE ==================
-st.set_page_config(layout="wide")
-
-# Ocultar UI de Streamlit (para que no aparezca el login gris)
 st.markdown(
     """
     <style>
-      header, footer {display:none !important;}
-      [data-testid="stSidebar"], [data-testid="stSidebarNav"] {display:none !important;}
-      .block-container{padding:0 !important; margin:0 !important; max-width:100% !important;}
-      section.main > div{padding:0 !important; margin:0 !important;}
+      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
+      section.main > div{padding:0 !important;margin:0 !important;}
+      header, footer{display:none !important;}
+      [data-testid="stSidebar"]{display:none !important;}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# ==============================================================================
-# PLANO (DIMENSIONES) — PEGADO DEL ARCHIVO "Administrador" (NO MODIFICAR)
-# ==============================================================================
-PAD_X_PX = 10
-PAD_TOP_PX = 10
-BORDER_PX = 2
-BORDER_COLOR = "#111111"
+# =========================
+# LOGOUT (optional query)
+# =========================
+qp = _safe_get_query_params()
+if str(qp.get("logout", ["0"])[0]).strip() == "1":
+    st.session_state.pop("auth", None)
+    st.session_state.pop("usuario", None)
+    st.session_state.pop("rol", None)
+    _safe_set_query_params()
+    st.rerun()
 
-CARD_W = 38
-CARD_H = 62
-CARD_X = 62
-CARD_Y = 55
+# =========================
+# IF ALREADY AUTH -> GO MAIN
+# =========================
+if st.session_state.get("auth"):
+    st.switch_page("app.py")
 
-TITLE_Y = 16
-USER_LABEL_Y = 30
-USER_INPUT_Y = 36
-PASS_LABEL_Y = 50
-PASS_INPUT_Y = 56
-BTN_Y = 70
-LINKS_Y = 82
+# =========================
+# LOGIN SUBMIT VIA QUERY PARAMS (FROM HTML)
+# =========================
+correo_q = (qp.get("correo", [""])[0] if isinstance(qp.get("correo"), list) else qp.get("correo", "")) or ""
+dni_q = (qp.get("dni", [""])[0] if isinstance(qp.get("dni"), list) else qp.get("dni", "")) or ""
+do_q = (qp.get("do", [""])[0] if isinstance(qp.get("do"), list) else qp.get("do", "")) or ""
+err_q = (qp.get("err", [""])[0] if isinstance(qp.get("err"), list) else qp.get("err", "")) or ""
 
-TITLE_SZ = 34
-LABEL_SZ = 12
-INPUT_TXT = 14
-BTN_TXT = 14
-LINK_SZ = 10
+if do_q == "1":
+    correo = str(correo_q).strip()
+    dni = str(dni_q).strip()
 
-INPUT_H_PX = 44
-INPUT_RADIUS_PX = 12
-BTN_H_PX = 44
-BTN_RADIUS_PX = 16
+    if not correo or not dni:
+        _safe_set_query_params(err="Completa Correo y DNI")
+        st.rerun()
 
-HTML = r"""
+    try:
+        status, data = _call_auth(correo, dni)
+    except Exception as e:
+        _safe_set_query_params(err=f"Error de conexión ({type(e).__name__})")
+        st.rerun()
+
+    ok = bool(data.get("ok")) if isinstance(data, dict) else False
+    if status == 200 and ok:
+        st.session_state["auth"] = True
+        st.session_state["usuario"] = data.get("usuario", correo)
+        st.session_state["rol"] = data.get("rol", data.get("role", ""))
+        _safe_set_query_params()  # limpia URL
+        st.switch_page("app.py")
+    else:
+        _safe_set_query_params(err="Credenciales inválidas")
+        st.rerun()
+
+# =========================
+# HTML (DISEÑO ROJO, RESPONSIVE) + FORM FUNCIONAL
+# =========================
+# Nota: no toca tus dimensiones del plano principal (eso está en app.py).
+# Aquí solo login pantalla completa.
+err_html = (
+    f"<div class='err'>{urllib.parse.quote(str(err_q)).replace('%20',' ')}</div>"
+    if err_q else ""
+)
+
+html = f"""
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<style>
-  html,body{height:100%; margin:0; font-family: Arial, sans-serif; background:transparent;}
-  body{overflow:hidden;}
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    :root{{
+      --bg1:#7b0b0b;
+      --bg2:#b51717;
+      --glass: rgba(255,255,255,.08);
+      --glass2: rgba(255,255,255,.10);
+      --border: rgba(255,255,255,.14);
+      --txt: #ffffff;
+      --muted: rgba(255,255,255,.78);
+      --field: rgba(255,255,255,.92);
+      --fieldTxt: #2b2b2b;
+      --btn1:#ff3a3a;
+      --btn2:#c90f0f;
+      --shadow: 0 18px 60px rgba(0,0,0,.40);
+    }}
 
-  #stage{
-    position:fixed; inset:0;
-    background:
-      linear-gradient(135deg, __BG_HILIGHT__ 0%, rgba(255,255,255,0) 40%),
-      radial-gradient(1200px 700px at 70% 30%, rgba(255,120,120,0.22), rgba(0,0,0,0) 60%),
-      linear-gradient(180deg, __BG_A__, __BG_B__);
-  }
+    html,body{{height:100%;margin:0;}}
+    body{{
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 30% 20%, rgba(255,255,255,.10), rgba(0,0,0,0) 60%),
+                  radial-gradient(900px 500px at 70% 75%, rgba(0,0,0,.18), rgba(0,0,0,0) 55%),
+                  linear-gradient(135deg, var(--bg2), var(--bg1));
+      overflow:hidden;
+    }}
 
-  #frame{
-    position:absolute;
-    left: __PADX__px; right: __PADX__px; top: __PADTOP__px; bottom: __PADTOP__px;
-    border: __B__px solid __BC__;
-    box-sizing:border-box;
-    pointer-events:none;
-    opacity:0; /* no mostrar */
-  }
+    /* Fondo con “corte” diagonal suave como tu referencia */
+    .bg-cut{{
+      position:fixed; inset:-20%;
+      background: linear-gradient(135deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,0) 45%);
+      transform: rotate(-8deg);
+      pointer-events:none;
+    }}
 
-  #plan{
-    position:absolute;
-    left: __PADX__px; right: __PADX__px; top: __PADTOP__px; bottom: __PADTOP__px;
-  }
+    .wrap{{
+      position:fixed; inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 22px;
+      box-sizing:border-box;
+    }}
 
-  #card{
-    position:absolute;
-    width: __CARD_W__%;
-    height: __CARD_H__%;
-    left: calc(__CARD_X__% - (__CARD_W__/2)*1%);
-    top:  calc(__CARD_Y__% - (__CARD_H__/2)*1%);
-    background: __CARD_BG__;
-    border: 1px solid __CARD_BORDER__;
-    border-radius: 18px;
-    box-shadow: 0 18px 50px rgba(0,0,0,.35);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    overflow:hidden;
-  }
+    .card{{
+      width: min(520px, 92vw);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.12));
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 22px 22px 18px 22px;
+      position:relative;
+    }}
 
-  #miniIcon{
-    position:absolute; top:14px; left:16px;
-    width:34px; height:34px;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.14);
-    border: 1px solid rgba(255,255,255,0.18);
-    display:flex; align-items:center; justify-content:center;
-    color: __TXT_WHITE__;
-    font-weight:700;
-    user-select:none;
-  }
-  #closeBtn{
-    position:absolute; top:14px; right:14px;
-    width:28px; height:28px;
-    border-radius: 8px;
-    background: rgba(0,0,0,0.20);
-    border: 1px solid rgba(255,255,255,0.14);
-    color: __TXT_WHITE__;
-    display:flex; align-items:center; justify-content:center;
-    cursor:pointer;
-    user-select:none;
-  }
+    .toprow{{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 8px;
+    }}
 
-  .title{
-    position:absolute;
-    left: 0; right:0;
-    top: __TITLE_Y__%;
-    transform: translateY(-50%);
-    text-align:center;
-    font-size: __TITLE_SZ__px;
-    font-weight: 800;
-    color: __TXT_WHITE__;
-    letter-spacing: .2px;
-  }
+    .iconbtn{{
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.18);
+      display:flex; align-items:center; justify-content:center;
+      color: var(--txt);
+      font-weight:700;
+      user-select:none;
+    }}
 
-  .label{
-    position:absolute;
-    left: 12%;
-    right: 12%;
-    font-size: __LABEL_SZ__px;
-    font-weight: 700;
-    color: __TXT_MUTED__;
-    user-select:none;
-  }
+    .closebtn{{
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.18);
+      display:flex; align-items:center; justify-content:center;
+      color: var(--txt);
+      cursor:pointer;
+    }}
 
-  .inputWrap{
-    position:absolute;
-    left: 12%;
-    right: 12%;
-    height: __INPUT_H__px;
-  }
-  .input{
-    width:100%;
-    height:100%;
-    border-radius: __INPUT_RAD__px;
-    border: 0;
-    outline: none;
-    padding: 0 14px;
-    background: __FIELD_BG__;
-    color: __FIELD_TXT__;
-    font-size: __INPUT_TXT__px;
-    box-sizing:border-box;
-  }
-  .input::placeholder{color: rgba(0,0,0,0.38);}
+    h1{{
+      margin: 8px 0 18px 0;
+      text-align:center;
+      color: var(--txt);
+      font-size: 34px;
+      letter-spacing: .2px;
+    }}
 
-  .btn{
-    position:absolute;
-    left: 12%;
-    right: 12%;
-    height: __BTN_H__px;
-    border-radius: __BTN_RAD__px;
-    background: linear-gradient(180deg, __BTN_A__, __BTN_B__);
-    color: __BTN_TXT__;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size: __BTN_TXT_SZ__px;
-    font-weight: 800;
-    cursor:pointer;
-    user-select:none;
-    box-shadow: 0 10px 26px rgba(0,0,0,.30);
-  }
-  .btn:active{transform: translateY(1px);}
+    label{{
+      display:block;
+      color: var(--muted);
+      font-size: 12px;
+      margin: 10px 0 8px 2px;
+      font-weight: 600;
+    }}
 
-  .rowLinks{
-    position:absolute;
-    left: 12%;
-    right: 12%;
-    display:flex;
-    justify-content:space-between;
-    font-size: __LINK_SZ__px;
-    font-weight: 700;
-    color: __TXT_MUTED__;
-    user-select:none;
-  }
+    input{{
+      width:100%;
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.14);
+      outline:none;
+      background: var(--field);
+      color: var(--fieldTxt);
+      padding: 0 12px;
+      box-sizing:border-box;
+      font-size: 13px;
+    }}
 
-  #err{
-    position:absolute;
-    left: 12%;
-    right: 12%;
-    top: calc(__BTN_Y__% + 10%);
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: __ERR_BG__;
-    color: __ERR_TXT__;
-    font-size: 12px;
-    font-weight: 700;
-    display:none;
-    box-sizing:border-box;
-  }
-</style>
+    input::placeholder{{ color: rgba(0,0,0,.45); }}
+
+    .btn{{
+      width:100%;
+      height: 44px;
+      border-radius: 12px;
+      border: 0;
+      margin-top: 16px;
+      color: #fff;
+      font-weight: 800;
+      letter-spacing: .2px;
+      cursor:pointer;
+      background: linear-gradient(180deg, var(--btn1), var(--btn2));
+      box-shadow: 0 10px 26px rgba(0,0,0,.35);
+    }}
+
+    .rowlinks{{
+      display:flex;
+      justify-content:space-between;
+      margin-top: 10px;
+      font-size: 11px;
+      color: rgba(255,255,255,.70);
+      user-select:none;
+    }}
+
+    .rowlinks span{{
+      opacity:.85;
+    }}
+
+    .err{{
+      margin: 10px 0 0 0;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.20);
+      color: #fff;
+      font-size: 12px;
+    }}
+
+    /* Mobile scaling */
+    @media (max-width: 420px){{
+      .card{{ padding: 18px; border-radius: 16px; }}
+      h1{{ font-size: 30px; }}
+    }}
+  </style>
 </head>
 <body>
-  <div id="stage">
-    <div id="frame"></div>
-    <div id="plan">
-      <div id="card">
-        <div id="miniIcon">⌂</div>
-        <div id="closeBtn">×</div>
+  <div class="bg-cut"></div>
+  <div class="wrap">
+    <div class="card" role="dialog" aria-label="Login">
+      <div class="toprow">
+        <div class="iconbtn" title="Home">⌂</div>
+        <div class="closebtn" title="Cerrar" onclick="window.location.href='/?logout=1'">×</div>
+      </div>
 
-        <div class="title">__TITLE_TEXT__</div>
+      <h1>Welcome</h1>
 
-        <div class="label" style="top: __USER_L_Y__%;">__LABEL_CORREO__</div>
-        <div class="inputWrap" style="top: __USER_I_Y__%;">
-          <input id="correo" class="input" type="email" autocomplete="username" placeholder="correo@ejemplo.com"/>
-        </div>
+      <form id="loginForm" onsubmit="return goLogin();">
+        <label for="correo">Correo</label>
+        <input id="correo" name="correo" type="email" placeholder="correo@ejemplo.com" autocomplete="username" value="{correo_q.replace('"','&quot;')}"/>
 
-        <div class="label" style="top: __PASS_L_Y__%;">__LABEL_DNI__</div>
-        <div class="inputWrap" style="top: __PASS_I_Y__%;">
-          <input id="dni" class="input" type="password" autocomplete="current-password" placeholder="••••"/>
-        </div>
+        <label for="dni">DNI</label>
+        <input id="dni" name="dni" type="password" placeholder="••••" autocomplete="current-password"/>
 
-        <div id="btnLogin" class="btn" style="top: __BTN_Y__%;">__BTN_TEXT__</div>
+        <button class="btn" type="submit">Login to my account</button>
+      </form>
 
-        <div id="err"></div>
+      {err_html}
 
-        <div class="rowLinks" style="top: __LINKS_Y__%;">
-          <div>__LINK_LEFT__</div>
-          <div>__LINK_RIGHT__</div>
-        </div>
+      <div class="rowlinks">
+        <span>Forgot password?</span>
+        <span>Create account</span>
       </div>
     </div>
   </div>
 
-<script>
-(function(){
-  var fe = window.frameElement;
-  if (fe){
-    fe.style.position = "fixed";
-    fe.style.inset = "0";
-    fe.style.width = "100vw";
-    fe.style.height = "100vh";
-    fe.style.border = "0";
-    fe.style.margin = "0";
-    fe.style.padding = "0";
-    fe.style.zIndex = "999999";
-    fe.style.background = "transparent";
-  }
+  <script>
+    function goLogin(){{
+      var correo = (document.getElementById('correo').value || '').trim();
+      var dni = (document.getElementById('dni').value || '').trim();
 
-  var closeBtn = document.getElementById("closeBtn");
-  closeBtn.addEventListener("click", function(){
-    window.location.href = window.location.origin + "/";
-  });
+      var p = new URLSearchParams(window.location.search);
+      p.set('correo', correo);
+      p.set('dni', dni);
+      p.set('do', '1');
+      p.delete('err');
 
-  function showErr(msg){
-    var e = document.getElementById("err");
-    e.style.display = "block";
-    e.textContent = msg || "Error conectando con el servidor";
-  }
-  function hideErr(){
-    var e = document.getElementById("err");
-    e.style.display = "none";
-    e.textContent = "";
-  }
-
-  async function doLogin(){
-    hideErr();
-    var correo = (document.getElementById("correo").value || "").trim();
-    var dni = (document.getElementById("dni").value || "").trim();
-
-    if(!correo || !dni){
-      showErr("Completa correo y DNI");
-      return;
-    }
-
-    try{
-      var r = await fetch("__AUTH_URL__", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({correo: correo, dni: dni})
-      });
-
-      var dataText = await r.text();
-      var data = {};
-      try{ data = JSON.parse(dataText); }catch(e){}
-
-      if(r.ok && data && data.ok === true){
-        var usuario = encodeURIComponent(data.usuario || correo);
-        var rol = encodeURIComponent(data.rol || data.role || "");
-        window.location.href = window.location.origin + "/?auth=1&usuario=" + usuario + "&rol=" + rol;
-        return;
-      }
-
-      showErr((data && (data.error || data.msg)) ? (data.error || data.msg) : "Credenciales inválidas");
-    }catch(e){
-      showErr("Error conectando con el servidor");
-    }
-  }
-
-  document.getElementById("btnLogin").addEventListener("click", doLogin);
-  document.getElementById("dni").addEventListener("keydown", function(ev){
-    if(ev.key === "Enter") doLogin();
-  });
-})();
-</script>
+      // IMPORTANTE: no navegamos a /admin (eso causa Page not found). Nos quedamos en la misma page de Streamlit.
+      window.location.search = p.toString();
+      return false;
+    }}
+  </script>
 </body>
 </html>
 """
-
-html = (
-    HTML
-    .replace("__PADX__", str(PAD_X_PX))
-    .replace("__PADTOP__", str(PAD_TOP_PX))
-    .replace("__B__", str(BORDER_PX))
-    .replace("__BC__", str(BORDER_COLOR))
-    .replace("__BG_A__", str(BG_GRAD_A))
-    .replace("__BG_B__", str(BG_GRAD_B))
-    .replace("__BG_HILIGHT__", str(BG_HILIGHT))
-    .replace("__CARD_W__", str(CARD_W))
-    .replace("__CARD_H__", str(CARD_H))
-    .replace("__CARD_X__", str(CARD_X))
-    .replace("__CARD_Y__", str(CARD_Y))
-    .replace("__TITLE_Y__", str(TITLE_Y))
-    .replace("__USER_L_Y__", str(USER_LABEL_Y))
-    .replace("__USER_I_Y__", str(USER_INPUT_Y))
-    .replace("__PASS_L_Y__", str(PASS_LABEL_Y))
-    .replace("__PASS_I_Y__", str(PASS_INPUT_Y))
-    .replace("__BTN_Y__", str(BTN_Y))
-    .replace("__LINKS_Y__", str(LINKS_Y))
-    .replace("__TITLE_SZ__", str(TITLE_SZ))
-    .replace("__LABEL_SZ__", str(LABEL_SZ))
-    .replace("__INPUT_TXT__", str(INPUT_TXT))
-    .replace("__BTN_TXT_SZ__", str(BTN_TXT))
-    .replace("__LINK_SZ__", str(LINK_SZ))
-    .replace("__INPUT_H__", str(INPUT_H_PX))
-    .replace("__INPUT_RAD__", str(INPUT_RADIUS_PX))
-    .replace("__BTN_H__", str(BTN_H_PX))
-    .replace("__BTN_RAD__", str(BTN_RADIUS_PX))
-    .replace("__CARD_BG__", str(CARD_BG))
-    .replace("__CARD_BORDER__", str(CARD_BORDER))
-    .replace("__TXT_WHITE__", str(TXT_WHITE))
-    .replace("__TXT_MUTED__", str(TXT_MUTED))
-    .replace("__FIELD_BG__", str(FIELD_BG))
-    .replace("__FIELD_TXT__", str(FIELD_TXT))
-    .replace("__BTN_A__", str(BTN_GRAD_A))
-    .replace("__BTN_B__", str(BTN_GRAD_B))
-    .replace("__BTN_TXT__", str(BTN_TXT_COLOR))
-    .replace("__ERR_BG__", str(ERROR_BG))
-    .replace("__ERR_TXT__", str(ERROR_TXT))
-    .replace("__AUTH_URL__", AUTH_URL)
-    .replace("__TITLE_TEXT__", TITLE_TEXT)
-    .replace("__BTN_TEXT__", BTN_TEXT)
-    .replace("__LABEL_CORREO__", LABEL_CORREO)
-    .replace("__LABEL_DNI__", LABEL_DNI)
-    .replace("__LINK_LEFT__", LINK_LEFT)
-    .replace("__LINK_RIGHT__", LINK_RIGHT)
-)
 
 components.html(html, height=10, scrolling=False)
