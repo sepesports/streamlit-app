@@ -24,280 +24,300 @@ html = """
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
 <style>
-/* ====== BASE ====== */
+/* =========================
+   TAMAÑOS DE TEXTO (EDITA SOLO ESTO)
+   ========================= */
+:root{
+  --fs-title: 34px;      /* título móvil/tablet */
+  --fs-label: 12px;      /* labels móvil/tablet */
+  --fs-input: 14px;      /* texto input móvil/tablet */
+  --fs-btn:   14px;      /* texto botón móvil/tablet */
+  --fs-link:  12px;      /* links móvil/tablet */
+
+  --fs-title-desktop: 54px; /* título SOLO computador */
+  --fs-label-desktop: 16px;
+  --fs-input-desktop: 18px;
+  --fs-btn-desktop:   18px;
+  --fs-link-desktop:  14px;
+
+  /* =========================
+     PALETA / EFECTOS (TU CSS)
+     ========================= */
+  --bgTop: #e06b6a;
+  --bgMid: #b53a33;
+  --bgDeep:#3b0707;
+
+  --overlay1: rgba(120, 0, 0, .42);
+  --overlay2: rgba(20, 0, 0, .55);
+
+  --white: #ffffff;
+  --ink: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.62);
+
+  --pill: rgba(238, 245, 255, .92);
+  --pill2: rgba(255,255,255,.86);
+
+  --btn1:#ff4f4a;
+  --btn2:#ff3a33;
+
+  --shadow1: 0 22px 55px rgba(0,0,0,.55);
+  --shadow2: 0 10px 22px rgba(0,0,0,.40);
+  --inner: inset 0 1px 0 rgba(255,255,255,.22);
+  --blur: 14px;
+  --radius: 34px;
+}
+
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+
 html, body{
   margin:0;
   padding:0;
   width:100%;
   height:100%;
   overflow:hidden;
-  background:#070606;
-  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-/* =========================================================
-   AJUSTE RÁPIDO DE TAMAÑOS (EDITA SOLO ESTO)
-   - title: “Welcome” / “¡BIENVENIDO!”
-   - label: “Usuario / Contraseña”
-   - input: texto dentro de inputs
-   - btn: texto del botón
-   - link: “Politicas / Registrarse”
-   ========================================================= */
-:root{
-  --fs-title: 28px;   /* (móvil/tablet) */
-  --fs-label: 12px;
-  --fs-input: 14px;
-  --fs-btn:   14px;
-  --fs-link:  12px;
-
-  /* SOLO PANTALLA COMPUTADOR (>=1024px) */
-  --fs-title-desktop: 44px;
-  --fs-label-desktop: 16px;
-  --fs-input-desktop: 18px;
-  --fs-btn-desktop:   18px;
-  --fs-link-desktop:  14px;
-}
-
-/* ====== LUX RED / VINOTINTO BACKGROUND ====== */
+/* =========================
+   FONDO GENERAL (como tu body)
+   ========================= */
 #stage{
   position:fixed;
   inset:0;
   width:100vw;
   height:100vh;
   overflow:hidden;
-
-  /* base rojo/vinotinto + profundidad */
   background:
-    radial-gradient(1200px 700px at 50% 10%,
-      rgba(255,255,255,0.16) 0%,
-      rgba(255,255,255,0.05) 34%,
-      rgba(0,0,0,0.00) 62%),
-    linear-gradient(180deg,
-      #ff8a80 0%,
-      #d12b2b 30%,
-      #7b0a10 66%,
-      #240005 100%);
+    radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.18), transparent 60%),
+    radial-gradient(900px 700px at 20% 120%, rgba(255,0,0,.12), transparent 60%),
+    linear-gradient(180deg, #101018 0%, #07070b 100%);
 }
 
-/* ====== EFECTO “LUJO”: BRILLO GRIS/PLATA ENTRE MATICES ======
-   La imagen tiene un reflejo diagonal tipo vidrio + brillo “plata”
-   que cae sobre el rojo (no es blanco puro, es gris cálido).
-*/
-#stage::before{
-  content:"";
-  position:absolute;
-  inset:-45%;
-  transform: rotate(-12deg);
-  pointer-events:none;
-
-  /* Capa 1: reflejo diagonal “glass” */
-  background:
-    linear-gradient(135deg,
-      rgba(235,235,235,0.48) 0%,
-      rgba(235,235,235,0.26) 18%,
-      rgba(235,235,235,0.12) 34%,
-      rgba(235,235,235,0.04) 48%,
-      rgba(0,0,0,0.10) 100%);
-  filter: blur(1.35px);
-  mix-blend-mode: screen;
-  opacity: 0.92;
-}
-
-/* Capa 2: highlight “specular” gris suave + viñeta para lujo */
-#stage::after{
-  content:"";
-  position:absolute;
-  inset:-12%;
-  pointer-events:none;
-
-  background:
-    /* brillo gris/plata central (aire lujo) */
-    radial-gradient(520px 300px at 50% 14%,
-      rgba(230,230,230,0.22) 0%,
-      rgba(230,230,230,0.10) 26%,
-      rgba(230,230,230,0.00) 60%),
-    /* micro-reflejo lateral (similar a “glass edge”) */
-    radial-gradient(420px 240px at 82% 26%,
-      rgba(235,235,235,0.10) 0%,
-      rgba(235,235,235,0.00) 62%),
-    /* viñeta (profundidad) */
-    radial-gradient(circle at 50% 10%,
-      rgba(255,255,255,0.06) 0%,
-      rgba(0,0,0,0.22) 56%,
-      rgba(0,0,0,0.58) 100%);
-}
-
-/* ====== FRAME (solo visual) ====== */
-#frame{
-  position:absolute;
-  left:10px; right:10px;
-  top:10px; bottom:0;
-  box-sizing:border-box;
-  pointer-events:none;
-}
-
-/* ====== LAYOUT (MISMA ESTRUCTURA / POSICIONES) ====== */
+/* =========================
+   “PHONE” (marco) usando #plan
+   NO CAMBIA ESTRUCTURA, SOLO ESTILO
+   ========================= */
 #plan{
   position:absolute;
   left:10px; right:10px;
   top:10px; bottom:0;
+
+  /* centrado tipo phone sin alterar lógica */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
   overflow:hidden;
 }
 
-#card{
+/* el marco visible */
+#frame{
   position:absolute;
-  left:6%;
-  right:6%;
-  top:6%;
-  bottom:6%;
+  width:min(390px, 92vw);
+  aspect-ratio: 9 / 19.5;
+  border-radius: 42px;
+  padding:14px;
+  background: rgba(255,255,255,.06);
+  box-shadow: 0 30px 90px rgba(0,0,0,.70);
+  border: 1px solid rgba(255,255,255,.10);
+  overflow:hidden;
+  pointer-events:none;
 }
 
-/* ====== TITLE ====== */
+/* brillo del marco */
+#frame::before{
+  content:"";
+  position:absolute; inset:-2px;
+  border-radius:44px;
+  background:
+    radial-gradient(220px 160px at 35% 0%, rgba(255,255,255,.18), transparent 60%),
+    linear-gradient(135deg, rgba(255,255,255,.10), transparent 45%);
+  mix-blend-mode: screen;
+  pointer-events:none;
+}
+
+/* borde interno oscuro */
+#frame::after{
+  content:"";
+  position:absolute; inset:0;
+  border-radius:42px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
+  pointer-events:none;
+}
+
+/* =========================
+   “SCREEN” (pantalla) usando #card
+   ========================= */
+#card{
+  position:relative;
+  width:min(390px, 92vw);
+  aspect-ratio: 9 / 19.5;
+  border-radius: var(--radius);
+  overflow:hidden;
+  box-shadow: var(--shadow1);
+
+  /* tu gradiente de pantalla */
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.22) 0%, transparent 22%),
+    linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #7b1b19 58%, var(--bgDeep) 100%);
+}
+
+/* overlay diagonal (tu screen::before) */
+#card::before{
+  content:"";
+  position:absolute; inset:-10%;
+  background:
+    linear-gradient(135deg,
+      transparent 0%,
+      transparent 32%,
+      var(--overlay1) 32%,
+      var(--overlay2) 66%,
+      transparent 66%);
+  transform: rotate(-10deg);
+  opacity:.95;
+  pointer-events:none;
+}
+
+/* brillo/vineta (tu screen::after) */
+#card::after{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    radial-gradient(80% 70% at 50% 25%, rgba(255,255,255,.06), transparent 55%),
+    radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
+    linear-gradient(180deg, transparent 55%, rgba(0,0,0,.65) 100%);
+  pointer-events:none;
+}
+
+/* =========================
+   TEXTO / CAMPOS (misma ubicación absoluta)
+   ========================= */
 .title{
   position:absolute;
   left:0; right:0;
   top:12%;
   text-align:center;
+  margin:0;
 
+  color: var(--ink);
   font-size: var(--fs-title);
-  line-height:1.05;
-  font-weight:900;
-  letter-spacing:0.4px;
-
-  color: rgba(255,255,255,0.97);
-  text-shadow:
-    0 10px 26px rgba(0,0,0,0.35),
-    0 2px 8px rgba(0,0,0,0.25);
+  font-weight:800;
+  text-shadow: 0 8px 18px rgba(0,0,0,.35);
 }
 
-/* ====== LABELS ====== */
 .label{
   position:absolute;
   left:18%;
   right:18%;
   font-size: var(--fs-label);
   font-weight:800;
-  letter-spacing:0.2px;
-  color: rgba(255,255,255,0.72);
-  text-shadow: 0 8px 18px rgba(0,0,0,0.28);
+  color: rgba(255,255,255,.62);
+  text-shadow: 0 6px 14px rgba(0,0,0,.28);
 }
 
-/* ====== INPUTS ====== */
+/* inputs (equivalente a .pill) */
 input.field{
   position:absolute;
   left:18%;
   right:18%;
-  height:10%;
-
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 999px;
-  box-sizing:border-box;
-
-  background: rgba(255,255,255,0.86);
+  height:44px;                 /* fijo como tu .pill */
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.55);
+  background:
+    linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
   box-shadow:
-    0 14px 28px rgba(0,0,0,0.20),
-    inset 0 1px 0 rgba(255,255,255,0.55);
+    0 10px 18px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.55);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
 
-  padding: 0 16px;
+  padding:0 16px;
+  outline:none;
 
   font-size: var(--fs-input);
-  font-weight:800;
-  color:#2b0b0b;
-  outline:none;
+  color: rgba(30,40,55,.92);
+  font-weight:700;
 }
 
 input.field::placeholder{
-  color: rgba(43,11,11,0.45);
+  color: rgba(60,70,85,.55);
 }
 
 input.field:focus{
   box-shadow:
-    0 16px 34px rgba(0,0,0,0.22),
-    0 0 0 3px rgba(230,230,230,0.18),
-    inset 0 1px 0 rgba(255,255,255,0.62);
+    0 12px 22px rgba(0,0,0,.26),
+    inset 0 1px 0 rgba(255,255,255,.60);
 }
 
-/* ====== BUTTON ====== */
+/* botón (tu .btn) */
 .btn{
   position:absolute;
-  left:32%;
-  right:32%;
-  height:9%;
-
-  border: 1px solid rgba(255,255,255,0.16);
-  border-radius: 999px;
-  box-sizing:border-box;
-
+  left:18%;
+  right:18%;
+  height:52px;                 /* como tu .btn */
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
   background:
-    radial-gradient(140px 90px at 50% 25%,
-      rgba(235,235,235,0.18) 0%,
-      rgba(235,235,235,0.00) 60%),
-    linear-gradient(180deg,
-      #ff5a4a 0%,
-      #e12822 48%,
-      #b30c10 100%);
-
+    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.26), transparent 60%),
+    linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
   box-shadow:
-    0 18px 34px rgba(0,0,0,0.26),
-    inset 0 1px 0 rgba(255,255,255,0.24);
+    0 18px 26px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.22);
 
   display:flex;
   align-items:center;
   justify-content:center;
 
+  color:#fff;
+  font-weight:700;
   font-size: var(--fs-btn);
-  font-weight:900;
-  letter-spacing:0.25px;
-
-  color: rgba(255,255,255,0.97);
   cursor:pointer;
+  transition: transform .12s ease, filter .12s ease;
   user-select:none;
-  text-shadow: 0 10px 22px rgba(0,0,0,0.35);
 }
 
-.btn:hover{ filter: brightness(1.03); }
-.btn:active{ transform: translateY(1px); filter: brightness(0.99); }
+.btn:active{
+  transform: scale(.985);
+  filter: brightness(.98);
+}
 
-/* ====== LINKS ====== */
+/* texto inferior (small) */
 .link{
   position:absolute;
   font-size: var(--fs-link);
-  font-weight:800;
-  color: rgba(255,255,255,0.78);
-  white-space:nowrap;
-  text-shadow: 0 10px 22px rgba(0,0,0,0.30);
-  opacity:0.92;
+  color: rgba(255,255,255,.55);
+  font-weight:700;
+  text-shadow: 0 6px 14px rgba(0,0,0,.28);
 }
 
-/* HUD discreto */
+.link.link-accent{
+  color: rgba(255,80,70,.75);
+  font-weight:800;
+}
+
+/* HUD (dejar igual, solo visual) */
 #hud{
-  position:absolute; top:8px; left:8px;
-  font:12px Arial, sans-serif;
-  background: rgba(0,0,0,0.16);
-  border:1px solid rgba(255,255,255,0.14);
-  border-radius:10px;
-  padding:6px 10px;
-  white-space:nowrap;
-  pointer-events:none;
-  color: rgba(255,255,255,0.78);
+  position:absolute; top:10px; left:10px;
+  font:11px Arial, sans-serif;
+  background: rgba(0,0,0,.18);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 10px;
+  padding: 6px 10px;
+  color: rgba(255,255,255,.78);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  white-space:nowrap;
+  pointer-events:none;
 }
 
-/* ====== SOLO PANTALLA COMPUTADOR ====== */
+/* SOLO PANTALLA COMPUTADOR */
 @media (min-width: 1024px){
-  .title{font-size: var(--fs-title-desktop);}
-  .label{font-size: var(--fs-label-desktop);}
-  input.field{font-size: var(--fs-input-desktop);}
-  .btn{font-size: var(--fs-btn-desktop);}
-  .link{font-size: var(--fs-link-desktop);}
-}
-
-/* móviles */
-@media (max-width: 420px){
-  .title{font-size: var(--fs-title);}
-  input.field{font-size: var(--fs-input);}
-  .btn{font-size: var(--fs-btn);}
+  .title{ font-size: var(--fs-title-desktop); }
+  .label{ font-size: var(--fs-label-desktop); }
+  input.field{ font-size: var(--fs-input-desktop); }
+  .btn{ font-size: var(--fs-btn-desktop); }
+  .link{ font-size: var(--fs-link-desktop); }
 }
 </style>
 </head>
@@ -308,21 +328,21 @@ input.field:focus{
 
   <div id="plan">
     <div id="card">
-      <div class="title">¡BIENVENIDO!</div>
+      <div class="title">Welcome</div>
 
       <div class="label" style="top:22%;">Usuario:</div>
-      <input id="user" class="field" style="top:28%;" autocomplete="username"/>
+      <input id="user" class="field" style="top:28%;" autocomplete="username" placeholder=""/>
 
       <div class="label" style="top:42%;">Contraseña:</div>
-      <input id="pass" class="field" style="top:48%;" type="password" autocomplete="current-password"/>
+      <input id="pass" class="field" style="top:48%;" type="password" autocomplete="current-password" placeholder=""/>
 
       <div class="btn" style="top:67%;" onclick="doLogin()">Login</div>
 
       <div class="link" style="top:78%; left:20%;">Politicas:</div>
-      <div class="link" style="top:78%; left:68%;">Registrarse:</div>
-    </div>
+      <div class="link link-accent" style="top:78%; left:68%;">Registrarse:</div>
 
-    <div id="hud">Cargando...</div>
+      <div id="hud">Cargando...</div>
+    </div>
   </div>
 </div>
 
@@ -365,11 +385,11 @@ async function doLogin(){
   }
 
   var hud=document.getElementById("hud");
-  var plan=document.getElementById("plan");
+  var card=document.getElementById("card");
   function update(){
-    var r=plan.getBoundingClientRect();
+    var r=card.getBoundingClientRect();
     hud.textContent="Viewport(px): "+Math.round(window.innerWidth)+" x "+Math.round(window.innerHeight)+
-                    " | Plan(px): "+Math.round(r.width)+" x "+Math.round(r.height);
+                    " | Card(px): "+Math.round(r.width)+" x "+Math.round(r.height);
   }
   window.addEventListener("resize", update);
   update();
