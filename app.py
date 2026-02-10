@@ -119,6 +119,6 @@ document.getElementById("login-btn").onclick = function(){
 components.html(html, height=10, scrolling=False)
 
 # Escucha el evento del botón Login
-msg = st.experimental_get_query_params()
+
 if st.button("🔐 Abrir Login"):
     login_dialog()
