@@ -76,7 +76,7 @@ FOOTER_BG = "#FFFFFF"       # Fondo footer (blanco)
 # (4) IMAGEN (todo en % DEL CUADRO)
 IMG_LEFT = 0     # % | margen interno izquierdo de la imagen (la hace más angosta si sube) 
 IMG_RIGHT = 0    # % | margen interno derecho
-IMG_TOP = 10     # % | distancia desde arriba del cuadro (baja la imagen si sube)Estoy aqui
+IMG_TOP = 10     # % | distancia desde arriba del cuadro (baja la imagen si sube)
 IMG_HEIGHT = 43  # % | alto del bloque de imagen
 
 # (5) HEADER (todo en % DEL CUADRO)
@@ -88,8 +88,8 @@ BTN_AREA_TOP = 55    # % | desde aquí empieza la sección inferior (Fondo2 + bo
 BTN_H = 10           # % | alto de cada botón
 BTN_GAP_X = 3        # % | separación horizontal entre botones
 BTN_GAP_Y = 5        # % | separación vertical entre filas
-BTN_LEFT = 6         # % | margen interno izquierdo del grid de botones
-BTN_RIGHT = 6        # % | margen interno derecho del grid de botones
+BTN_LEFT = 4         # % | margen interno izquierdo del grid de botones
+BTN_RIGHT = 4        # % | margen interno derecho del grid de botones Estoy aqui
 
 BTN_TEXTS = [
     "Horarios",
