@@ -1,299 +1,343 @@
+# pages/admin.py
+import os
+import json
+import urllib.parse
+import urllib.request
+import streamlit as st
+import streamlit.components.v1 as components
+
+# =========================
+# CONFIG
+# =========================
+AUTH_URL = os.environ.get("AUTH_URL", "https://camilo27.pythonanywhere.com/api/auth")
+TIMEOUT_SEC = float(os.environ.get("AUTH_TIMEOUT", "12"))
+
+# =========================
+# HELPERS
+# =========================
+def _safe_get_query_params():
+    try:
+        qp = st.query_params  # streamlit >=1.30
+        return dict(qp)
+    except Exception:
+        return st.experimental_get_query_params()
+
+def _safe_set_query_params(**kwargs):
+    try:
+        st.query_params.clear()
+        for k, v in kwargs.items():
+            if v is None:
+                continue
+            st.query_params[k] = v
+    except Exception:
+        st.experimental_set_query_params(**kwargs)
+
+def _call_auth(correo: str, dni: str):
+    payload = json.dumps({"correo": correo, "dni": dni}).encode("utf-8")
+    req = urllib.request.Request(
+        AUTH_URL,
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=TIMEOUT_SEC) as resp:
+        body = resp.read().decode("utf-8", errors="replace")
+        code = getattr(resp, "status", 200)
+    try:
+        data = json.loads(body)
+    except Exception:
+        data = {"ok": False, "raw": body}
+    return code, data
+
+# =========================
+# PAGE CONFIG (FULLSCREEN)
+# =========================
+st.set_page_config(page_title="Admin - Login", layout="wide")
+
+st.markdown(
+    """
+    <style>
+      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
+      section.main > div{padding:0 !important;margin:0 !important;}
+      header, footer{display:none !important;}
+      [data-testid="stSidebar"]{display:none !important;}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# =========================
+# LOGOUT (optional query)
+# =========================
+qp = _safe_get_query_params()
+if str(qp.get("logout", ["0"])[0]).strip() == "1":
+    st.session_state.pop("auth", None)
+    st.session_state.pop("usuario", None)
+    st.session_state.pop("rol", None)
+    _safe_set_query_params()
+    st.rerun()
+
+# =========================
+# IF ALREADY AUTH -> GO MAIN
+# =========================
+if st.session_state.get("auth"):
+    st.switch_page("app.py")
+
+# =========================
+# LOGIN SUBMIT VIA QUERY PARAMS (FROM HTML)
+# =========================
+correo_q = (qp.get("correo", [""])[0] if isinstance(qp.get("correo"), list) else qp.get("correo", "")) or ""
+dni_q = (qp.get("dni", [""])[0] if isinstance(qp.get("dni"), list) else qp.get("dni", "")) or ""
+do_q = (qp.get("do", [""])[0] if isinstance(qp.get("do"), list) else qp.get("do", "")) or ""
+err_q = (qp.get("err", [""])[0] if isinstance(qp.get("err"), list) else qp.get("err", "")) or ""
+
+if do_q == "1":
+    correo = str(correo_q).strip()
+    dni = str(dni_q).strip()
+
+    if not correo or not dni:
+        _safe_set_query_params(err="Completa Correo y DNI")
+        st.rerun()
+
+    try:
+        status, data = _call_auth(correo, dni)
+    except Exception as e:
+        _safe_set_query_params(err=f"Error de conexión ({type(e).__name__})")
+        st.rerun()
+
+    ok = bool(data.get("ok")) if isinstance(data, dict) else False
+    if status == 200 and ok:
+        st.session_state["auth"] = True
+        st.session_state["usuario"] = data.get("usuario", correo)
+        st.session_state["rol"] = data.get("rol", data.get("role", ""))
+        _safe_set_query_params()  # limpia URL
+        st.switch_page("app.py")
+    else:
+        _safe_set_query_params(err="Credenciales inválidas")
+        st.rerun()
+
+# =========================
+# HTML (DISEÑO ROJO, RESPONSIVE) + FORM FUNCIONAL
+# =========================
+# Nota: no toca tus dimensiones del plano principal (eso está en app.py).
+# Aquí solo login pantalla completa.
+err_html = (
+    f"<div class='err'>{urllib.parse.quote(str(err_q)).replace('%20',' ')}</div>"
+    if err_q else ""
+)
+
+html = f"""
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Login UI (CSS)</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <style>
-    :root{
-      --bgTop: #e06b6a;
-      --bgMid: #b53a33;
-      --bgDeep:#3b0707;
+    :root{{
+      --bg1:#7b0b0b;
+      --bg2:#b51717;
+      --glass: rgba(255,255,255,.08);
+      --glass2: rgba(255,255,255,.10);
+      --border: rgba(255,255,255,.14);
+      --txt: #ffffff;
+      --muted: rgba(255,255,255,.78);
+      --field: rgba(255,255,255,.92);
+      --fieldTxt: #2b2b2b;
+      --btn1:#ff3a3a;
+      --btn2:#c90f0f;
+      --shadow: 0 18px 60px rgba(0,0,0,.40);
+    }}
 
-      --overlay1: rgba(120, 0, 0, .42);
-      --overlay2: rgba(20, 0, 0, .55);
-
-      --white: #ffffff;
-      --ink: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.62);
-
-      --pill: rgba(238, 245, 255, .92);
-      --pill2: rgba(255,255,255,.86);
-
-      --btn1:#ff4f4a;
-      --btn2:#ff3a33;
-
-      --shadow1: 0 22px 55px rgba(0,0,0,.55);
-      --shadow2: 0 10px 22px rgba(0,0,0,.40);
-      --inner: inset 0 1px 0 rgba(255,255,255,.22);
-      --blur: 14px;
-      --radius: 34px;
-    }
-
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      display:grid;
-      place-items:center;
-      background:
-        radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.18), transparent 60%),
-        radial-gradient(900px 700px at 20% 120%, rgba(255,0,0,.12), transparent 60%),
-        linear-gradient(180deg, #101018 0%, #07070b 100%);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", sans-serif;
-    }
-
-    /* marco tipo “pantalla” */
-    .phone{
-      width:min(390px, 92vw);
-      aspect-ratio: 9 / 19.5;
-      border-radius: 42px;
-      position:relative;
-      padding: 14px;
-      background: rgba(255,255,255,.06);
-      box-shadow: 0 30px 90px rgba(0,0,0,.70);
-      border: 1px solid rgba(255,255,255,.10);
+    html,body{{height:100%;margin:0;}}
+    body{{
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 30% 20%, rgba(255,255,255,.10), rgba(0,0,0,0) 60%),
+                  radial-gradient(900px 500px at 70% 75%, rgba(0,0,0,.18), rgba(0,0,0,0) 55%),
+                  linear-gradient(135deg, var(--bg2), var(--bg1));
       overflow:hidden;
-    }
-    .phone::before{
-      content:"";
-      position:absolute; inset:-2px;
-      border-radius: 44px;
-      background:
-        radial-gradient(220px 160px at 35% 0%, rgba(255,255,255,.18), transparent 60%),
-        linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,0) 45%);
+    }}
+
+    /* Fondo con “corte” diagonal suave como tu referencia */
+    .bg-cut{{
+      position:fixed; inset:-20%;
+      background: linear-gradient(135deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,0) 45%);
+      transform: rotate(-8deg);
       pointer-events:none;
-      mix-blend-mode: screen;
-    }
-    .phone::after{
-      content:"";
-      position:absolute; inset:0;
-      border-radius: 42px;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
-      pointer-events:none;
-    }
+    }}
 
-    .screen{
-      height:100%;
-      border-radius: 34px;
-      overflow:hidden;
-      position:relative;
-      box-shadow: var(--shadow1);
-      background:
-        /* brillo superior */
-        linear-gradient(180deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 22%),
-        /* gradiente principal rojo */
-        linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #7b1b19 58%, var(--bgDeep) 100%);
-    }
-
-    /* “corte” diagonal oscuro como en la imagen */
-    .screen::before{
-      content:"";
-      position:absolute; inset:-10%;
-      background:
-        linear-gradient(135deg,
-          rgba(255,255,255,0) 0%,
-          rgba(255,255,255,0) 32%,
-          var(--overlay1) 32%,
-          var(--overlay2) 66%,
-          rgba(0,0,0,.0) 66%,
-          rgba(0,0,0,.0) 100%);
-      transform: rotate(-10deg);
-      transform-origin:center;
-      filter: blur(0.2px);
-      opacity:.95;
-      pointer-events:none;
-    }
-
-    /* viñeta + profundidad inferior */
-    .screen::after{
-      content:"";
-      position:absolute; inset:0;
-      background:
-        radial-gradient(80% 70% at 50% 25%, rgba(255,255,255,.06), transparent 55%),
-        radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
-        linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,.65) 100%);
-      pointer-events:none;
-    }
-
-    /* contenido centrado */
-    .content{
-      position:relative;
-      height:100%;
+    .wrap{{
+      position:fixed; inset:0;
       display:flex;
-      flex-direction:column;
-      align-items:center;
-      padding: 54px 26px 34px;
-      gap: 18px;
-    }
-
-    /* icono tipo “cuadro” */
-    .app-icon{
-      width: 56px; height: 42px;
-      border-radius: 8px;
-      background: rgba(255,255,255,.12);
-      border: 1px solid rgba(255,255,255,.22);
-      box-shadow: 0 10px 18px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.20);
-      display:grid;
-      place-items:center;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-    }
-    .app-icon svg{
-      width: 22px; height: 22px;
-      opacity: .9;
-      filter: drop-shadow(0 2px 2px rgba(0,0,0,.20));
-    }
-
-    h1{
-      margin: 0;
-      color: var(--ink);
-      font-size: 44px;
-      font-weight: 800;
-      letter-spacing: .2px;
-      text-shadow: 0 8px 18px rgba(0,0,0,.35);
-    }
-
-    .stack{
-      width: 100%;
-      max-width: 310px;
-      margin-top: 10px;
-      display:flex;
-      flex-direction:column;
-      gap: 16px;
-      align-items:center;
-    }
-
-    /* inputs “pill” con sombra suave */
-    .pill{
-      width: 100%;
-      height: 44px;
-      border-radius: 999px;
-      background:
-        linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
-      border: 1px solid rgba(255,255,255,.55);
-      box-shadow:
-        0 10px 18px rgba(0,0,0,.22),
-        inset 0 1px 0 rgba(255,255,255,.55);
-      display:flex;
-      align-items:center;
-      padding: 0 16px;
-      backdrop-filter: blur(var(--blur));
-      -webkit-backdrop-filter: blur(var(--blur));
-    }
-    .pill input{
-      width:100%;
-      border:0;
-      outline:none;
-      background:transparent;
-      font-size: 14px;
-      color: rgba(30,40,55,.92);
-    }
-    .pill input::placeholder{
-      color: rgba(60,70,85,.55);
-    }
-
-    /* botón rojo “pill” con leve degradado y brillo */
-    .btn{
-      width: 100%;
-      height: 52px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.18);
-      background:
-        radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.26), transparent 60%),
-        linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
-      box-shadow:
-        0 18px 26px rgba(0,0,0,.28),
-        inset 0 1px 0 rgba(255,255,255,.22);
-      color: rgba(255,255,255,.92);
-      font-weight: 700;
-      letter-spacing: .2px;
-      cursor:pointer;
-      transform: translateZ(0);
-      transition: transform .12s ease, filter .12s ease;
-    }
-    .btn:active{
-      transform: scale(.985);
-      filter: brightness(.98);
-    }
-
-    /* texto inferior */
-    .small{
-      margin-top: auto;
-      font-size: 12px;
-      color: rgba(255,255,255,.55);
-      letter-spacing: .1px;
-      text-shadow: 0 6px 14px rgba(0,0,0,.30);
-      display:flex;
-      gap: 10px;
       align-items:center;
       justify-content:center;
-      width:100%;
-      opacity:.95;
-    }
-    .small span:last-child{
-      color: rgba(255,80,70,.75);
-      font-weight: 700;
-    }
+      padding: 22px;
+      box-sizing:border-box;
+    }}
 
-    /* barra “status” minimal (solo estética) */
-    .status{
-      position:absolute;
-      top: 10px; left: 0; right:0;
+    .card{{
+      width: min(520px, 92vw);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.12));
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 22px 22px 18px 22px;
+      position:relative;
+    }}
+
+    .toprow{{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 8px;
+    }}
+
+    .iconbtn{{
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.18);
+      display:flex; align-items:center; justify-content:center;
+      color: var(--txt);
+      font-weight:700;
+      user-select:none;
+    }}
+
+    .closebtn{{
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.18);
+      display:flex; align-items:center; justify-content:center;
+      color: var(--txt);
+      cursor:pointer;
+    }}
+
+    h1{{
+      margin: 8px 0 18px 0;
+      text-align:center;
+      color: var(--txt);
+      font-size: 34px;
+      letter-spacing: .2px;
+    }}
+
+    label{{
+      display:block;
+      color: var(--muted);
+      font-size: 12px;
+      margin: 10px 0 8px 2px;
+      font-weight: 600;
+    }}
+
+    input{{
+      width:100%;
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.14);
+      outline:none;
+      background: var(--field);
+      color: var(--fieldTxt);
+      padding: 0 12px;
+      box-sizing:border-box;
+      font-size: 13px;
+    }}
+
+    input::placeholder{{ color: rgba(0,0,0,.45); }}
+
+    .btn{{
+      width:100%;
+      height: 44px;
+      border-radius: 12px;
+      border: 0;
+      margin-top: 16px;
+      color: #fff;
+      font-weight: 800;
+      letter-spacing: .2px;
+      cursor:pointer;
+      background: linear-gradient(180deg, var(--btn1), var(--btn2));
+      box-shadow: 0 10px 26px rgba(0,0,0,.35);
+    }}
+
+    .rowlinks{{
       display:flex;
       justify-content:space-between;
-      padding: 0 16px;
+      margin-top: 10px;
       font-size: 11px;
-      color: rgba(255,255,255,.55);
-      pointer-events:none;
-      mix-blend-mode: soft-light;
-    }
-    .dots{
-      display:flex; gap:6px; align-items:center;
-    }
-    .dot{width:5px;height:5px;border-radius:999px;background:rgba(255,255,255,.55)}
-    .bar{width:18px;height:5px;border-radius:999px;background:rgba(255,255,255,.45)}
+      color: rgba(255,255,255,.70);
+      user-select:none;
+    }}
+
+    .rowlinks span{{
+      opacity:.85;
+    }}
+
+    .err{{
+      margin: 10px 0 0 0;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.20);
+      color: #fff;
+      font-size: 12px;
+    }}
+
+    /* Mobile scaling */
+    @media (max-width: 420px){{
+      .card{{ padding: 18px; border-radius: 16px; }}
+      h1{{ font-size: 30px; }}
+    }}
   </style>
 </head>
-
 <body>
-  <div class="phone" role="img" aria-label="Pantalla de login estilo rojo con corte diagonal">
-    <div class="screen">
-      <div class="status">
-        <div class="dots">
-          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-        </div>
-        <div class="dots">
-          <div class="bar"></div><div class="bar"></div>
-        </div>
+  <div class="bg-cut"></div>
+  <div class="wrap">
+    <div class="card" role="dialog" aria-label="Login">
+      <div class="toprow">
+        <div class="iconbtn" title="Home">⌂</div>
+        <div class="closebtn" title="Cerrar" onclick="window.location.href='/?logout=1'">×</div>
       </div>
 
-      <div class="content">
-        <div class="app-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M4 10.5L12 4l8 6.5v8.5a2 2 0 0 1-2 2h-4.5v-7H10.5v7H6a2 2 0 0 1-2-2v-8.5Z"
-              fill="rgba(255,255,255,.92)"/>
-          </svg>
-        </div>
+      <h1>Welcome</h1>
 
-        <h1>Welcome</h1>
+      <form id="loginForm" onsubmit="return goLogin();">
+        <label for="correo">Correo</label>
+        <input id="correo" name="correo" type="email" placeholder="correo@ejemplo.com" autocomplete="username" value="{correo_q.replace('"','&quot;')}"/>
 
-        <div class="stack">
-          <div class="pill">
-            <input type="text" placeholder="Username" autocomplete="username" />
-          </div>
-          <div class="pill">
-            <input type="password" placeholder="Password" autocomplete="current-password" />
-          </div>
+        <label for="dni">DNI</label>
+        <input id="dni" name="dni" type="password" placeholder="••••" autocomplete="current-password"/>
 
-          <button class="btn" type="button">Login to my account</button>
-        </div>
+        <button class="btn" type="submit">Login to my account</button>
+      </form>
 
-        <div class="small">
-          <span>Forgot password?</span><span>Click here</span>
-        </div>
+      {err_html}
+
+      <div class="rowlinks">
+        <span>Forgot password?</span>
+        <span>Create account</span>
       </div>
     </div>
   </div>
+
+  <script>
+    function goLogin(){{
+      var correo = (document.getElementById('correo').value || '').trim();
+      var dni = (document.getElementById('dni').value || '').trim();
+
+      var p = new URLSearchParams(window.location.search);
+      p.set('correo', correo);
+      p.set('dni', dni);
+      p.set('do', '1');
+      p.delete('err');
+
+      // IMPORTANTE: no navegamos a /admin (eso causa Page not found). Nos quedamos en la misma page de Streamlit.
+      window.location.search = p.toString();
+      return false;
+    }}
+  </script>
 </body>
 </html>
+"""
+
+components.html(html, height=10, scrolling=False)
