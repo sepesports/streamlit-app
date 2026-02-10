@@ -2,36 +2,94 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# ================== AJUSTES (EDITA SOLO ESTO) ==================
-PAD_X_PX = 10
-PAD_TOP_PX = 10
+# ==============================================================================
+# PLANO RESPONSIVO (BASE) — MISMA VERSIÓN QUE SUBISTE (SIN CAMBIAR LAYOUT)
+# ==============================================================================
+# REGLAS IMPORTANTES (para ajustar con precisión):
+#
+# A) UNIDADES
+# 1) PAD_X_PX / PAD_TOP_PX están en PIXELES (px).
+#    - Controlan el “cuadro” (plan) dentro del viewport.
+#    - Si quieres que el marco quede más pegado a la pantalla: baja PAD_X_PX / PAD_TOP_PX.
+#
+# 2) La mayoría de medidas del layout están en PORCENTAJE (%) DEL CUADRO.
+#    - Ej: IMG_LEFT = 6 significa “6% del ANCHO del cuadro”, no del viewport.
+#    - Ej: IMG_TOP = 12 significa “12% del ALTO del cuadro desde arriba”.
+#
+# 3) MIN_BTN_W_PX está en PIXELES (px) y es la regla más importante del responsivo:
+#    - Define el ANCHO MÍNIMO permitido por botón.
+#    - Si en móvil no caben 3 columnas con ese mínimo, el layout baja automáticamente a 2 o 1.
+#
+# B) CÓMO MOVER/ESCALAR CADA SECCIÓN (sin romper nada)
+# 1) HEADER:
+#    - HEADER_TOP: normalmente 0.
+#    - HEADER_HEIGHT: sube/baja el alto del header (8–12 suele ser rango sano).
+#
+# 2) IMAGEN:
+#    - IMG_LEFT/IMG_RIGHT: “margen interno” lateral de la imagen.
+#      (más grande = imagen más angosta, más aire a los lados)
+#    - IMG_TOP: qué tan abajo arranca la imagen.
+#    - IMG_HEIGHT: qué tan alta es la imagen.
+#
+# 3) ZONA BOTONES:
+#    - BTN_AREA_TOP: desde qué % vertical empieza “Fondo 2” (zona verde inferior).
+#      (más grande = zona botones arranca más abajo, menos espacio para botones)
+#    - BTN_LEFT/BTN_RIGHT: márgenes laterales del grid de botones.
+#    - BTN_H: alto de cada botón (por fila).
+#    - BTN_GAP_X: separación horizontal entre botones.
+#    - BTN_GAP_Y: separación vertical entre filas.
+#
+# 4) FOOTER:
+#    - FOOTER_LEFT/FOOTER_RIGHT: márgenes laterales del footer.
+#    - FOOTER_H: alto del footer.
+#    - FOOTER_BOTTOM: separación desde abajo del cuadro.
+#
+# C) “FONDO 2”
+# - El texto "Fondo 2" se posiciona con __F2_BOTTOM__ (por ahora fijo a "22").
+#   Si quieres que sea editable como variable, lo dejo en comentarios listo.
+#
+# D) LECTURA / DEBUG (HUD)
+# - El HUD muestra:
+#   Viewport(px)  -> tamaño real de la pantalla
+#   Plan(px)      -> ancho del cuadro (planW)
+#   cols/rows     -> columnas/filas calculadas por el responsivo
+#   btnW          -> ancho real de cada botón en % y en px
+# ==============================================================================
 
+# ================== AJUSTES (EDITA SOLO ESTO) ==================
+
+# (1) CUADRO / MARCO (px) — Ajuste fino contra bordes de la pantalla
+PAD_X_PX = 10   # px | margen externo izquierda/derecha del CUADRO
+PAD_TOP_PX = 10 # px | margen externo superior del CUADRO
+
+# (2) BORDES (px + color)
 BORDER_PX = 2
 BORDER_COLOR = "#111111"
 
-BG_COLOR = "#CFE3BF"        # verde claro (fondo general)
-HEADER_BG = "#FFF200"       # amarillo (Fondo 1)
-IMG_BG = "#FFFFFF"          # blanco (Imagen)
-BTN_BG = "#FFFFFF"          # blanco (botones)
-FOOTER_BG = "#FFFFFF"       # blanco (pie)
+# (3) COLORES (hex)
+BG_COLOR = "#CFE3BF"        # Fondo general (verde)
+HEADER_BG = "#FFF200"       # Fondo header (amarillo)
+IMG_BG = "#FFFFFF"          # Fondo imagen (blanco)
+BTN_BG = "#FFFFFF"          # Fondo botones (blanco)
+FOOTER_BG = "#FFFFFF"       # Fondo footer (blanco)
 
-# Margen interno del área "Imagen" respecto al cuadro (en % del cuadro)
-IMG_LEFT = 6     # %
-IMG_RIGHT = 6    # %
-IMG_TOP = 12     # % (desde arriba del cuadro)
-IMG_HEIGHT = 38  # % (alto del bloque imagen)
+# (4) IMAGEN (todo en % DEL CUADRO)
+IMG_LEFT = 6     # % | margen interno izquierdo de la imagen (la hace más angosta si sube)
+IMG_RIGHT = 6    # % | margen interno derecho
+IMG_TOP = 12     # % | distancia desde arriba del cuadro (baja la imagen si sube)
+IMG_HEIGHT = 38  # % | alto del bloque de imagen
 
-# Header (en % del cuadro)
-HEADER_TOP = 0
-HEADER_HEIGHT = 10
+# (5) HEADER (todo en % DEL CUADRO)
+HEADER_TOP = 0       # % | distancia desde arriba del cuadro
+HEADER_HEIGHT = 10   # % | alto del header
 
-# Sección botones (en % del cuadro)
-BTN_AREA_TOP = 55
-BTN_H = 10
-BTN_GAP_X = 3
-BTN_GAP_Y = 5
-BTN_LEFT = 6
-BTN_RIGHT = 6
+# (6) BOTONES (todo en % DEL CUADRO)
+BTN_AREA_TOP = 55    # % | desde aquí empieza la sección inferior (Fondo2 + botones + footer)
+BTN_H = 10           # % | alto de cada botón
+BTN_GAP_X = 3        # % | separación horizontal entre botones
+BTN_GAP_Y = 5        # % | separación vertical entre filas
+BTN_LEFT = 6         # % | margen interno izquierdo del grid de botones
+BTN_RIGHT = 6        # % | margen interno derecho del grid de botones
 
 BTN_TEXTS = [
     "Horarios",
@@ -42,15 +100,18 @@ BTN_TEXTS = [
     "Comunicados",
 ]
 
-# Footer (en % del cuadro)
-FOOTER_H = 8
-FOOTER_BOTTOM = 3  # separación desde abajo
-FOOTER_LEFT = 6
-FOOTER_RIGHT = 6
+# (7) FOOTER (todo en % DEL CUADRO)
+FOOTER_H = 8         # % | alto del footer
+FOOTER_BOTTOM = 3    # % | separación desde abajo del cuadro (sube el footer si sube)
+FOOTER_LEFT = 6      # % | margen lateral del footer
+FOOTER_RIGHT = 6     # % | margen lateral del footer
 
-# Responsivo
-MIN_BTN_W_PX = 150     # si no caben 3, baja a 2 o 1 por fila
-MOBILE_MAX_W_PX = 520
+# (8) RESPONSIVO (px)
+MIN_BTN_W_PX = 150   # px | ancho mínimo por botón antes de bajar columnas (3 -> 2 -> 1)
+MOBILE_MAX_W_PX = 520  # px | umbral para aplicar mínimos de gap en móvil
+
+# (9) (Opcional) Si quieres controlar la posición del texto "Fondo 2" desde Python:
+# FONDO2_BOTTOM = 22  # % | cuanto más grande, más arriba aparece el texto
 # ===============================================================
 
 st.set_page_config(layout="wide")
@@ -194,7 +255,7 @@ html = """
     .btn span{
       display:block;
       line-height:1.05;
-      white-space: pre-line; /* respeta \n */
+      white-space: pre-line; /* respeta \\n */
     }
 
     /* Label Fondo 2 */
@@ -316,7 +377,7 @@ html = """
         var gapY = __BTN_GAP_Y__;
         var btnH = __BTN_H__;
 
-        // En móvil: si hace falta, asegura mínimos de separación
+        // En móvil: asegura mínimos para que no se peguen demasiado
         if (vw <= MOBILE_MAX_W_PX){
           if (gapX < 2) gapX = 2;
           if (gapY < 3) gapY = 3;
@@ -324,7 +385,7 @@ html = """
 
         var count = BTN_TEXTS.length;
 
-        // Intentar 3 columnas (desktop), si no caben, bajar a 2 o 1
+        // Intentar 3 columnas (desktop) -> si no cumple MIN_BTN_W_PX baja a 2 -> si no a 1
         var cols = 3;
         var usable = 100 - left - right;
 
@@ -401,7 +462,8 @@ html = (
         .replace("__BTN_H__", str(BTN_H))
         .replace("__BTN_GAP_X__", str(BTN_GAP_X))
         .replace("__BTN_GAP_Y__", str(BTN_GAP_Y))
-        .replace("__F2_BOTTOM__", "22")  # posición visual del texto "Fondo 2"
+        # Si quieres hacerlo variable desde Python: reemplaza "22" por str(FONDO2_BOTTOM)
+        .replace("__F2_BOTTOM__", "22")  # % desde abajo del cuadro: sube/baja el texto "Fondo 2"
         .replace("__FOOT_L__", str(FOOTER_LEFT))
         .replace("__FOOT_R__", str(FOOTER_RIGHT))
         .replace("__FOOT_H__", str(FOOTER_H))
