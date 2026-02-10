@@ -2,28 +2,19 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# ================== AUTH GATE (SERVER-SIDE) ==================
-# Solo entra si admin.py marcó la sesión como autorizada.
-if not st.session_state.get("auth_ok", False):
-    try:
-        st.switch_page("pages/admin.py")
-    except Exception:
-        st.markdown(
-            """
-            <script>
-              window.location.href = "/admin";
-            </script>
-            """,
-            unsafe_allow_html=True,
-        )
+# 🔒 GATE: solo entra con ?auth=ok
+if st.query_params.get("auth") != "ok":
+    st.markdown(
+        """
+        <script>
+          window.location.href="/admin";
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
     st.stop()
-# =============================================================
 
-# ==============================================================================
-# PLANO RESPONSIVO (BASE) — MISMA VERSIÓN QUE SUBISTE (SIN CAMBIAR LAYOUT)
-# ==============================================================================
-
-# ================== AJUSTES (EDITA SOLO ESTO) ==================
+# ===================== TU CÓDIGO ORIGINAL =====================
 
 PAD_X_PX = 8
 PAD_TOP_PX = 8
