@@ -1,72 +1,16 @@
-# app.py
+# pages/admin.py
 import streamlit as st
 import streamlit.components.v1 as components
 
-# ==============================================================================
-# PLANO RESPONSIVO — LOGIN (según mockup)
-# Ajustas TODO desde esta sección (sin tocar HTML/JS).
-#
-# UNIDADES:
-# - PAD_* y radios/bordes: px
-# - Posiciones y tamaños del layout: % del CUADRO (plan)
-#
-# CUADRO (plan):
-# - Es el área interior delimitada por el marco (izq/der/sup).
-# - Todo el diseño vive dentro del CUADRO.
-# ==============================================================================
+# ================== PROTECCIÓN (NO ENTRA SIN LOGIN) ==================
+if not st.session_state.get("auth"):
+    st.switch_page("app.py")
 
-# ================== AJUSTES (EDITA SOLO ESTO) ==================
+# ================== DATOS DE USUARIO (GARANTIZADO) ==================
+USER_EMAIL = st.session_state.get("user", "") or st.session_state.get("usuario", "") or ""
+USER_ROLE = st.session_state.get("role", "") or st.session_state.get("rol", "") or ""
 
-# 1) CUADRO / MARCO (px)
-PAD_X_PX = 10          # px: margen externo lateral del CUADRO
-PAD_TOP_PX = 10        # px: margen externo superior del CUADRO
-
-# 2) BORDES / FONDO
-BORDER_PX = 2          # px: grosor de borde del marco y componentes
-BORDER_COLOR = "#111111"
-BG_COLOR = "#FFFFFF"
-
-# 3) CONTENEDOR INTERNO (opcional) — % del CUADRO
-#    Útil si quieres que todo el login quede “con margen” dentro del cuadro.
-CARD_LEFT = 6          # %: margen interno izquierdo del área login
-CARD_RIGHT = 6         # %: margen interno derecho
-CARD_TOP = 6           # %: margen interno superior
-CARD_BOTTOM = 6        # %: margen interno inferior
-
-# 4) POSICIONES VERTICALES — % del CUADRO (referencia: 0 arriba, 100 abajo)
-TITLE_Y = 12           # %: posición vertical del título
-USER_LABEL_Y = 22      # %: label "Usuario:"
-USER_INPUT_Y = 28      # %: input usuario
-PASS_LABEL_Y = 42      # %: label "Contraseña:"
-PASS_INPUT_Y = 48      # %: input contraseña
-BTN_Y = 67             # %: botón Login
-LINKS_Y = 78           # %: links inferiores
-
-# 5) ANCHOS Y ALTOS — % del CUADRO
-INPUT_LEFT = 18        # %: margen izquierdo de inputs/labels
-INPUT_RIGHT = 18       # %: margen derecho de inputs/labels
-INPUT_H = 10           # %: alto de cada input
-
-BTN_LEFT = 32          # %: margen izquierdo del botón (más grande = botón más angosto)
-BTN_RIGHT = 32         # %: margen derecho del botón
-BTN_H = 9              # %: alto del botón
-
-# 6) LINKS — % del CUADRO (posición horizontal por X)
-LINK_LEFT_X = 20       # %: X del texto "Politicas:"
-LINK_RIGHT_X = 68      # %: X del texto "Registrarse:"
-
-# 7) RADIOS (px)
-INPUT_RADIUS_PX = 10
-BTN_RADIUS_PX = 10
-
-# 8) TIPOS (px)
-TITLE_SIZE_PX = 18
-LABEL_SIZE_PX = 14
-LINK_SIZE_PX = 13
-BTN_TEXT_SIZE_PX = 14
-
-# ===============================================================
-
+# ================== UI STREAMLIT (SIN CAMBIAR RESPONSIVE DEL HTML) ==================
 st.set_page_config(layout="wide")
 
 st.markdown(
@@ -79,6 +23,74 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+# Botón real de cerrar sesión (sin tocar el HTML/JS responsive)
+logout_col = st.columns([1, 6, 1])[2]
+with logout_col:
+    if st.button("Cerrar sesión"):
+        st.session_state.auth = False
+        st.session_state.user = ""
+        st.session_state.role = ""
+        st.switch_page("app.py")
+
+# ==============================================================================
+# PLANO RESPONSIVO — ADMIN (MISMA ESTRUCTURA / MISMAS DIMENSIONES)
+# NO MODIFICAR LA SECCIÓN DE DIMENSIONES / RESPONSIVE.
+# SOLO SE AJUSTAN COLORES/ESTILO PARA PARECERSE A LA IMAGEN.
+# ==============================================================================
+
+# ================== AJUSTES (EDITA SOLO ESTO) ==================
+
+# 1) CUADRO / MARCO (px)
+PAD_X_PX = 10          # px: margen externo lateral del CUADRO
+PAD_TOP_PX = 10        # px: margen externo superior del CUADRO
+
+# 2) BORDES / FONDO
+BORDER_PX = 2          # px: grosor de borde del marco y componentes
+BORDER_COLOR = "rgba(255,255,255,0.14)"
+
+# Fondo general (se mantiene, pero el gradiente lo da el CSS)
+BG_COLOR = "#0b0b0b"
+
+# 3) CONTENEDOR INTERNO (opcional) — % del CUADRO
+CARD_LEFT = 6          # %: margen interno izquierdo del área
+CARD_RIGHT = 6         # %: margen interno derecho
+CARD_TOP = 6           # %: margen interno superior
+CARD_BOTTOM = 6        # %: margen interno inferior
+
+# 4) POSICIONES VERTICALES — % del CUADRO
+TITLE_Y = 12           # %: posición vertical del título
+USER_LABEL_Y = 22      # %: label "Correo"
+USER_INPUT_Y = 28      # %: campo correo
+PASS_LABEL_Y = 42      # %: label "Rol"
+PASS_INPUT_Y = 48      # %: campo rol
+BTN_Y = 67             # %: botón
+LINKS_Y = 78           # %: links inferiores
+
+# 5) ANCHOS Y ALTOS — % del CUADRO
+INPUT_LEFT = 18        # %: margen izquierdo de inputs/labels
+INPUT_RIGHT = 18       # %: margen derecho
+INPUT_H = 10           # %: alto de cada input
+
+BTN_LEFT = 18          # %: margen izquierdo del botón
+BTN_RIGHT = 18         # %: margen derecho del botón
+BTN_H = 9              # %: alto del botón
+
+# 6) LINKS — % del CUADRO (posición horizontal por X)
+LINK_LEFT_X = 20       # %: link izq
+LINK_RIGHT_X = 62      # %: link der
+
+# 7) RADIOS (px)
+INPUT_RADIUS_PX = 14
+BTN_RADIUS_PX = 18
+
+# 8) TIPOS (px)
+TITLE_SIZE_PX = 26
+LABEL_SIZE_PX = 14
+LINK_SIZE_PX = 13
+BTN_TEXT_SIZE_PX = 14
+
+# ===============================================================
 
 html = """
 <!doctype html>
@@ -99,8 +111,19 @@ html = """
       --r_btn: __RBTN__px;
     }
 
-    html, body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:var(--bg);}
-    #stage{position:fixed;inset:0;width:100vw;height:100vh;background:var(--bg);}
+    html, body{
+      margin:0;padding:0;width:100%;height:100%;
+      overflow:hidden;background:var(--bg);
+      font-family: Arial, sans-serif;
+    }
+
+    /* Fondo tipo mockup (rojo con diagonal) */
+    #stage{
+      position:fixed;inset:0;width:100vw;height:100vh;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.00) 42%),
+        linear-gradient(180deg, #b21a1a 0%, #7a0f0f 40%, #1b0a0a 100%);
+    }
 
     /* Marco (izq/der/sup) */
     #frame{
@@ -122,7 +145,7 @@ html = """
       left:var(--padx); right:var(--padx);
       top:var(--padtop); bottom:0;
       overflow:hidden;
-      background: var(--bg);
+      background: transparent;
       z-index:1;
     }
 
@@ -135,23 +158,44 @@ html = """
       bottom: __CARD_B__%;
     }
 
+    /* Icono superior (cuadrito) */
+    #icon{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      top: 3%;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-weight:800;
+      letter-spacing:0.5px;
+    }
+
     .title{
       position:absolute;
       left:0; right:0;
       top: __TITLE_Y__%;
       text-align:center;
-      font: __TITLE_SZ__px Arial, sans-serif;
-      font-weight: 800;
-      color:#000;
+      font-size: __TITLE_SZ__px;
+      font-weight: 900;
+      color:#ffffff;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 10px rgba(0,0,0,0.20);
     }
 
     .label{
       position:absolute;
       left: __IN_L__%;
       right: __IN_R__%;
-      font: __LBL_SZ__px Arial, sans-serif;
+      font-size: __LBL_SZ__px;
       font-weight: 700;
-      color:#000;
+      color: rgba(255,255,255,0.92);
     }
 
     .field{
@@ -159,10 +203,19 @@ html = """
       left: __IN_L__%;
       right: __IN_R__%;
       height: __IN_H__%;
-      border: var(--b) solid #000;
+      border: 1px solid rgba(255,255,255,0.18);
       border-radius: var(--r_in);
       box-sizing:border-box;
-      background:#fff;
+      background: rgba(255,255,255,0.92);
+      display:flex;
+      align-items:center;
+      padding: 0 14px;
+      font-size: 14px;
+      font-weight: 700;
+      color: rgba(0,0,0,0.72);
+      overflow:hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
     .btn{
@@ -170,23 +223,26 @@ html = """
       left: __BTN_L__%;
       right: __BTN_R__%;
       height: __BTN_H__%;
-      border: var(--b) solid #000;
+      border: 1px solid rgba(255,255,255,0.20);
       border-radius: var(--r_btn);
       box-sizing:border-box;
-      background:#fff;
+      background: linear-gradient(180deg, #ff4a4a 0%, #d61f1f 100%);
       display:flex;
       align-items:center;
       justify-content:center;
-      font: __BTN_TXT__px Arial, sans-serif;
-      font-weight: 700;
-      color:#000;
+      font-size: __BTN_TXT__px;
+      font-weight: 900;
+      color:#fff;
+      letter-spacing: 0.2px;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.22);
+      user-select:none;
     }
 
     .link{
       position:absolute;
-      font: __LINK_SZ__px Arial, sans-serif;
+      font-size: __LINK_SZ__px;
       font-weight: 700;
-      color:#000;
+      color: rgba(255,255,255,0.85);
       white-space:nowrap;
     }
 
@@ -210,18 +266,19 @@ html = """
 
     <div id="plan">
       <div id="card">
-        <div class="title">¡BIENVENIDO!</div>
+        <div id="icon">🏠</div>
+        <div class="title">Welcome</div>
 
-        <div class="label" style="top: __USER_L_Y__%;">Usuario:</div>
-        <div class="field" style="top: __USER_I_Y__%;"></div>
+        <div class="label" style="top: __USER_L_Y__%;">Correo</div>
+        <div class="field" style="top: __USER_I_Y__%;">__USER_EMAIL__</div>
 
-        <div class="label" style="top: __PASS_L_Y__%;">Contraseña:</div>
-        <div class="field" style="top: __PASS_I_Y__%;"></div>
+        <div class="label" style="top: __PASS_L_Y__%;">Rol</div>
+        <div class="field" style="top: __PASS_I_Y__%;">__USER_ROLE__</div>
 
-        <div class="btn" style="top: __BTN_Y__%;">Login</div>
+        <div class="btn" style="top: __BTN_Y__%;">Acceso concedido</div>
 
-        <div class="link" style="top: __LINKS_Y__%; left: __LINK_L_X__%;">Politicas:</div>
-        <div class="link" style="top: __LINKS_Y__%; left: __LINK_R_X__%;">Registrarse:</div>
+        <div class="link" style="top: __LINKS_Y__%; left: __LINK_L_X__%;">Soporte</div>
+        <div class="link" style="top: __LINKS_Y__%; left: __LINK_R_X__%;">Panel</div>
       </div>
 
       <div id="hud">Cargando...</div>
@@ -291,6 +348,8 @@ html = (
         .replace("__LBL_SZ__", str(LABEL_SIZE_PX))
         .replace("__LINK_SZ__", str(LINK_SIZE_PX))
         .replace("__BTN_TXT__", str(BTN_TEXT_SIZE_PX))
+        .replace("__USER_EMAIL__", (USER_EMAIL or "-").replace("<", "").replace(">", ""))
+        .replace("__USER_ROLE__", (USER_ROLE or "-").replace("<", "").replace(">", ""))
 )
 
 components.html(html, height=10, scrolling=False)
