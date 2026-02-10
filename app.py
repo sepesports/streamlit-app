@@ -77,11 +77,11 @@ FOOTER_BG = "#FFFFFF"       # Fondo footer (blanco)
 IMG_LEFT = 0     # % | margen interno izquierdo de la imagen (la hace más angosta si sube) 
 IMG_RIGHT = 0    # % | margen interno derecho
 IMG_TOP = 10     # % | distancia desde arriba del cuadro (baja la imagen si sube)
-IMG_HEIGHT = 45  # % | alto del bloque de imagen
+IMG_HEIGHT = 44  # % | alto del bloque de imagen
 
 # (5) HEADER (todo en % DEL CUADRO)
 HEADER_TOP = 0       # % | distancia desde arriba del cuadro
-HEADER_HEIGHT = 10   # % | alto del header
+HEADER_HEIGHT = 12   # % | alto del header
 
 # (6) BOTONES (todo en % DEL CUADRO)
 BTN_AREA_TOP = 55    # % | desde aquí empieza la sección inferior (Fondo2 + botones + footer)
