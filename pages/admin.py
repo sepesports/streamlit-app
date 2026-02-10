@@ -21,67 +21,109 @@ html = """
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
 <style>
-body{margin:0;background:#fff;font-family:Arial;}
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#fff;}
+#stage{position:fixed;inset:0;width:100vw;height:100vh;background:#fff;}
+
 .wrap{
-position:fixed;inset:0;
-display:flex;flex-direction:column;
-align-items:center;justify-content:center;
-gap:12px;
+position:absolute;
+left:18%; right:18%;
+top:20%;
+font-family:Arial;
 }
-input{
-width:260px;padding:10px;
-border:2px solid #000;border-radius:8px;
+
+.title{
+text-align:center;
+font-size:20px;
+font-weight:800;
+margin-bottom:20px;
+}
+
+.field{
+width:100%;
+padding:12px;
+border:2px solid #000;
+border-radius:10px;
+box-sizing:border-box;
 font-size:14px;
+margin-bottom:18px;
 }
-button{
-width:200px;padding:10px;
-border:2px solid #000;border-radius:8px;
-background:#fff;font-weight:bold;
+
+.btn{
+width:36%;
+margin:0 auto;
+padding:12px;
+border:2px solid #000;
+border-radius:10px;
+background:#fff;
+font-weight:700;
 cursor:pointer;
+text-align:center;
 }
-#msg{font-size:13px;color:red;height:18px;}
+
+.msg{
+text-align:center;
+margin-top:12px;
+font-size:13px;
+color:red;
+}
 </style>
 </head>
 
 <body>
+<div id="stage">
+
 <div class="wrap">
-<h2>¡BIENVENIDO!</h2>
 
-<input id="user" placeholder="Usuario"/>
-<input id="pass" type="password" placeholder="Contraseña"/>
+<div class="title">¡BIENVENIDO!</div>
 
-<button onclick="login()">Login</button>
-<div id="msg"></div>
+<input id="user" class="field" placeholder="Usuario">
+<input id="pass" class="field" type="password" placeholder="Contraseña">
+
+<div class="btn" onclick="login()">Login</div>
+
+<div id="msg" class="msg"></div>
+
+</div>
+
 </div>
 
 <script>
 async function login(){
-const u=document.getElementById("user").value;
-const p=document.getElementById("pass").value;
-const msg=document.getElementById("msg");
-msg.textContent="Validando...";
+
+const u = document.getElementById("user").value.trim();
+const p = document.getElementById("pass").value.trim();
+const msg = document.getElementById("msg");
+
+msg.textContent = "Validando...";
 
 try{
-const r=await fetch("https://camilo27.pythonanywhere.com/api/auth",{
+
+const r = await fetch("https://camilo27.pythonanywhere.com/api/auth",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
-body:JSON.stringify({usuario:u,password:p})
+body: JSON.stringify({
+usuario: u,
+password: p
+})
 });
 
-const j=await r.json();
+const j = await r.json();
 
-if(j.ok===true){
-window.location.href="/?auth=ok";
+if(j.ok === true){
+window.location.href = "/?auth=ok";
 }else{
-msg.textContent="Credenciales inválidas";
+msg.textContent = "Credenciales inválidas";
 }
 
 }catch(e){
-msg.textContent="Error de conexión";
+msg.textContent = "Error de conexión";
 }
+
 }
 </script>
+
 </body>
 </html>
 """
