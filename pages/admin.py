@@ -1,58 +1,73 @@
-# pages/admin.py
-import os
-import json
-import urllib.parse
-import urllib.request
+# app.py
 import streamlit as st
 import streamlit.components.v1 as components
 
-# =========================
-# CONFIG
-# =========================
-AUTH_URL = os.environ.get("AUTH_URL", "https://camilo27.pythonanywhere.com/api/auth")
-TIMEOUT_SEC = float(os.environ.get("AUTH_TIMEOUT", "12"))
+# ==============================================================================
+# PLANO RESPONSIVO — LOGIN (según mockup)
+# Ajustas TODO desde esta sección (sin tocar HTML/JS).
+#
+# UNIDADES:
+# - PAD_* y radios/bordes: px
+# - Posiciones y tamaños del layout: % del CUADRO (plan)
+#
+# CUADRO (plan):
+# - Es el área interior delimitada por el marco (izq/der/sup).
+# - Todo el diseño vive dentro del CUADRO.
+# ==============================================================================
 
-# =========================
-# HELPERS
-# =========================
-def _safe_get_query_params():
-    try:
-        qp = st.query_params  # streamlit >=1.30
-        return dict(qp)
-    except Exception:
-        return st.experimental_get_query_params()
+# ================== AJUSTES (EDITA SOLO ESTO) ==================
 
-def _safe_set_query_params(**kwargs):
-    try:
-        st.query_params.clear()
-        for k, v in kwargs.items():
-            if v is None:
-                continue
-            st.query_params[k] = v
-    except Exception:
-        st.experimental_set_query_params(**kwargs)
+# 1) CUADRO / MARCO (px)
+PAD_X_PX = 10          # px: margen externo lateral del CUADRO
+PAD_TOP_PX = 10        # px: margen externo superior del CUADRO
 
-def _call_auth(correo: str, dni: str):
-    payload = json.dumps({"correo": correo, "dni": dni}).encode("utf-8")
-    req = urllib.request.Request(
-        AUTH_URL,
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=TIMEOUT_SEC) as resp:
-        body = resp.read().decode("utf-8", errors="replace")
-        code = getattr(resp, "status", 200)
-    try:
-        data = json.loads(body)
-    except Exception:
-        data = {"ok": False, "raw": body}
-    return code, data
+# 2) BORDES / FONDO
+BORDER_PX = 2          # px: grosor de borde del marco y componentes
+BORDER_COLOR = "#111111"
+BG_COLOR = "#FFFFFF"
 
-# =========================
-# PAGE CONFIG (FULLSCREEN)
-# =========================
-st.set_page_config(page_title="Admin - Login", layout="wide")
+# 3) CONTENEDOR INTERNO (opcional) — % del CUADRO
+#    Útil si quieres que todo el login quede “con margen” dentro del cuadro.
+CARD_LEFT = 6          # %: margen interno izquierdo del área login
+CARD_RIGHT = 6         # %: margen interno derecho
+CARD_TOP = 6           # %: margen interno superior
+CARD_BOTTOM = 6        # %: margen interno inferior
+
+# 4) POSICIONES VERTICALES — % del CUADRO (referencia: 0 arriba, 100 abajo)
+TITLE_Y = 12           # %: posición vertical del título
+USER_LABEL_Y = 22      # %: label "Usuario:"
+USER_INPUT_Y = 28      # %: input usuario
+PASS_LABEL_Y = 42      # %: label "Contraseña:"
+PASS_INPUT_Y = 48      # %: input contraseña
+BTN_Y = 67             # %: botón Login
+LINKS_Y = 78           # %: links inferiores
+
+# 5) ANCHOS Y ALTOS — % del CUADRO
+INPUT_LEFT = 18        # %: margen izquierdo de inputs/labels
+INPUT_RIGHT = 18       # %: margen derecho de inputs/labels
+INPUT_H = 10           # %: alto de cada input
+
+BTN_LEFT = 32          # %: margen izquierdo del botón (más grande = botón más angosto)
+BTN_RIGHT = 32         # %: margen derecho del botón
+BTN_H = 9              # %: alto del botón
+
+# 6) LINKS — % del CUADRO (posición horizontal por X)
+LINK_LEFT_X = 20       # %: X del texto "Politicas:"
+LINK_RIGHT_X = 68      # %: X del texto "Registrarse:"
+
+# 7) RADIOS (px)
+INPUT_RADIUS_PX = 10
+BTN_RADIUS_PX = 10
+
+# 8) TIPOS (px)
+TITLE_SIZE_PX = 18
+LABEL_SIZE_PX = 14
+LINK_SIZE_PX = 13
+BTN_TEXT_SIZE_PX = 14
+
+# ===============================================================
+
+st.set_page_config(layout="wide")
 
 st.markdown(
     """
@@ -60,284 +75,222 @@ st.markdown(
       .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
       section.main > div{padding:0 !important;margin:0 !important;}
       header, footer{display:none !important;}
-      [data-testid="stSidebar"]{display:none !important;}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# =========================
-# LOGOUT (optional query)
-# =========================
-qp = _safe_get_query_params()
-if str(qp.get("logout", ["0"])[0]).strip() == "1":
-    st.session_state.pop("auth", None)
-    st.session_state.pop("usuario", None)
-    st.session_state.pop("rol", None)
-    _safe_set_query_params()
-    st.rerun()
-
-# =========================
-# IF ALREADY AUTH -> GO MAIN
-# =========================
-if st.session_state.get("auth"):
-    st.switch_page("app.py")
-
-# =========================
-# LOGIN SUBMIT VIA QUERY PARAMS (FROM HTML)
-# =========================
-correo_q = (qp.get("correo", [""])[0] if isinstance(qp.get("correo"), list) else qp.get("correo", "")) or ""
-dni_q = (qp.get("dni", [""])[0] if isinstance(qp.get("dni"), list) else qp.get("dni", "")) or ""
-do_q = (qp.get("do", [""])[0] if isinstance(qp.get("do"), list) else qp.get("do", "")) or ""
-err_q = (qp.get("err", [""])[0] if isinstance(qp.get("err"), list) else qp.get("err", "")) or ""
-
-if do_q == "1":
-    correo = str(correo_q).strip()
-    dni = str(dni_q).strip()
-
-    if not correo or not dni:
-        _safe_set_query_params(err="Completa Correo y DNI")
-        st.rerun()
-
-    try:
-        status, data = _call_auth(correo, dni)
-    except Exception as e:
-        _safe_set_query_params(err=f"Error de conexión ({type(e).__name__})")
-        st.rerun()
-
-    ok = bool(data.get("ok")) if isinstance(data, dict) else False
-    if status == 200 and ok:
-        st.session_state["auth"] = True
-        st.session_state["usuario"] = data.get("usuario", correo)
-        st.session_state["rol"] = data.get("rol", data.get("role", ""))
-        _safe_set_query_params()  # limpia URL
-        st.switch_page("app.py")
-    else:
-        _safe_set_query_params(err="Credenciales inválidas")
-        st.rerun()
-
-# =========================
-# HTML (DISEÑO ROJO, RESPONSIVE) + FORM FUNCIONAL
-# =========================
-# Nota: no toca tus dimensiones del plano principal (eso está en app.py).
-# Aquí solo login pantalla completa.
-err_html = (
-    f"<div class='err'>{urllib.parse.quote(str(err_q)).replace('%20',' ')}</div>"
-    if err_q else ""
-)
-
-html = f"""
+html = """
 <!doctype html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root{{
-      --bg1:#7b0b0b;
-      --bg2:#b51717;
-      --glass: rgba(255,255,255,.08);
-      --glass2: rgba(255,255,255,.10);
-      --border: rgba(255,255,255,.14);
-      --txt: #ffffff;
-      --muted: rgba(255,255,255,.78);
-      --field: rgba(255,255,255,.92);
-      --fieldTxt: #2b2b2b;
-      --btn1:#ff3a3a;
-      --btn2:#c90f0f;
-      --shadow: 0 18px 60px rgba(0,0,0,.40);
-    }}
+    :root{
+      --padx: __PADX__px;
+      --padtop: __PADTOP__px;
 
-    html,body{{height:100%;margin:0;}}
-    body{{
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(1200px 600px at 30% 20%, rgba(255,255,255,.10), rgba(0,0,0,0) 60%),
-                  radial-gradient(900px 500px at 70% 75%, rgba(0,0,0,.18), rgba(0,0,0,0) 55%),
-                  linear-gradient(135deg, var(--bg2), var(--bg1));
-      overflow:hidden;
-    }}
+      --b: __B__px;
+      --bc: __BC__;
+      --bg: __BG__;
 
-    /* Fondo con “corte” diagonal suave como tu referencia */
-    .bg-cut{{
-      position:fixed; inset:-20%;
-      background: linear-gradient(135deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,0) 45%);
-      transform: rotate(-8deg);
+      --r_in: __RIN__px;
+      --r_btn: __RBTN__px;
+    }
+
+    html, body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:var(--bg);}
+    #stage{position:fixed;inset:0;width:100vw;height:100vh;background:var(--bg);}
+
+    /* Marco (izq/der/sup) */
+    #frame{
+      position:absolute;
+      left:var(--padx); right:var(--padx);
+      top:var(--padtop); bottom:0;
+      border-left:var(--b) solid var(--bc);
+      border-right:var(--b) solid var(--bc);
+      border-top:var(--b) solid var(--bc);
+      box-sizing:border-box;
       pointer-events:none;
-    }}
+      background: transparent;
+      z-index:2;
+    }
 
-    .wrap{{
-      position:fixed; inset:0;
+    /* CUADRO (plan) */
+    #plan{
+      position:absolute;
+      left:var(--padx); right:var(--padx);
+      top:var(--padtop); bottom:0;
+      overflow:hidden;
+      background: var(--bg);
+      z-index:1;
+    }
+
+    /* Área interna (card) */
+    #card{
+      position:absolute;
+      left: __CARD_L__%;
+      right: __CARD_R__%;
+      top: __CARD_T__%;
+      bottom: __CARD_B__%;
+    }
+
+    .title{
+      position:absolute;
+      left:0; right:0;
+      top: __TITLE_Y__%;
+      text-align:center;
+      font: __TITLE_SZ__px Arial, sans-serif;
+      font-weight: 800;
+      color:#000;
+    }
+
+    .label{
+      position:absolute;
+      left: __IN_L__%;
+      right: __IN_R__%;
+      font: __LBL_SZ__px Arial, sans-serif;
+      font-weight: 700;
+      color:#000;
+    }
+
+    .field{
+      position:absolute;
+      left: __IN_L__%;
+      right: __IN_R__%;
+      height: __IN_H__%;
+      border: var(--b) solid #000;
+      border-radius: var(--r_in);
+      box-sizing:border-box;
+      background:#fff;
+    }
+
+    .btn{
+      position:absolute;
+      left: __BTN_L__%;
+      right: __BTN_R__%;
+      height: __BTN_H__%;
+      border: var(--b) solid #000;
+      border-radius: var(--r_btn);
+      box-sizing:border-box;
+      background:#fff;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding: 22px;
-      box-sizing:border-box;
-    }}
+      font: __BTN_TXT__px Arial, sans-serif;
+      font-weight: 700;
+      color:#000;
+    }
 
-    .card{{
-      width: min(520px, 92vw);
-      border-radius: 18px;
-      background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.12));
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      padding: 22px 22px 18px 22px;
-      position:relative;
-    }}
+    .link{
+      position:absolute;
+      font: __LINK_SZ__px Arial, sans-serif;
+      font-weight: 700;
+      color:#000;
+      white-space:nowrap;
+    }
 
-    .toprow{{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom: 8px;
-    }}
-
-    .iconbtn{{
-      width: 28px; height: 28px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,.18);
-      background: rgba(0,0,0,.18);
-      display:flex; align-items:center; justify-content:center;
-      color: var(--txt);
-      font-weight:700;
-      user-select:none;
-    }}
-
-    .closebtn{{
-      width: 28px; height: 28px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,.18);
-      background: rgba(0,0,0,.18);
-      display:flex; align-items:center; justify-content:center;
-      color: var(--txt);
-      cursor:pointer;
-    }}
-
-    h1{{
-      margin: 8px 0 18px 0;
-      text-align:center;
-      color: var(--txt);
-      font-size: 34px;
-      letter-spacing: .2px;
-    }}
-
-    label{{
-      display:block;
-      color: var(--muted);
-      font-size: 12px;
-      margin: 10px 0 8px 2px;
-      font-weight: 600;
-    }}
-
-    input{{
-      width:100%;
-      height: 42px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,.14);
-      outline:none;
-      background: var(--field);
-      color: var(--fieldTxt);
-      padding: 0 12px;
-      box-sizing:border-box;
-      font-size: 13px;
-    }}
-
-    input::placeholder{{ color: rgba(0,0,0,.45); }}
-
-    .btn{{
-      width:100%;
-      height: 44px;
-      border-radius: 12px;
-      border: 0;
-      margin-top: 16px;
-      color: #fff;
-      font-weight: 800;
-      letter-spacing: .2px;
-      cursor:pointer;
-      background: linear-gradient(180deg, var(--btn1), var(--btn2));
-      box-shadow: 0 10px 26px rgba(0,0,0,.35);
-    }}
-
-    .rowlinks{{
-      display:flex;
-      justify-content:space-between;
-      margin-top: 10px;
-      font-size: 11px;
-      color: rgba(255,255,255,.70);
-      user-select:none;
-    }}
-
-    .rowlinks span{{
-      opacity:.85;
-    }}
-
-    .err{{
-      margin: 10px 0 0 0;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,.18);
-      background: rgba(0,0,0,.20);
-      color: #fff;
-      font-size: 12px;
-    }}
-
-    /* Mobile scaling */
-    @media (max-width: 420px){{
-      .card{{ padding: 18px; border-radius: 16px; }}
-      h1{{ font-size: 30px; }}
-    }}
+    /* HUD */
+    #hud{
+      position:absolute; top:8px; left:8px;
+      font: 12px Arial, sans-serif;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.2);
+      border-radius: 6px;
+      padding: 6px 10px;
+      white-space: nowrap;
+      pointer-events:none;
+      z-index:3;
+    }
   </style>
 </head>
 <body>
-  <div class="bg-cut"></div>
-  <div class="wrap">
-    <div class="card" role="dialog" aria-label="Login">
-      <div class="toprow">
-        <div class="iconbtn" title="Home">⌂</div>
-        <div class="closebtn" title="Cerrar" onclick="window.location.href='/?logout=1'">×</div>
+  <div id="stage">
+    <div id="frame"></div>
+
+    <div id="plan">
+      <div id="card">
+        <div class="title">¡BIENVENIDO!</div>
+
+        <div class="label" style="top: __USER_L_Y__%;">Usuario:</div>
+        <div class="field" style="top: __USER_I_Y__%;"></div>
+
+        <div class="label" style="top: __PASS_L_Y__%;">Contraseña:</div>
+        <div class="field" style="top: __PASS_I_Y__%;"></div>
+
+        <div class="btn" style="top: __BTN_Y__%;">Login</div>
+
+        <div class="link" style="top: __LINKS_Y__%; left: __LINK_L_X__%;">Politicas:</div>
+        <div class="link" style="top: __LINKS_Y__%; left: __LINK_R_X__%;">Registrarse:</div>
       </div>
 
-      <h1>Welcome</h1>
-
-      <form id="loginForm" onsubmit="return goLogin();">
-        <label for="correo">Correo</label>
-        <input id="correo" name="correo" type="email" placeholder="correo@ejemplo.com" autocomplete="username" value="{correo_q.replace('"','&quot;')}"/>
-
-        <label for="dni">DNI</label>
-        <input id="dni" name="dni" type="password" placeholder="••••" autocomplete="current-password"/>
-
-        <button class="btn" type="submit">Login to my account</button>
-      </form>
-
-      {err_html}
-
-      <div class="rowlinks">
-        <span>Forgot password?</span>
-        <span>Create account</span>
-      </div>
+      <div id="hud">Cargando...</div>
     </div>
   </div>
 
   <script>
-    function goLogin(){{
-      var correo = (document.getElementById('correo').value || '').trim();
-      var dni = (document.getElementById('dni').value || '').trim();
+    (function(){
+      // Full-screen real del iframe (Streamlit Cloud)
+      var fe = window.frameElement;
+      if (fe){
+        fe.style.position = "fixed";
+        fe.style.inset = "0";
+        fe.style.width = "100vw";
+        fe.style.height = "100vh";
+        fe.style.border = "0";
+        fe.style.margin = "0";
+        fe.style.padding = "0";
+        fe.style.zIndex = "999999";
+        fe.style.background = "transparent";
+      }
 
-      var p = new URLSearchParams(window.location.search);
-      p.set('correo', correo);
-      p.set('dni', dni);
-      p.set('do', '1');
-      p.delete('err');
-
-      // IMPORTANTE: no navegamos a /admin (eso causa Page not found). Nos quedamos en la misma page de Streamlit.
-      window.location.search = p.toString();
-      return false;
-    }}
+      var hud = document.getElementById("hud");
+      var plan = document.getElementById("plan");
+      function update(){
+        var r = plan.getBoundingClientRect();
+        hud.textContent =
+          "Viewport(px): " + Math.round(window.innerWidth) + " x " + Math.round(window.innerHeight) +
+          " | Plan(px): " + Math.round(r.width) + " x " + Math.round(r.height);
+      }
+      window.addEventListener("resize", update);
+      update();
+    })();
   </script>
 </body>
 </html>
 """
+
+html = (
+    html.replace("__PADX__", str(PAD_X_PX))
+        .replace("__PADTOP__", str(PAD_TOP_PX))
+        .replace("__B__", str(BORDER_PX))
+        .replace("__BC__", BORDER_COLOR)
+        .replace("__BG__", BG_COLOR)
+        .replace("__RIN__", str(INPUT_RADIUS_PX))
+        .replace("__RBTN__", str(BTN_RADIUS_PX))
+        .replace("__CARD_L__", str(CARD_LEFT))
+        .replace("__CARD_R__", str(CARD_RIGHT))
+        .replace("__CARD_T__", str(CARD_TOP))
+        .replace("__CARD_B__", str(CARD_BOTTOM))
+        .replace("__TITLE_Y__", str(TITLE_Y))
+        .replace("__USER_L_Y__", str(USER_LABEL_Y))
+        .replace("__USER_I_Y__", str(USER_INPUT_Y))
+        .replace("__PASS_L_Y__", str(PASS_LABEL_Y))
+        .replace("__PASS_I_Y__", str(PASS_INPUT_Y))
+        .replace("__BTN_Y__", str(BTN_Y))
+        .replace("__LINKS_Y__", str(LINKS_Y))
+        .replace("__IN_L__", str(INPUT_LEFT))
+        .replace("__IN_R__", str(INPUT_RIGHT))
+        .replace("__IN_H__", str(INPUT_H))
+        .replace("__BTN_L__", str(BTN_LEFT))
+        .replace("__BTN_R__", str(BTN_RIGHT))
+        .replace("__BTN_H__", str(BTN_H))
+        .replace("__LINK_L_X__", str(LINK_LEFT_X))
+        .replace("__LINK_R_X__", str(LINK_RIGHT_X))
+        .replace("__TITLE_SZ__", str(TITLE_SIZE_PX))
+        .replace("__LBL_SZ__", str(LABEL_SIZE_PX))
+        .replace("__LINK_SZ__", str(LINK_SIZE_PX))
+        .replace("__BTN_TXT__", str(BTN_TEXT_SIZE_PX))
+)
 
 components.html(html, height=10, scrolling=False)
