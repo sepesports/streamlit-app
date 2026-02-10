@@ -107,8 +107,8 @@ FOOTER_LEFT = 6      # % | margen lateral del footer
 FOOTER_RIGHT = 6     # % | margen lateral del footer
 
 # (8) RESPONSIVO (px)
-MIN_BTN_W_PX = 150   # px | ancho mínimo por botón antes de bajar columnas (3 -> 2 -> 1)
-MOBILE_MAX_W_PX = 520  # px | umbral para aplicar mínimos de gap en móvil
+MIN_BTN_W_PX = 130   # px | ancho mínimo por botón antes de bajar columnas (3 -> 2 -> 1)
+MOBILE_MAX_W_PX = 500  # px | umbral para aplicar mínimos de gap en móvil
 
 # (9) (Opcional) Si quieres controlar la posición del texto "Fondo 2" desde Python:
 # FONDO2_BOTTOM = 22  # % | cuanto más grande, más arriba aparece el texto
