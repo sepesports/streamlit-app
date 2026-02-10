@@ -112,7 +112,7 @@ html, body{
   left:0; right:0;
   top:12%;
   text-align:center;
-  font-size:28px;
+  font-size:35px;
   line-height:1.05;
   font-weight:900;
   letter-spacing:0.4px;
