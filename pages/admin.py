@@ -1,6 +1,5 @@
 import streamlit as st
 import streamlit.components.v1 as components
-import requests
 
 st.set_page_config(layout="wide")
 
@@ -185,23 +184,25 @@ if not st.session_state.authenticated:
           try {{
             const response = await fetch('https://camilo27.pythonanywhere.com/api/auth', {{
               method: 'POST',
-              headers: {{ 'Content-Type': 'application/json' }},
+              headers: {{ 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              }},
               body: JSON.stringify({{username: user, password: pass}})
             }});
+            
             const data = await response.json();
             
-            if (data.ok) {{
-              // Envía señal a Streamlit
+            if (data.ok === true) {{
               window.parent.postMessage({{auth: 'success'}}, '*');
             }} else {{
-              error.textContent = data.error || 'Error de autenticación';
+              error.textContent = data.error || 'Credenciales incorrectas';
             }}
           }} catch (e) {{
-            error.textContent = 'Error de conexión';
+            error.textContent = 'Error de conexión con el servidor';
           }}
         }};
         
-        // Ajuste iframe para Streamlit Cloud
         var fe = window.frameElement;
         if (fe){{
           fe.style.position = "fixed";
@@ -219,13 +220,10 @@ if not st.session_state.authenticated:
     </html>
     """
     
-    # Componente HTML con mensaje de autenticación
     result = components.html(html, height=600, scrolling=False)
     
-    # Esperar mensaje de autenticación exitosa
     if result and isinstance(result, dict) and result.get('auth') == 'success':
         st.session_state.authenticated = True
         st.rerun()
 else:
-    # Redirigir a app principal
     st.switch_page("app.py")
