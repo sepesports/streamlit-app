@@ -2,37 +2,56 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# ===== AJUSTES (EDITA SOLO ESTO) =====
+# ================== AJUSTES (EDITA SOLO ESTO) ==================
 PAD_X_PX = 10
 PAD_TOP_PX = 10
+
 BORDER_PX = 2
 BORDER_COLOR = "#111111"
-BG_COLOR = "#FFFFFF"
 
-TOP_AREA = {
-    "count": 4,        # cantidad total de cajas
-    "left": 3,         # inicio X (%) dentro del cuadro
-    "right": 3,        # fin X (%) dentro del cuadro
-    "top": 10,         # Y (%) dentro del cuadro
-    "height": 10,      # alto (%) por fila
-    "gap_x": 2,        # separación horizontal entre cajas (%) dentro del cuadro
-    "gap_y": 2,        # separación vertical entre filas (%) dentro del cuadro
-    "max_cols": 4,     # columnas máximas (desktop)
-    "prefix": "BTN"
-}
+BG_COLOR = "#CFE3BF"        # verde claro (fondo general)
+HEADER_BG = "#FFF200"       # amarillo (Fondo 1)
+IMG_BG = "#FFFFFF"          # blanco (Imagen)
+BTN_BG = "#FFFFFF"          # blanco (botones)
+FOOTER_BG = "#FFFFFF"       # blanco (pie)
 
-BTN_TEXT = "Configuracion"  # 13 caracteres
+# Margen interno del área "Imagen" respecto al cuadro (en % del cuadro)
+IMG_LEFT = 6     # %
+IMG_RIGHT = 6    # %
+IMG_TOP = 12     # % (desde arriba del cuadro)
+IMG_HEIGHT = 38  # % (alto del bloque imagen)
 
-# Reglas anti-ruptura
-MIN_BOX_W_PX = 140     # si no cabe, baja columnas y crea más filas
+# Header (en % del cuadro)
+HEADER_TOP = 0
+HEADER_HEIGHT = 10
+
+# Sección botones (en % del cuadro)
+BTN_AREA_TOP = 55
+BTN_H = 10
+BTN_GAP_X = 3
+BTN_GAP_Y = 5
+BTN_LEFT = 6
+BTN_RIGHT = 6
+
+BTN_TEXTS = [
+    "Horarios",
+    "Control de\nAsistencia",
+    "Nomina y\nPagos",
+    "Incidencias",
+    "Formación",
+    "Comunicados",
+]
+
+# Footer (en % del cuadro)
+FOOTER_H = 8
+FOOTER_BOTTOM = 3  # separación desde abajo
+FOOTER_LEFT = 6
+FOOTER_RIGHT = 6
+
+# Responsivo
+MIN_BTN_W_PX = 150     # si no caben 3, baja a 2 o 1 por fila
 MOBILE_MAX_W_PX = 520
-MOBILE_MIN_LR = 3
-MOBILE_MIN_GAP_X = 2
-MOBILE_MIN_GAP_Y = 2
-
-FONT_MIN_PX = 12
-FONT_MAX_PX = 16
-# ====================================
+# ===============================================================
 
 st.set_page_config(layout="wide")
 
@@ -57,15 +76,21 @@ html = """
     :root{
       --padx: __PADX__px;
       --padtop: __PADTOP__px;
+
       --b: __B__px;
       --bc: __BC__;
+
       --bg: __BG__;
-      --fmin: __FMIN__px;
-      --fmax: __FMAX__px;
+      --headerbg: __HEADERBG__;
+      --imgbg: __IMGBG__;
+      --btnbg: __BTNBG__;
+      --footerbg: __FOOTERBG__;
     }
+
     html, body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:var(--bg);}
     #stage{position:fixed;inset:0;width:100vw;height:100vh;background:var(--bg);}
 
+    /* Marco (izq/der/sup) */
     #frame{
       position:absolute;
       left:var(--padx); right:var(--padx);
@@ -78,17 +103,131 @@ html = """
       background: transparent;
     }
 
-    #overlay{position:absolute;inset:0;pointer-events:none;}
-    .grid{
-      position:absolute;inset:0;
-      background-image:
-        linear-gradient(to right, rgba(0,0,0,0.10) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0,0,0,0.10) 1px, transparent 1px);
-      background-size: 10% 10%;
+    /* Plano dentro del cuadro: nada se sale */
+    #plan{
+      position:absolute;
+      left:var(--padx); right:var(--padx);
+      top:var(--padtop); bottom:0;
+      overflow:hidden;
     }
-    .mid-v{position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(0,0,0,.25);}
-    .mid-h{position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(0,0,0,.25);}
 
+    /* Header */
+    #hdr{
+      position:absolute;
+      left:0; right:0;
+      top: __HDR_TOP__%;
+      height: __HDR_H__%;
+      background: var(--headerbg);
+      border: var(--b) solid var(--bc);
+      box-sizing:border-box;
+      display:flex;
+      gap:0;
+    }
+
+    .hdr-cell{
+      border-right: var(--b) solid var(--bc);
+      box-sizing:border-box;
+      background: var(--headerbg);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font: 14px Arial, sans-serif;
+      font-weight: 700;
+      color:#000;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .hdr-cell.white{ background:#fff; }
+    .hdr-cell:last-child{ border-right: none; }
+
+    /* Imagen */
+    #img{
+      position:absolute;
+      left: __IMG_L__%;
+      right: __IMG_R__%;
+      top: __IMG_T__%;
+      height: __IMG_H__%;
+      background: var(--imgbg);
+      border: var(--b) solid var(--bc);
+      box-sizing:border-box;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font: 16px Arial, sans-serif;
+      font-weight: 700;
+      color:#000;
+    }
+
+    /* Fondo 2 (área botones) */
+    #btn-area{
+      position:absolute;
+      left:0; right:0;
+      top: __BTN_AREA_TOP__%;
+      bottom: 0;
+      background: var(--bg);
+      box-sizing:border-box;
+    }
+    #btn-grid{
+      position:absolute;
+      left: __BTN_L__%;
+      right: __BTN_R__%;
+      top: 0;
+      bottom: 0;
+    }
+
+    .btn{
+      position:absolute;
+      background: var(--btnbg);
+      border: var(--b) solid var(--bc);
+      box-sizing:border-box;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding: 8px 10px;
+      font: 14px Arial, sans-serif;
+      font-weight: 700;
+      color:#000;
+      overflow:hidden;
+    }
+    .btn span{
+      display:block;
+      line-height:1.05;
+      white-space: pre-line; /* respeta \n */
+    }
+
+    /* Label Fondo 2 */
+    #fondo2{
+      position:absolute;
+      left:0; right:0;
+      bottom: __F2_BOTTOM__%;
+      text-align:center;
+      font: 13px Arial, sans-serif;
+      font-weight: 700;
+      color:#000;
+      pointer-events:none;
+    }
+
+    /* Footer */
+    #footer{
+      position:absolute;
+      left: __FOOT_L__%;
+      right: __FOOT_R__%;
+      height: __FOOT_H__%;
+      bottom: __FOOT_BOTTOM__%;
+      background: var(--footerbg);
+      border: var(--b) solid var(--bc);
+      box-sizing:border-box;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font: 13px Arial, sans-serif;
+      font-weight: 700;
+      color:#000;
+    }
+
+    /* HUD */
     #hud{
       position:absolute; top:8px; left:8px;
       font: 12px Arial, sans-serif;
@@ -96,53 +235,8 @@ html = """
       border: 1px solid rgba(0,0,0,.2);
       border-radius: 6px;
       padding: 6px 10px;
+      white-space: nowrap;
       pointer-events:none;
-      white-space: nowrap;
-    }
-
-    /* Plano dentro del cuadro: nada se puede salir */
-    #plan{
-      position:absolute;
-      left:var(--padx); right:var(--padx);
-      top:var(--padtop); bottom:0;
-      overflow:hidden;
-      pointer-events:none;
-    }
-
-    .blk{
-      position:absolute;
-      border: 2px dashed rgba(0,0,0,.55);
-      box-sizing:border-box;
-      background: rgba(0,0,0,.03);
-
-      display:flex;
-      align-items:center;
-      justify-content:center;
-
-      padding: 6px 8px;
-      overflow:hidden;
-    }
-
-    .blk-text{
-      font-family: Arial, sans-serif;
-      font-weight: 700;
-      font-size: clamp(var(--fmin), 3.2vw, var(--fmax));
-      line-height: 1;
-      color: rgba(0,0,0,.85);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-
-    .blk-label{
-      position:absolute; top:2px; left:2px;
-      font: 10px Arial, sans-serif;
-      background: rgba(255,255,255,.9);
-      border: 1px solid rgba(0,0,0,.15);
-      border-radius: 4px;
-      padding: 2px 6px;
-      white-space: nowrap;
     }
   </style>
 </head>
@@ -150,13 +244,14 @@ html = """
   <div id="stage">
     <div id="frame"></div>
 
-    <div id="overlay">
-      <div class="grid"></div>
-      <div class="mid-v"></div>
-      <div class="mid-h"></div>
+    <div id="plan">
+      <div id="hdr"></div>
+      <div id="img">Imagen</div>
 
-      <div id="plan">
-        <div id="btn-area"></div>
+      <div id="btn-area">
+        <div id="btn-grid"></div>
+        <div id="fondo2">Fondo 2</div>
+        <div id="footer">Pie de pagina</div>
       </div>
 
       <div id="hud">Cargando...</div>
@@ -165,6 +260,7 @@ html = """
 
   <script>
     (function(){
+      // Full-screen real del iframe
       var fe = window.frameElement;
       if (fe){
         fe.style.position = "fixed";
@@ -178,102 +274,105 @@ html = """
         fe.style.background = "transparent";
       }
 
-      var cfg = __TOP_AREA__;
-      var BTN_TEXT = "__BTN_TEXT__";
-      var MIN_BOX_W_PX = __MIN_BOX_W_PX__;
+      var BTN_TEXTS = __BTN_TEXTS__;
+      var MIN_BTN_W_PX = __MIN_BTN_W_PX__;
       var MOBILE_MAX_W_PX = __MOBILE_MAX_W_PX__;
-      var MOBILE_MIN_LR = __MOBILE_MIN_LR__;
-      var MOBILE_MIN_GAP_X = __MOBILE_MIN_GAP_X__;
-      var MOBILE_MIN_GAP_Y = __MOBILE_MIN_GAP_Y__;
 
-      var area = document.getElementById("btn-area");
-      var plan = document.getElementById("plan");
+      // Header cells (5 columnas como imagen: margen, Logo, Fondo1, Login, margen)
+      var hdr = document.getElementById("hdr");
+      hdr.innerHTML = "";
+      var cells = [
+        {w: 6,  t:"",        white:false},
+        {w: 22, t:"Logo",    white:true},
+        {w: 44, t:"Fondo 1", white:false},
+        {w: 22, t:"Login",   white:true},
+        {w: 6,  t:"",        white:false},
+      ];
+      cells.forEach(function(c){
+        var d = document.createElement("div");
+        d.className = "hdr-cell" + (c.white ? " white" : "");
+        d.style.width = c.w + "%";
+        d.textContent = c.t;
+        hdr.appendChild(d);
+      });
+
       var hud = document.getElementById("hud");
+      var grid = document.getElementById("btn-grid");
+      var plan = document.getElementById("plan");
 
       function ceilDiv(a,b){ return Math.floor((a + b - 1) / b); }
 
-      function build(){
-        area.innerHTML = "";
+      function buildButtons(){
+        grid.innerHTML = "";
 
         var vw = window.innerWidth;
-        var vh = window.innerHeight;
-
         var r = plan.getBoundingClientRect();
         var planW = r.width;
 
-        var count = Math.max(1, Number(cfg.count || 1));
-        var left = Number(cfg.left || 0);
-        var right = Number(cfg.right || 0);
-        var top = Number(cfg.top || 0);
-        var h = Number(cfg.height || 10);
-        var gapX = Number(cfg.gap_x || 0);
-        var gapY = Number(cfg.gap_y || 0);
-        var maxCols = Math.max(1, Number(cfg.max_cols || count));
-        var prefix = String(cfg.prefix || "BTN");
+        // Config grilla (en % del cuadro)
+        var left = __BTN_L__;
+        var right = __BTN_R__;
+        var gapX = __BTN_GAP_X__;
+        var gapY = __BTN_GAP_Y__;
+        var btnH = __BTN_H__;
 
+        // En móvil: si hace falta, asegura mínimos de separación
         if (vw <= MOBILE_MAX_W_PX){
-          left = Math.max(left, MOBILE_MIN_LR);
-          right = Math.max(right, MOBILE_MIN_LR);
-          gapX = Math.max(gapX, MOBILE_MIN_GAP_X);
-          gapY = Math.max(gapY, MOBILE_MIN_GAP_Y);
+          if (gapX < 2) gapX = 2;
+          if (gapY < 3) gapY = 3;
         }
 
-        var usable = 100 - left - right;
-        if (usable < 1) usable = 1;
+        var count = BTN_TEXTS.length;
 
-        // Elegir columnas (<=maxCols) que cumplan ancho mínimo en px.
-        var cols = Math.min(maxCols, count);
+        // Intentar 3 columnas (desktop), si no caben, bajar a 2 o 1
+        var cols = 3;
+        var usable = 100 - left - right;
+
         while (cols > 1){
           var wPctTry = (usable - (gapX * (cols - 1))) / cols;
           var wPxTry = (wPctTry / 100) * planW;
-          if (wPctTry > 0 && wPxTry >= MIN_BOX_W_PX) break;
+          if (wPctTry > 0 && wPxTry >= MIN_BTN_W_PX) break;
           cols -= 1;
         }
 
-        // Filas resultantes
         var rows = ceilDiv(count, cols);
-
-        // Ancho final por caja
         var w = (usable - (gapX * (cols - 1))) / cols;
         if (w < 0) w = 0;
 
-        // Render en filas: 2x2, 3x1, 1x4, etc según columnas elegidas
-        for (var i = 0; i < count; i++){
-          var row = Math.floor(i / cols);
-          var col = i % cols;
+        for (var i=0;i<count;i++){
+          var row = Math.floor(i/cols);
+          var col = i%cols;
 
-          var x = left + col * (w + gapX);
-          var y = top + row * (h + gapY);
+          var x = left + col*(w + gapX);
+          var y = row*(btnH + gapY);
 
           var d = document.createElement("div");
-          d.className = "blk";
+          d.className = "btn";
           d.style.left = x + "%";
           d.style.top = y + "%";
           d.style.width = w + "%";
-          d.style.height = h + "%";
+          d.style.height = btnH + "%";
 
-          var text = document.createElement("div");
-          text.className = "blk-text";
-          text.textContent = BTN_TEXT;
-          d.appendChild(text);
+          var sp = document.createElement("span");
+          sp.textContent = BTN_TEXTS[i];
+          d.appendChild(sp);
 
-          var lab = document.createElement("span");
-          lab.className = "blk-label";
-          lab.textContent = prefix + (i+1) + " | " + (row+1) + "x" + (col+1);
-          d.appendChild(lab);
-
-          area.appendChild(d);
+          grid.appendChild(d);
         }
 
         hud.textContent =
-          "Viewport(px): " + Math.round(vw) + " x " + Math.round(vh) +
+          "Viewport(px): " + Math.round(window.innerWidth) + " x " + Math.round(window.innerHeight) +
           " | Plan(px): " + Math.round(planW) +
           " | cols=" + cols + " rows=" + rows +
-          " | w=" + w.toFixed(2) + "% (" + Math.round((w/100)*planW) + "px)";
+          " | btnW=" + w.toFixed(2) + "% (" + Math.round((w/100)*planW) + "px)";
       }
 
-      window.addEventListener("resize", build);
-      build();
+      function update(){
+        buildButtons();
+      }
+
+      window.addEventListener("resize", update);
+      update();
     })();
   </script>
 </body>
@@ -286,15 +385,30 @@ html = (
         .replace("__B__", str(BORDER_PX))
         .replace("__BC__", BORDER_COLOR)
         .replace("__BG__", BG_COLOR)
-        .replace("__FMIN__", str(FONT_MIN_PX))
-        .replace("__FMAX__", str(FONT_MAX_PX))
-        .replace("__BTN_TEXT__", BTN_TEXT)
-        .replace("__TOP_AREA__", str(TOP_AREA).replace("'", '"'))
-        .replace("__MIN_BOX_W_PX__", str(MIN_BOX_W_PX))
+        .replace("__HEADERBG__", HEADER_BG)
+        .replace("__IMGBG__", IMG_BG)
+        .replace("__BTNBG__", BTN_BG)
+        .replace("__FOOTERBG__", FOOTER_BG)
+        .replace("__HDR_TOP__", str(HEADER_TOP))
+        .replace("__HDR_H__", str(HEADER_HEIGHT))
+        .replace("__IMG_L__", str(IMG_LEFT))
+        .replace("__IMG_R__", str(IMG_RIGHT))
+        .replace("__IMG_T__", str(IMG_TOP))
+        .replace("__IMG_H__", str(IMG_HEIGHT))
+        .replace("__BTN_AREA_TOP__", str(BTN_AREA_TOP))
+        .replace("__BTN_L__", str(BTN_LEFT))
+        .replace("__BTN_R__", str(BTN_RIGHT))
+        .replace("__BTN_H__", str(BTN_H))
+        .replace("__BTN_GAP_X__", str(BTN_GAP_X))
+        .replace("__BTN_GAP_Y__", str(BTN_GAP_Y))
+        .replace("__F2_BOTTOM__", "22")  # posición visual del texto "Fondo 2"
+        .replace("__FOOT_L__", str(FOOTER_LEFT))
+        .replace("__FOOT_R__", str(FOOTER_RIGHT))
+        .replace("__FOOT_H__", str(FOOTER_H))
+        .replace("__FOOT_BOTTOM__", str(FOOTER_BOTTOM))
+        .replace("__BTN_TEXTS__", str(BTN_TEXTS).replace("'", '"'))
+        .replace("__MIN_BTN_W_PX__", str(MIN_BTN_W_PX))
         .replace("__MOBILE_MAX_W_PX__", str(MOBILE_MAX_W_PX))
-        .replace("__MOBILE_MIN_LR__", str(MOBILE_MIN_LR))
-        .replace("__MOBILE_MIN_GAP_X__", str(MOBILE_MIN_GAP_X))
-        .replace("__MOBILE_MIN_GAP_Y__", str(MOBILE_MIN_GAP_Y))
 )
 
 components.html(html, height=10, scrolling=False)
