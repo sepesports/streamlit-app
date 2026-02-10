@@ -1,445 +1,258 @@
 # app.py
 import streamlit as st
 import streamlit.components.v1 as components
+import json
 
-# =======================
-# GUARD (NO MOSTRAR LOGIN GRIS)
-# =======================
-if not st.session_state.get("auth"):
-    st.switch_page("pages/admin.py")
+# ================== AUTH DESDE QUERY PARAMS (Streamlit nuevo) ==================
+# admin.py redirige a /?auth=1&usuario=...&rol=...; aquí se guarda en session_state.
+try:
+    qp = st.query_params
+    if str(qp.get('auth', '')) == '1':
+        st.session_state['auth'] = True
+        st.session_state['usuario'] = str(qp.get('usuario', qp.get('correo', '')) or '')
+        st.session_state['rol'] = str(qp.get('rol', qp.get('role', '')) or '')
+        try:
+            st.query_params.clear()
+        except Exception:
+            pass
+except Exception:
+    pass
 
-# =======================
-# DATOS (MOSTRAR EN HEADER)
-# =======================
-USER_EMAIL = (
-    st.session_state.get("user", "")
-    or st.session_state.get("usuario", "")
-    or st.session_state.get("email", "")
-    or ""
-)
-USER_ROLE = (
-    st.session_state.get("role", "")
-    or st.session_state.get("rol", "")
-    or st.session_state.get("rol_usuario", "")
-    or ""
-)
-LOGIN_CELL_TEXT = (f"{USER_EMAIL} | {USER_ROLE}").strip(" |") if (USER_EMAIL or USER_ROLE) else "Login"
+# Texto de cabecera (Login o usuario | rol)
+LOGIN_CELL_TEXT = 'Login'
+if st.session_state.get('auth') and st.session_state.get('usuario'):
+    _u = st.session_state.get('usuario','')
+    _r = st.session_state.get('rol','')
+    LOGIN_CELL_TEXT = (_u + (' | ' + _r if _r else '')).strip()
 
 # ==============================================================================
-# PLANO RESPONSIVO (BASE) — MISMA VERSIÓN QUE SUBISTE (SIN CAMBIAR LAYOUT)
+# PLANO AJUSTADO (responsivo) - NO TOCAR HTML
+# Ajusta SOLO la sección "AJUSTES" para mover/medir.
 # ==============================================================================
 
-# ================== AJUSTES (EDITA SOLO ESTO) ==================
+# ================== AJUSTES ==================
+# CUADRO / CONTENEDOR PRINCIPAL (px)
+PAD_X_PX = 20          # margen lateral
+PAD_TOP_PX = 20        # margen superior
+BORDER_PX = 2          # borde del marco
+BORDER_COLOR = "#111"  # color borde
 
-# (1) CUADRO / MARCO (px)
-PAD_X_PX = 8   # px | margen externo izquierda/derecha del CUADRO
-PAD_TOP_PX = 8 # px | margen externo superior del CUADRO
+# CABECERA (alto en % del CUADRO)
+HEADER_H = 12          # % altura cabecera
 
-# (2) BORDES (px + color)
-BORDER_PX = 2
-BORDER_COLOR = "#111111"
+# Celdas cabecera (ancho en % del CUADRO) => deben sumar 100
+HEADER_COLS = [25, 50, 25]  # [Logo, Fondo1, Login/Usuario]
 
-# (3) COLORES (hex)
-BG_COLOR = "#FFFFFF"        # Fondo general (verde)
-HEADER_BG = "#FFFFFF"       # Fondo header (amarillo)
-IMG_BG = "#FFFFFF"          # Fondo imagen (blanco)
-BTN_BG = "#FFFFFF"          # Fondo botones (blanco)
-FOOTER_BG = "#FFFFFF"       # Fondo footer (blanco)
+# IMAGEN CENTRAL (alto en % del CUADRO)
+IMAGE_H = 46
 
-# (4) IMAGEN (todo en % DEL CUADRO)
-IMG_LEFT = 0     # % | margen interno izquierdo de la imagen (la hace más angosta si sube)
-IMG_RIGHT = 0    # % | margen interno derecho
-IMG_TOP = 10     # % | distancia desde arriba del cuadro (baja la imagen si sube)
-IMG_HEIGHT = 44  # % | alto del bloque de imagen
+# SECCIÓN BOTONES (alto en % del CUADRO)
+BTNS_H = 32
 
-# (5) HEADER (todo en % DEL CUADRO)
-HEADER_TOP = 0       # % | distancia desde arriba del cuadro
-HEADER_HEIGHT = 12   # % | alto del header
+# PIE (alto en % del CUADRO)
+FOOTER_H = 10
 
-# (6) BOTONES (todo en % DEL CUADRO)
-BTN_AREA_TOP = 55    # % | desde aquí empieza la sección inferior (Fondo2 + botones + footer)
-BTN_H = 23           # % | alto de cada botón
-BTN_GAP_X = 2        # % | separación horizontal entre botones
-BTN_GAP_Y = 2        # % | separación vertical entre filas
-BTN_LEFT = 5         # % | margen interno izquierdo del grid de botones
-BTN_RIGHT = 5        # % | margen interno derecho del grid de botones
+# BOTONES: 2 filas x 3 columnas (en desktop)
+BTN_ROWS = 2
+BTN_COLS = 3
 
-BTN_TEXTS = [
-    "Horarios",
-    "Control de\nAsistencia",
-    "Nomina y\nPagos",
-    "Incidencias",
-    "Formación",
-    "Comunicados",
-]
+# Separación entre botones (px)
+BTN_GAP_PX = 18
 
-# (7) FOOTER (todo en % DEL CUADRO)
-FOOTER_H = 18        # % | alto del footer
-FOOTER_BOTTOM = 5    # % | separación desde abajo del cuadro (sube el footer si sube)
-FOOTER_LEFT = 6      # % | margen lateral del footer
-FOOTER_RIGHT = 6     # % | margen lateral del footer
+# Padding interno de la sección botones (px)
+BTNS_PAD_PX = 24
 
-# (8) RESPONSIVO (px)
-MIN_BTN_W_PX = 130     # px | ancho mínimo por botón antes de bajar columnas (3 -> 2 -> 1)
-MOBILE_MAX_W_PX = 500  # px | umbral para aplicar mínimos de gap en móvil
+# Fuentes (px)
+FONT_MAIN = 14
+FONT_BOLD = 14
 
-# ===============================================================
+# MOBILE: ancho máximo para cambiar a layout 2x? (px)
+MOBILE_MAX_W_PX = 820
 
+# ================== UI BASE ==================
 st.set_page_config(layout="wide")
 
-st.markdown(
-    """
-    <style>
-      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
-      section.main > div{padding:0 !important;margin:0 !important;}
-      header, footer{display:none !important;}
-
-      /* Ocultar sidebar/nav de multipage */
-      [data-testid="stSidebar"]{display:none !important;}
-      [data-testid="collapsedControl"]{display:none !important;}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-html = """
+# ================== HTML PLANO ==================
+HTML = r"""
 <!doctype html>
-<html>
+<html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root{
-      --padx: __PADX__px;
-      --padtop: __PADTOP__px;
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<style>
+  html,body{height:100%; margin:0; font-family: Arial, sans-serif;}
+  body{background:#fff;}
 
-      --b: __B__px;
-      --bc: __BC__;
+  #stage{
+    position:fixed; inset:0;
+    background:#fff;
+  }
 
-      --bg: __BG__;
-      --headerbg: __HEADERBG__;
-      --imgbg: __IMGBG__;
-      --btnbg: __BTNBG__;
-      --footerbg: __FOOTERBG__;
-    }
+  #frame{
+    position:absolute;
+    left: __PADX__px; right: __PADX__px; top: __PADTOP__px; bottom: __PADTOP__px;
+    border: __B__px solid __BC__;
+    box-sizing:border-box;
+    background:#fff;
+  }
 
-    html, body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:var(--bg);}
-    #stage{position:fixed;inset:0;width:100vw;height:100vh;background:var(--bg);}
+  #grid{
+    position:absolute;
+    left: __PADX__px; right: __PADX__px; top: __PADTOP__px; bottom: __PADTOP__px;
+    display:flex;
+    flex-direction:column;
+  }
 
-    /* Marco (izq/der/sup) */
-    #frame{
-      position:absolute;
-      left:var(--padx); right:var(--padx);
-      top:var(--padtop); bottom:0;
-      border-left:var(--b) solid var(--bc);
-      border-right:var(--b) solid var(--bc);
-      border-top:var(--b) solid var(--bc);
-      box-sizing:border-box;
-      pointer-events:none;
-      background: transparent;
-      z-index:2;
-    }
+  /* ===== Cabecera ===== */
+  #header{
+    height: __HEADER_H__%;
+    display:flex;
+    border-bottom: __B__px solid __BC__;
+  }
+  .hcell{
+    border-right: __B__px solid __BC__;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    font-size: __FMAIN__px;
+    box-sizing:border-box;
+  }
+  .hcell:last-child{border-right:none;}
+  #h1{width: __H1__%;}
+  #h2{width: __H2__%;}
+  #h3{width: __H3__%;}
 
-    /* Plano dentro del cuadro: nada se sale */
-    #plan{
-      position:absolute;
-      left:var(--padx); right:var(--padx);
-      top:var(--padtop); bottom:0;
-      overflow:hidden;
-      background: var(--bg);
-      z-index:1;
-    }
+  /* ===== Imagen ===== */
+  #img{
+    height: __IMG_H__%;
+    border-bottom: __B__px solid __BC__;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    font-size: __FMAIN__px;
+    box-sizing:border-box;
+  }
 
-    /* Header */
-    #hdr{
-      position:absolute;
-      left:0; right:0;
-      top: __HDR_TOP__%;
-      height: __HDR_H__%;
-      background: var(--headerbg);
-      border: var(--b) solid var(--bc);
-      box-sizing:border-box;
-      display:flex;
-      gap:0;
-    }
+  /* ===== Botones ===== */
+  #btns{
+    height: __BTNS_H__%;
+    border-bottom: __B__px solid __BC__;
+    box-sizing:border-box;
+    padding: __BTNS_PAD__px;
+    display:grid;
+    grid-template-columns: repeat(__COLS__, 1fr);
+    grid-template-rows: repeat(__ROWS__, 1fr);
+    gap: __GAP__px;
+  }
 
-    .hdr-cell{
-      border-right: var(--b) solid var(--bc);
-      box-sizing:border-box;
-      background: var(--headerbg);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font: 14px Arial, sans-serif;
-      font-weight: 700;
-      color:#000;
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-    }
-    .hdr-cell.white{ background:#fff; }
-    .hdr-cell:last-child{ border-right: none; }
+  .btn{
+    border: __B__px solid __BC__;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    font-size: __FBOLD__px;
+    box-sizing:border-box;
+    background:#fff;
+    cursor:pointer;
+    user-select:none;
+    text-align:center;
+    padding: 12px;
+  }
 
-    /* Imagen */
-    #img{
-      position:absolute;
-      left: __IMG_L__%;
-      right: __IMG_R__%;
-      top: __IMG_T__%;
-      height: __IMG_H__%;
-      background: var(--imgbg);
-      border: var(--b) solid var(--bc);
-      box-sizing:border-box;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font: 16px Arial, sans-serif;
-      font-weight: 700;
-      color:#000;
-    }
+  /* ===== Footer ===== */
+  #footer{
+    height: __FOOT_H__%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    font-size: __FMAIN__px;
+    box-sizing:border-box;
+  }
 
-    /* Fondo 2 (área botones) */
-    #btn-area{
-      position:absolute;
-      left:0; right:0;
-      top: __BTN_AREA_TOP__%;
-      bottom: 0;
-      background: var(--bg);
-      box-sizing:border-box;
+  /* Mobile: 2 columnas y 3 filas */
+  @media (max-width: __MOBILE_MAX_W_PX__px){
+    #btns{
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(3, 1fr);
     }
-    #btn-grid{
-      position:absolute;
-      left: __BTN_L__%;
-      right: __BTN_R__%;
-      top: 0;
-      bottom: 0;
-    }
-
-    .btn{
-      position:absolute;
-      background: var(--btnbg);
-      border: var(--b) solid var(--bc);
-      box-sizing:border-box;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      padding: 8px 10px;
-      font: 14px Arial, sans-serif;
-      font-weight: 700;
-      color:#000;
-      overflow:hidden;
-    }
-    .btn span{
-      display:block;
-      line-height:1.05;
-      white-space: pre-line;
-    }
-
-    /* Label Fondo 2 */
-    #fondo2{
-      position:absolute;
-      left:0; right:0;
-      bottom: __F2_BOTTOM__%;
-      text-align:center;
-      font: 13px Arial, sans-serif;
-      font-weight: 700;
-      color:#000;
-      pointer-events:none;
-    }
-
-    /* Footer */
-    #footer{
-      position:absolute;
-      left: __FOOT_L__%;
-      right: __FOOT_R__%;
-      height: __FOOT_H__%;
-      bottom: __FOOT_BOTTOM__%;
-      background: var(--footerbg);
-      border: var(--b) solid var(--bc);
-      box-sizing:border-box;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font: 14px Arial, sans-serif;
-      font-weight: 700;
-      color:#000;
-    }
-
-    /* HUD */
-    #hud{
-      position:absolute; top:8px; left:8px;
-      font: 12px Arial, sans-serif;
-      background: rgba(255,255,255,92);
-      border: 1px solid rgba(0,0,0,2);
-      border-radius: 6px;
-      padding: 6px 10px;
-      white-space: nowrap;
-      pointer-events:none;
-      z-index:3;
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
   <div id="stage">
     <div id="frame"></div>
 
-    <div id="plan">
-      <div id="hdr"></div>
-      <div id="img">Imagen</div>
-
-      <div id="btn-area">
-        <div id="btn-grid"></div>
-        <div id="fondo2">Fondo 2</div>
-        <div id="footer">Pie de pagina</div>
+    <div id="grid">
+      <div id="header">
+        <div id="h1" class="hcell">Logo</div>
+        <div id="h2" class="hcell">Fondo 1</div>
+        <div id="h3" class="hcell">__LOGIN_CELL_TEXT__</div>
       </div>
 
-      <div id="hud">Cargando.</div>
+      <div id="img">Imagen</div>
+
+      <div id="btns">
+        <div class="btn" data-go="admin">Horarios</div>
+        <div class="btn" data-go="admin">Control de<br/>Asistencia</div>
+        <div class="btn" data-go="admin">Nómina y<br/>Pagos</div>
+        <div class="btn" data-go="admin">Incidencias</div>
+        <div class="btn" data-go="admin">Formación</div>
+        <div class="btn" data-go="admin">Comunicados</div>
+      </div>
+
+      <div id="footer">Pie de pagina</div>
     </div>
   </div>
 
-  <script>
-    (function(){
-      // Full-screen real del iframe (Streamlit Cloud)
-      var fe = window.frameElement;
-      if (fe){
-        fe.style.position = "fixed";
-        fe.style.inset = "0";
-        fe.style.width = "100vw";
-        fe.style.height = "100vh";
-        fe.style.border = "0";
-        fe.style.margin = "0";
-        fe.style.padding = "0";
-        fe.style.zIndex = "999999";
-        fe.style.background = "transparent";
-      }
-
-      var BTN_TEXTS = __BTN_TEXTS__;
-      var MIN_BTN_W_PX = __MIN_BTN_W_PX__;
-      var MOBILE_MAX_W_PX = __MOBILE_MAX_W_PX__;
-      var LOGIN_TEXT = "__LOGIN_TEXT__";
-
-      // Header cells (5 columnas: margen, Logo, Fondo1, Login, margen)
-      var hdr = document.getElementById("hdr");
-      hdr.innerHTML = "";
-      var cells = [
-        {w: 6,  t:"",           white:false},
-        {w: 22, t:"Logo",       white:true},
-        {w: 44, t:"Fondo 1",    white:false},
-        {w: 22, t: LOGIN_TEXT,  white:true},
-        {w: 6,  t:"",           white:false},
-      ];
-      cells.forEach(function(c){
-        var d = document.createElement("div");
-        d.className = "hdr-cell" + (c.white ? " white" : "");
-        d.style.width = c.w + "%";
-        d.textContent = c.t;
-        hdr.appendChild(d);
+<script>
+  // Si NO está autenticado, cualquier botón manda a /admin (login).
+  // Si está autenticado, aquí puedes cambiar la navegación real más adelante.
+  (function(){
+    var authed = "__AUTH__" === "1";
+    document.querySelectorAll(".btn").forEach(function(b){
+      b.addEventListener("click", function(){
+        if(!authed){
+          window.location.href = window.location.origin + "/admin";
+        }else{
+          // TODO: aquí irán rutas reales cuando existan páginas.
+          // Por ahora no hace nada para no inventar.
+        }
       });
-
-      var hud = document.getElementById("hud");
-      var grid = document.getElementById("btn-grid");
-      var plan = document.getElementById("plan");
-
-      function ceilDiv(a,b){ return Math.floor((a + b - 1) / b); }
-
-      function buildButtons(){
-        grid.innerHTML = "";
-
-        var vw = window.innerWidth;
-        var r = plan.getBoundingClientRect();
-        var planW = r.width;
-
-        var left = __BTN_L__;
-        var right = __BTN_R__;
-        var gapX = __BTN_GAP_X__;
-        var gapY = __BTN_GAP_Y__;
-        var btnH = __BTN_H__;
-
-        if (vw <= MOBILE_MAX_W_PX){
-          if (gapX < 2) gapX = 2;
-          if (gapY < 3) gapY = 3;
-        }
-
-        var count = BTN_TEXTS.length;
-
-        var cols = 3;
-        var usable = 100 - left - right;
-
-        while (cols > 1){
-          var wPctTry = (usable - (gapX * (cols - 1))) / cols;
-          var wPxTry = (wPctTry / 100) * planW;
-          if (wPctTry > 0 && wPxTry >= MIN_BTN_W_PX) break;
-          cols -= 1;
-        }
-
-        var rows = ceilDiv(count, cols);
-        var w = (usable - (gapX * (cols - 1))) / cols;
-        if (w < 0) w = 0;
-
-        for (var i=0;i<count;i++){
-          var row = Math.floor(i/cols);
-          var col = i%cols;
-
-          var x = left + col*(w + gapX);
-          var y = row*(btnH + gapY);
-
-          var d = document.createElement("div");
-          d.className = "btn";
-          d.style.left = x + "%";
-          d.style.top = y + "%";
-          d.style.width = w + "%";
-          d.style.height = btnH + "%";
-          d.innerHTML = "<span>" + BTN_TEXTS[i] + "</span>";
-          grid.appendChild(d);
-        }
-
-        hud.textContent =
-          "Viewport(px): " + Math.round(window.innerWidth) + " x " + Math.round(window.innerHeight) +
-          " | Plan(px): " + Math.round(r.width) + " x " + Math.round(r.height) +
-          " | cols=" + cols + " rows=" + rows +
-          " | btnW=" + w.toFixed(2) + "% (" + Math.round((w/100)*planW) + "px)";
-      }
-
-      window.addEventListener("resize", buildButtons);
-      buildButtons();
-    })();
-  </script>
+    });
+  })();
+</script>
 </body>
 </html>
 """
 
+AUTH_FLAG = "1" if st.session_state.get("auth") else "0"
+
 html = (
-    html.replace("__PADX__", str(PAD_X_PX))
-        .replace("__PADTOP__", str(PAD_TOP_PX))
-        .replace("__B__", str(BORDER_PX))
-        .replace("__BC__", BORDER_COLOR)
-        .replace("__BG__", BG_COLOR)
-        .replace("__HEADERBG__", HEADER_BG)
-        .replace("__IMGBG__", IMG_BG)
-        .replace("__BTNBG__", BTN_BG)
-        .replace("__FOOTERBG__", FOOTER_BG)
-        .replace("__HDR_TOP__", str(HEADER_TOP))
-        .replace("__HDR_H__", str(HEADER_HEIGHT))
-        .replace("__IMG_L__", str(IMG_LEFT))
-        .replace("__IMG_R__", str(IMG_RIGHT))
-        .replace("__IMG_T__", str(IMG_TOP))
-        .replace("__IMG_H__", str(IMG_HEIGHT))
-        .replace("__BTN_AREA_TOP__", str(BTN_AREA_TOP))
-        .replace("__BTN_L__", str(BTN_LEFT))
-        .replace("__BTN_R__", str(BTN_RIGHT))
-        .replace("__BTN_H__", str(BTN_H))
-        .replace("__BTN_GAP_X__", str(BTN_GAP_X))
-        .replace("__BTN_GAP_Y__", str(BTN_GAP_Y))
-        .replace("__FOOT_L__", str(FOOTER_LEFT))
-        .replace("__FOOT_R__", str(FOOTER_RIGHT))
-        .replace("__FOOT_H__", str(FOOTER_H))
-        .replace("__FOOT_BOTTOM__", str(FOOTER_BOTTOM))
-        .replace("__F2_BOTTOM__", "22")
-        .replace("__BTN_TEXTS__", str(BTN_TEXTS).replace("'", '"'))
-        .replace("__MIN_BTN_W_PX__", str(MIN_BTN_W_PX))
-        .replace("__MOBILE_MAX_W_PX__", str(MOBILE_MAX_W_PX))
-        .replace("__LOGIN_TEXT__", LOGIN_CELL_TEXT.replace('"', '\\"'))
+    HTML
+    .replace("__PADX__", str(PAD_X_PX))
+    .replace("__PADTOP__", str(PAD_TOP_PX))
+    .replace("__B__", str(BORDER_PX))
+    .replace("__BC__", str(BORDER_COLOR))
+    .replace("__HEADER_H__", str(HEADER_H))
+    .replace("__H1__", str(HEADER_COLS[0]))
+    .replace("__H2__", str(HEADER_COLS[1]))
+    .replace("__H3__", str(HEADER_COLS[2]))
+    .replace("__IMG_H__", str(IMAGE_H))
+    .replace("__BTNS_H__", str(BTNS_H))
+    .replace("__FOOT_H__", str(FOOTER_H))
+    .replace("__ROWS__", str(BTN_ROWS))
+    .replace("__COLS__", str(BTN_COLS))
+    .replace("__GAP__", str(BTN_GAP_PX))
+    .replace("__BTNS_PAD__", str(BTNS_PAD_PX))
+    .replace("__FMAIN__", str(FONT_MAIN))
+    .replace("__FBOLD__", str(FONT_BOLD))
+    .replace("__MOBILE_MAX_W_PX__", str(MOBILE_MAX_W_PX))
+    .replace("__LOGIN_CELL_TEXT__", json.dumps(LOGIN_CELL_TEXT)[1:-1])
+    .replace("__AUTH__", AUTH_FLAG)
 )
 
 components.html(html, height=10, scrolling=False)
