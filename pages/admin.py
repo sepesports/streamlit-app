@@ -2,466 +2,407 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# =======================
-# HANDSHAKE (JS -> URL PARAMS -> SESSION)
-# =======================
-try:
-    qp = st.query_params
-except Exception:
-    qp = {}
-
-if (qp.get("auth") == "1") or (qp.get("ok") == "1"):
-    usuario = qp.get("usuario", "") or qp.get("user", "") or ""
-    rol = qp.get("rol", "") or qp.get("role", "") or ""
-
-    st.session_state["auth"] = True
-    st.session_state["usuario"] = usuario
-    st.session_state["rol"] = rol
-    st.session_state["user"] = usuario
-    st.session_state["role"] = rol
-
-    try:
-        st.query_params.clear()
-    except Exception:
-        pass
-
-    st.switch_page("app.py")
-
 # ==============================================================================
-# PLANO RESPONSIVO — LOGIN (MISMAS DIMENSIONES / RESPONSIVE) + NUEVO DISEÑO ROJO
+# LOGIN (RESPONSIVE) — NO CAMBIAR DIMENSIONES DEL PLANO
+# Ajusta SOLO colores/textos desde la sección "AJUSTES".
 # ==============================================================================
 
-# ================== AJUSTES (NO CAMBIAR RESPONSIVE / DIMENSIONES) ==================
+# ================== AJUSTES (SOLO COLORES/TEXTOS) ==================
 
-# 1) CUADRO / MARCO (px)
-PAD_X_PX = 10          # px
-PAD_TOP_PX = 10        # px
+# Fondo (rojo tipo mockup)
+BG_GRAD_A = "#8c1010"
+BG_GRAD_B = "#220404"
+BG_HILIGHT = "rgba(255,255,255,0.10)"
 
-# 2) BORDES / FONDO
-BORDER_PX = 2
-BORDER_COLOR = "rgba(255,255,255,0.18)"   # (solo color; dimensiones igual)
-BG_COLOR = "#2a0000"                      # (solo color; dimensiones igual)
+# Card (glass)
+CARD_BG = "rgba(0,0,0,0.22)"
+CARD_BORDER = "rgba(255,255,255,0.18)"
+TXT_WHITE = "#ffffff"
+TXT_MUTED = "rgba(255,255,255,0.78)"
+FIELD_BG = "rgba(255,255,255,0.92)"
+FIELD_TXT = "#111111"
 
-# 3) CONTENEDOR INTERNO — % del CUADRO
-CARD_LEFT = 6
-CARD_RIGHT = 6
-CARD_TOP = 6
-CARD_BOTTOM = 6
+# Botón
+BTN_GRAD_A = "#ff3a3a"
+BTN_GRAD_B = "#b50b0b"
+BTN_TXT_COLOR = "#ffffff"
 
-# 4) POSICIONES VERTICALES — % del CUADRO
-TITLE_Y = 14
-USER_LABEL_Y = 32
-USER_INPUT_Y = 38
-PASS_LABEL_Y = 52
-PASS_INPUT_Y = 58
-BTN_Y = 72
-LINKS_Y = 84
+# Error
+ERROR_BG = "rgba(255,60,60,0.18)"
+ERROR_TXT = "#ffd7d7"
 
-# 5) ANCHOS Y ALTOS — % del CUADRO
-INPUT_LEFT = 18
-INPUT_RIGHT = 18
-INPUT_H = 10
+# Textos
+TITLE_TEXT = "Welcome"
+BTN_TEXT = "Login to my account"
+LABEL_CORREO = "Correo"
+LABEL_DNI = "DNI"
+LINK_LEFT = "Forgot password?"
+LINK_RIGHT = "Create account"
 
-BTN_LEFT = 18
-BTN_RIGHT = 18
-BTN_H = 9
+# API
+AUTH_URL = "https://camilo27.pythonanywhere.com/api/auth"
 
-# 6) LINKS — % del CUADRO
-LINK_LEFT_X = 18
-LINK_RIGHT_X = 70
-
-# 7) RADIOS (px)
-INPUT_RADIUS_PX = 12
-BTN_RADIUS_PX = 999
-
-# 8) TIPOS (px)
-TITLE_SIZE_PX = 26
-LABEL_SIZE_PX = 12
-LINK_SIZE_PX = 11
-BTN_TEXT_SIZE_PX = 13
-
-# 9) API
-AUTH_API_URL = "https://camilo27.pythonanywhere.com/api/auth"
-
-# ===============================================================
-
+# ================== STREAMLIT BASE ==================
 st.set_page_config(layout="wide")
 
+# Ocultar UI de Streamlit (para que no aparezca el login gris)
 st.markdown(
     """
     <style>
-      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
-      section.main > div{padding:0 !important;margin:0 !important;}
-      header, footer{display:none !important;}
-
-      /* Ocultar sidebar/nav de multipage */
-      [data-testid="stSidebar"]{display:none !important;}
-      [data-testid="collapsedControl"]{display:none !important;}
+      header, footer {display:none !important;}
+      [data-testid="stSidebar"], [data-testid="stSidebarNav"] {display:none !important;}
+      .block-container{padding:0 !important; margin:0 !important; max-width:100% !important;}
+      section.main > div{padding:0 !important; margin:0 !important;}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-html = """
+# ==============================================================================
+# PLANO (DIMENSIONES) — PEGADO DEL ARCHIVO "Administrador" (NO MODIFICAR)
+# ==============================================================================
+PAD_X_PX = 10
+PAD_TOP_PX = 10
+BORDER_PX = 2
+BORDER_COLOR = "#111111"
+
+CARD_W = 38
+CARD_H = 62
+CARD_X = 62
+CARD_Y = 55
+
+TITLE_Y = 16
+USER_LABEL_Y = 30
+USER_INPUT_Y = 36
+PASS_LABEL_Y = 50
+PASS_INPUT_Y = 56
+BTN_Y = 70
+LINKS_Y = 82
+
+TITLE_SZ = 34
+LABEL_SZ = 12
+INPUT_TXT = 14
+BTN_TXT = 14
+LINK_SZ = 10
+
+INPUT_H_PX = 44
+INPUT_RADIUS_PX = 12
+BTN_H_PX = 44
+BTN_RADIUS_PX = 16
+
+HTML = r"""
 <!doctype html>
-<html>
+<html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root{
-      --padx: __PADX__px;
-      --padtop: __PADTOP__px;
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<style>
+  html,body{height:100%; margin:0; font-family: Arial, sans-serif; background:transparent;}
+  body{overflow:hidden;}
 
-      --b: __B__px;
-      --bc: __BC__;
-      --bg: __BG__;
+  #stage{
+    position:fixed; inset:0;
+    background:
+      linear-gradient(135deg, __BG_HILIGHT__ 0%, rgba(255,255,255,0) 40%),
+      radial-gradient(1200px 700px at 70% 30%, rgba(255,120,120,0.22), rgba(0,0,0,0) 60%),
+      linear-gradient(180deg, __BG_A__, __BG_B__);
+  }
 
-      --r_in: __RIN__px;
-      --r_btn: __RBTN__px;
-    }
+  #frame{
+    position:absolute;
+    left: __PADX__px; right: __PADX__px; top: __PADTOP__px; bottom: __PADTOP__px;
+    border: __B__px solid __BC__;
+    box-sizing:border-box;
+    pointer-events:none;
+    opacity:0; /* no mostrar */
+  }
 
-    html, body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:var(--bg);}
-    #stage{position:fixed;inset:0;width:100vw;height:100vh;background:
-      radial-gradient(900px 600px at 70% 35%, rgba(255,60,60,0.22), transparent 60%),
-      radial-gradient(900px 600px at 25% 70%, rgba(255,0,0,0.20), transparent 62%),
-      linear-gradient(135deg, #6a0000 0%, #2a0000 55%, #110000 100%);
-    }
+  #plan{
+    position:absolute;
+    left: __PADX__px; right: __PADX__px; top: __PADTOP__px; bottom: __PADTOP__px;
+  }
 
-    /* Marco (mismas dimensiones) */
-    #frame{
-      position:absolute;
-      left:var(--padx); right:var(--padx);
-      top:var(--padtop); bottom:0;
-      border-left:var(--b) solid rgba(255,255,255,0.08);
-      border-right:var(--b) solid rgba(255,255,255,0.08);
-      border-top:var(--b) solid rgba(255,255,255,0.08);
-      box-sizing:border-box;
-      pointer-events:none;
-      background: transparent;
-      z-index:2;
-    }
+  #card{
+    position:absolute;
+    width: __CARD_W__%;
+    height: __CARD_H__%;
+    left: calc(__CARD_X__% - (__CARD_W__/2)*1%);
+    top:  calc(__CARD_Y__% - (__CARD_H__/2)*1%);
+    background: __CARD_BG__;
+    border: 1px solid __CARD_BORDER__;
+    border-radius: 18px;
+    box-shadow: 0 18px 50px rgba(0,0,0,.35);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    overflow:hidden;
+  }
 
-    /* CUADRO (plan) */
-    #plan{
-      position:absolute;
-      left:var(--padx); right:var(--padx);
-      top:var(--padtop); bottom:0;
-      overflow:hidden;
-      z-index:1;
-    }
+  #miniIcon{
+    position:absolute; top:14px; left:16px;
+    width:34px; height:34px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.18);
+    display:flex; align-items:center; justify-content:center;
+    color: __TXT_WHITE__;
+    font-weight:700;
+    user-select:none;
+  }
+  #closeBtn{
+    position:absolute; top:14px; right:14px;
+    width:28px; height:28px;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.20);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: __TXT_WHITE__;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    user-select:none;
+  }
 
-    /* Card (mismas dimensiones) */
-    #card{
-      position:absolute;
-      left: __CARD_L__%;
-      right: __CARD_R__%;
-      top: __CARD_T__%;
-      bottom: __CARD_B__%;
+  .title{
+    position:absolute;
+    left: 0; right:0;
+    top: __TITLE_Y__%;
+    transform: translateY(-50%);
+    text-align:center;
+    font-size: __TITLE_SZ__px;
+    font-weight: 800;
+    color: __TXT_WHITE__;
+    letter-spacing: .2px;
+  }
 
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
+  .label{
+    position:absolute;
+    left: 12%;
+    right: 12%;
+    font-size: __LABEL_SZ__px;
+    font-weight: 700;
+    color: __TXT_MUTED__;
+    user-select:none;
+  }
 
-    /* Modal */
-    #modal{
-      position:relative;
-      width:min(420px, 92vw);
-      padding: 18px 18px 14px;
-      border-radius: 16px;
-      background: rgba(0,0,0,0.18);
-      border: 1px solid rgba(255,255,255,0.14);
-      box-shadow: 0 18px 50px rgba(0,0,0,0.45);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-    }
+  .inputWrap{
+    position:absolute;
+    left: 12%;
+    right: 12%;
+    height: __INPUT_H__px;
+  }
+  .input{
+    width:100%;
+    height:100%;
+    border-radius: __INPUT_RAD__px;
+    border: 0;
+    outline: none;
+    padding: 0 14px;
+    background: __FIELD_BG__;
+    color: __FIELD_TXT__;
+    font-size: __INPUT_TXT__px;
+    box-sizing:border-box;
+  }
+  .input::placeholder{color: rgba(0,0,0,0.38);}
 
-    #close{
-      position:absolute;
-      right: 10px;
-      top: 10px;
-      width: 28px;
-      height: 28px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.10);
-      color: rgba(255,255,255,0.9);
-      font: 700 14px Arial, sans-serif;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      user-select:none;
-    }
+  .btn{
+    position:absolute;
+    left: 12%;
+    right: 12%;
+    height: __BTN_H__px;
+    border-radius: __BTN_RAD__px;
+    background: linear-gradient(180deg, __BTN_A__, __BTN_B__);
+    color: __BTN_TXT__;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: __BTN_TXT_SZ__px;
+    font-weight: 800;
+    cursor:pointer;
+    user-select:none;
+    box-shadow: 0 10px 26px rgba(0,0,0,.30);
+  }
+  .btn:active{transform: translateY(1px);}
 
-    #icon{
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.12);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      margin: 0 auto 10px;
-    }
-    #icon svg{width:18px;height:18px;fill: rgba(255,255,255,0.9);}
+  .rowLinks{
+    position:absolute;
+    left: 12%;
+    right: 12%;
+    display:flex;
+    justify-content:space-between;
+    font-size: __LINK_SZ__px;
+    font-weight: 700;
+    color: __TXT_MUTED__;
+    user-select:none;
+  }
 
-    #title{
-      text-align:center;
-      color:#fff;
-      font: 800 __TITLE_SZ__px Arial, sans-serif;
-      margin: 0 0 14px;
-      letter-spacing: 0.2px;
-    }
-
-    .lbl{
-      color: rgba(255,255,255,0.9);
-      font: 700 __LBL_SZ__px Arial, sans-serif;
-      margin: 10px 0 6px;
-    }
-
-    .inp-wrap{position:relative;}
-    .inp{
-      width: 100%;
-      height: 42px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.95);
-      outline: none;
-      padding: 0 12px;
-      font: 700 13px Arial, sans-serif;
-      color:#111;
-      box-sizing:border-box;
-    }
-
-    #eye{
-      position:absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 28px;
-      height: 28px;
-      border-radius: 10px;
-      border: 1px solid rgba(0,0,0,0.10);
-      background: rgba(255,255,255,0.85);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      user-select:none;
-    }
-    #eye svg{width:16px;height:16px;fill:#333;}
-
-    #btn{
-      width: 100%;
-      height: 42px;
-      margin-top: 14px;
-      border: none;
-      border-radius: var(--r_btn);
-      background: linear-gradient(180deg, #ff4b4b 0%, #d60000 100%);
-      color:#fff;
-      font: 800 __BTN_TXT__px Arial, sans-serif;
-      cursor:pointer;
-      box-shadow: 0 10px 22px rgba(255,0,0,0.25);
-    }
-    #btn:active{transform: translateY(1px);}
-
-    #row-links{
-      display:flex;
-      justify-content:space-between;
-      margin-top: 10px;
-      color: rgba(255,255,255,0.75);
-      font: 700 __LINK_SZ__px Arial, sans-serif;
-    }
-
-    #err{
-      display:none;
-      margin-top: 10px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: #ffd1d1;
-      font: 700 12px Arial, sans-serif;
-    }
-
-    /* HUD */
-    #hud{
-      position:absolute; top:8px; left:8px;
-      font: 12px Arial, sans-serif;
-      background: rgba(255,255,255,0.92);
-      border: 1px solid rgba(0,0,0,0.20);
-      border-radius: 6px;
-      padding: 6px 10px;
-      white-space: nowrap;
-      pointer-events:none;
-      z-index:3;
-      display:none;
-    }
-  </style>
+  #err{
+    position:absolute;
+    left: 12%;
+    right: 12%;
+    top: calc(__BTN_Y__% + 10%);
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: __ERR_BG__;
+    color: __ERR_TXT__;
+    font-size: 12px;
+    font-weight: 700;
+    display:none;
+    box-sizing:border-box;
+  }
+</style>
 </head>
 <body>
   <div id="stage">
     <div id="frame"></div>
-
     <div id="plan">
       <div id="card">
-        <div id="modal">
-          <div id="close" title="Cerrar">×</div>
+        <div id="miniIcon">⌂</div>
+        <div id="closeBtn">×</div>
 
-          <div id="icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 3l9 7v11a1 1 0 0 1-1 1h-6v-7H10v7H4a1 1 0 0 1-1-1V10l9-7z"/></svg>
-          </div>
+        <div class="title">__TITLE_TEXT__</div>
 
-          <div id="title">Welcome</div>
+        <div class="label" style="top: __USER_L_Y__%;">__LABEL_CORREO__</div>
+        <div class="inputWrap" style="top: __USER_I_Y__%;">
+          <input id="correo" class="input" type="email" autocomplete="username" placeholder="correo@ejemplo.com"/>
+        </div>
 
-          <div class="lbl">Correo</div>
-          <input id="correo" class="inp" type="email" autocomplete="username" />
+        <div class="label" style="top: __PASS_L_Y__%;">__LABEL_DNI__</div>
+        <div class="inputWrap" style="top: __PASS_I_Y__%;">
+          <input id="dni" class="input" type="password" autocomplete="current-password" placeholder="••••"/>
+        </div>
 
-          <div class="lbl">DNI</div>
-          <div class="inp-wrap">
-            <input id="dni" class="inp" type="password" autocomplete="current-password" />
-            <div id="eye" title="Ver/ocultar">
-              <svg viewBox="0 0 24 24"><path d="M12 5c5 0 9 7 9 7s-4 7-9 7-9-7-9-7 4-7 9-7zm0 3.5A3.5 3.5 0 1 0 12 19a3.5 3.5 0 0 0 0-7z"/></svg>
-            </div>
-          </div>
+        <div id="btnLogin" class="btn" style="top: __BTN_Y__%;">__BTN_TEXT__</div>
 
-          <button id="btn" type="button">Login to my account</button>
+        <div id="err"></div>
 
-          <div id="row-links">
-            <div>Forgot password?</div>
-            <div>Create account</div>
-          </div>
-
-          <div id="err">Error conectando con el servidor</div>
+        <div class="rowLinks" style="top: __LINKS_Y__%;">
+          <div>__LINK_LEFT__</div>
+          <div>__LINK_RIGHT__</div>
         </div>
       </div>
-
-      <div id="hud">Cargando.</div>
     </div>
   </div>
 
-  <script>
-    (function(){
-      // Full-screen real del iframe (Streamlit Cloud)
-      var fe = window.frameElement;
-      if (fe){
-        fe.style.position = "fixed";
-        fe.style.inset = "0";
-        fe.style.width = "100vw";
-        fe.style.height = "100vh";
-        fe.style.border = "0";
-        fe.style.margin = "0";
-        fe.style.padding = "0";
-        fe.style.zIndex = "999999";
-        fe.style.background = "transparent";
-      }
+<script>
+(function(){
+  var fe = window.frameElement;
+  if (fe){
+    fe.style.position = "fixed";
+    fe.style.inset = "0";
+    fe.style.width = "100vw";
+    fe.style.height = "100vh";
+    fe.style.border = "0";
+    fe.style.margin = "0";
+    fe.style.padding = "0";
+    fe.style.zIndex = "999999";
+    fe.style.background = "transparent";
+  }
 
-      var apiUrl = "__API__";
-      var correo = document.getElementById("correo");
-      var dni = document.getElementById("dni");
-      var btn = document.getElementById("btn");
-      var err = document.getElementById("err");
-      var eye = document.getElementById("eye");
-      var close = document.getElementById("close");
+  var closeBtn = document.getElementById("closeBtn");
+  closeBtn.addEventListener("click", function(){
+    window.location.href = window.location.origin + "/";
+  });
 
-      function showErr(msg){
-        err.style.display = "block";
-        err.textContent = msg || "Error conectando con el servidor";
-      }
-      function hideErr(){
-        err.style.display = "none";
-        err.textContent = "";
-      }
+  function showErr(msg){
+    var e = document.getElementById("err");
+    e.style.display = "block";
+    e.textContent = msg || "Error conectando con el servidor";
+  }
+  function hideErr(){
+    var e = document.getElementById("err");
+    e.style.display = "none";
+    e.textContent = "";
+  }
 
-      eye.addEventListener("click", function(){
-        dni.type = (dni.type === "password") ? "text" : "password";
+  async function doLogin(){
+    hideErr();
+    var correo = (document.getElementById("correo").value || "").trim();
+    var dni = (document.getElementById("dni").value || "").trim();
+
+    if(!correo || !dni){
+      showErr("Completa correo y DNI");
+      return;
+    }
+
+    try{
+      var r = await fetch("__AUTH_URL__", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({correo: correo, dni: dni})
       });
 
-      close.addEventListener("click", function(){
-        // No hace nada: evitar volver al login gris
-        hideErr();
-      });
+      var dataText = await r.text();
+      var data = {};
+      try{ data = JSON.parse(dataText); }catch(e){}
 
-      async function doLogin(){
-        hideErr();
-
-        var c = (correo.value || "").trim();
-        var d = (dni.value || "").trim();
-
-        if (!c || !d){
-          showErr("Completa Correo y DNI");
-          return;
-        }
-
-        btn.disabled = true;
-        btn.textContent = "Validando...";
-
-        try{
-          var r = await fetch(apiUrl, {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify({correo: c, dni: d})
-          });
-
-          var data = null;
-          try{ data = await r.json(); }catch(e){}
-
-          if (!r.ok || !data){
-            showErr("Error conectando con el servidor");
-            return;
-          }
-
-          if (!data.ok){
-            showErr(data.error || "Credenciales inválidas");
-            return;
-          }
-
-          var usuario = encodeURIComponent(data.usuario || c);
-          var rol = encodeURIComponent(data.rol || data.role || "");
-          var target = window.location.origin + "/?auth=1&usuario=" + usuario + "&rol=" + rol;
-          window.location.href = target;
-        }catch(e){
-          showErr("Error conectando con el servidor");
-        }finally{
-          btn.disabled = false;
-          btn.textContent = "Login to my account";
-        }
+      if(r.ok && data && data.ok === true){
+        var usuario = encodeURIComponent(data.usuario || correo);
+        var rol = encodeURIComponent(data.rol || data.role || "");
+        window.location.href = window.location.origin + "/?auth=1&usuario=" + usuario + "&rol=" + rol;
+        return;
       }
 
-      btn.addEventListener("click", doLogin);
+      showErr((data && (data.error || data.msg)) ? (data.error || data.msg) : "Credenciales inválidas");
+    }catch(e){
+      showErr("Error conectando con el servidor");
+    }
+  }
 
-      dni.addEventListener("keydown", function(ev){
-        if (ev.key === "Enter") doLogin();
-      });
-      correo.addEventListener("keydown", function(ev){
-        if (ev.key === "Enter") doLogin();
-      });
-    })();
-  </script>
+  document.getElementById("btnLogin").addEventListener("click", doLogin);
+  document.getElementById("dni").addEventListener("keydown", function(ev){
+    if(ev.key === "Enter") doLogin();
+  });
+})();
+</script>
 </body>
 </html>
 """
 
 html = (
-    html.replace("__PADX__", str(PAD_X_PX))
-        .replace("__PADTOP__", str(PAD_TOP_PX))
-        .replace("__B__", str(BORDER_PX))
-        .replace("__BC__", BORDER_COLOR)
-        .replace("__BG__", BG_COLOR)
-        .replace("__RIN__", str(INPUT_RADIUS_PX))
-        .replace("__RBTN__", str(BTN_RADIUS_PX))
-        .replace("__CARD_L__", str(CARD_LEFT))
-        .replace("__CARD_R__", str(CARD_RIGHT))
-        .replace("__CARD_T__", str(CARD_TOP))
-        .replace("__CARD_B__", str(CARD_BOTTOM))
-        .replace("__TITLE_SZ__", str(TITLE_SIZE_PX))
-        .replace("__LBL_SZ__", str(LABEL_SIZE_PX))
-        .replace("__LINK_SZ__", str(LINK_SIZE_PX))
-        .replace("__BTN_TXT__", str(BTN_TEXT_SIZE_PX))
-        .replace("__API__", AUTH_API_URL)
+    HTML
+    .replace("__PADX__", str(PAD_X_PX))
+    .replace("__PADTOP__", str(PAD_TOP_PX))
+    .replace("__B__", str(BORDER_PX))
+    .replace("__BC__", str(BORDER_COLOR))
+    .replace("__BG_A__", str(BG_GRAD_A))
+    .replace("__BG_B__", str(BG_GRAD_B))
+    .replace("__BG_HILIGHT__", str(BG_HILIGHT))
+    .replace("__CARD_W__", str(CARD_W))
+    .replace("__CARD_H__", str(CARD_H))
+    .replace("__CARD_X__", str(CARD_X))
+    .replace("__CARD_Y__", str(CARD_Y))
+    .replace("__TITLE_Y__", str(TITLE_Y))
+    .replace("__USER_L_Y__", str(USER_LABEL_Y))
+    .replace("__USER_I_Y__", str(USER_INPUT_Y))
+    .replace("__PASS_L_Y__", str(PASS_LABEL_Y))
+    .replace("__PASS_I_Y__", str(PASS_INPUT_Y))
+    .replace("__BTN_Y__", str(BTN_Y))
+    .replace("__LINKS_Y__", str(LINKS_Y))
+    .replace("__TITLE_SZ__", str(TITLE_SZ))
+    .replace("__LABEL_SZ__", str(LABEL_SZ))
+    .replace("__INPUT_TXT__", str(INPUT_TXT))
+    .replace("__BTN_TXT_SZ__", str(BTN_TXT))
+    .replace("__LINK_SZ__", str(LINK_SZ))
+    .replace("__INPUT_H__", str(INPUT_H_PX))
+    .replace("__INPUT_RAD__", str(INPUT_RADIUS_PX))
+    .replace("__BTN_H__", str(BTN_H_PX))
+    .replace("__BTN_RAD__", str(BTN_RADIUS_PX))
+    .replace("__CARD_BG__", str(CARD_BG))
+    .replace("__CARD_BORDER__", str(CARD_BORDER))
+    .replace("__TXT_WHITE__", str(TXT_WHITE))
+    .replace("__TXT_MUTED__", str(TXT_MUTED))
+    .replace("__FIELD_BG__", str(FIELD_BG))
+    .replace("__FIELD_TXT__", str(FIELD_TXT))
+    .replace("__BTN_A__", str(BTN_GRAD_A))
+    .replace("__BTN_B__", str(BTN_GRAD_B))
+    .replace("__BTN_TXT__", str(BTN_TXT_COLOR))
+    .replace("__ERR_BG__", str(ERROR_BG))
+    .replace("__ERR_TXT__", str(ERROR_TXT))
+    .replace("__AUTH_URL__", AUTH_URL)
+    .replace("__TITLE_TEXT__", TITLE_TEXT)
+    .replace("__BTN_TEXT__", BTN_TEXT)
+    .replace("__LABEL_CORREO__", LABEL_CORREO)
+    .replace("__LABEL_DNI__", LABEL_DNI)
+    .replace("__LINK_LEFT__", LINK_LEFT)
+    .replace("__LINK_RIGHT__", LINK_RIGHT)
 )
 
 components.html(html, height=10, scrolling=False)
