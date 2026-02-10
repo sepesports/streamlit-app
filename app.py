@@ -3,8 +3,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # ================== AJUSTES (EDITA SOLO ESTO) ==================
-PAD_X_PX = 10
-PAD_TOP_PX = 10
+PAD_X_PX = 15
+PAD_TOP_PX = 15
 
 BORDER_PX = 2
 BORDER_COLOR = "#111111"
