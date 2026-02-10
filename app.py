@@ -18,7 +18,7 @@ if "authenticated" not in st.session_state:
 if not st.session_state.authenticated:
     st.switch_page("admin.py")
 
-# Configuración original (igual que tu archivo)
+# Configuración original
 PAD_X_PX = 8
 PAD_TOP_PX = 8
 BORDER_PX = 2
