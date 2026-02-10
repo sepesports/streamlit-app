@@ -19,7 +19,7 @@ FOOTER_BG = "#FFFFFF"       # blanco (pie)
 IMG_LEFT = 6     # %
 IMG_RIGHT = 6   # %
 IMG_TOP = 12     # % (desde arriba del cuadro)
-IMG_HEIGHT = 30  # % (alto del bloque imagen)
+IMG_HEIGHT = 20  # % (alto del bloque imagen)
 
 # Header (en % del cuadro)
 HEADER_TOP = 0
