@@ -74,8 +74,8 @@ BTN_BG = "#FFFFFF"          # Fondo botones (blanco)
 FOOTER_BG = "#FFFFFF"       # Fondo footer (blanco)
 
 # (4) IMAGEN (todo en % DEL CUADRO)
-IMG_LEFT = 3     # % | margen interno izquierdo de la imagen (la hace más angosta si sube)
-IMG_RIGHT = 3    # % | margen interno derecho
+IMG_LEFT = 0     # % | margen interno izquierdo de la imagen (la hace más angosta si sube) Estoy aqui
+IMG_RIGHT = 0    # % | margen interno derecho
 IMG_TOP = 12     # % | distancia desde arriba del cuadro (baja la imagen si sube)
 IMG_HEIGHT = 38  # % | alto del bloque de imagen
 
