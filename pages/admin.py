@@ -35,7 +35,7 @@ html, body{
   font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
-/* ====== LUX RED BACKGROUND (más “lujo”) ====== */
+/* ====== LUX RED BACKGROUND ====== */
 #stage{
   position:fixed;
   inset:0;
@@ -47,31 +47,34 @@ html, body{
   overflow:hidden;
 }
 
-/* brillo diagonal tipo “glass” */
+/* brillo diagonal tipo “glass” (más notorio) */
 #stage::before{
   content:"";
   position:absolute;
-  inset:-35%;
-  background: linear-gradient(135deg,
-    rgba(255,255,255,0.26) 0%,
-    rgba(255,255,255,0.14) 26%,
-    rgba(255,255,255,0.04) 42%,
-    rgba(255,255,255,0.00) 58%,
-    rgba(0,0,0,0.12) 100%);
+  inset:-40%;
+  background:
+    linear-gradient(135deg,
+      rgba(255,255,255,0.42) 0%,
+      rgba(255,255,255,0.24) 22%,
+      rgba(255,255,255,0.10) 38%,
+      rgba(255,255,255,0.02) 52%,
+      rgba(0,0,0,0.10) 100%);
   transform: rotate(-12deg);
-  filter: blur(0.8px);
+  filter: blur(1.4px);
   pointer-events:none;
 }
 
-/* viñeta suave para profundidad */
+/* “specular highlight” adicional (aire lujo) */
 #stage::after{
   content:"";
   position:absolute;
   inset:-10%;
-  background: radial-gradient(circle at 50% 8%,
-    rgba(255,255,255,0.08) 0%,
-    rgba(0,0,0,0.22) 55%,
-    rgba(0,0,0,0.55) 100%);
+  background:
+    radial-gradient(520px 300px at 50% 14%, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.08) 28%, rgba(255,255,255,0.00) 58%),
+    radial-gradient(circle at 50% 8%,
+      rgba(255,255,255,0.08) 0%,
+      rgba(0,0,0,0.22) 55%,
+      rgba(0,0,0,0.55) 100%);
   pointer-events:none;
 }
 
@@ -103,7 +106,7 @@ html, body{
   bottom:6%;
 }
 
-/* ====== TITLE (más grande, centrado, mejor tipografía) ====== */
+/* ====== TITLE ====== */
 .title{
   position:absolute;
   left:0; right:0;
@@ -119,7 +122,7 @@ html, body{
     0 2px 8px rgba(0,0,0,0.25);
 }
 
-/* Labels discretos (la referencia casi no los muestra) */
+/* Labels discretos */
 .label{
   position:absolute;
   left:18%;
@@ -131,7 +134,7 @@ html, body{
   text-shadow: 0 8px 18px rgba(0,0,0,0.28);
 }
 
-/* ====== INPUTS (píldoras claras) ====== */
+/* ====== INPUTS ====== */
 input.field{
   position:absolute;
   left:18%;
@@ -151,9 +154,7 @@ input.field{
   outline:none;
 }
 
-input.field::placeholder{
-  color: rgba(43,11,11,0.45);
-}
+input.field::placeholder{ color: rgba(43,11,11,0.45); }
 
 input.field:focus{
   box-shadow:
@@ -162,7 +163,7 @@ input.field:focus{
     inset 0 1px 0 rgba(255,255,255,0.62);
 }
 
-/* ====== BUTTON (píldora roja “lujo”) ====== */
+/* ====== BUTTON ====== */
 .btn{
   position:absolute;
   left:32%;
@@ -172,7 +173,7 @@ input.field:focus{
   border-radius: 999px;
   box-sizing:border-box;
   background:
-    radial-gradient(140px 90px at 50% 25%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 60%),
+    radial-gradient(140px 90px at 50% 25%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 60%),
     linear-gradient(180deg, #ff5a4a 0%, #e12822 48%, #b30c10 100%);
   box-shadow:
     0 18px 34px rgba(0,0,0,0.26),
@@ -218,7 +219,16 @@ input.field:focus{
   -webkit-backdrop-filter: blur(8px);
 }
 
-/* Ajuste fino tipográfico sin mover layout */
+/* ====== SOLO PANTALLA COMPUTADOR: SUBIR TAMAÑOS ====== */
+@media (min-width: 1024px){
+  .title{font-size:44px;}
+  .label{font-size:16px;}
+  input.field{font-size:18px;}
+  .btn{font-size:18px;}
+  .link{font-size:14px;}
+}
+
+/* móviles: se mantiene como estaba (no tocar layout) */
 @media (max-width: 420px){
   .title{font-size:26px;}
   input.field{font-size:14px;}
