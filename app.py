@@ -1,11 +1,15 @@
+import streamlit as st
 import requests
+
 r = requests.post(
     "https://camilo27.pythonanywhere.com/api/auth",
     data={"correo": "warja@gmail.com", "dni": "Y044"},
     timeout=10
 )
+
 st.write(r.status_code, r.text)
 st.stop()
+
 
 # app.py
 import streamlit as st
