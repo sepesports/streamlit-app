@@ -24,20 +24,64 @@ html = """
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
 <style>
-html, body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#fff;}
-#stage{position:fixed;inset:0;width:100vw;height:100vh;background:#fff;}
+/* ====== BASE / STAGE ====== */
+html, body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#0b0b0b;
+  font-family: Arial, sans-serif;
+}
 
+#stage{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  overflow:hidden;
+  background: linear-gradient(180deg, #ff8b7a 0%, #d84a3a 28%, #7b0f10 100%);
+}
+
+/* difuminado diagonal como la referencia */
+#stage::before{
+  content:"";
+  position:absolute;
+  inset:-25% -25%;
+  background:
+    linear-gradient(135deg,
+      rgba(255,255,255,0.22) 0%,
+      rgba(255,255,255,0.14) 35%,
+      rgba(255,255,255,0.00) 62%,
+      rgba(0,0,0,0.10) 100%);
+  transform: rotate(-12deg);
+  filter: blur(1px);
+  pointer-events:none;
+}
+
+/* viñeta suave */
+#stage::after{
+  content:"";
+  position:absolute;
+  inset:-10%;
+  background: radial-gradient(circle at 50% 10%, rgba(255,255,255,0.10) 0%, rgba(0,0,0,0.40) 55%, rgba(0,0,0,0.65) 100%);
+  pointer-events:none;
+}
+
+/* marco (solo visual) */
 #frame{
   position:absolute;
   left:10px; right:10px;
   top:10px; bottom:0;
-  border-left:2px solid #111;
-  border-right:2px solid #111;
-  border-top:2px solid #111;
+  border-left:0;
+  border-right:0;
+  border-top:0;
   box-sizing:border-box;
   pointer-events:none;
 }
 
+/* contenedor */
 #plan{
   position:absolute;
   left:10px; right:10px;
@@ -45,6 +89,7 @@ html, body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:
   overflow:hidden;
 }
 
+/* card */
 #card{
   position:absolute;
   left:6%;
@@ -53,77 +98,126 @@ html, body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:
   bottom:6%;
 }
 
+/* ====== TYPO ====== */
 .title{
   position:absolute;
   left:0; right:0;
   top:12%;
   text-align:center;
-  font:18px Arial, sans-serif;
-  font-weight:800;
-  color:#000;
+  font: 22px Arial, sans-serif;
+  font-weight:900;
+  letter-spacing:0.3px;
+  color: rgba(255,255,255,0.96);
+  text-shadow: 0 6px 18px rgba(0,0,0,0.35);
 }
 
 .label{
   position:absolute;
   left:18%;
   right:18%;
-  font:14px Arial, sans-serif;
+  font:12px Arial, sans-serif;
   font-weight:700;
-  color:#000;
+  color: rgba(255,255,255,0.86);
+  text-shadow: 0 4px 14px rgba(0,0,0,0.28);
 }
 
+/* ====== FIELDS (píldoras claras) ====== */
 input.field{
   position:absolute;
   left:18%;
   right:18%;
   height:10%;
-  border:2px solid #000;
-  border-radius:10px;
+  border: 0;
+  border-radius: 999px;
   box-sizing:border-box;
-  background:#fff;
-  padding: 0 12px;
+  background: rgba(255,255,255,0.84);
+  box-shadow:
+    0 10px 22px rgba(0,0,0,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.55);
+  padding: 0 16px;
   font:14px Arial, sans-serif;
-  font-weight:700;
-  color:#000;
+  font-weight:800;
+  color:#2a0c0c;
   outline:none;
 }
 
+input.field::placeholder{
+  color: rgba(42,12,12,0.45);
+}
+
+input.field:focus{
+  box-shadow:
+    0 12px 26px rgba(0,0,0,0.20),
+    0 0 0 3px rgba(255,255,255,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.60);
+}
+
+/* ====== BUTTON (rojo intenso) ====== */
 .btn{
   position:absolute;
-  left:32%;
-  right:32%;
+  left:24%;
+  right:24%;
   height:9%;
-  border:2px solid #000;
-  border-radius:10px;
+  border: 0;
+  border-radius: 999px;
   box-sizing:border-box;
-  background:#fff;
+  background: linear-gradient(180deg, #ff4a3a 0%, #e02b22 55%, #c81915 100%);
+  box-shadow:
+    0 14px 28px rgba(0,0,0,0.24),
+    inset 0 1px 0 rgba(255,255,255,0.28);
   display:flex;
   align-items:center;
   justify-content:center;
   font:14px Arial, sans-serif;
-  font-weight:700;
-  color:#000;
+  font-weight:900;
+  letter-spacing:0.2px;
+  color: rgba(255,255,255,0.96);
   cursor:pointer;
   user-select:none;
+  text-shadow: 0 6px 16px rgba(0,0,0,0.35);
 }
 
+.btn:hover{
+  filter: brightness(1.03);
+}
+
+.btn:active{
+  transform: translateY(1px);
+  filter: brightness(0.99);
+}
+
+/* ====== LINKS ====== */
 .link{
   position:absolute;
-  font:13px Arial, sans-serif;
-  font-weight:700;
-  color:#000;
+  font:12px Arial, sans-serif;
+  font-weight:800;
+  color: rgba(255,255,255,0.86);
   white-space:nowrap;
+  text-shadow: 0 6px 16px rgba(0,0,0,0.32);
+  opacity:0.92;
 }
 
+/* HUD discreto */
 #hud{
-  position:absolute; top:8px; left:8px;
-  font:12px Arial, sans-serif;
-  background: rgba(255,255,255,.92);
-  border:1px solid rgba(0,0,0,.2);
-  border-radius:6px;
-  padding:6px 10px;
+  position:absolute; top:10px; left:10px;
+  font:11px Arial, sans-serif;
+  background: rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 10px;
+  padding: 6px 10px;
+  color: rgba(255,255,255,0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   white-space:nowrap;
   pointer-events:none;
+}
+
+/* Responsivo fino (sin mover posiciones) */
+@media (max-width: 420px){
+  .title{font-size:20px;}
+  input.field{font-size:14px;}
+  .btn{font-size:14px;}
+  .label,.link{font-size:12px;}
 }
 </style>
 </head>
