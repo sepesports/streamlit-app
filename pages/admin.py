@@ -24,52 +24,58 @@ html = """
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
 <style>
-/* ====== BASE / STAGE ====== */
+/* ====== BASE ====== */
 html, body{
   margin:0;
   padding:0;
   width:100%;
   height:100%;
   overflow:hidden;
-  background:#0b0b0b;
-  font-family: Arial, sans-serif;
+  background:#070606;
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
+/* ====== LUX RED BACKGROUND (más “lujo”) ====== */
 #stage{
   position:fixed;
   inset:0;
   width:100vw;
   height:100vh;
+  background:
+    radial-gradient(1200px 700px at 50% 10%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 32%, rgba(0,0,0,0) 60%),
+    linear-gradient(180deg, #ff8a80 0%, #d12b2b 32%, #7b0a10 70%, #2a0004 100%);
   overflow:hidden;
-  background: linear-gradient(180deg, #ff8b7a 0%, #d84a3a 28%, #7b0f10 100%);
 }
 
-/* difuminado diagonal como la referencia */
+/* brillo diagonal tipo “glass” */
 #stage::before{
   content:"";
   position:absolute;
-  inset:-25% -25%;
-  background:
-    linear-gradient(135deg,
-      rgba(255,255,255,0.22) 0%,
-      rgba(255,255,255,0.14) 35%,
-      rgba(255,255,255,0.00) 62%,
-      rgba(0,0,0,0.10) 100%);
+  inset:-35%;
+  background: linear-gradient(135deg,
+    rgba(255,255,255,0.26) 0%,
+    rgba(255,255,255,0.14) 26%,
+    rgba(255,255,255,0.04) 42%,
+    rgba(255,255,255,0.00) 58%,
+    rgba(0,0,0,0.12) 100%);
   transform: rotate(-12deg);
-  filter: blur(1px);
+  filter: blur(0.8px);
   pointer-events:none;
 }
 
-/* viñeta suave */
+/* viñeta suave para profundidad */
 #stage::after{
   content:"";
   position:absolute;
   inset:-10%;
-  background: radial-gradient(circle at 50% 10%, rgba(255,255,255,0.10) 0%, rgba(0,0,0,0.40) 55%, rgba(0,0,0,0.65) 100%);
+  background: radial-gradient(circle at 50% 8%,
+    rgba(255,255,255,0.08) 0%,
+    rgba(0,0,0,0.22) 55%,
+    rgba(0,0,0,0.55) 100%);
   pointer-events:none;
 }
 
-/* marco (solo visual) */
+/* ====== FRAME (solo visual) ====== */
 #frame{
   position:absolute;
   left:10px; right:10px;
@@ -81,7 +87,7 @@ html, body{
   pointer-events:none;
 }
 
-/* contenedor */
+/* ====== LAYOUT (NO CAMBIAR POSICIONES) ====== */
 #plan{
   position:absolute;
   left:10px; right:10px;
@@ -89,7 +95,6 @@ html, body{
   overflow:hidden;
 }
 
-/* card */
 #card{
   position:absolute;
   left:6%;
@@ -98,126 +103,126 @@ html, body{
   bottom:6%;
 }
 
-/* ====== TYPO ====== */
+/* ====== TITLE (más grande, centrado, mejor tipografía) ====== */
 .title{
   position:absolute;
   left:0; right:0;
   top:12%;
   text-align:center;
-  font: 22px Arial, sans-serif;
+  font-size:28px;
+  line-height:1.05;
   font-weight:900;
-  letter-spacing:0.3px;
-  color: rgba(255,255,255,0.96);
-  text-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  letter-spacing:0.4px;
+  color: rgba(255,255,255,0.97);
+  text-shadow:
+    0 10px 26px rgba(0,0,0,0.35),
+    0 2px 8px rgba(0,0,0,0.25);
 }
 
+/* Labels discretos (la referencia casi no los muestra) */
 .label{
   position:absolute;
   left:18%;
   right:18%;
-  font:12px Arial, sans-serif;
-  font-weight:700;
-  color: rgba(255,255,255,0.86);
-  text-shadow: 0 4px 14px rgba(0,0,0,0.28);
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:0.2px;
+  color: rgba(255,255,255,0.72);
+  text-shadow: 0 8px 18px rgba(0,0,0,0.28);
 }
 
-/* ====== FIELDS (píldoras claras) ====== */
+/* ====== INPUTS (píldoras claras) ====== */
 input.field{
   position:absolute;
   left:18%;
   right:18%;
   height:10%;
-  border: 0;
+  border: 1px solid rgba(255,255,255,0.18);
   border-radius: 999px;
   box-sizing:border-box;
-  background: rgba(255,255,255,0.84);
+  background: rgba(255,255,255,0.86);
   box-shadow:
-    0 10px 22px rgba(0,0,0,0.18),
+    0 14px 28px rgba(0,0,0,0.20),
     inset 0 1px 0 rgba(255,255,255,0.55);
   padding: 0 16px;
-  font:14px Arial, sans-serif;
+  font-size:14px;
   font-weight:800;
-  color:#2a0c0c;
+  color:#2b0b0b;
   outline:none;
 }
 
 input.field::placeholder{
-  color: rgba(42,12,12,0.45);
+  color: rgba(43,11,11,0.45);
 }
 
 input.field:focus{
   box-shadow:
-    0 12px 26px rgba(0,0,0,0.20),
-    0 0 0 3px rgba(255,255,255,0.25),
-    inset 0 1px 0 rgba(255,255,255,0.60);
+    0 16px 34px rgba(0,0,0,0.22),
+    0 0 0 3px rgba(255,255,255,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.62);
 }
 
-/* ====== BUTTON (rojo intenso) ====== */
+/* ====== BUTTON (píldora roja “lujo”) ====== */
 .btn{
   position:absolute;
-  left:24%;
-  right:24%;
+  left:32%;
+  right:32%;
   height:9%;
-  border: 0;
+  border: 1px solid rgba(255,255,255,0.16);
   border-radius: 999px;
   box-sizing:border-box;
-  background: linear-gradient(180deg, #ff4a3a 0%, #e02b22 55%, #c81915 100%);
+  background:
+    radial-gradient(140px 90px at 50% 25%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 60%),
+    linear-gradient(180deg, #ff5a4a 0%, #e12822 48%, #b30c10 100%);
   box-shadow:
-    0 14px 28px rgba(0,0,0,0.24),
-    inset 0 1px 0 rgba(255,255,255,0.28);
+    0 18px 34px rgba(0,0,0,0.26),
+    inset 0 1px 0 rgba(255,255,255,0.24);
   display:flex;
   align-items:center;
   justify-content:center;
-  font:14px Arial, sans-serif;
+  font-size:14px;
   font-weight:900;
-  letter-spacing:0.2px;
-  color: rgba(255,255,255,0.96);
+  letter-spacing:0.25px;
+  color: rgba(255,255,255,0.97);
   cursor:pointer;
   user-select:none;
-  text-shadow: 0 6px 16px rgba(0,0,0,0.35);
+  text-shadow: 0 10px 22px rgba(0,0,0,0.35);
 }
 
-.btn:hover{
-  filter: brightness(1.03);
-}
-
-.btn:active{
-  transform: translateY(1px);
-  filter: brightness(0.99);
-}
+.btn:hover{ filter: brightness(1.03); }
+.btn:active{ transform: translateY(1px); filter: brightness(0.99); }
 
 /* ====== LINKS ====== */
 .link{
   position:absolute;
-  font:12px Arial, sans-serif;
+  font-size:12px;
   font-weight:800;
-  color: rgba(255,255,255,0.86);
+  color: rgba(255,255,255,0.78);
   white-space:nowrap;
-  text-shadow: 0 6px 16px rgba(0,0,0,0.32);
+  text-shadow: 0 10px 22px rgba(0,0,0,0.30);
   opacity:0.92;
 }
 
 /* HUD discreto */
 #hud{
-  position:absolute; top:10px; left:10px;
-  font:11px Arial, sans-serif;
-  background: rgba(0,0,0,0.18);
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 10px;
-  padding: 6px 10px;
+  position:absolute; top:8px; left:8px;
+  font:12px Arial, sans-serif;
+  background: rgba(0,0,0,0.16);
+  border:1px solid rgba(255,255,255,0.14);
+  border-radius:10px;
+  padding:6px 10px;
+  white-space:nowrap;
+  pointer-events:none;
   color: rgba(255,255,255,0.78);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  white-space:nowrap;
-  pointer-events:none;
 }
 
-/* Responsivo fino (sin mover posiciones) */
+/* Ajuste fino tipográfico sin mover layout */
 @media (max-width: 420px){
-  .title{font-size:20px;}
+  .title{font-size:26px;}
   input.field{font-size:14px;}
   .btn{font-size:14px;}
-  .label,.link{font-size:12px;}
 }
 </style>
 </head>
