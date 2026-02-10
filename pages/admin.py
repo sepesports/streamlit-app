@@ -24,11 +24,7 @@ html = """
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
 <style>
-/* =========================================================
-   TAMAÑOS (EDITA SOLO ESTAS VARIABLES)
-   ========================================================= */
 :root{
-  /* Paleta / efectos (TU CSS) */
   --bgTop: #e06b6a;
   --bgMid: #b53a33;
   --bgDeep:#3b0707;
@@ -36,7 +32,6 @@ html = """
   --overlay1: rgba(120, 0, 0, .42);
   --overlay2: rgba(20, 0, 0, .55);
 
-  --white: #ffffff;
   --ink: rgba(255,255,255,.92);
   --muted: rgba(255,255,255,.62);
 
@@ -48,31 +43,20 @@ html = """
 
   --shadow1: 0 22px 55px rgba(0,0,0,.55);
   --shadow2: 0 10px 22px rgba(0,0,0,.40);
-  --inner: inset 0 1px 0 rgba(255,255,255,.22);
-  --blur: 14px;
-  --radius: 34px;
 
-  /* Tamaños de texto */
-  --fs-title: 44px;      /* Welcome */
-  --fs-label: 14px;      /* Usuario / Contraseña */
-  --fs-input: 14px;      /* texto en inputs */
-  --fs-btn:   14px;      /* texto botón */
-  --fs-link:  12px;      /* Politicas / Registrarse */
+  --blur: 14px;
 }
 
 *{box-sizing:border-box}
-html,body{height:100%}
-
 html, body{
   margin:0;
   padding:0;
   width:100%;
   height:100%;
   overflow:hidden;
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background:#07070b;
 }
 
-/* ====== FONDO GENERAL (tu body) ====== */
 #stage{
   position:fixed;
   inset:0;
@@ -82,67 +66,28 @@ html, body{
     radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.18), transparent 60%),
     radial-gradient(900px 700px at 20% 120%, rgba(255,0,0,.12), transparent 60%),
     linear-gradient(180deg, #101018 0%, #07070b 100%);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-/* ====== MARCO (tu .phone) aplicado a #frame, sin cambiar estructura ====== */
-#frame{
-  position:absolute;
-  left:10px; right:10px;
-  top:10px; bottom:0;
-  border-radius: 42px;
-  background: rgba(255,255,255,.06);
-  box-shadow: 0 30px 90px rgba(0,0,0,.70);
-  border: 1px solid rgba(255,255,255,.10);
-  overflow:hidden;
-  pointer-events:none;
-}
-
-#frame::before{
-  content:"";
-  position:absolute; inset:-2px;
-  border-radius:44px;
-  background:
-    radial-gradient(220px 160px at 35% 0%, rgba(255,255,255,.18), transparent 60%),
-    linear-gradient(135deg, rgba(255,255,255,.10), transparent 45%);
-  mix-blend-mode: screen;
-  pointer-events:none;
-}
-
-#frame::after{
-  content:"";
-  position:absolute; inset:0;
-  border-radius:42px;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
-  pointer-events:none;
-}
-
-/* ====== CONTENEDOR (igual que antes) ====== */
+/* Fondo rojo + corte diagonal + viñeta (sin cambiar layout) */
 #plan{
   position:absolute;
   left:10px; right:10px;
   top:10px; bottom:0;
   overflow:hidden;
-}
 
-/* ====== “PANTALLA” (tu .screen) aplicado a #card, conservando su ubicación ====== */
-#card{
-  position:absolute;
-  left:6%;
-  right:6%;
-  top:6%;
-  bottom:6%;
-  border-radius: var(--radius);
-  overflow:hidden;
+  border-radius: 34px;
   box-shadow: var(--shadow1);
   background:
     linear-gradient(180deg, rgba(255,255,255,.22) 0%, transparent 22%),
     linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #7b1b19 58%, var(--bgDeep) 100%);
 }
 
-/* overlay diagonal (tu .screen::before) */
-#card::before{
+/* corte diagonal */
+#plan::before{
   content:"";
-  position:absolute; inset:-10%;
+  position:absolute;
+  inset:-10%;
   background:
     linear-gradient(135deg,
       transparent 0%,
@@ -155,10 +100,11 @@ html, body{
   pointer-events:none;
 }
 
-/* brillo + viñeta (tu .screen::after) */
-#card::after{
+/* viñeta + profundidad inferior */
+#plan::after{
   content:"";
-  position:absolute; inset:0;
+  position:absolute;
+  inset:0;
   background:
     radial-gradient(80% 70% at 50% 25%, rgba(255,255,255,.06), transparent 55%),
     radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
@@ -166,47 +112,77 @@ html, body{
   pointer-events:none;
 }
 
-/* ====== TEXTOS ====== */
+/* marco existente: suavizado visual (sin moverlo) */
+#frame{
+  position:absolute;
+  left:10px; right:10px;
+  top:10px; bottom:0;
+  border-left: 2px solid rgba(255,255,255,.14);
+  border-right:2px solid rgba(255,255,255,.14);
+  border-top:  2px solid rgba(255,255,255,.14);
+  box-sizing:border-box;
+  pointer-events:none;
+  border-radius: 34px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
+}
+
+/* contenedor del card: se mantiene igual */
+#card{
+  position:absolute;
+  left:6%;
+  right:6%;
+  top:6%;
+  bottom:6%;
+}
+
+/* textos: solo visual */
 .title{
   position:absolute;
   left:0; right:0;
   top:12%;
   text-align:center;
-  margin:0;
-  color:var(--ink);
-  font-size: var(--fs-title);
+  font:18px Arial, sans-serif;
   font-weight:800;
+  color: var(--ink);
   text-shadow: 0 8px 18px rgba(0,0,0,.35);
+  letter-spacing: .2px;
 }
 
 .label{
   position:absolute;
   left:18%;
   right:18%;
-  font-size: var(--fs-label);
+  font:14px Arial, sans-serif;
   font-weight:700;
-  color: var(--muted);
-  text-shadow: 0 6px 14px rgba(0,0,0,.28);
+  color: rgba(255,255,255,.82);
+  text-shadow: 0 6px 14px rgba(0,0,0,.30);
 }
 
-/* ====== INPUTS (tu .pill, adaptado a input.field sin wrappers) ====== */
+/* inputs: pill + blur (misma posición/alto por inline style) */
 input.field{
   position:absolute;
   left:18%;
   right:18%;
   height:10%;
-  border-radius:999px;
+
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 999px;
+
+  box-sizing:border-box;
   background:
     linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
-  border:1px solid rgba(255,255,255,.55);
+
+  padding: 0 14px;
+  font:14px Arial, sans-serif;
+  font-weight:700;
+  color: rgba(30,40,55,.92);
+
+  outline:none;
+
   box-shadow:
     0 10px 18px rgba(0,0,0,.22),
     inset 0 1px 0 rgba(255,255,255,.55);
-  padding:0 16px;
-  outline:none;
-  font-size: var(--fs-input);
-  color: rgba(30,40,55,.92);
-  font-weight:700;
+
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
 }
@@ -215,28 +191,37 @@ input.field::placeholder{
   color: rgba(60,70,85,.55);
 }
 
-/* ====== BOTÓN (tu .btn, manteniendo posición) ====== */
+/* botón: pill rojo (misma posición/alto por inline style) */
 .btn{
   position:absolute;
   left:32%;
   right:32%;
   height:9%;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.18);
+
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 999px;
+
+  box-sizing:border-box;
+
   background:
     radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.26), transparent 60%),
     linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
+
   box-shadow:
     0 18px 26px rgba(0,0,0,.28),
     inset 0 1px 0 rgba(255,255,255,.22);
+
   display:flex;
   align-items:center;
   justify-content:center;
-  color:white;
+
+  font:14px Arial, sans-serif;
   font-weight:700;
-  font-size: var(--fs-btn);
+  color: rgba(255,255,255,.92);
+
   cursor:pointer;
   user-select:none;
+
   transition: transform .12s ease, filter .12s ease;
 }
 
@@ -245,35 +230,34 @@ input.field::placeholder{
   filter: brightness(.98);
 }
 
-/* ====== TEXTO INFERIOR (tu .small) aplicado a .link ====== */
+/* links inferiores: mismo layout (solo color) */
 .link{
   position:absolute;
-  font-size: var(--fs-link);
-  color: rgba(255,255,255,.55);
+  font:13px Arial, sans-serif;
   font-weight:700;
+  color: rgba(255,255,255,.70);
   white-space:nowrap;
-  text-shadow: 0 6px 14px rgba(0,0,0,.28);
+  text-shadow: 0 6px 14px rgba(0,0,0,.30);
 }
 
-/* acento para “Registrarse” (como tu .small span:last-child) */
-.link.accent{
-  color: rgba(255,80,70,.75);
-  font-weight:800;
+.link:hover{
+  color: rgba(255,255,255,.85);
 }
 
-/* HUD igual funcional, solo visual */
+/* HUD: mantener, solo estética */
 #hud{
   position:absolute; top:8px; left:8px;
   font:12px Arial, sans-serif;
-  background: rgba(255,255,255,.18);
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:10px;
-  padding:6px 10px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 10px;
+  padding: 6px 10px;
   white-space:nowrap;
   pointer-events:none;
-  color: rgba(255,255,255,.78);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  color: rgba(255,255,255,.70);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 18px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.14);
 }
 </style>
 </head>
@@ -284,7 +268,7 @@ input.field::placeholder{
 
   <div id="plan">
     <div id="card">
-      <div class="title">Welcome</div>
+      <div class="title">¡BIENVENIDO!</div>
 
       <div class="label" style="top:22%;">Usuario:</div>
       <input id="user" class="field" style="top:28%;" autocomplete="username"/>
@@ -295,7 +279,7 @@ input.field::placeholder{
       <div class="btn" style="top:67%;" onclick="doLogin()">Login</div>
 
       <div class="link" style="top:78%; left:20%;">Politicas:</div>
-      <div class="link accent" style="top:78%; left:68%;">Registrarse:</div>
+      <div class="link" style="top:78%; left:68%;">Registrarse:</div>
     </div>
 
     <div id="hud">Cargando...</div>
@@ -358,4 +342,3 @@ async function doLogin(){
 """
 
 components.html(html, height=10, scrolling=False)
-"""
