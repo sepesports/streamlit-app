@@ -35,47 +35,96 @@ html, body{
   font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
-/* ====== LUX RED BACKGROUND ====== */
+/* =========================================================
+   AJUSTE RÁPIDO DE TAMAÑOS (EDITA SOLO ESTO)
+   - title: “Welcome” / “¡BIENVENIDO!”
+   - label: “Usuario / Contraseña”
+   - input: texto dentro de inputs
+   - btn: texto del botón
+   - link: “Politicas / Registrarse”
+   ========================================================= */
+:root{
+  --fs-title: 28px;   /* (móvil/tablet) */
+  --fs-label: 12px;
+  --fs-input: 14px;
+  --fs-btn:   14px;
+  --fs-link:  12px;
+
+  /* SOLO PANTALLA COMPUTADOR (>=1024px) */
+  --fs-title-desktop: 44px;
+  --fs-label-desktop: 16px;
+  --fs-input-desktop: 18px;
+  --fs-btn-desktop:   18px;
+  --fs-link-desktop:  14px;
+}
+
+/* ====== LUX RED / VINOTINTO BACKGROUND ====== */
 #stage{
   position:fixed;
   inset:0;
   width:100vw;
   height:100vh;
-  background:
-    radial-gradient(1200px 700px at 50% 10%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 32%, rgba(0,0,0,0) 60%),
-    linear-gradient(180deg, #ff8a80 0%, #d12b2b 32%, #7b0a10 70%, #2a0004 100%);
   overflow:hidden;
+
+  /* base rojo/vinotinto + profundidad */
+  background:
+    radial-gradient(1200px 700px at 50% 10%,
+      rgba(255,255,255,0.16) 0%,
+      rgba(255,255,255,0.05) 34%,
+      rgba(0,0,0,0.00) 62%),
+    linear-gradient(180deg,
+      #ff8a80 0%,
+      #d12b2b 30%,
+      #7b0a10 66%,
+      #240005 100%);
 }
 
-/* brillo diagonal tipo “glass” (más notorio) */
+/* ====== EFECTO “LUJO”: BRILLO GRIS/PLATA ENTRE MATICES ======
+   La imagen tiene un reflejo diagonal tipo vidrio + brillo “plata”
+   que cae sobre el rojo (no es blanco puro, es gris cálido).
+*/
 #stage::before{
   content:"";
   position:absolute;
-  inset:-40%;
+  inset:-45%;
+  transform: rotate(-12deg);
+  pointer-events:none;
+
+  /* Capa 1: reflejo diagonal “glass” */
   background:
     linear-gradient(135deg,
-      rgba(255,255,255,0.42) 0%,
-      rgba(255,255,255,0.24) 22%,
-      rgba(255,255,255,0.10) 38%,
-      rgba(255,255,255,0.02) 52%,
+      rgba(235,235,235,0.48) 0%,
+      rgba(235,235,235,0.26) 18%,
+      rgba(235,235,235,0.12) 34%,
+      rgba(235,235,235,0.04) 48%,
       rgba(0,0,0,0.10) 100%);
-  transform: rotate(-12deg);
-  filter: blur(1.4px);
-  pointer-events:none;
+  filter: blur(1.35px);
+  mix-blend-mode: screen;
+  opacity: 0.92;
 }
 
-/* “specular highlight” adicional (aire lujo) */
+/* Capa 2: highlight “specular” gris suave + viñeta para lujo */
 #stage::after{
   content:"";
   position:absolute;
-  inset:-10%;
-  background:
-    radial-gradient(520px 300px at 50% 14%, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.08) 28%, rgba(255,255,255,0.00) 58%),
-    radial-gradient(circle at 50% 8%,
-      rgba(255,255,255,0.08) 0%,
-      rgba(0,0,0,0.22) 55%,
-      rgba(0,0,0,0.55) 100%);
+  inset:-12%;
   pointer-events:none;
+
+  background:
+    /* brillo gris/plata central (aire lujo) */
+    radial-gradient(520px 300px at 50% 14%,
+      rgba(230,230,230,0.22) 0%,
+      rgba(230,230,230,0.10) 26%,
+      rgba(230,230,230,0.00) 60%),
+    /* micro-reflejo lateral (similar a “glass edge”) */
+    radial-gradient(420px 240px at 82% 26%,
+      rgba(235,235,235,0.10) 0%,
+      rgba(235,235,235,0.00) 62%),
+    /* viñeta (profundidad) */
+    radial-gradient(circle at 50% 10%,
+      rgba(255,255,255,0.06) 0%,
+      rgba(0,0,0,0.22) 56%,
+      rgba(0,0,0,0.58) 100%);
 }
 
 /* ====== FRAME (solo visual) ====== */
@@ -83,14 +132,11 @@ html, body{
   position:absolute;
   left:10px; right:10px;
   top:10px; bottom:0;
-  border-left:0;
-  border-right:0;
-  border-top:0;
   box-sizing:border-box;
   pointer-events:none;
 }
 
-/* ====== LAYOUT (NO CAMBIAR POSICIONES) ====== */
+/* ====== LAYOUT (MISMA ESTRUCTURA / POSICIONES) ====== */
 #plan{
   position:absolute;
   left:10px; right:10px;
@@ -112,22 +158,24 @@ html, body{
   left:0; right:0;
   top:12%;
   text-align:center;
-  font-size:35px;
+
+  font-size: var(--fs-title);
   line-height:1.05;
   font-weight:900;
   letter-spacing:0.4px;
+
   color: rgba(255,255,255,0.97);
   text-shadow:
     0 10px 26px rgba(0,0,0,0.35),
     0 2px 8px rgba(0,0,0,0.25);
 }
 
-/* Labels discretos */
+/* ====== LABELS ====== */
 .label{
   position:absolute;
   left:18%;
   right:18%;
-  font-size:12px;
+  font-size: var(--fs-label);
   font-weight:800;
   letter-spacing:0.2px;
   color: rgba(255,255,255,0.72);
@@ -140,26 +188,32 @@ input.field{
   left:18%;
   right:18%;
   height:10%;
+
   border: 1px solid rgba(255,255,255,0.18);
   border-radius: 999px;
   box-sizing:border-box;
+
   background: rgba(255,255,255,0.86);
   box-shadow:
     0 14px 28px rgba(0,0,0,0.20),
     inset 0 1px 0 rgba(255,255,255,0.55);
+
   padding: 0 16px;
-  font-size:14px;
+
+  font-size: var(--fs-input);
   font-weight:800;
   color:#2b0b0b;
   outline:none;
 }
 
-input.field::placeholder{ color: rgba(43,11,11,0.45); }
+input.field::placeholder{
+  color: rgba(43,11,11,0.45);
+}
 
 input.field:focus{
   box-shadow:
     0 16px 34px rgba(0,0,0,0.22),
-    0 0 0 3px rgba(255,255,255,0.18),
+    0 0 0 3px rgba(230,230,230,0.18),
     inset 0 1px 0 rgba(255,255,255,0.62);
 }
 
@@ -169,21 +223,32 @@ input.field:focus{
   left:32%;
   right:32%;
   height:9%;
+
   border: 1px solid rgba(255,255,255,0.16);
   border-radius: 999px;
   box-sizing:border-box;
+
   background:
-    radial-gradient(140px 90px at 50% 25%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 60%),
-    linear-gradient(180deg, #ff5a4a 0%, #e12822 48%, #b30c10 100%);
+    radial-gradient(140px 90px at 50% 25%,
+      rgba(235,235,235,0.18) 0%,
+      rgba(235,235,235,0.00) 60%),
+    linear-gradient(180deg,
+      #ff5a4a 0%,
+      #e12822 48%,
+      #b30c10 100%);
+
   box-shadow:
     0 18px 34px rgba(0,0,0,0.26),
     inset 0 1px 0 rgba(255,255,255,0.24);
+
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:14px;
+
+  font-size: var(--fs-btn);
   font-weight:900;
   letter-spacing:0.25px;
+
   color: rgba(255,255,255,0.97);
   cursor:pointer;
   user-select:none;
@@ -196,7 +261,7 @@ input.field:focus{
 /* ====== LINKS ====== */
 .link{
   position:absolute;
-  font-size:12px;
+  font-size: var(--fs-link);
   font-weight:800;
   color: rgba(255,255,255,0.78);
   white-space:nowrap;
@@ -219,20 +284,20 @@ input.field:focus{
   -webkit-backdrop-filter: blur(8px);
 }
 
-/* ====== SOLO PANTALLA COMPUTADOR: SUBIR TAMAÑOS ====== */
+/* ====== SOLO PANTALLA COMPUTADOR ====== */
 @media (min-width: 1024px){
-  .title{font-size:44px;}
-  .label{font-size:16px;}
-  input.field{font-size:18px;}
-  .btn{font-size:18px;}
-  .link{font-size:14px;}
+  .title{font-size: var(--fs-title-desktop);}
+  .label{font-size: var(--fs-label-desktop);}
+  input.field{font-size: var(--fs-input-desktop);}
+  .btn{font-size: var(--fs-btn-desktop);}
+  .link{font-size: var(--fs-link-desktop);}
 }
 
-/* móviles: se mantiene como estaba (no tocar layout) */
+/* móviles */
 @media (max-width: 420px){
-  .title{font-size:26px;}
-  input.field{font-size:14px;}
-  .btn{font-size:14px;}
+  .title{font-size: var(--fs-title);}
+  input.field{font-size: var(--fs-input);}
+  .btn{font-size: var(--fs-btn);}
 }
 </style>
 </head>
@@ -276,7 +341,6 @@ async function doLogin(){
     const j = await r.json();
 
     if (j && j.ok === true){
-      // IMPORTANTE: no usar window.top (sandbox lo bloquea)
       window.location.href = "/?auth=ok";
     } else {
       alert("Credenciales inválidas");
