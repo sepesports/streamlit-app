@@ -24,25 +24,11 @@ html = """
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
 <style>
-/* =========================
-   TAMAÑOS DE TEXTO (EDITA SOLO ESTO)
-   ========================= */
+/* =========================================================
+   TAMAÑOS (EDITA SOLO ESTAS VARIABLES)
+   ========================================================= */
 :root{
-  --fs-title: 34px;      /* título móvil/tablet */
-  --fs-label: 12px;      /* labels móvil/tablet */
-  --fs-input: 14px;      /* texto input móvil/tablet */
-  --fs-btn:   14px;      /* texto botón móvil/tablet */
-  --fs-link:  12px;      /* links móvil/tablet */
-
-  --fs-title-desktop: 54px; /* título SOLO computador */
-  --fs-label-desktop: 16px;
-  --fs-input-desktop: 18px;
-  --fs-btn-desktop:   18px;
-  --fs-link-desktop:  14px;
-
-  /* =========================
-     PALETA / EFECTOS (TU CSS)
-     ========================= */
+  /* Paleta / efectos (TU CSS) */
   --bgTop: #e06b6a;
   --bgMid: #b53a33;
   --bgDeep:#3b0707;
@@ -65,10 +51,17 @@ html = """
   --inner: inset 0 1px 0 rgba(255,255,255,.22);
   --blur: 14px;
   --radius: 34px;
+
+  /* Tamaños de texto */
+  --fs-title: 44px;      /* Welcome */
+  --fs-label: 14px;      /* Usuario / Contraseña */
+  --fs-input: 14px;      /* texto en inputs */
+  --fs-btn:   14px;      /* texto botón */
+  --fs-link:  12px;      /* Politicas / Registrarse */
 }
 
-*{ box-sizing:border-box; }
-html,body{ height:100%; }
+*{box-sizing:border-box}
+html,body{height:100%}
 
 html, body{
   margin:0;
@@ -79,45 +72,24 @@ html, body{
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-/* =========================
-   FONDO GENERAL (como tu body)
-   ========================= */
+/* ====== FONDO GENERAL (tu body) ====== */
 #stage{
   position:fixed;
   inset:0;
   width:100vw;
   height:100vh;
-  overflow:hidden;
   background:
     radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.18), transparent 60%),
     radial-gradient(900px 700px at 20% 120%, rgba(255,0,0,.12), transparent 60%),
     linear-gradient(180deg, #101018 0%, #07070b 100%);
 }
 
-/* =========================
-   “PHONE” (marco) usando #plan
-   NO CAMBIA ESTRUCTURA, SOLO ESTILO
-   ========================= */
-#plan{
+/* ====== MARCO (tu .phone) aplicado a #frame, sin cambiar estructura ====== */
+#frame{
   position:absolute;
   left:10px; right:10px;
   top:10px; bottom:0;
-
-  /* centrado tipo phone sin alterar lógica */
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  overflow:hidden;
-}
-
-/* el marco visible */
-#frame{
-  position:absolute;
-  width:min(390px, 92vw);
-  aspect-ratio: 9 / 19.5;
   border-radius: 42px;
-  padding:14px;
   background: rgba(255,255,255,.06);
   box-shadow: 0 30px 90px rgba(0,0,0,.70);
   border: 1px solid rgba(255,255,255,.10);
@@ -125,7 +97,6 @@ html, body{
   pointer-events:none;
 }
 
-/* brillo del marco */
 #frame::before{
   content:"";
   position:absolute; inset:-2px;
@@ -137,7 +108,6 @@ html, body{
   pointer-events:none;
 }
 
-/* borde interno oscuro */
 #frame::after{
   content:"";
   position:absolute; inset:0;
@@ -146,24 +116,30 @@ html, body{
   pointer-events:none;
 }
 
-/* =========================
-   “SCREEN” (pantalla) usando #card
-   ========================= */
+/* ====== CONTENEDOR (igual que antes) ====== */
+#plan{
+  position:absolute;
+  left:10px; right:10px;
+  top:10px; bottom:0;
+  overflow:hidden;
+}
+
+/* ====== “PANTALLA” (tu .screen) aplicado a #card, conservando su ubicación ====== */
 #card{
-  position:relative;
-  width:min(390px, 92vw);
-  aspect-ratio: 9 / 19.5;
+  position:absolute;
+  left:6%;
+  right:6%;
+  top:6%;
+  bottom:6%;
   border-radius: var(--radius);
   overflow:hidden;
   box-shadow: var(--shadow1);
-
-  /* tu gradiente de pantalla */
   background:
     linear-gradient(180deg, rgba(255,255,255,.22) 0%, transparent 22%),
     linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #7b1b19 58%, var(--bgDeep) 100%);
 }
 
-/* overlay diagonal (tu screen::before) */
+/* overlay diagonal (tu .screen::before) */
 #card::before{
   content:"";
   position:absolute; inset:-10%;
@@ -179,7 +155,7 @@ html, body{
   pointer-events:none;
 }
 
-/* brillo/vineta (tu screen::after) */
+/* brillo + viñeta (tu .screen::after) */
 #card::after{
   content:"";
   position:absolute; inset:0;
@@ -190,17 +166,14 @@ html, body{
   pointer-events:none;
 }
 
-/* =========================
-   TEXTO / CAMPOS (misma ubicación absoluta)
-   ========================= */
+/* ====== TEXTOS ====== */
 .title{
   position:absolute;
   left:0; right:0;
   top:12%;
   text-align:center;
   margin:0;
-
-  color: var(--ink);
+  color:var(--ink);
   font-size: var(--fs-title);
   font-weight:800;
   text-shadow: 0 8px 18px rgba(0,0,0,.35);
@@ -211,51 +184,43 @@ html, body{
   left:18%;
   right:18%;
   font-size: var(--fs-label);
-  font-weight:800;
-  color: rgba(255,255,255,.62);
+  font-weight:700;
+  color: var(--muted);
   text-shadow: 0 6px 14px rgba(0,0,0,.28);
 }
 
-/* inputs (equivalente a .pill) */
+/* ====== INPUTS (tu .pill, adaptado a input.field sin wrappers) ====== */
 input.field{
   position:absolute;
   left:18%;
   right:18%;
-  height:44px;                 /* fijo como tu .pill */
+  height:10%;
   border-radius:999px;
-  border:1px solid rgba(255,255,255,.55);
   background:
     linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
+  border:1px solid rgba(255,255,255,.55);
   box-shadow:
     0 10px 18px rgba(0,0,0,.22),
     inset 0 1px 0 rgba(255,255,255,.55);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
-
   padding:0 16px;
   outline:none;
-
   font-size: var(--fs-input);
   color: rgba(30,40,55,.92);
   font-weight:700;
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
 }
 
 input.field::placeholder{
   color: rgba(60,70,85,.55);
 }
 
-input.field:focus{
-  box-shadow:
-    0 12px 22px rgba(0,0,0,.26),
-    inset 0 1px 0 rgba(255,255,255,.60);
-}
-
-/* botón (tu .btn) */
+/* ====== BOTÓN (tu .btn, manteniendo posición) ====== */
 .btn{
   position:absolute;
-  left:18%;
-  right:18%;
-  height:52px;                 /* como tu .btn */
+  left:32%;
+  right:32%;
+  height:9%;
   border-radius:999px;
   border:1px solid rgba(255,255,255,.18);
   background:
@@ -264,17 +229,15 @@ input.field:focus{
   box-shadow:
     0 18px 26px rgba(0,0,0,.28),
     inset 0 1px 0 rgba(255,255,255,.22);
-
   display:flex;
   align-items:center;
   justify-content:center;
-
-  color:#fff;
+  color:white;
   font-weight:700;
   font-size: var(--fs-btn);
   cursor:pointer;
-  transition: transform .12s ease, filter .12s ease;
   user-select:none;
+  transition: transform .12s ease, filter .12s ease;
 }
 
 .btn:active{
@@ -282,42 +245,35 @@ input.field:focus{
   filter: brightness(.98);
 }
 
-/* texto inferior (small) */
+/* ====== TEXTO INFERIOR (tu .small) aplicado a .link ====== */
 .link{
   position:absolute;
   font-size: var(--fs-link);
   color: rgba(255,255,255,.55);
   font-weight:700;
+  white-space:nowrap;
   text-shadow: 0 6px 14px rgba(0,0,0,.28);
 }
 
-.link.link-accent{
+/* acento para “Registrarse” (como tu .small span:last-child) */
+.link.accent{
   color: rgba(255,80,70,.75);
   font-weight:800;
 }
 
-/* HUD (dejar igual, solo visual) */
+/* HUD igual funcional, solo visual */
 #hud{
-  position:absolute; top:10px; left:10px;
-  font:11px Arial, sans-serif;
-  background: rgba(0,0,0,.18);
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: 10px;
-  padding: 6px 10px;
+  position:absolute; top:8px; left:8px;
+  font:12px Arial, sans-serif;
+  background: rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:10px;
+  padding:6px 10px;
+  white-space:nowrap;
+  pointer-events:none;
   color: rgba(255,255,255,.78);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  white-space:nowrap;
-  pointer-events:none;
-}
-
-/* SOLO PANTALLA COMPUTADOR */
-@media (min-width: 1024px){
-  .title{ font-size: var(--fs-title-desktop); }
-  .label{ font-size: var(--fs-label-desktop); }
-  input.field{ font-size: var(--fs-input-desktop); }
-  .btn{ font-size: var(--fs-btn-desktop); }
-  .link{ font-size: var(--fs-link-desktop); }
 }
 </style>
 </head>
@@ -331,18 +287,18 @@ input.field:focus{
       <div class="title">Welcome</div>
 
       <div class="label" style="top:22%;">Usuario:</div>
-      <input id="user" class="field" style="top:28%;" autocomplete="username" placeholder=""/>
+      <input id="user" class="field" style="top:28%;" autocomplete="username"/>
 
       <div class="label" style="top:42%;">Contraseña:</div>
-      <input id="pass" class="field" style="top:48%;" type="password" autocomplete="current-password" placeholder=""/>
+      <input id="pass" class="field" style="top:48%;" type="password" autocomplete="current-password"/>
 
       <div class="btn" style="top:67%;" onclick="doLogin()">Login</div>
 
       <div class="link" style="top:78%; left:20%;">Politicas:</div>
-      <div class="link link-accent" style="top:78%; left:68%;">Registrarse:</div>
-
-      <div id="hud">Cargando...</div>
+      <div class="link accent" style="top:78%; left:68%;">Registrarse:</div>
     </div>
+
+    <div id="hud">Cargando...</div>
   </div>
 </div>
 
@@ -361,6 +317,7 @@ async function doLogin(){
     const j = await r.json();
 
     if (j && j.ok === true){
+      // IMPORTANTE: no usar window.top (sandbox lo bloquea)
       window.location.href = "/?auth=ok";
     } else {
       alert("Credenciales inválidas");
@@ -385,11 +342,11 @@ async function doLogin(){
   }
 
   var hud=document.getElementById("hud");
-  var card=document.getElementById("card");
+  var plan=document.getElementById("plan");
   function update(){
-    var r=card.getBoundingClientRect();
+    var r=plan.getBoundingClientRect();
     hud.textContent="Viewport(px): "+Math.round(window.innerWidth)+" x "+Math.round(window.innerHeight)+
-                    " | Card(px): "+Math.round(r.width)+" x "+Math.round(r.height);
+                    " | Plan(px): "+Math.round(r.width)+" x "+Math.round(r.height);
   }
   window.addEventListener("resize", update);
   update();
@@ -401,3 +358,4 @@ async function doLogin(){
 """
 
 components.html(html, height=10, scrolling=False)
+"""
