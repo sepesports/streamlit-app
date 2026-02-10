@@ -10,20 +10,27 @@ BORDER_COLOR = "#111111"
 BG_COLOR = "#FFFFFF"
 
 TOP_ROW = {
-    "count": 3,       # cantidad de cajas
-    "left": 3,        # inicio X (%) Distancia desde la Izquierda
-    "right": 3,       # fin X (%) Distancia desde la Derecha
-    "top": 10,        # Y (%) que tan abajo
-    "height": 10,     # alto (%)
-    "gap": 2,         # separación entre cajas (%)
+    "count": 4,       # cantidad de cajas
+    "left": 3,        # inicio X (%) Distancia desde la Izquierda (relativo al cuadro)
+    "right": 3,       # fin X (%) Distancia desde la Derecha (relativo al cuadro)
+    "top": 10,        # Y (%) que tan abajo (relativo al cuadro)
+    "height": 10,     # alto (%) (relativo al cuadro)
+    "gap": 2,         # separación entre cajas (%) (relativo al cuadro)
     "prefix": "BTN"   # etiqueta
 }
 
+# Texto de prueba (13 caracteres)
+BTN_TEXT = "Configuracion"
+
 # Reglas anti-ruptura (móvil/tablet)
-MIN_BOX_W_PX = 64      # ancho mínimo por caja en píxeles
+MIN_BOX_W_PX = 140     # asegura lectura de "Configuracion" (auto-reduce columnas si no cabe)
 MOBILE_MAX_W_PX = 520  # <= esto se considera móvil
 MOBILE_MIN_LR = 3      # left/right mínimo en móvil (%)
 MOBILE_MIN_GAP = 2     # gap mínimo en móvil (%)
+
+# Tipografía texto dentro de caja (ajuste automático)
+FONT_MIN_PX = 12
+FONT_MAX_PX = 16
 # ====================================
 
 st.set_page_config(layout="wide")
@@ -52,6 +59,8 @@ html = """
       --b: __B__px;
       --bc: __BC__;
       --bg: __BG__;
+      --fmin: __FMIN__px;
+      --fmax: __FMAX__px;
     }
     html, body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:var(--bg);}
     #stage{position:fixed;inset:0;width:100vw;height:100vh;background:var(--bg);}
@@ -65,8 +74,10 @@ html = """
       border-top:var(--b) solid var(--bc);
       box-sizing:border-box;
       pointer-events:none;
+      background: transparent;
     }
 
+    /* Overlay general */
     #overlay{position:absolute;inset:0;pointer-events:none;}
     .grid{
       position:absolute;inset:0;
@@ -86,6 +97,16 @@ html = """
       border-radius: 6px;
       padding: 6px 10px;
       pointer-events:none;
+      white-space: nowrap;
+    }
+
+    /* Contenedor del "plano" dentro del cuadro (para que NO se salga del marco) */
+    #plan{
+      position:absolute;
+      left:var(--padx); right:var(--padx);
+      top:var(--padtop); bottom:0;
+      overflow:hidden; /* clave: recorta cualquier cosa fuera del cuadro */
+      pointer-events:none;
     }
 
     .blk{
@@ -93,10 +114,32 @@ html = """
       border: 2px dashed rgba(0,0,0,.55);
       box-sizing:border-box;
       background: rgba(0,0,0,.03);
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+
+      padding: 6px 8px;
+      overflow:hidden;
     }
+
+    /* Texto grande dentro (sin salirse del cuadro) */
+    .blk-text{
+      font-family: Arial, sans-serif;
+      font-weight: 700;
+      font-size: clamp(var(--fmin), 3.2vw, var(--fmax));
+      line-height: 1;
+      color: rgba(0,0,0,.85);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis; /* fallback si alguien reduce demasiado */
+      max-width: 100%;
+    }
+
+    /* Etiqueta técnica pequeña (esquina) */
     .blk-label{
       position:absolute; top:2px; left:2px;
-      font: 11px Arial, sans-serif;
+      font: 10px Arial, sans-serif;
       background: rgba(255,255,255,.9);
       border: 1px solid rgba(0,0,0,.15);
       border-radius: 4px;
@@ -114,7 +157,9 @@ html = """
       <div class="mid-v"></div>
       <div class="mid-h"></div>
 
-      <div id="top-row"></div>
+      <div id="plan">
+        <div id="top-row"></div>
+      </div>
 
       <div id="hud">Cargando...</div>
     </div>
@@ -136,24 +181,24 @@ html = """
       }
 
       var cfg = __TOP_ROW__;
+      var BTN_TEXT = "__BTN_TEXT__";
       var MIN_BOX_W_PX = __MIN_BOX_W_PX__;
       var MOBILE_MAX_W_PX = __MOBILE_MAX_W_PX__;
       var MOBILE_MIN_LR = __MOBILE_MIN_LR__;
       var MOBILE_MIN_GAP = __MOBILE_MIN_GAP__;
 
       var container = document.getElementById("top-row");
+      var plan = document.getElementById("plan");
       var hud = document.getElementById("hud");
-
-      function clamp(v, lo, hi){
-        v = Number(v);
-        if (isNaN(v)) v = lo;
-        return Math.max(lo, Math.min(hi, v));
-      }
 
       function buildTopRow(){
         container.innerHTML = "";
 
         var vw = window.innerWidth;
+
+        // Dimensiones reales del "cuadro" interior (plan)
+        var r = plan.getBoundingClientRect();
+        var planW = r.width;
 
         var n = Math.max(1, Number(cfg.count || 1));
         var left = Number(cfg.left || 0);
@@ -163,27 +208,25 @@ html = """
         var gap = Number(cfg.gap || 0);
         var prefix = String(cfg.prefix || "BTN");
 
-        // En móvil, evita valores demasiado pequeños que vuelven ilegibles / rompen layout
+        // En móvil: mínimos para no romper
         if (vw <= MOBILE_MAX_W_PX){
           left = Math.max(left, MOBILE_MIN_LR);
           right = Math.max(right, MOBILE_MIN_LR);
           gap = Math.max(gap, MOBILE_MIN_GAP);
         }
 
-        // Calcula usable% y ancho% por caja
+        // usable% dentro del cuadro (plan)
         var usable = 100 - left - right;
         if (usable < 1) usable = 1;
 
         // Auto-reduce columnas hasta que el ancho en px sea >= MIN_BOX_W_PX
-        // (mantiene cajas iguales, nunca la última más pequeña)
         while (n > 1){
           var wPct = (usable - (gap * (n - 1))) / n;
-          var wPx = (wPct / 100) * vw;
+          var wPx = (wPct / 100) * planW;
           if (wPct > 0 && wPx >= MIN_BOX_W_PX) break;
           n -= 1;
         }
 
-        // Recalcula final
         var w = (usable - (gap * (n - 1))) / n;
         if (w < 0) w = 0;
 
@@ -197,18 +240,24 @@ html = """
           d.style.width = w + "%";
           d.style.height = h + "%";
 
+          var text = document.createElement("div");
+          text.className = "blk-text";
+          text.textContent = BTN_TEXT;
+          d.appendChild(text);
+
           var lab = document.createElement("span");
           lab.className = "blk-label";
-          lab.textContent = prefix + (i+1) + " | n=" + n + " | x=" + x.toFixed(2) + " w=" + w.toFixed(2);
+          lab.textContent = prefix + (i+1) + " | n=" + n + " | w=" + w.toFixed(2) + "%";
           d.appendChild(lab);
 
           container.appendChild(d);
         }
 
         hud.textContent =
-          "Viewport(px): " + Math.round(vw) + " x " + Math.round(window.innerHeight) +
+          "Viewport(px): " + Math.round(window.innerWidth) + " x " + Math.round(window.innerHeight) +
+          " | Plan(px): " + Math.round(planW) +
           " | LR=" + left + "/" + right + " gap=" + gap +
-          " | cajas=" + n + " | w=" + w.toFixed(2) + "% (" + Math.round((w/100)*vw) + "px)";
+          " | cajas=" + n + " | w=" + w.toFixed(2) + "% (" + Math.round((w/100)*planW) + "px)";
       }
 
       window.addEventListener("resize", buildTopRow);
@@ -225,6 +274,9 @@ html = (
         .replace("__B__", str(BORDER_PX))
         .replace("__BC__", BORDER_COLOR)
         .replace("__BG__", BG_COLOR)
+        .replace("__FMIN__", str(FONT_MIN_PX))
+        .replace("__FMAX__", str(FONT_MAX_PX))
+        .replace("__BTN_TEXT__", BTN_TEXT)
         .replace("__TOP_ROW__", str(TOP_ROW).replace("'", '"'))
         .replace("__MIN_BOX_W_PX__", str(MIN_BOX_W_PX))
         .replace("__MOBILE_MAX_W_PX__", str(MOBILE_MAX_W_PX))
