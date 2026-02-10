@@ -85,7 +85,7 @@ HEADER_HEIGHT = 10   # % | alto del header
 
 # (6) BOTONES (todo en % DEL CUADRO)
 BTN_AREA_TOP = 55    # % | desde aquí empieza la sección inferior (Fondo2 + botones + footer)
-BTN_H = 10           # % | alto de cada botón
+BTN_H = 20           # % | alto de cada botón
 BTN_GAP_X = 2        # % | separación horizontal entre botones
 BTN_GAP_Y = 2        # % | separación vertical entre filas  
 BTN_LEFT = 5         # % | margen interno izquierdo del grid de botones
@@ -111,7 +111,7 @@ MIN_BTN_W_PX = 130   # px | ancho mínimo por botón antes de bajar columnas (3 
 MOBILE_MAX_W_PX = 500  # px | umbral para aplicar mínimos de gap en móvil
 
 # (9) (Opcional) Si quieres controlar la posición del texto "Fondo 2" desde Python:
-# FONDO2_BOTTOM = 22  # % | cuanto más grande, más arriba aparece el texto
+# FONDO2_BOTTOM = 30  # % | cuanto más grande, más arriba aparece el texto
 # ===============================================================
 
 st.set_page_config(layout="wide")
