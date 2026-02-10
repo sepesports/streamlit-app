@@ -10,7 +10,7 @@ BORDER_COLOR = "#111111"
 BG_COLOR = "#FFFFFF"
 
 TOP_ROW = {
-    "count": 4,       # cantidad de cajas
+    "count": 3,       # cantidad de cajas
     "left": 3,        # inicio X (%) Distancia desde la Izquierda
     "right": 3,       # fin X (%) Distancia desde la Derecha
     "top": 10,        # Y (%) que tan abajo
