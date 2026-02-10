@@ -49,8 +49,8 @@ FOOTER_LEFT = 6
 FOOTER_RIGHT = 6
 
 # Responsivo
-MIN_BTN_W_PX = 150     # si no caben 3, baja a 2 o 1 por fila
-MOBILE_MAX_W_PX = 520
+MIN_BTN_W_PX = 130     # si no caben 3, baja a 2 o 1 por fila
+MOBILE_MAX_W_PX = 500
 # ===============================================================
 
 st.set_page_config(layout="wide")
