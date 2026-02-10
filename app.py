@@ -6,7 +6,7 @@ import streamlit.components.v1 as components
 PAD_X_PX = 15
 PAD_TOP_PX = 15
 
-BORDER_PX = 2
+BORDER_PX = 3
 BORDER_COLOR = "#111111"
 
 BG_COLOR = "#CFE3BF"        # verde claro (fondo general)
@@ -16,14 +16,14 @@ BTN_BG = "#FFFFFF"          # blanco (botones)
 FOOTER_BG = "#FFFFFF"       # blanco (pie)
 
 # Margen interno del área "Imagen" respecto al cuadro (en % del cuadro)
-IMG_LEFT = 6     # %
-IMG_RIGHT = 6    # %
+IMG_LEFT = 10     # %
+IMG_RIGHT = 10   # %
 IMG_TOP = 12     # % (desde arriba del cuadro)
-IMG_HEIGHT = 38  # % (alto del bloque imagen)
+IMG_HEIGHT = 50  # % (alto del bloque imagen)
 
 # Header (en % del cuadro)
 HEADER_TOP = 0
-HEADER_HEIGHT = 10
+HEADER_HEIGHT = 2
 
 # Sección botones (en % del cuadro)
 BTN_AREA_TOP = 55
