@@ -2,6 +2,23 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
+# ================== AUTH GATE (SERVER-SIDE) ==================
+# Solo entra si admin.py marcó la sesión como autorizada.
+if not st.session_state.get("auth_ok", False):
+    try:
+        st.switch_page("pages/admin.py")
+    except Exception:
+        st.markdown(
+            """
+            <script>
+              window.location.href = "/admin";
+            </script>
+            """,
+            unsafe_allow_html=True,
+        )
+    st.stop()
+# =============================================================
+
 # ==============================================================================
 # PLANO RESPONSIVO (BASE) — MISMA VERSIÓN QUE SUBISTE (SIN CAMBIAR LAYOUT)
 # ==============================================================================
@@ -52,23 +69,7 @@ FOOTER_RIGHT = 6
 MIN_BTN_W_PX = 130
 MOBILE_MAX_W_PX = 500
 
-# ===============================================================
-
 st.set_page_config(layout="wide")
-
-# ================== AUTH GATE (AGREGADO) ==================
-# Solo permite entrar si viene desde /admin con ?auth=ok
-if st.query_params.get("auth") != "ok":
-    st.markdown(
-        """
-        <script>
-          window.top.location.href = "/admin";
-        </script>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.stop()
-# ===========================================================
 
 st.markdown(
     """
@@ -76,8 +77,6 @@ st.markdown(
       .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
       section.main > div{padding:0 !important;margin:0 !important;}
       header, footer{display:none !important;}
-      /* Oculta sidebar de multipage */
-      [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
     </style>
     """,
     unsafe_allow_html=True,
