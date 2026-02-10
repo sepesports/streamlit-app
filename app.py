@@ -16,8 +16,8 @@ BTN_BG = "#FFFFFF"          # blanco (botones)
 FOOTER_BG = "#FFFFFF"       # blanco (pie)
 
 # Margen interno del área "Imagen" respecto al cuadro (en % del cuadro)
-IMG_LEFT = 10     # %
-IMG_RIGHT = 10   # %
+IMG_LEFT = 6     # %
+IMG_RIGHT = 6   # %
 IMG_TOP = 12     # % (desde arriba del cuadro)
 IMG_HEIGHT = 50  # % (alto del bloque imagen)
 
