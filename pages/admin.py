@@ -68,8 +68,8 @@ html = """
      TAMAÑOS DE TEXTO (AJUSTABLES)
      ========================================================= */
   --titleSize: 19px;      /* <-- TAMAÑO "¡BIENVENIDO!" */
-  --labelSize: 16px;      /* <-- TAMAÑO "Usuario / Contraseña" */
-  --inputSize: 16px;      /* <-- TAMAÑO TEXTO INPUTS */
+  --labelSize: 13px;      /* <-- TAMAÑO "Usuario / Contraseña" */
+  --inputSize: 14px;      /* <-- TAMAÑO TEXTO INPUTS */
   --btnTextSize: 16px;    /* <-- TAMAÑO TEXTO BOTÓN */
   --linkSize: 16px;       /* <-- TAMAÑO LINKS */
 }
