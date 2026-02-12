@@ -90,9 +90,9 @@ html = """
   --titleXMobile: 0px;       /* mover título izq/der móvil (px) */
 
   --lblUserTopMobile: 22%;
-  --inUserTopMobile: 30%;     /* 28 */
-  --lblPassTopMobile: 40%;  /* 42 */
-  --inPassTopMobile: 48%;
+  --inUserTopMobile: 28%;     /* 28 */
+  --lblPassTopMobile: 42%;  /* 42 */
+  --inPassTopMobile: 40%;    /* 42 */
   --btnTopMobile: 67%;
 
   --linkPolTopMobile: 78%;
