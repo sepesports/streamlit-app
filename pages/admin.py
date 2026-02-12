@@ -72,10 +72,10 @@ html = """
   --linkRegTopDesktop: 78%;
   --linkRegLeftDesktop: 68%;
 
-  --labelSizeDesktop: 18px; /* 14px */
-  --inputSizeDesktop: 14px;
-  --btnTextSizeDesktop: 14px;
-  --linkSizeDesktop: 13px;
+  --labelSizeDesktop: 22px; /* 14px */
+  --inputSizeDesktop: 22px; /* 14px */
+  --btnTextSizeDesktop: 22px; /* 14px */
+  --linkSizeDesktop: 22px; /* 13px estoy aqui */
 
   /* =========================================================
      CONTROLES MÓVIL
