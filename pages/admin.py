@@ -268,7 +268,7 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
   position:absolute;
   left:32%;
   right:32%;
-  height:15%;  /* Estoy aqui  80 70 */
+  height:10%;  /* Estoy aqui 10*/
   border: 1px solid rgba(255,255,255,.18);
   border-radius: 999px;
   box-sizing:border-box;
