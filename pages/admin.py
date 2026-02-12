@@ -92,8 +92,8 @@ html = """
   --lblUserTopMobile: 22%;
   --inUserTopMobile: 28%;     /* 28 */
   --lblPassTopMobile: 42%;  /* 42 */
-  --inPassTopMobile: 40%;    /* 42 */
-  --btnTopMobile: 67%;
+  --inPassTopMobile: 48%;    /* 48 */
+  --btnTopMobile: 60%;     /* 67%*/
 
   --linkPolTopMobile: 78%;
   --linkPolLeftMobile: 20%;
