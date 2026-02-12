@@ -85,7 +85,7 @@ html = """
   --logoTopMobile: 4%;       /* subir/bajar logo móvil */
   --logoXMobile: 0px;        /* mover logo izq/der móvil (px) */ Estoy aqui
 
-  --titleTopMobile: 17%;     /* subir/bajar título móvil */
+  --titleTopMobile: 10%;     /* subir/bajar título móvil */
   --titleSizeMobile: 18px;   /* tamaño título móvil */
   --titleXMobile: 0px;       /* mover título izq/der móvil (px) */
 
