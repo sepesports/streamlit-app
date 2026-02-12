@@ -25,25 +25,23 @@ html = """
 
 <style>
 :root{
-  --bgTop: #e06b6a;
-  --bgMid: #b53a33;
-  --bgDeep:#3b0707;
+  /* ===== PALETA AZUL (basada en el logo) ===== */
+  --bgTop: #0f3f8f;
+  --bgMid: #0b2e6d;
+  --bgDeep:#05173f;
 
-  --overlay1: rgba(120, 0, 0, .42);
-  --overlay2: rgba(20, 0, 0, .55);
+  --overlay1: rgba(10, 40, 110, .42);
+  --overlay2: rgba(0, 10, 40, .60);
 
   --ink: rgba(255,255,255,.92);
-  --muted: rgba(255,255,255,.62);
 
   --pill: rgba(238, 245, 255, .92);
   --pill2: rgba(255,255,255,.86);
 
-  --btn1:#ff4f4a;
-  --btn2:#ff3a33;
+  --btn1:#2f7de1;
+  --btn2:#1e5fc4;
 
   --shadow1: 0 22px 55px rgba(0,0,0,.55);
-  --shadow2: 0 10px 22px rgba(0,0,0,.40);
-
   --blur: 14px;
 }
 
@@ -54,7 +52,7 @@ html, body{
   width:100%;
   height:100%;
   overflow:hidden;
-  background:#07070b;
+  background:#020614;
 }
 
 #stage{
@@ -64,12 +62,12 @@ html, body{
   height:100vh;
   background:
     radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.18), transparent 60%),
-    radial-gradient(900px 700px at 20% 120%, rgba(255,0,0,.12), transparent 60%),
-    linear-gradient(180deg, #101018 0%, #07070b 100%);
+    radial-gradient(900px 700px at 20% 120%, rgba(30,90,200,.18), transparent 60%),
+    linear-gradient(180deg, #050a1c 0%, #020614 100%);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-/* Fondo rojo + corte diagonal + viñeta (sin cambiar layout) */
+/* ===== PANEL PRINCIPAL ===== */
 #plan{
   position:absolute;
   left:10px; right:10px;
@@ -79,8 +77,8 @@ html, body{
   border-radius: 34px;
   box-shadow: var(--shadow1);
   background:
-    linear-gradient(180deg, rgba(255,255,255,.22) 0%, transparent 22%),
-    linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #7b1b19 58%, var(--bgDeep) 100%);
+    linear-gradient(180deg, rgba(255,255,255,.18) 0%, transparent 22%),
+    linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #07306f 58%, var(--bgDeep) 100%);
 }
 
 /* corte diagonal */
@@ -100,7 +98,7 @@ html, body{
   pointer-events:none;
 }
 
-/* viñeta + profundidad inferior */
+/* viñeta */
 #plan::after{
   content:"";
   position:absolute;
@@ -112,7 +110,7 @@ html, body{
   pointer-events:none;
 }
 
-/* marco existente: suavizado visual (sin moverlo) */
+/* marco */
 #frame{
   position:absolute;
   left:10px; right:10px;
@@ -126,7 +124,7 @@ html, body{
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
 }
 
-/* contenedor del card: se mantiene igual */
+/* contenedor */
 #card{
   position:absolute;
   left:6%;
@@ -135,129 +133,98 @@ html, body{
   bottom:6%;
 }
 
-/* textos: solo visual */
+/* ===== LOGO ===== */
+/* 👉 CAMBIA width para modificar tamaño del logo */
+.logo{
+  position:absolute;
+  top:4%;
+  left:50%;
+  transform:translateX(-50%);
+  width:90px; /* ← TAMAÑO DEL LOGO */
+}
+
+/* ===== TÍTULO ===== */
+/* 👉 CAMBIA font-size para modificar tamaño del título */
 .title{
   position:absolute;
   left:0; right:0;
-  top:12%;
+  top:16%;
   text-align:center;
-  font:18px Arial, sans-serif;
-  font-weight:800;
+  font:800 20px Arial, sans-serif; /* ← TAMAÑO DEL TÍTULO */
   color: var(--ink);
   text-shadow: 0 8px 18px rgba(0,0,0,.35);
-  letter-spacing: .2px;
 }
 
+/* ===== LABELS ===== */
+/* 👉 CAMBIA font-size para modificar tamaño de labels */
 .label{
   position:absolute;
   left:18%;
   right:18%;
-  font:14px Arial, sans-serif;
-  font-weight:700;
+  font:700 14px Arial, sans-serif; /* ← TAMAÑO LABEL */
   color: rgba(255,255,255,.82);
-  text-shadow: 0 6px 14px rgba(0,0,0,.30);
 }
 
-/* inputs: pill + blur (misma posición/alto por inline style) */
+/* inputs */
 input.field{
   position:absolute;
   left:18%;
   right:18%;
   height:10%;
-
   border: 1px solid rgba(255,255,255,.55);
   border-radius: 999px;
-
-  box-sizing:border-box;
-  background:
-    linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
-
+  background: linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
   padding: 0 14px;
-  font:14px Arial, sans-serif;
-  font-weight:700;
+
+  /* 👉 CAMBIA font-size para tamaño texto input */
+  font:700 14px Arial, sans-serif; /* ← TAMAÑO INPUT */
+
   color: rgba(30,40,55,.92);
-
-  outline:none;
-
-  box-shadow:
-    0 10px 18px rgba(0,0,0,.22),
-    inset 0 1px 0 rgba(255,255,255,.55);
-
+  box-shadow: 0 10px 18px rgba(0,0,0,.22),
+              inset 0 1px 0 rgba(255,255,255,.55);
   backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
+  outline:none;
 }
 
-input.field::placeholder{
-  color: rgba(60,70,85,.55);
-}
-
-/* botón: pill rojo (misma posición/alto por inline style) */
+/* botón */
+/* 👉 CAMBIA font-size para tamaño texto botón */
 .btn{
   position:absolute;
   left:32%;
   right:32%;
   height:9%;
-
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: 999px;
-
-  box-sizing:border-box;
-
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
   background:
     radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.26), transparent 60%),
     linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
-
-  box-shadow:
-    0 18px 26px rgba(0,0,0,.28),
-    inset 0 1px 0 rgba(255,255,255,.22);
-
   display:flex;
   align-items:center;
   justify-content:center;
-
-  font:14px Arial, sans-serif;
-  font-weight:700;
-  color: rgba(255,255,255,.92);
-
+  font:700 14px Arial, sans-serif; /* ← TAMAÑO BOTÓN */
+  color:white;
   cursor:pointer;
-  user-select:none;
-
-  transition: transform .12s ease, filter .12s ease;
+  box-shadow:0 18px 26px rgba(0,0,0,.28),
+             inset 0 1px 0 rgba(255,255,255,.22);
 }
 
-.btn:active{
-  transform: scale(.985);
-  filter: brightness(.98);
-}
-
-/* links inferiores: mismo layout (solo color) */
+/* links */
+/* 👉 CAMBIA font-size para tamaño links */
 .link{
   position:absolute;
-  font:13px Arial, sans-serif;
-  font-weight:700;
+  font:700 13px Arial, sans-serif; /* ← TAMAÑO LINKS */
   color: rgba(255,255,255,.70);
-  white-space:nowrap;
-  text-shadow: 0 6px 14px rgba(0,0,0,.30);
 }
 
-.link:hover{
-  color: rgba(255,255,255,.85);
-}
-
-/* HUD: mantener, solo estética */
 #hud{
-  position:absolute; top:8px; left:8px;
-  font:12px Arial, sans-serif;
+  position:absolute;
+  top:8px;
+  left:8px;
+  font:12px Arial;
   background: rgba(255,255,255,.10);
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: 10px;
-  padding: 6px 10px;
-  white-space:nowrap;
-  pointer-events:none;
+  border-radius:10px;
+  padding:6px 10px;
   color: rgba(255,255,255,.70);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 10px 18px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.14);
 }
 </style>
 </head>
@@ -268,18 +235,22 @@ input.field::placeholder{
 
   <div id="plan">
     <div id="card">
+
+      <img class="logo" src="https://files.catbox.moe/q2os5j.jpeg"/>
+
       <div class="title">¡BIENVENIDO!</div>
 
-      <div class="label" style="top:22%;">Usuario:</div>
-      <input id="user" class="field" style="top:28%;" autocomplete="username"/>
+      <div class="label" style="top:28%;">Usuario:</div>
+      <input id="user" class="field" style="top:34%;" autocomplete="username"/>
 
-      <div class="label" style="top:42%;">Contraseña:</div>
-      <input id="pass" class="field" style="top:48%;" type="password" autocomplete="current-password"/>
+      <div class="label" style="top:48%;">Contraseña:</div>
+      <input id="pass" class="field" style="top:54%;" type="password"/>
 
-      <div class="btn" style="top:67%;" onclick="doLogin()">Login</div>
+      <div class="btn" style="top:72%;" onclick="doLogin()">Login</div>
 
-      <div class="link" style="top:78%; left:20%;">Politicas:</div>
-      <div class="link" style="top:78%; left:68%;">Registrarse:</div>
+      <div class="link" style="top:82%; left:20%;">Politicas</div>
+      <div class="link" style="top:82%; left:68%;">Registrarse</div>
+
     </div>
 
     <div id="hud">Cargando...</div>
@@ -288,22 +259,18 @@ input.field::placeholder{
 
 <script>
 async function doLogin(){
-  const u = (document.getElementById("user").value || "").trim();
-  const p = (document.getElementById("pass").value || "").trim();
-
+  const u=document.getElementById("user").value.trim();
+  const p=document.getElementById("pass").value.trim();
   try{
-    const r = await fetch("https://camilo27.pythonanywhere.com/api/auth", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({usuario:u, password:p})
+    const r=await fetch("https://camilo27.pythonanywhere.com/api/auth",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({usuario:u,password:p})
     });
-
-    const j = await r.json();
-
-    if (j && j.ok === true){
-      // IMPORTANTE: no usar window.top (sandbox lo bloquea)
-      window.location.href = "/?auth=ok";
-    } else {
+    const j=await r.json();
+    if(j && j.ok===true){
+      window.location.href="/?auth=ok";
+    }else{
       alert("Credenciales inválidas");
     }
   }catch(e){
@@ -312,27 +279,11 @@ async function doLogin(){
 }
 
 (function(){
-  var fe = window.frameElement;
-  if (fe){
-    fe.style.position="fixed";
-    fe.style.inset="0";
-    fe.style.width="100vw";
-    fe.style.height="100vh";
-    fe.style.border="0";
-    fe.style.margin="0";
-    fe.style.padding="0";
-    fe.style.zIndex="999999";
-    fe.style.background="transparent";
-  }
-
   var hud=document.getElementById("hud");
-  var plan=document.getElementById("plan");
   function update(){
-    var r=plan.getBoundingClientRect();
-    hud.textContent="Viewport(px): "+Math.round(window.innerWidth)+" x "+Math.round(window.innerHeight)+
-                    " | Plan(px): "+Math.round(r.width)+" x "+Math.round(r.height);
+    hud.textContent="Viewport: "+window.innerWidth+" x "+window.innerHeight;
   }
-  window.addEventListener("resize", update);
+  window.addEventListener("resize",update);
   update();
 })();
 </script>
