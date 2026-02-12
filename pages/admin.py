@@ -26,15 +26,15 @@ html = """
 <style>
 :root{
   /* =========================================================
-     OBJETIVO: Rojo -> AZUL base #040e31 con degradado
+     PALETA (AZUL base #040e31) -> ajusta tonos globales aquí
      ========================================================= */
-  --baseBlue: #040e31;            /* <-- Color base */
-  --bgTop:  #0a1a55;              /* <-- Degradado superior (más claro) */
-  --bgMid:  #061240;              /* <-- Degradado medio */
-  --bgDeep: #02071c;              /* <-- Degradado inferior (más oscuro) */
+  --baseBlue: #040e31;            /* BASE requerida */
+  --bgTop:  #0a1a55;              /* superior (más claro) */
+  --bgMid:  #061240;              /* medio */
+  --bgDeep: #02071c;              /* inferior (más oscuro) */
 
-  --overlay1: rgba(20, 60, 170, .26); /* <-- Corte diagonal (claro) */
-  --overlay2: rgba(0,  10,  40, .62); /* <-- Corte diagonal (oscuro) */
+  --overlay1: rgba(40, 120, 255, .16); /* corte diagonal claro */
+  --overlay2: rgba(0,  10,  40, .62);  /* corte diagonal oscuro */
 
   --ink: rgba(255,255,255,.92);
   --muted: rgba(255,255,255,.62);
@@ -42,38 +42,71 @@ html = """
   --pill: rgba(238, 245, 255, .92);
   --pill2: rgba(255,255,255,.86);
 
-  /* =========================================================
-     BOTÓN (azules)
-     ========================================================= */
   --btn1:#2f7de1;
   --btn2:#1e5fc4;
 
   --shadow1: 0 22px 55px rgba(0,0,0,.55);
   --shadow2: 0 10px 22px rgba(0,0,0,.40);
-
   --blur: 14px;
 
   /* =========================================================
-     LOGO RESPONSIVE (AJUSTABLE)
-     - Desktop: usa --logoWDesktop y --logoTopDesktop
-     - Móvil:   usa --logoWMobile  y --logoTopMobile
+     CONTROLES DESKTOP (pantalla completa)
+     Cambia AQUÍ posición/tamaño para desktop
      ========================================================= */
-  --logoWDesktop: 310px;  /* <-- ANCHO LOGO EN PANTALLA (desktop) */
-  --logoTopDesktop: 0.0%; /* <-- POSICIÓN VERTICAL LOGO EN PANTALLA */
+  --logoWDesktop: 190px;     /* tamaño logo desktop */
+  --logoTopDesktop: 2.5%;    /* subir/bajar logo desktop */
+  --logoXDesktop: 0px;       /* mover logo izq/der desktop (px) */
 
-  --logoWMobile: 170px;   /* <-- ANCHO LOGO EN MÓVIL */
-  --logoTopMobile: 4%;    /* <-- POSICIÓN VERTICAL LOGO EN MÓVIL */
+  --titleTopDesktop: 17%;    /* subir/bajar título desktop */
+  --titleSizeDesktop: 18px;  /* tamaño título desktop */
+  --titleXDesktop: 0px;      /* mover título izq/der desktop (px) */
+
+  --lblUserTopDesktop: 22%;
+  --inUserTopDesktop: 28%;
+  --lblPassTopDesktop: 42%;
+  --inPassTopDesktop: 48%;
+  --btnTopDesktop: 67%;
+
+  --linkPolTopDesktop: 78%;
+  --linkPolLeftDesktop: 20%;
+  --linkRegTopDesktop: 78%;
+  --linkRegLeftDesktop: 68%;
+
+  --labelSizeDesktop: 14px;
+  --inputSizeDesktop: 14px;
+  --btnTextSizeDesktop: 14px;
+  --linkSizeDesktop: 13px;
 
   /* =========================================================
-     TAMAÑOS DE TEXTO (AJUSTABLES)
+     CONTROLES MÓVIL
+     Cambia AQUÍ posición/tamaño para móvil
      ========================================================= */
-  --titleSize: 20px;      /* <-- TAMAÑO "¡BIENVENIDO!" */
-  --labelSize: 14px;      /* <-- TAMAÑO "Usuario / Contraseña" */
-  --inputSize: 14px;      /* <-- TAMAÑO TEXTO INPUTS */
-  --btnTextSize: 14px;    /* <-- TAMAÑO TEXTO BOTÓN */
-  --linkSize: 20px;       /* <-- TAMAÑO LINKS */
+  --logoWMobile: 110px;      /* tamaño logo móvil */
+  --logoTopMobile: 5%;       /* subir/bajar logo móvil */
+  --logoXMobile: 0px;        /* mover logo izq/der móvil (px) */
+
+  --titleTopMobile: 17%;     /* subir/bajar título móvil */
+  --titleSizeMobile: 18px;   /* tamaño título móvil */
+  --titleXMobile: 0px;       /* mover título izq/der móvil (px) */
+
+  --lblUserTopMobile: 22%;
+  --inUserTopMobile: 28%;
+  --lblPassTopMobile: 42%;
+  --inPassTopMobile: 48%;
+  --btnTopMobile: 67%;
+
+  --linkPolTopMobile: 78%;
+  --linkPolLeftMobile: 20%;
+  --linkRegTopMobile: 78%;
+  --linkRegLeftMobile: 68%;
+
+  --labelSizeMobile: 14px;
+  --inputSizeMobile: 14px;
+  --btnTextSizeMobile: 14px;
+  --linkSizeMobile: 13px;
 }
 
+/* RESET */
 *{box-sizing:border-box}
 html, body{
   margin:0;
@@ -84,6 +117,7 @@ html, body{
   background: var(--baseBlue);
 }
 
+/* FONDO EXTERIOR */
 #stage{
   position:fixed;
   inset:0;
@@ -96,13 +130,12 @@ html, body{
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-/* Fondo azul + corte diagonal + viñeta (sin cambiar layout) */
+/* PANEL PRINCIPAL */
 #plan{
   position:absolute;
   left:10px; right:10px;
   top:10px; bottom:0;
   overflow:hidden;
-
   border-radius: 34px;
   box-shadow: var(--shadow1);
   background:
@@ -110,7 +143,7 @@ html, body{
     linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #05164d 58%, var(--bgDeep) 100%);
 }
 
-/* corte diagonal */
+/* CORTE DIAGONAL */
 #plan::before{
   content:"";
   position:absolute;
@@ -127,7 +160,7 @@ html, body{
   pointer-events:none;
 }
 
-/* viñeta + profundidad inferior */
+/* VIÑETA */
 #plan::after{
   content:"";
   position:absolute;
@@ -139,7 +172,7 @@ html, body{
   pointer-events:none;
 }
 
-/* marco existente: suavizado visual (sin moverlo) */
+/* MARCO */
 #frame{
   position:absolute;
   left:10px; right:10px;
@@ -153,7 +186,7 @@ html, body{
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
 }
 
-/* contenedor del card: se mantiene igual */
+/* CONTENEDOR */
 #card{
   position:absolute;
   left:6%;
@@ -163,173 +196,153 @@ html, body{
 }
 
 /* =========================================================
-   LOGO (encima y centrado del título)
-   - Desktop: controlado por variables --logoWDesktop / --logoTopDesktop
-   - Móvil:   controlado por variables --logoWMobile  / --logoTopMobile
+   LOGO (DESKTOP por defecto)
+   - Tamaño: --logoWDesktop
+   - Posición vertical: --logoTopDesktop
+   - Movimiento X: --logoXDesktop (px)
    ========================================================= */
 .logo{
   position:absolute;
   left:50%;
-  transform: translateX(-50%);
-  top: var(--logoTopDesktop);    /* <-- SUBE/BAJA logo en desktop */
-  width: var(--logoWDesktop);    /* <-- ANCHO logo en desktop */
+  top: var(--logoTopDesktop) !important;
+  transform: translateX(-50%) translateX(var(--logoXDesktop)) !important;
+  width: var(--logoWDesktop) !important;
   height:auto;
   display:block;
-  border-radius: 10px;           /* quítalo si NO quieres bordes redondeados */
+  border-radius: 10px;
   filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
 }
 
-/* En móvil, usa las variables móviles */
-@media (max-width: 640px){
-  .logo{
-    top: var(--logoTopMobile);   /* <-- SUBE/BAJA logo en móvil */
-    width: var(--logoWMobile);   /* <-- ANCHO logo en móvil */
-  }
-}
-
-/* textos: solo visual */
 /* =========================================================
-   TÍTULO
-   - Tamaño: --titleSize
-   - Movimiento: top (sube/baja) aquí
+   TÍTULO (DESKTOP por defecto)
+   - Tamaño: --titleSizeDesktop
+   - Posición vertical: --titleTopDesktop
+   - Movimiento X: --titleXDesktop (px)
    ========================================================= */
 .title{
   position:absolute;
   left:0; right:0;
-  top:17%;                        /* <-- SUBE/BAJA "¡BIENVENIDO!" */
+  top: var(--titleTopDesktop) !important;
   text-align:center;
-  font:800 var(--titleSize) Arial, sans-serif; /* <-- TAMAÑO TÍTULO */
+  font:800 var(--titleSizeDesktop) Arial, sans-serif !important;
   color: var(--ink);
   text-shadow: 0 8px 18px rgba(0,0,0,.35);
   letter-spacing: .2px;
+  transform: translateX(var(--titleXDesktop)) !important;
 }
 
-/* =========================================================
-   LABELS
-   - Tamaño: --labelSize
-   - Movimiento: se controla desde el HTML con style="top:.."
-   ========================================================= */
+/* LABELS */
 .label{
   position:absolute;
   left:18%;
   right:18%;
-  font:700 var(--labelSize) Arial, sans-serif; /* <-- TAMAÑO LABEL */
+  font:700 var(--labelSizeDesktop) Arial, sans-serif !important;
   color: rgba(255,255,255,.82);
   text-shadow: 0 6px 14px rgba(0,0,0,.30);
 }
 
-/* inputs: pill + blur (misma posición/alto por inline style) */
-/* =========================================================
-   INPUTS
-   - Tamaño: --inputSize
-   - Movimiento: se controla desde el HTML con style="top:.."
-   ========================================================= */
+/* INPUTS */
 input.field{
   position:absolute;
   left:18%;
   right:18%;
   height:10%;
-
   border: 1px solid rgba(255,255,255,.55);
   border-radius: 999px;
-
   box-sizing:border-box;
-  background:
-    linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
-
+  background: linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
   padding: 0 14px;
-  font:700 var(--inputSize) Arial, sans-serif; /* <-- TAMAÑO INPUT */
+  font:700 var(--inputSizeDesktop) Arial, sans-serif !important;
   color: rgba(30,40,55,.92);
-
   outline:none;
-
   box-shadow:
     0 10px 18px rgba(0,0,0,.22),
     inset 0 1px 0 rgba(255,255,255,.55);
-
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
 }
+input.field::placeholder{ color: rgba(60,70,85,.55); }
 
-input.field::placeholder{
-  color: rgba(60,70,85,.55);
-}
-
-/* botón: pill azul (misma posición/alto por inline style) */
-/* =========================================================
-   BOTÓN
-   - Tamaño: --btnTextSize
-   - Movimiento: se controla desde el HTML con style="top:.."
-   ========================================================= */
+/* BOTÓN */
 .btn{
   position:absolute;
   left:32%;
   right:32%;
   height:9%;
-
   border: 1px solid rgba(255,255,255,.18);
   border-radius: 999px;
-
   box-sizing:border-box;
-
   background:
     radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%),
     linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
-
   box-shadow:
     0 18px 26px rgba(0,0,0,.28),
     inset 0 1px 0 rgba(255,255,255,.22);
-
   display:flex;
   align-items:center;
   justify-content:center;
-
-  font:700 var(--btnTextSize) Arial, sans-serif; /* <-- TAMAÑO TEXTO BOTÓN */
+  font:700 var(--btnTextSizeDesktop) Arial, sans-serif !important;
   color: rgba(255,255,255,.92);
-
   cursor:pointer;
   user-select:none;
-
   transition: transform .12s ease, filter .12s ease;
 }
+.btn:active{ transform: scale(.985); filter: brightness(.98); }
 
-.btn:active{
-  transform: scale(.985);
-  filter: brightness(.98);
-}
-
-/* links inferiores: mismo layout (solo color) */
-/* =========================================================
-   LINKS
-   - Tamaño: --linkSize
-   - Movimiento: se controla desde el HTML con style="top/left"
-   ========================================================= */
+/* LINKS */
 .link{
   position:absolute;
-  font:700 var(--linkSize) Arial, sans-serif; /* <-- TAMAÑO LINKS */
+  font:700 var(--linkSizeDesktop) Arial, sans-serif !important;
   color: rgba(255,255,255,.70);
   white-space:nowrap;
   text-shadow: 0 6px 14px rgba(0,0,0,.30);
 }
+.link:hover{ color: rgba(255,255,255,.85); }
 
-.link:hover{
-  color: rgba(255,255,255,.85);
-}
+/* HUD oculto */
+#hud{ display:none !important; }
 
-/* HUD: mantener, solo estética (sin imprimir medidas) */
-#hud{
-  position:absolute; top:8px; left:8px;
-  font:12px Arial, sans-serif;
-  background: rgba(255,255,255,.10);
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: 10px;
-  padding: 6px 10px;
-  white-space:nowrap;
-  pointer-events:none;
-  color: rgba(255,255,255,.70);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 10px 18px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.14);
+/* =========================================================
+   POSICIONES DESKTOP (override a los inline style)
+   Edita variables arriba, no toques el HTML si no quieres.
+   ========================================================= */
+#lblUser{ top: var(--lblUserTopDesktop) !important; }
+#inUser{  top: var(--inUserTopDesktop) !important; }
+#lblPass{ top: var(--lblPassTopDesktop) !important; }
+#inPass{  top: var(--inPassTopDesktop) !important; }
+#btnLogin{ top: var(--btnTopDesktop) !important; }
+
+#linkPol{ top: var(--linkPolTopDesktop) !important; left: var(--linkPolLeftDesktop) !important; }
+#linkReg{ top: var(--linkRegTopDesktop) !important; left: var(--linkRegLeftDesktop) !important; }
+
+/* =========================================================
+   MODO MÓVIL (posiciones/tamaños distintos)
+   Edita variables Mobile arriba.
+   ========================================================= */
+@media (max-width: 640px){
+  .logo{
+    top: var(--logoTopMobile) !important;
+    width: var(--logoWMobile) !important;
+    transform: translateX(-50%) translateX(var(--logoXMobile)) !important;
+  }
+  .title{
+    top: var(--titleTopMobile) !important;
+    font:800 var(--titleSizeMobile) Arial, sans-serif !important;
+    transform: translateX(var(--titleXMobile)) !important;
+  }
+  .label{ font:700 var(--labelSizeMobile) Arial, sans-serif !important; }
+  input.field{ font:700 var(--inputSizeMobile) Arial, sans-serif !important; }
+  .btn{ font:700 var(--btnTextSizeMobile) Arial, sans-serif !important; }
+  .link{ font:700 var(--linkSizeMobile) Arial, sans-serif !important; }
+
+  #lblUser{ top: var(--lblUserTopMobile) !important; }
+  #inUser{  top: var(--inUserTopMobile) !important; }
+  #lblPass{ top: var(--lblPassTopMobile) !important; }
+  #inPass{  top: var(--inPassTopMobile) !important; }
+  #btnLogin{ top: var(--btnTopMobile) !important; }
+
+  #linkPol{ top: var(--linkPolTopMobile) !important; left: var(--linkPolLeftMobile) !important; }
+  #linkReg{ top: var(--linkRegTopMobile) !important; left: var(--linkRegLeftMobile) !important; }
 }
 </style>
 </head>
@@ -340,32 +353,34 @@ input.field::placeholder{
 
   <div id="plan">
     <div id="card">
-      <!-- LOGO: encima y centrado del título -->
+      <!-- LOGO: cambia tamaño/posición con variables Desktop/Mobile en :root -->
       <img class="logo" src="https://files.catbox.moe/056m6v.jpg" alt="Logo"/>
 
+      <!-- TÍTULO: cambia tamaño/posición con variables Desktop/Mobile en :root -->
       <div class="title">¡BIENVENIDO!</div>
 
-      <div class="label" style="top:30%;">Usuario:</div>
-      <input id="user" class="field" style="top:28%;" autocomplete="username"/>
+      <!-- Estos inline style quedan como “fallback”.
+           Las posiciones reales se controlan por variables (CSS) por modo. -->
+      <div id="lblUser" class="label" style="top:22%;">Usuario:</div>
+      <input id="inUser" class="field" style="top:28%;" autocomplete="username"/>
 
-      <div class="label" style="top:42%;">Contraseña:</div>
-      <input id="pass" class="field" style="top:48%;" type="password" autocomplete="current-password"/>
+      <div id="lblPass" class="label" style="top:42%;">Contraseña:</div>
+      <input id="inPass" class="field" style="top:48%;" type="password" autocomplete="current-password"/>
 
-      <div class="btn" style="top:67%;" onclick="doLogin()">Login</div>
+      <div id="btnLogin" class="btn" style="top:67%;" onclick="doLogin()">Login</div>
 
-      <div class="link" style="top:78%; left:20%;">Politicas:</div>
-      <div class="link" style="top:78%; left:68%;">Registrarse:</div>
+      <div id="linkPol" class="link" style="top:78%; left:20%;">Politicas:</div>
+      <div id="linkReg" class="link" style="top:78%; left:68%;">Registrarse:</div>
     </div>
 
-    <!-- HUD ya NO imprime medidas -->
     <div id="hud"></div>
   </div>
 </div>
 
 <script>
 async function doLogin(){
-  const u = (document.getElementById("user").value || "").trim();
-  const p = (document.getElementById("pass").value || "").trim();
+  const u = (document.getElementById("inUser").value || "").trim();
+  const p = (document.getElementById("inPass").value || "").trim();
 
   try{
     const r = await fetch("https://camilo27.pythonanywhere.com/api/auth", {
@@ -377,7 +392,6 @@ async function doLogin(){
     const j = await r.json();
 
     if (j && j.ok === true){
-      // IMPORTANTE: no usar window.top (sandbox lo bloquea)
       window.location.href = "/?auth=ok";
     } else {
       alert("Credenciales inválidas");
@@ -400,12 +414,6 @@ async function doLogin(){
     fe.style.zIndex="999999";
     fe.style.background="transparent";
   }
-
-  /* =========================================================
-     Se eliminó la impresión de medidas:
-     - Antes: hud.textContent = "Viewport... | Plan..."
-     - Ahora: no imprime nada
-     ========================================================= */
 })();
 </script>
 
