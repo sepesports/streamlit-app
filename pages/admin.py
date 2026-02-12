@@ -244,14 +244,14 @@ html, body{
 /* INPUTS */
 input.field{
   position:absolute;
-  left:20%; /* 16 */
-  right:20%; /* 16 */
-  height:8%; /* 16 */
+  left:22%; /* 16 */
+  right:22%; /* 16 */
+  height:10%; /* 16 */
   border: 1px solid rgba(255,255,255,.55);
   border-radius: 999px;
   box-sizing:border-box;
   background: linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
-  padding: 0 14px;
+  padding: 0 16px; /* 14 */
   font:700 var(--inputSizeDesktop) Arial, sans-serif !important;
   color: rgba(30,40,55,.92);
   outline:none;
