@@ -102,7 +102,7 @@ html = """
 
   --labelSizeMobile: 14px;
   --inputSizeMobile: 14px;
-  --btnTextSizeMobile: 14px;
+  --btnTextSizeMobile: 30px; /* 14 */
   --linkSizeMobile: 13px;
 }
 
