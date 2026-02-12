@@ -256,7 +256,7 @@ input.field{
   color: rgba(30,40,55,.92);
   outline:none;
   box-shadow:
-    0 10px 18px rgba(0,0,0,.22),
+    0 15px 18px rgba(0,0,0,.22), /*0 10px */
     inset 0 1px 0 rgba(255,255,255,.55);
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
