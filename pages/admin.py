@@ -166,7 +166,7 @@ html, body{
   position:absolute;
   inset:0;
   background:
-    radial-gradient(50% 60% at 50% 25%, rgba(255,255,255,.06), transparent 55%), /* Estoy aqui  80 70 */
+    radial-gradient(50% 60% at 50% 25%, rgba(255,255,255,.06), transparent 55%),
     radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
     linear-gradient(180deg, transparent 55%, rgba(0,0,0,.65) 100%);
   pointer-events:none;
@@ -175,7 +175,7 @@ html, body{
 /* MARCO */
 #frame{
   position:absolute;
-  left:10px; right:10px;
+  left:9px; right:9px;
   top:10px; bottom:0;
   border-left: 2px solid rgba(255,255,255,.14);
   border-right:2px solid rgba(255,255,255,.14);
@@ -268,7 +268,7 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
   position:absolute;
   left:32%;
   right:32%;
-  height:9%;
+  height:15%;  /* Estoy aqui  80 70 */
   border: 1px solid rgba(255,255,255,.18);
   border-radius: 999px;
   box-sizing:border-box;
