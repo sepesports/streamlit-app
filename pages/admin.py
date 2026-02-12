@@ -95,7 +95,7 @@ html = """
   --inPassTopMobile: 48%;    /* 48 */
   --btnTopMobile: 65%;     /* 67%*/
 
-  --linkPolTopMobile: 20%; /* 78 */
+  --linkPolTopMobile: 10%; /* 78 */
   --linkPolLeftMobile: 20%; /* 20 */
   --linkRegTopMobile: 78%;
   --linkRegLeftMobile: 68%;
