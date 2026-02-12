@@ -58,7 +58,7 @@ html = """
   --logoXDesktop: 0px;       /* mover logo izq/der desktop (px) */
 
   --titleTopDesktop: 20%;    /* subir/bajar título desktop */
-  --titleSizeDesktop: 22px;  /* tamaño título desktop */ Estoy aqui
+  --titleSizeDesktop: 22px;  /* tamaño título desktop */ 
   --titleXDesktop: 0px;      /* mover título izq/der desktop (px) */
 
   --lblUserTopDesktop: 22%;
@@ -81,9 +81,9 @@ html = """
      CONTROLES MÓVIL
      Cambia AQUÍ posición/tamaño para móvil
      ========================================================= */
-  --logoWMobile: 110px;      /* tamaño logo móvil */
-  --logoTopMobile: 5%;       /* subir/bajar logo móvil */
-  --logoXMobile: 0px;        /* mover logo izq/der móvil (px) */
+  --logoWMobile: 170px;      /* tamaño logo móvil */
+  --logoTopMobile: 3%;       /* subir/bajar logo móvil */
+  --logoXMobile: 0px;        /* mover logo izq/der móvil (px) */ Estoy aqui
 
   --titleTopMobile: 17%;     /* subir/bajar título móvil */
   --titleSizeMobile: 18px;   /* tamaño título móvil */
