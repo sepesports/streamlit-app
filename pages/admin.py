@@ -83,14 +83,14 @@ html = """
      ========================================================= */
   --logoWMobile: 150px;      /* tamaño logo móvil */
   --logoTopMobile: 6%;       /* subir/bajar logo móvil */
-  --logoXMobile: 0px;        /* mover logo izq/der móvil (px) */ Estoy aqui
+  --logoXMobile: 0px;        /* mover logo izq/der móvil (px) *
 
   --titleTopMobile: 20%;     /* subir/bajar título móvil */
   --titleSizeMobile: 18px;   /* tamaño título móvil */
   --titleXMobile: 0px;       /* mover título izq/der móvil (px) */
 
   --lblUserTopMobile: 22%;
-  --inUserTopMobile: 28%;
+  --inUserTopMobile: 40%;     /* 28 */
   --lblPassTopMobile: 42%;
   --inPassTopMobile: 48%;
   --btnTopMobile: 67%;
