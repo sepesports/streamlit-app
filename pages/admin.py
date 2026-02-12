@@ -58,16 +58,16 @@ html = """
      - Desktop: usa --logoWDesktop y --logoTopDesktop
      - Móvil:   usa --logoWMobile  y --logoTopMobile
      ========================================================= */
-  --logoWDesktop: 310px;  /* <-- ANCHO LOGO EN PANTALLA (desktop) */
-  --logoTopDesktop: 0.0%; /* <-- POSICIÓN VERTICAL LOGO EN PANTALLA */
+  --logoWDesktop: 170px;  /* <-- ANCHO LOGO EN PANTALLA (desktop) */
+  --logoTopDesktop: 2.5%; /* <-- POSICIÓN VERTICAL LOGO EN PANTALLA */
 
-  --logoWMobile: 170px;   /* <-- ANCHO LOGO EN MÓVIL */
-  --logoTopMobile: 4%;    /* <-- POSICIÓN VERTICAL LOGO EN MÓVIL */
+  --logoWMobile: 110px;   /* <-- ANCHO LOGO EN MÓVIL */
+  --logoTopMobile: 5%;    /* <-- POSICIÓN VERTICAL LOGO EN MÓVIL */
 
   /* =========================================================
      TAMAÑOS DE TEXTO (AJUSTABLES)
      ========================================================= */
-  --titleSize: 20px;      /* <-- TAMAÑO "¡BIENVENIDO!" */ 
+  --titleSize: 18px;      /* <-- TAMAÑO "¡BIENVENIDO!" */
   --labelSize: 14px;      /* <-- TAMAÑO "Usuario / Contraseña" */
   --inputSize: 14px;      /* <-- TAMAÑO TEXTO INPUTS */
   --btnTextSize: 14px;    /* <-- TAMAÑO TEXTO BOTÓN */
@@ -196,7 +196,7 @@ html, body{
 .title{
   position:absolute;
   left:0; right:0;
-  top:17%;                        /* <-- SUBE/BAJA "¡BIENVENIDO!" */ Estoy aqui
+  top:17%;                        /* <-- SUBE/BAJA "¡BIENVENIDO!" */
   text-align:center;
   font:800 var(--titleSize) Arial, sans-serif; /* <-- TAMAÑO TÍTULO */
   color: var(--ink);
