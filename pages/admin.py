@@ -268,12 +268,12 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
   position:absolute;
   left:32%;
   right:32%;
-  height:10%;  /* Estoy aqui 10*/
-  border: 1px solid rgba(255,255,255,.18);
+  height:10%;  
+  border: 1px solid rgba(255,255,255,.10);/* Estoy aqui 10*/
   border-radius: 999px;
   box-sizing:border-box;
   background:
-    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%),
+    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%), /* Estoy aqui transparent 80%*/
     linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
   box-shadow:
     0 18px 26px rgba(0,0,0,.28),
