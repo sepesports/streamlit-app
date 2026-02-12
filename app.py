@@ -19,14 +19,14 @@ if st.query_params.get("auth") != "ok":
 PAD_X_PX = 8
 PAD_TOP_PX = 8
 
-BORDER_PX = 2
-BORDER_COLOR = "#111111"
+BORDER_PX = 1
+BORDER_COLOR = "rgba(255,255,255,.12)"
 
-BG_COLOR = "#FFFFFF"
-HEADER_BG = "#FFFFFF"
-IMG_BG = "#FFFFFF"
-BTN_BG = "#FFFFFF"
-FOOTER_BG = "#FFFFFF"
+BG_COLOR = "#020a1a"
+HEADER_BG = "transparent"
+IMG_BG = "transparent"
+BTN_BG = "transparent"
+FOOTER_BG = "transparent"
 
 IMG_LEFT = 0
 IMG_RIGHT = 0
@@ -92,11 +92,33 @@ html = """
       --imgbg: __IMGBG__;
       --btnbg: __BTNBG__;
       --footerbg: __FOOTERBG__;
+
+      --txt: #eaf2ff;
+      --txt2: rgba(234,242,255,.85);
+      --tileLine: rgba(255,255,255,.16);
+      --tileLine2: rgba(255,255,255,.10);
+      --shadow0: 0 18px 40px rgba(0,0,0,.60);
+      --shadow1: 0 12px 26px rgba(0,0,0,.55);
+      --shadow2: 0 10px 18px rgba(0,0,0,.45);
     }
 
-    html, body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:var(--bg);}
-    #stage{position:fixed;inset:0;width:100vw;height:100vh;background:var(--bg);}
+    html, body{
+      margin:0;padding:0;width:100%;height:100%;
+      overflow:hidden;
+      background: var(--bg);
+      font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
 
+    #stage{
+      position:fixed;inset:0;width:100vw;height:100vh;
+      background:
+        radial-gradient(1200px 700px at 50% 18%, rgba(40,130,255,.22) 0%, rgba(8,35,95,.15) 35%, rgba(2,10,26,0) 70%),
+        linear-gradient(180deg, #03102a 0%, #020a1a 70%, #010612 100%);
+    }
+
+    /* marco (no cambia estructura) */
     #frame{
       position:absolute;
       left:var(--padx); right:var(--padx);
@@ -107,6 +129,7 @@ html = """
       box-sizing:border-box;
       pointer-events:none;
       background: transparent;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.35);
     }
 
     #plan{
@@ -116,6 +139,7 @@ html = """
       overflow:hidden;
     }
 
+    /* ================= HEADER ================= */
     #hdr{
       position:absolute;
       left:0; right:0;
@@ -126,25 +150,38 @@ html = """
       box-sizing:border-box;
       display:flex;
       gap:0;
+      overflow:hidden;
+      box-shadow: var(--shadow2);
+      border-radius: 0;
+      background:
+        linear-gradient(180deg, rgba(22,48,110,.82) 0%, rgba(7,22,62,.86) 58%, rgba(2,10,26,.92) 100%);
     }
 
     .hdr-cell{
-      border-right: var(--b) solid var(--bc);
+      border-right: var(--b) solid rgba(255,255,255,.10);
       box-sizing:border-box;
-      background: var(--headerbg);
       display:flex;
       align-items:center;
       justify-content:center;
-      font: 14px Arial, sans-serif;
+      font-size: 14px;
       font-weight: 700;
-      color:#000;
+      color: var(--txt2);
       white-space: nowrap;
       overflow:hidden;
       text-overflow: ellipsis;
+      background: transparent;
+      text-shadow: 0 2px 10px rgba(0,0,0,.55);
     }
-    .hdr-cell.white{ background:#fff; }
+    .hdr-cell.white{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.07) 55%, rgba(255,255,255,.05) 100%);
+      color: var(--txt);
+      border-left: 1px solid rgba(255,255,255,.06);
+      border-right: 1px solid rgba(255,255,255,.06);
+    }
     .hdr-cell:last-child{ border-right: none; }
 
+    /* ================= HERO (img) ================= */
     #img{
       position:absolute;
       left: __IMG_L__%;
@@ -152,24 +189,63 @@ html = """
       top: __IMG_T__%;
       height: __IMG_H__%;
       background: var(--imgbg);
-      border: var(--b) solid var(--bc);
+      border: 1px solid rgba(255,255,255,.10);
       box-sizing:border-box;
       display:flex;
       align-items:center;
       justify-content:center;
-      font: 16px Arial, sans-serif;
-      font-weight: 700;
-      color:#000;
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: var(--txt);
+      text-transform: uppercase;
+      text-shadow: 0 2px 0 rgba(0,0,0,.20), 0 10px 28px rgba(0,0,0,.55);
+      border-radius: 14px;
+      box-shadow: var(--shadow0);
+      overflow:hidden;
+
+      background:
+        radial-gradient(900px 220px at 50% 35%, rgba(100,190,255,.28) 0%, rgba(35,120,255,.14) 32%, rgba(2,10,26,0) 68%),
+        linear-gradient(135deg, rgba(10,40,105,.88) 0%, rgba(5,22,64,.90) 52%, rgba(2,10,26,.94) 100%);
     }
 
+    #img::before{
+      content:"";
+      position:absolute;
+      inset:-40px -60px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 40%),
+        radial-gradient(600px 240px at 30% 50%, rgba(120,210,255,.14) 0%, rgba(120,210,255,0) 70%),
+        radial-gradient(700px 260px at 70% 60%, rgba(60,140,255,.10) 0%, rgba(60,140,255,0) 70%);
+      opacity:.9;
+      pointer-events:none;
+    }
+
+    #img::after{
+      content:"";
+      position:absolute;
+      left:-18%;
+      right:-18%;
+      bottom:-40%;
+      height:120%;
+      background:
+        radial-gradient(closest-side at 50% 50%, rgba(140,220,255,.18), rgba(140,220,255,0) 65%),
+        linear-gradient(90deg, rgba(120,210,255,.22), rgba(120,210,255,0) 55%, rgba(120,210,255,.18));
+      transform:skewY(-6deg);
+      opacity:.75;
+      pointer-events:none;
+    }
+
+    /* ================= BUTTON AREA ================= */
     #btn-area{
       position:absolute;
       left:0; right:0;
       top: __BTN_AREA_TOP__%;
       bottom: 0;
-      background: var(--bg);
+      background: transparent;
       box-sizing:border-box;
     }
+
     #btn-grid{
       position:absolute;
       left: __BTN_L__%;
@@ -180,36 +256,71 @@ html = """
 
     .btn{
       position:absolute;
-      background: var(--btnbg);
-      border: var(--b) solid var(--bc);
+      border: 1px solid rgba(255,255,255,.12);
       box-sizing:border-box;
       display:flex;
       align-items:center;
       justify-content:center;
       text-align:center;
       padding: 8px 10px;
-      font: 14px Arial, sans-serif;
+      font-size: 15px;
       font-weight: 700;
-      color:#000;
+      color: var(--txt);
       overflow:hidden;
+      border-radius: 12px;
+      box-shadow: var(--shadow1);
+      background:
+        radial-gradient(220px 80px at 24% 50%, rgba(120,210,255,.24) 0%, rgba(120,210,255,0) 68%),
+        linear-gradient(180deg, rgba(18,78,185,.44) 0%, rgba(8,42,110,.58) 55%, rgba(4,24,66,.78) 100%);
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, filter .12s ease;
+      cursor:pointer;
+      user-select:none;
     }
+
+    .btn::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 45%);
+      opacity:.85;
+      pointer-events:none;
+    }
+
+    .btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 16px 34px rgba(0,0,0,.62);
+      border-color: rgba(170,230,255,.22);
+      filter: saturate(1.06);
+    }
+
+    .btn:active{
+      transform: translateY(0px);
+      box-shadow: var(--shadow1);
+    }
+
     .btn span{
+      position:relative;
       display:block;
       line-height:1.05;
       white-space: pre-line;
+      text-shadow: 0 1px 0 rgba(0,0,0,.25);
     }
 
+    /* Fondo 2 (solo texto, no cambia posición) */
     #fondo2{
       position:absolute;
       left:0; right:0;
       bottom: __F2_BOTTOM__%;
       text-align:center;
-      font: 13px Arial, sans-serif;
+      font-size: 12px;
       font-weight: 700;
-      color:#000;
+      color: rgba(234,242,255,.70);
       pointer-events:none;
+      text-shadow: 0 2px 10px rgba(0,0,0,.55);
     }
 
+    /* Footer */
     #footer{
       position:absolute;
       left: __FOOT_L__%;
@@ -217,16 +328,21 @@ html = """
       height: __FOOT_H__%;
       bottom: __FOOT_BOTTOM__%;
       background: var(--footerbg);
-      border: var(--b) solid var(--bc);
+      border: 1px solid rgba(255,255,255,.10);
       box-sizing:border-box;
       display:flex;
       align-items:center;
       justify-content:center;
-      font: 13px Arial, sans-serif;
+      font-size: 12px;
       font-weight: 700;
-      color:#000;
+      color: rgba(234,242,255,.72);
+      border-radius: 12px;
+      box-shadow: var(--shadow2);
+      background:
+        linear-gradient(180deg, rgba(22,48,110,.60) 0%, rgba(7,22,62,.78) 58%, rgba(2,10,26,.88) 100%);
     }
 
+    /* HUD */
     #hud{
       position:absolute; top:8px; left:8px;
       font: 12px Arial, sans-serif;
@@ -237,6 +353,13 @@ html = """
       white-space: nowrap;
       pointer-events:none;
     }
+
+    /* Mobile: solo tipografía/altura visual, NO mueve la estructura */
+    @media (max-width: 520px){
+      #img{ font-size: 30px; letter-spacing:.8px; }
+      .btn{ font-size: 14px; }
+      .hdr-cell{ font-size: 13px; }
+    }
   </style>
 </head>
 <body>
@@ -245,7 +368,7 @@ html = """
 
     <div id="plan">
       <div id="hdr"></div>
-      <div id="img">Imagen</div>
+      <div id="img">¡BIENVENIDO!</div>
 
       <div id="btn-area">
         <div id="btn-grid"></div>
