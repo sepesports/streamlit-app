@@ -58,7 +58,7 @@ html = """
   --logoXDesktop: 0px;       /* mover logo izq/der desktop (px) */
 
   --titleTopDesktop: 20%;    /* subir/bajar título desktop */
-  --titleSizeDesktop: 18px;  /* tamaño título desktop */
+  --titleSizeDesktop: 22px;  /* tamaño título desktop */ Estoy aqui
   --titleXDesktop: 0px;      /* mover título izq/der desktop (px) */
 
   --lblUserTopDesktop: 22%;
