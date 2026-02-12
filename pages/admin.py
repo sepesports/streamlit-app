@@ -345,7 +345,7 @@ input.field::placeholder{
 
       <div class="title">¡BIENVENIDO!</div>
 
-      <div class="label" style="top:22%;">Usuario:</div>
+      <div class="label" style="top:30%;">Usuario:</div>
       <input id="user" class="field" style="top:28%;" autocomplete="username"/>
 
       <div class="label" style="top:42%;">Contraseña:</div>
