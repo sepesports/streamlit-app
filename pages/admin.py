@@ -26,10 +26,9 @@ html = """
 <style>
 :root{
   /* =========================================================
-     OBJETIVO: Cambiar rojos -> AZUL base #040e31 con degradado
-     EDITA SOLO AQUÍ para cambiar tonos generales del fondo
+     OBJETIVO: Rojo -> AZUL base #040e31 con degradado
      ========================================================= */
-  --baseBlue: #040e31;            /* <-- Color base principal */
+  --baseBlue: #040e31;            /* <-- Color base */
   --bgTop:  #0a1a55;              /* <-- Degradado superior (más claro) */
   --bgMid:  #061240;              /* <-- Degradado medio */
   --bgDeep: #02071c;              /* <-- Degradado inferior (más oscuro) */
@@ -53,11 +52,28 @@ html = """
   --shadow2: 0 10px 22px rgba(0,0,0,.40);
 
   --blur: 14px;
+
+  /* =========================================================
+     LOGO RESPONSIVE (AJUSTABLE)
+     - Desktop: usa --logoWDesktop y --logoTopDesktop
+     - Móvil:   usa --logoWMobile  y --logoTopMobile
+     ========================================================= */
+  --logoWDesktop: 170px;  /* <-- ANCHO LOGO EN PANTALLA (desktop) */
+  --logoTopDesktop: 2.5%; /* <-- POSICIÓN VERTICAL LOGO EN PANTALLA */
+
+  --logoWMobile: 110px;   /* <-- ANCHO LOGO EN MÓVIL */
+  --logoTopMobile: 5%;    /* <-- POSICIÓN VERTICAL LOGO EN MÓVIL */
+
+  /* =========================================================
+     TAMAÑOS DE TEXTO (AJUSTABLES)
+     ========================================================= */
+  --titleSize: 18px;      /* <-- TAMAÑO "¡BIENVENIDO!" */
+  --labelSize: 14px;      /* <-- TAMAÑO "Usuario / Contraseña" */
+  --inputSize: 14px;      /* <-- TAMAÑO TEXTO INPUTS */
+  --btnTextSize: 14px;    /* <-- TAMAÑO TEXTO BOTÓN */
+  --linkSize: 13px;       /* <-- TAMAÑO LINKS */
 }
 
-/* =========================================================
-   RESET
-   ========================================================= */
 *{box-sizing:border-box}
 html, body{
   margin:0;
@@ -68,9 +84,6 @@ html, body{
   background: var(--baseBlue);
 }
 
-/* =========================================================
-   STAGE: Fondo exterior (sin cambiar posiciones)
-   ========================================================= */
 #stage{
   position:fixed;
   inset:0;
@@ -83,9 +96,7 @@ html, body{
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-/* =========================================================
-   PLAN: Panel principal (mismo layout)
-   ========================================================= */
+/* Fondo azul + corte diagonal + viñeta (sin cambiar layout) */
 #plan{
   position:absolute;
   left:10px; right:10px;
@@ -94,16 +105,12 @@ html, body{
 
   border-radius: 34px;
   box-shadow: var(--shadow1);
-
-  /* Fondo azul degradado (antes rojo) */
   background:
     linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 22%),
     linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #05164d 58%, var(--bgDeep) 100%);
 }
 
-/* =========================================================
-   Corte diagonal (mismo efecto, tonos azules)
-   ========================================================= */
+/* corte diagonal */
 #plan::before{
   content:"";
   position:absolute;
@@ -120,9 +127,7 @@ html, body{
   pointer-events:none;
 }
 
-/* =========================================================
-   Viñeta y profundidad inferior (igual)
-   ========================================================= */
+/* viñeta + profundidad inferior */
 #plan::after{
   content:"";
   position:absolute;
@@ -134,9 +139,7 @@ html, body{
   pointer-events:none;
 }
 
-/* =========================================================
-   Frame existente (no mover)
-   ========================================================= */
+/* marco existente: suavizado visual (sin moverlo) */
 #frame{
   position:absolute;
   left:10px; right:10px;
@@ -150,9 +153,7 @@ html, body{
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
 }
 
-/* =========================================================
-   Card (no mover)
-   ========================================================= */
+/* contenedor del card: se mantiene igual */
 #card{
   position:absolute;
   left:6%;
@@ -162,63 +163,66 @@ html, body{
 }
 
 /* =========================================================
-   LOGO
-   - Posición: encima y centrado del título
-   - Tamaño: cambia width
-   - Movimiento: cambia top (sube/baja) y/o translateX
+   LOGO (encima y centrado del título)
+   - Desktop: controlado por variables --logoWDesktop / --logoTopDesktop
+   - Móvil:   controlado por variables --logoWMobile  / --logoTopMobile
    ========================================================= */
 .logo{
   position:absolute;
   left:50%;
-  transform: translateX(-50%); /* mueve izquierda/derecha con translateX */
-  top:5%;                      /* <-- SUBE/BAJA el logo cambiando este % */
-  width:100px;                 /* <-- TAMAÑO DEL LOGO (ancho) */
+  transform: translateX(-50%);
+  top: var(--logoTopDesktop);    /* <-- SUBE/BAJA logo en desktop */
+  width: var(--logoWDesktop);    /* <-- ANCHO logo en desktop */
   height:auto;
   display:block;
+  border-radius: 10px;           /* quítalo si NO quieres bordes redondeados */
   filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
-  border-radius: 10px;         /* quítalo si NO quieres bordes redondeados */
 }
 
+/* En móvil, usa las variables móviles */
+@media (max-width: 640px){
+  .logo{
+    top: var(--logoTopMobile);   /* <-- SUBE/BAJA logo en móvil */
+    width: var(--logoWMobile);   /* <-- ANCHO logo en móvil */
+  }
+}
+
+/* textos: solo visual */
 /* =========================================================
    TÍTULO
-   - Tamaño: font-size
-   - Movimiento: top (sube/baja)
+   - Tamaño: --titleSize
+   - Movimiento: top (sube/baja) aquí
    ========================================================= */
 .title{
   position:absolute;
   left:0; right:0;
-  top:17%;                   /* <-- SUBE/BAJA el título cambiando este % */
+  top:17%;                        /* <-- SUBE/BAJA "¡BIENVENIDO!" */
   text-align:center;
-
-  /* <-- TAMAÑO DEL TÍTULO */
-  font: 800 18px Arial, sans-serif;
-  letter-spacing: .2px;
-
+  font:800 var(--titleSize) Arial, sans-serif; /* <-- TAMAÑO TÍTULO */
   color: var(--ink);
   text-shadow: 0 8px 18px rgba(0,0,0,.35);
+  letter-spacing: .2px;
 }
 
 /* =========================================================
-   LABELS (Usuario / Contraseña)
-   - Tamaño: font-size
-   - Movimiento: se mueve desde el HTML con style="top:.."
+   LABELS
+   - Tamaño: --labelSize
+   - Movimiento: se controla desde el HTML con style="top:.."
    ========================================================= */
 .label{
   position:absolute;
   left:18%;
   right:18%;
-
-  /* <-- TAMAÑO DE LOS LABELS */
-  font: 700 14px Arial, sans-serif;
-
+  font:700 var(--labelSize) Arial, sans-serif; /* <-- TAMAÑO LABEL */
   color: rgba(255,255,255,.82);
   text-shadow: 0 6px 14px rgba(0,0,0,.30);
 }
 
+/* inputs: pill + blur (misma posición/alto por inline style) */
 /* =========================================================
    INPUTS
-   - Tamaño texto: font-size
-   - Movimiento: se mueve desde el HTML con style="top:.."
+   - Tamaño: --inputSize
+   - Movimiento: se controla desde el HTML con style="top:.."
    ========================================================= */
 input.field{
   position:absolute;
@@ -234,10 +238,7 @@ input.field{
     linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
 
   padding: 0 14px;
-
-  /* <-- TAMAÑO DEL TEXTO DEL INPUT */
-  font: 700 14px Arial, sans-serif;
-
+  font:700 var(--inputSize) Arial, sans-serif; /* <-- TAMAÑO INPUT */
   color: rgba(30,40,55,.92);
 
   outline:none;
@@ -254,10 +255,11 @@ input.field::placeholder{
   color: rgba(60,70,85,.55);
 }
 
+/* botón: pill azul (misma posición/alto por inline style) */
 /* =========================================================
    BOTÓN
-   - Tamaño texto: font-size
-   - Movimiento: se mueve desde el HTML con style="top:.."
+   - Tamaño: --btnTextSize
+   - Movimiento: se controla desde el HTML con style="top:.."
    ========================================================= */
 .btn{
   position:absolute;
@@ -282,9 +284,7 @@ input.field::placeholder{
   align-items:center;
   justify-content:center;
 
-  /* <-- TAMAÑO DEL TEXTO DEL BOTÓN */
-  font: 700 14px Arial, sans-serif;
-
+  font:700 var(--btnTextSize) Arial, sans-serif; /* <-- TAMAÑO TEXTO BOTÓN */
   color: rgba(255,255,255,.92);
 
   cursor:pointer;
@@ -298,17 +298,15 @@ input.field::placeholder{
   filter: brightness(.98);
 }
 
+/* links inferiores: mismo layout (solo color) */
 /* =========================================================
-   LINKS inferiores
-   - Tamaño: font-size
-   - Movimiento: se mueve desde el HTML con style="top/left"
+   LINKS
+   - Tamaño: --linkSize
+   - Movimiento: se controla desde el HTML con style="top/left"
    ========================================================= */
 .link{
   position:absolute;
-
-  /* <-- TAMAÑO DE LOS LINKS */
-  font: 700 13px Arial, sans-serif;
-
+  font:700 var(--linkSize) Arial, sans-serif; /* <-- TAMAÑO LINKS */
   color: rgba(255,255,255,.70);
   white-space:nowrap;
   text-shadow: 0 6px 14px rgba(0,0,0,.30);
@@ -318,19 +316,10 @@ input.field::placeholder{
   color: rgba(255,255,255,.85);
 }
 
-/* =========================================================
-   HUD (debug)
-   - Tamaño: font-size
-   - Movimiento: top/left aquí
-   ========================================================= */
+/* HUD: mantener, solo estética (sin imprimir medidas) */
 #hud{
-  position:absolute;
-  top:8px;   /* <-- MUEVE HUD arriba/abajo */
-  left:8px;  /* <-- MUEVE HUD izquierda/derecha */
-
-  /* <-- TAMAÑO DEL HUD */
+  position:absolute; top:8px; left:8px;
   font:12px Arial, sans-serif;
-
   background: rgba(255,255,255,.10);
   border: 1px solid rgba(255,255,255,.18);
   border-radius: 10px;
@@ -351,11 +340,7 @@ input.field::placeholder{
 
   <div id="plan">
     <div id="card">
-      <!-- =====================================================
-           LOGO: Encima y centrado de ¡BIENVENIDO!
-           - Para subir/bajar: edita .logo { top: X%; }
-           - Para tamaño: edita .logo { width: XXXpx; }
-           ===================================================== -->
+      <!-- LOGO: encima y centrado del título -->
       <img class="logo" src="https://files.catbox.moe/056m6v.jpg" alt="Logo"/>
 
       <div class="title">¡BIENVENIDO!</div>
@@ -372,7 +357,8 @@ input.field::placeholder{
       <div class="link" style="top:78%; left:68%;">Registrarse:</div>
     </div>
 
-    <div id="hud">Cargando...</div>
+    <!-- HUD ya NO imprime medidas -->
+    <div id="hud"></div>
   </div>
 </div>
 
@@ -415,15 +401,11 @@ async function doLogin(){
     fe.style.background="transparent";
   }
 
-  var hud=document.getElementById("hud");
-  var plan=document.getElementById("plan");
-  function update(){
-    var r=plan.getBoundingClientRect();
-    hud.textContent="Viewport(px): "+Math.round(window.innerWidth)+" x "+Math.round(window.innerHeight)+
-                    " | Plan(px): "+Math.round(r.width)+" x "+Math.round(r.height);
-  }
-  window.addEventListener("resize", update);
-  update();
+  /* =========================================================
+     Se eliminó la impresión de medidas:
+     - Antes: hud.textContent = "Viewport... | Plan..."
+     - Ahora: no imprime nada
+     ========================================================= */
 })();
 </script>
 
