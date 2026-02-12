@@ -60,6 +60,13 @@ FOOTER_RIGHT = 6
 MIN_BTN_W_PX = 130
 MOBILE_MAX_W_PX = 500
 
+# ===================== NUEVO: LOGO / USUARIO / FOOTER =====================
+LOGO_URL = "https://files.catbox.moe/056m6v.jpg"
+FOOTER_TEXT = "2026 Socorrista ProVersión 1.0. Todos los derechos reservados"
+
+# nombre del usuario (prioriza ?usuario=..., si no existe usa ?user=..., si no existe deja "Login")
+USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or "Login"
+
 st.set_page_config(layout="wide")
 
 st.markdown(
@@ -171,6 +178,7 @@ html = """
       text-overflow: ellipsis;
       background: transparent;
       text-shadow: 0 2px 10px rgba(0,0,0,.55);
+      padding: 0 10px;
     }
     .hdr-cell.white{
       background:
@@ -180,6 +188,22 @@ html = """
       border-right: 1px solid rgba(255,255,255,.06);
     }
     .hdr-cell:last-child{ border-right: none; }
+
+    /* logo dentro del header */
+    .hdr-logo{
+      justify-content:flex-start;
+      gap:10px;
+    }
+    .hdr-logo img{
+      height: calc((__HDR_H__ * 1vh) - 10px);
+      max-height: 44px;
+      width: auto;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 8px 16px rgba(0,0,0,.35);
+      object-fit: cover;
+      background: rgba(0,0,0,.12);
+    }
 
     /* ================= HERO (img) ================= */
     #img{
@@ -340,6 +364,8 @@ html = """
       box-shadow: var(--shadow2);
       background:
         linear-gradient(180deg, rgba(22,48,110,.60) 0%, rgba(7,22,62,.78) 58%, rgba(2,10,26,.88) 100%);
+      padding: 0 14px;
+      text-align:center;
     }
 
     /* HUD */
@@ -359,6 +385,7 @@ html = """
       #img{ font-size: 30px; letter-spacing:.8px; }
       .btn{ font-size: 14px; }
       .hdr-cell{ font-size: 13px; }
+      .hdr-logo img{ max-height: 36px; }
     }
   </style>
 </head>
@@ -373,7 +400,7 @@ html = """
       <div id="btn-area">
         <div id="btn-grid"></div>
         <div id="fondo2">Fondo 2</div>
-        <div id="footer">Pie de pagina</div>
+        <div id="footer">__FOOTER_TEXT__</div>
       </div>
 
       <div id="hud">Cargando...</div>
@@ -398,21 +425,38 @@ html = """
       var BTN_TEXTS = __BTN_TEXTS__;
       var MIN_BTN_W_PX = __MIN_BTN_W_PX__;
       var MOBILE_MAX_W_PX = __MOBILE_MAX_W_PX__;
+      var LOGO_URL = "__LOGO_URL__";
+      var USER_NAME = "__USER_NAME__";
 
       var hdr = document.getElementById("hdr");
       hdr.innerHTML = "";
       var cells = [
-        {w: 6,  t:"",        white:false},
-        {w: 22, t:"Logo",    white:true},
-        {w: 44, t:"Fondo 1", white:false},
-        {w: 22, t:"Login",   white:true},
-        {w: 6,  t:"",        white:false},
+        {w: 6,  t:"",        white:false, kind:"blank"},
+        {w: 22, t:"",        white:true,  kind:"logo"},
+        {w: 44, t:"Fondo 1", white:false, kind:"text"},
+        {w: 22, t:"",        white:true,  kind:"user"},
+        {w: 6,  t:"",        white:false, kind:"blank"},
       ];
+
       cells.forEach(function(c){
         var d = document.createElement("div");
         d.className = "hdr-cell" + (c.white ? " white" : "");
         d.style.width = c.w + "%";
-        d.textContent = c.t;
+
+        if (c.kind === "logo"){
+          d.className += " hdr-logo";
+          var img = document.createElement("img");
+          img.src = LOGO_URL;
+          img.alt = "Logo";
+          img.loading = "eager";
+          img.decoding = "async";
+          d.appendChild(img);
+        } else if (c.kind === "user"){
+          d.textContent = USER_NAME || "";
+        } else {
+          d.textContent = c.t;
+        }
+
         hdr.appendChild(d);
       });
 
@@ -524,6 +568,9 @@ html = (
         .replace("__BTN_TEXTS__", str(BTN_TEXTS).replace("'", '"'))
         .replace("__MIN_BTN_W_PX__", str(MIN_BTN_W_PX))
         .replace("__MOBILE_MAX_W_PX__", str(MOBILE_MAX_W_PX))
+        .replace("__LOGO_URL__", LOGO_URL)
+        .replace("__USER_NAME__", str(USER_NAME).replace('"', '\\"'))
+        .replace("__FOOTER_TEXT__", FOOTER_TEXT)
 )
 
 components.html(html, height=10, scrolling=False)
