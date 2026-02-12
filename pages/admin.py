@@ -276,7 +276,7 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
     radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%), /* Estoy aqui transparent 80%*/
     linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
   box-shadow:
-    0 18px 26px rgba(0,0,0,.28),
+    0 22px 26px rgba(0,0,0,.28),/* Estoy aqui 0 18px */
     inset 0 1px 0 rgba(255,255,255,.22);
   display:flex;
   align-items:center;
