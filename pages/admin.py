@@ -71,7 +71,7 @@ html = """
   --labelSize: 14px;      /* <-- TAMAÑO "Usuario / Contraseña" */
   --inputSize: 14px;      /* <-- TAMAÑO TEXTO INPUTS */
   --btnTextSize: 14px;    /* <-- TAMAÑO TEXTO BOTÓN */
-  --linkSize: 13px;       /* <-- TAMAÑO LINKS */
+  --linkSize: 30px;       /* <-- TAMAÑO LINKS */
 }
 
 *{box-sizing:border-box}
