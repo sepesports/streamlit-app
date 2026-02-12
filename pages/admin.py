@@ -196,7 +196,7 @@ html, body{
 .title{
   position:absolute;
   left:0; right:0;
-  top:17%;                        /* <-- SUBE/BAJA "¡BIENVENIDO!" */
+  top:16%;                        /* <-- SUBE/BAJA "¡BIENVENIDO!" */ Estoy aqui
   text-align:center;
   font:800 var(--titleSize) Arial, sans-serif; /* <-- TAMAÑO TÍTULO */
   color: var(--ink);
