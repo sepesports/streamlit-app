@@ -67,7 +67,7 @@ html = """
   /* =========================================================
      TAMAÑOS DE TEXTO (AJUSTABLES)
      ========================================================= */
-  --titleSize: 20px;      /* <-- TAMAÑO "¡BIENVENIDO!" */ Estoy aqui
+  --titleSize: 20px;      /* <-- TAMAÑO "¡BIENVENIDO!" */ 
   --labelSize: 14px;      /* <-- TAMAÑO "Usuario / Contraseña" */
   --inputSize: 14px;      /* <-- TAMAÑO TEXTO INPUTS */
   --btnTextSize: 14px;    /* <-- TAMAÑO TEXTO BOTÓN */
@@ -196,7 +196,7 @@ html, body{
 .title{
   position:absolute;
   left:0; right:0;
-  top:16%;                        /* <-- SUBE/BAJA "¡BIENVENIDO!" */ Estoy aqui
+  top:17%;                        /* <-- SUBE/BAJA "¡BIENVENIDO!" */ Estoy aqui
   text-align:center;
   font:800 var(--titleSize) Arial, sans-serif; /* <-- TAMAÑO TÍTULO */
   color: var(--ink);
