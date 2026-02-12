@@ -98,7 +98,7 @@ html = """
   --linkPolTopMobile: 78%; /* 78 */
   --linkPolLeftMobile: 20%; /* 20 */
   --linkRegTopMobile: 78%;
-  --linkRegLeftMobile: 68%;
+  --linkRegLeftMobile: 60%; /* 68 */
 
   --labelSizeMobile: 14px;
   --inputSizeMobile: 14px;
