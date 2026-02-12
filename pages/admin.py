@@ -82,7 +82,7 @@ html = """
      Cambia AQUÍ posición/tamaño para móvil
      ========================================================= */
   --logoWMobile: 150px;      /* tamaño logo móvil */
-  --logoTopMobile: 5%;       /* subir/bajar logo móvil */
+  --logoTopMobile: 6%;       /* subir/bajar logo móvil */
   --logoXMobile: 0px;        /* mover logo izq/der móvil (px) */ Estoy aqui
 
   --titleTopMobile: 20%;     /* subir/bajar título móvil */
@@ -166,7 +166,7 @@ html, body{
   position:absolute;
   inset:0;
   background:
-    radial-gradient(50% 70% at 50% 25%, rgba(255,255,255,.06), transparent 55%), /* Estoy aqui */
+    radial-gradient(50% 60% at 50% 25%, rgba(255,255,255,.06), transparent 55%), /* Estoy aqui  80 70 */
     radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
     linear-gradient(180deg, transparent 55%, rgba(0,0,0,.65) 100%);
   pointer-events:none;
