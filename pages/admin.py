@@ -81,7 +81,7 @@ html = """
      CONTROLES MÓVIL
      Cambia AQUÍ posición/tamaño para móvil
      ========================================================= */
-  --logoWMobile: 170px;      /* tamaño logo móvil */
+  --logoWMobile: 110px;      /* tamaño logo móvil */
   --logoTopMobile: 4%;       /* subir/bajar logo móvil */
   --logoXMobile: 0px;        /* mover logo izq/der móvil (px) */ Estoy aqui
 
