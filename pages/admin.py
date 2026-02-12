@@ -244,8 +244,8 @@ html, body{
 /* INPUTS */
 input.field{
   position:absolute;
-  left:18%;
-  right:18%;
+  left:16%; /* 16 */
+  right:16%; /* 16 */
   height:10%;
   border: 1px solid rgba(255,255,255,.55);
   border-radius: 999px;
