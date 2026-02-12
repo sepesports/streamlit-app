@@ -93,9 +93,9 @@ html = """
   --inUserTopMobile: 28%;     /* 28 */
   --lblPassTopMobile: 42%;  /* 42 */
   --inPassTopMobile: 48%;    /* 48 */
-  --btnTopMobile: 65%;     /* 67%*/ Baja el boton Login
+  --btnTopMobile: 65%;     /* 67%*/
 
-  --linkPolTopMobile: 78%; /* 78 */
+  --linkPolTopMobile: 20%; /* 78 */
   --linkPolLeftMobile: 20%; /* 20 */
   --linkRegTopMobile: 78%;
   --linkRegLeftMobile: 68%;
