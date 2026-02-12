@@ -96,7 +96,7 @@ html = """
   --btnTopMobile: 65%;     /* 67%*/ Baja el boton Login
 
   --linkPolTopMobile: 78%; /* 78 */
-  --linkPolLeftMobile: 10%; /* 20 */
+  --linkPolLeftMobile: 20%; /* 20 */
   --linkRegTopMobile: 78%;
   --linkRegLeftMobile: 68%;
 
