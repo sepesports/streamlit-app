@@ -58,7 +58,7 @@ html = """
      - Desktop: usa --logoWDesktop y --logoTopDesktop
      - Móvil:   usa --logoWMobile  y --logoTopMobile
      ========================================================= */
-  --logoWDesktop: 370px;  /* <-- ANCHO LOGO EN PANTALLA (desktop) */
+  --logoWDesktop: 3150px;  /* <-- ANCHO LOGO EN PANTALLA (desktop) */
   --logoTopDesktop: 0.5%; /* <-- POSICIÓN VERTICAL LOGO EN PANTALLA */
 
   --logoWMobile: 170px;   /* <-- ANCHO LOGO EN MÓVIL */ Estoy aqui
