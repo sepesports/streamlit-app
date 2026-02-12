@@ -53,8 +53,8 @@ html = """
      CONTROLES DESKTOP (pantalla completa)
      Cambia AQUÍ posición/tamaño para desktop
      ========================================================= */
-  --logoWDesktop: 190px;     /* tamaño logo desktop */
-  --logoTopDesktop: 2.5%;    /* subir/bajar logo desktop */
+  --logoWDesktop: 310px;     /* tamaño logo desktop */
+  --logoTopDesktop: 0.0%;    /* subir/bajar logo desktop */
   --logoXDesktop: 0px;       /* mover logo izq/der desktop (px) */
 
   --titleTopDesktop: 17%;    /* subir/bajar título desktop */
