@@ -100,10 +100,10 @@ html = """
   --linkRegTopMobile: 78%;
   --linkRegLeftMobile: 68%; /* 68 */
 
-  --labelSizeMobile: 14px;
-  --inputSizeMobile: 14px;
-  --btnTextSizeMobile: 30px; /* 14 */
-  --linkSizeMobile: 13px;
+  --labelSizeMobile: 16px;    /* 16 */
+  --inputSizeMobile: 16px;    /* 16 */
+  --btnTextSizeMobile: 18px; /* 14 */
+  --linkSizeMobile: 15px;  /* 13*/
 }
 
 /* RESET */
