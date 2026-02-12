@@ -59,7 +59,7 @@ html = """
      - Móvil:   usa --logoWMobile  y --logoTopMobile
      ========================================================= */
   --logoWDesktop: 370px;  /* <-- ANCHO LOGO EN PANTALLA (desktop) */
-  --logoTopDesktop: 1.5%; /* <-- POSICIÓN VERTICAL LOGO EN PANTALLA */
+  --logoTopDesktop: 0.5%; /* <-- POSICIÓN VERTICAL LOGO EN PANTALLA */
 
   --logoWMobile: 170px;   /* <-- ANCHO LOGO EN MÓVIL */ Estoy aqui
   --logoTopMobile: 4%;    /* <-- POSICIÓN VERTICAL LOGO EN MÓVIL */
