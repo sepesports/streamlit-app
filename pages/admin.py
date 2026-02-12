@@ -58,11 +58,11 @@ html = """
      - Desktop: usa --logoWDesktop y --logoTopDesktop
      - Móvil:   usa --logoWMobile  y --logoTopMobile
      ========================================================= */
-  --logoWDesktop: 270px;  /* <-- ANCHO LOGO EN PANTALLA (desktop) */
-  --logoTopDesktop: 2.0%; /* <-- POSICIÓN VERTICAL LOGO EN PANTALLA */
+  --logoWDesktop: 370px;  /* <-- ANCHO LOGO EN PANTALLA (desktop) */
+  --logoTopDesktop: 1.5%; /* <-- POSICIÓN VERTICAL LOGO EN PANTALLA */
 
-  --logoWMobile: 110px;   /* <-- ANCHO LOGO EN MÓVIL */
-  --logoTopMobile: 5%;    /* <-- POSICIÓN VERTICAL LOGO EN MÓVIL */
+  --logoWMobile: 170px;   /* <-- ANCHO LOGO EN MÓVIL */ Estoy aqui
+  --logoTopMobile: 4%;    /* <-- POSICIÓN VERTICAL LOGO EN MÓVIL */
 
   /* =========================================================
      TAMAÑOS DE TEXTO (AJUSTABLES)
