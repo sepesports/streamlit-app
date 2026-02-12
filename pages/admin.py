@@ -61,17 +61,17 @@ html = """
   --logoWDesktop: 310px;  /* <-- ANCHO LOGO EN PANTALLA (desktop) */
   --logoTopDesktop: 0.1%; /* <-- POSICIÓN VERTICAL LOGO EN PANTALLA */
 
-  --logoWMobile: 170px;   /* <-- ANCHO LOGO EN MÓVIL */ 
+  --logoWMobile: 170px;   /* <-- ANCHO LOGO EN MÓVIL */
   --logoTopMobile: 4%;    /* <-- POSICIÓN VERTICAL LOGO EN MÓVIL */
 
   /* =========================================================
      TAMAÑOS DE TEXTO (AJUSTABLES)
      ========================================================= */
-  --titleSize: 19px;      /* <-- TAMAÑO "¡BIENVENIDO!" */
-  --labelSize: 13px;      /* <-- TAMAÑO "Usuario / Contraseña" */
+  --titleSize: 18px;      /* <-- TAMAÑO "¡BIENVENIDO!" */
+  --labelSize: 14px;      /* <-- TAMAÑO "Usuario / Contraseña" */
   --inputSize: 14px;      /* <-- TAMAÑO TEXTO INPUTS */
-  --btnTextSize: 16px;    /* <-- TAMAÑO TEXTO BOTÓN */
-  --linkSize: 16px;       /* <-- TAMAÑO LINKS */
+  --btnTextSize: 14px;    /* <-- TAMAÑO TEXTO BOTÓN */
+  --linkSize: 13px;       /* <-- TAMAÑO LINKS */
 }
 
 *{box-sizing:border-box}
@@ -196,7 +196,7 @@ html, body{
 .title{
   position:absolute;
   left:0; right:0;
-  top:19%;                        /* <-- SUBE/BAJA "¡BIENVENIDO!" */Estoy aqui
+  top:17%;                        /* <-- SUBE/BAJA "¡BIENVENIDO!" */
   text-align:center;
   font:800 var(--titleSize) Arial, sans-serif; /* <-- TAMAÑO TÍTULO */
   color: var(--ink);
