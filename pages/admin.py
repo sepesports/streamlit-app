@@ -82,10 +82,10 @@ html = """
      Cambia AQUÍ posición/tamaño para móvil
      ========================================================= */
   --logoWMobile: 150px;      /* tamaño logo móvil */
-  --logoTopMobile: 7%;       /* subir/bajar logo móvil */
+  --logoTopMobile: 1%;       /* subir/bajar logo móvil */
   --logoXMobile: 0px;        /* mover logo izq/der móvil (px) */ Estoy aqui
 
-  --titleTopMobile: 10%;     /* subir/bajar título móvil */
+  --titleTopMobile: 20%;     /* subir/bajar título móvil */
   --titleSizeMobile: 18px;   /* tamaño título móvil */
   --titleXMobile: 0px;       /* mover título izq/der móvil (px) */
 
