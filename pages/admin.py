@@ -72,7 +72,7 @@ html = """
   --linkRegTopDesktop: 78%;
   --linkRegLeftDesktop: 68%;
 
-  --labelSizeDesktop: 14px;
+  --labelSizeDesktop: 18px; /* 14px */
   --inputSizeDesktop: 14px;
   --btnTextSizeDesktop: 14px;
   --linkSizeDesktop: 13px;
