@@ -34,7 +34,7 @@ IMG_TOP = 10
 IMG_HEIGHT = 44
 
 HEADER_TOP = 0
-HEADER_HEIGHT = 12
+HEADER_HEIGHT = 8
 
 BTN_AREA_TOP = 55
 BTN_H = 23
@@ -457,7 +457,7 @@ html = """
         {w: 6,  t:"",        white:false, kind:"blank"},
         {w: 22, t:"",        white:true,  kind:"logo"},
         {w: 44, t:"Fondo 1", white:false, kind:"text"},
-        {w: 30, t:"",        white:true,  kind:"user"},
+        {w: 22, t:"",        white:true,  kind:"user"},
         {w: 6,  t:"",        white:false, kind:"blank"},
       ];
 
