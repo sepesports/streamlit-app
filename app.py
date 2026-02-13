@@ -73,7 +73,7 @@ USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or "Lo
 
 # Tipografías generales
 HERO_FONT_SIZE_DESKTOP_PX = 44
-HERO_FONT_SIZE_MOBILE_PX = 30
+HERO_FONT_SIZE_MOBILE_PX = 13
 
 HEADER_FONT_SIZE_DESKTOP_PX = 40
 HEADER_FONT_SIZE_MOBILE_PX = 23
@@ -86,12 +86,12 @@ FOOTER_FONT_SIZE_MOBILE_PX = 12
 
 # Tamaño de texto por botón (índice 0..5) — opcional
 BTN_FONT_OVERRIDES_DESKTOP_PX = {
-    # 0: 15,  # Horarios
-    # 1: 15,  # Control de Asistencia
-    # 2: 15,  # Nomina y Pagos
-    # 3: 15,  # Incidencias
-    # 4: 15,  # Formación
-    # 5: 15,  # Comunicados
+    # 0: 17,  # Horarios
+    # 1: 17,  # Control de Asistencia
+    # 2: 17,  # Nomina y Pagos
+    # 3: 17,  # Incidencias
+    # 4: 17,  # Formación
+    # 5: 17,  # Comunicados 17
 }
 BTN_FONT_OVERRIDES_MOBILE_PX = {
     # 0: 14,
