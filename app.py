@@ -22,7 +22,7 @@ PAD_TOP_PX = 8
 BORDER_PX = 1
 BORDER_COLOR = "rgba(255,255,255,.12)"
 
-BG_COLOR = "#020a1a" 
+BG_COLOR = "#020a1a"
 HEADER_BG = "transparent"
 IMG_BG = "transparent"
 BTN_BG = "transparent"
@@ -64,6 +64,11 @@ MOBILE_MAX_W_PX = 500
 
 LOGO_URL = "https://files.catbox.moe/056m6v.jpg"
 FOOTER_TEXT = "2026 Socorrista ProVersión 1.0. Todos los derechos reservados"
+
+# NUEVO: imagen de fondo del bloque detrás de ¡BIENVENIDO!
+HERO_BG_IMAGE_URL = "https://files.catbox.moe/c476tq.png"
+HERO_BG_IMAGE_FIT = "cover"     # cover / contain
+HERO_BG_IMAGE_POS = "center"    # center / top / etc
 
 # nombre del usuario (prioriza ?usuario=..., si no existe usa ?user=..., si no existe deja "Login")
 USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or "Login"
@@ -274,9 +279,23 @@ html = """
       box-shadow: var(--shadow0);
       overflow:hidden;
 
-      background:
-        radial-gradient(900px 220px at 50% 35%, rgba(100,190,255,.28) 0%, rgba(35,120,255,.14) 32%, rgba(2,10,26,0) 68%),
-        linear-gradient(135deg, rgba(10,40,105,.88) 0%, rgba(5,22,64,.90) 52%, rgba(2,10,26,.94) 100%);
+      /* NUEVO: imagen de fondo + overlays (no cambia estructura) */
+      background-image:
+        linear-gradient(180deg, rgba(0,0,0,.22) 0%, rgba(0,0,0,.12) 55%, rgba(0,0,0,.18) 100%),
+        radial-gradient(900px 220px at 50% 35%, rgba(100,190,255,.22) 0%, rgba(35,120,255,.10) 32%, rgba(2,10,26,0) 68%),
+        url("__HERO_BG_URL__");
+      background-size:
+        100% 100%,
+        100% 100%,
+        __HERO_BG_FIT__;
+      background-position:
+        center,
+        center,
+        __HERO_BG_POS__;
+      background-repeat:
+        no-repeat,
+        no-repeat,
+        no-repeat;
     }
 
     #img::before{
@@ -628,6 +647,9 @@ html = (
         .replace("__LOGO_BORDER__", LOGO_BORDER)
         .replace("__BTN_OVR_D__", _dict_to_js_obj(BTN_FONT_OVERRIDES_DESKTOP_PX))
         .replace("__BTN_OVR_M__", _dict_to_js_obj(BTN_FONT_OVERRIDES_MOBILE_PX))
+        .replace("__HERO_BG_URL__", HERO_BG_IMAGE_URL)
+        .replace("__HERO_BG_FIT__", HERO_BG_IMAGE_FIT)
+        .replace("__HERO_BG_POS__", HERO_BG_IMAGE_POS)
 )
 
 components.html(html, height=10, scrolling=False)
