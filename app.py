@@ -22,7 +22,7 @@ PAD_TOP_PX = 8
 BORDER_PX = 1
 BORDER_COLOR = "rgba(255,255,255,.12)"
 
-BG_COLOR = "#020a1a"
+BG_COLOR = "#4d689e" 
 HEADER_BG = "transparent"
 IMG_BG = "transparent"
 BTN_BG = "transparent"
