@@ -358,12 +358,24 @@ html = """
       overflow:hidden;
       border-radius: 12px;
       box-shadow: var(--shadow1);
-      background:
-        radial-gradient(220px 80px at 24% 50%, rgba(120,210,255,.24) 0%, rgba(120,210,255,0) 68%),
-        linear-gradient(180deg, rgba(18,78,185,.44) 0%, rgba(8,42,110,.58) 55%, rgba(4,24,66,.78) 100%);
-      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, filter .12s ease;
-      cursor:pointer;
-      user-select:none;
+
+      
+background:
+  radial-gradient(220px 80px at 24% 50%, rgba(255,255,255,.25) 0%, rgba(255,255,255,0) 68%),
+
+  linear-gradient(180deg,
+    #ff9a52 0%,
+    #ff7c2c 55%,
+    #d95f12 100%
+  );
+transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, filter .12s ease;
+cursor:pointer;
+user-select:none;
+
+
+
+
+      
     }
 
     .btn::before{
