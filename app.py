@@ -66,7 +66,7 @@ LOGO_URL = "https://files.catbox.moe/056m6v.jpg"
 FOOTER_TEXT = "2026 Socorrista ProVersión 1.0. Todos los derechos reservados"
 
 # NUEVO: imagen de fondo del bloque detrás de ¡BIENVENIDO!
-HERO_BG_IMAGE_URL = "https://files.catbox.moe/kkrpf3.png"
+HERO_BG_IMAGE_URL = "https://files.catbox.moe/16109j.jpeg"
 HERO_BG_IMAGE_FIT = "cover"     # cover / contain
 HERO_BG_IMAGE_POS = "center"    # center / top / etc
 
