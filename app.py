@@ -177,7 +177,7 @@ html = """
       position:fixed;inset:0;width:100vw;height:100vh;
       background:
         radial-gradient(1200px 700px at 50% 18%, rgba(40,130,255,.22) 0%, rgba(8,35,95,.15) 35%, rgba(2,10,26,0) 70%),
-        linear-gradient(180deg, #03102a 0%, #FFFFFF 90%, #FFFFFF 100%);
+        linear-gradient(180deg, #03102a 0%, #020a1a 70%, #010612 100%);
     }
 
     /* marco (no cambia estructura) */
