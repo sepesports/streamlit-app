@@ -14,9 +14,8 @@ if st.query_params.get("auth") != "ok":
     )
     st.stop()
 
-# ===================== CONFIG (valores actuales) =====================
+# ===================== TU CÓDIGO ORIGINAL =====================
 
-# Layout base (NO cambia estructura)
 PAD_X_PX = 8
 PAD_TOP_PX = 8
 
@@ -44,10 +43,6 @@ BTN_GAP_Y = 2
 BTN_LEFT = 5
 BTN_RIGHT = 5
 
-MIN_BTN_W_PX = 130
-MOBILE_MAX_W_PX = 500
-
-# ===================== CONTENIDO =====================
 BTN_TEXTS = [
     "Horarios",
     "Control de\nAsistencia",
@@ -57,50 +52,20 @@ BTN_TEXTS = [
     "Comunicados",
 ]
 
+FOOTER_H = 18
+FOOTER_BOTTOM = 5
+FOOTER_LEFT = 6
+FOOTER_RIGHT = 6
+
+MIN_BTN_W_PX = 130
+MOBILE_MAX_W_PX = 500
+
+# ===================== NUEVO: LOGO / USUARIO / FOOTER =====================
 LOGO_URL = "https://files.catbox.moe/056m6v.jpg"
 FOOTER_TEXT = "2026 Socorrista ProVersión 1.0. Todos los derechos reservados"
+
+# nombre del usuario (prioriza ?usuario=..., si no existe usa ?user=..., si no existe deja "Login")
 USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or "Login"
-
-# ===================== ESTILOS EDITABLES (sin tocar estructura) =====================
-
-# Tipografías
-HERO_FONT_SIZE_DESKTOP_PX = 44
-HERO_FONT_SIZE_MOBILE_PX = 30
-
-HDR_FONT_SIZE_DESKTOP_PX = 14
-HDR_FONT_SIZE_MOBILE_PX = 13
-
-BTN_FONT_SIZE_DESKTOP_PX = 15
-BTN_FONT_SIZE_MOBILE_PX = 14
-
-FOOTER_FONT_SIZE_DESKTOP_PX = 12
-FOOTER_FONT_SIZE_MOBILE_PX = 12
-
-# Botones: ajustes finos de texto (por botón) — mismo layout, solo texto
-BTN_FONT_SIZE_OVERRIDES_DESKTOP_PX = {
-    # 0: "Horarios": 15,
-    # 1: "Control de\nAsistencia": 15,
-    # 2: "Nomina y\nPagos": 15,
-    # 3: "Incidencias": 15,
-    # 4: "Formación": 15,
-    # 5: "Comunicados": 15,
-}
-BTN_FONT_SIZE_OVERRIDES_MOBILE_PX = {
-    # 0: 14,
-    # 1: 14,
-    # 2: 14,
-    # 3: 14,
-    # 4: 14,
-    # 5: 14,
-}
-
-# Logo: ocupa toda la caja (control por padding y bordes)
-LOGO_CELL_PADDING_PX = 6
-LOGO_IMG_BORDER_RADIUS_PX = 6
-LOGO_IMG_BORDER = "1px solid rgba(255,255,255,.14)"
-
-# User cell: padding
-USER_CELL_PADDING_PX = 10
 
 st.set_page_config(layout="wide")
 
@@ -137,21 +102,11 @@ html = """
 
       --txt: #eaf2ff;
       --txt2: rgba(234,242,255,.85);
-
+      --tileLine: rgba(255,255,255,.16);
+      --tileLine2: rgba(255,255,255,.10);
       --shadow0: 0 18px 40px rgba(0,0,0,.60);
       --shadow1: 0 12px 26px rgba(0,0,0,.55);
       --shadow2: 0 10px 18px rgba(0,0,0,.45);
-
-      /* ==== EDITABLES (desktop) ==== */
-      --heroFs: __HERO_FS_D__px;
-      --hdrFs: __HDR_FS_D__px;
-      --btnFs: __BTN_FS_D__px;
-      --footerFs: __FOOT_FS_D__px;
-
-      --logoPad: __LOGO_PAD__px;
-      --logoRad: __LOGO_RAD__px;
-
-      --userPad: __USER_PAD__px;
     }
 
     html, body{
@@ -197,6 +152,7 @@ html = """
       left:0; right:0;
       top: __HDR_TOP__%;
       height: __HDR_H__%;
+      background: var(--headerbg);
       border: var(--b) solid var(--bc);
       box-sizing:border-box;
       display:flex;
@@ -214,7 +170,7 @@ html = """
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size: var(--hdrFs);
+      font-size: 14px;
       font-weight: 700;
       color: var(--txt2);
       white-space: nowrap;
@@ -233,26 +189,20 @@ html = """
     }
     .hdr-cell:last-child{ border-right: none; }
 
-    /* logo: ocupa toda la caja */
+    /* logo dentro del header */
     .hdr-logo{
-      justify-content:center;
-      padding: var(--logoPad) !important;
+      justify-content:flex-start;
+      gap:10px;
     }
     .hdr-logo img{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: var(--logoRad);
-      border: __LOGO_BORDER__;
+      height: calc((__HDR_H__ * 1vh) - 10px);
+      max-height: 44px;
+      width: auto;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,.14);
       box-shadow: 0 8px 16px rgba(0,0,0,.35);
-      display:block;
+      object-fit: cover;
       background: rgba(0,0,0,.12);
-    }
-
-    /* user cell padding */
-    .hdr-user{
-      padding: 0 var(--userPad) !important;
-      justify-content:center;
     }
 
     /* ================= HERO (img) ================= */
@@ -262,12 +212,13 @@ html = """
       right: __IMG_R__%;
       top: __IMG_T__%;
       height: __IMG_H__%;
+      background: var(--imgbg);
       border: 1px solid rgba(255,255,255,.10);
       box-sizing:border-box;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size: var(--heroFs);
+      font-size: 44px;
       font-weight: 800;
       letter-spacing: 1px;
       color: var(--txt);
@@ -336,7 +287,7 @@ html = """
       justify-content:center;
       text-align:center;
       padding: 8px 10px;
-      font-size: var(--btnFs);
+      font-size: 15px;
       font-weight: 700;
       color: var(--txt);
       overflow:hidden;
@@ -380,6 +331,19 @@ html = """
       text-shadow: 0 1px 0 rgba(0,0,0,.25);
     }
 
+    /* Fondo 2 (solo texto, no cambia posición) */
+    #fondo2{
+      position:absolute;
+      left:0; right:0;
+      bottom: __F2_BOTTOM__%;
+      text-align:center;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(234,242,255,.70);
+      pointer-events:none;
+      text-shadow: 0 2px 10px rgba(0,0,0,.55);
+    }
+
     /* Footer */
     #footer{
       position:absolute;
@@ -387,12 +351,13 @@ html = """
       right: __FOOT_R__%;
       height: __FOOT_H__%;
       bottom: __FOOT_BOTTOM__%;
+      background: var(--footerbg);
       border: 1px solid rgba(255,255,255,.10);
       box-sizing:border-box;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size: var(--footerFs);
+      font-size: 12px;
       font-weight: 700;
       color: rgba(234,242,255,.72);
       border-radius: 12px;
@@ -403,17 +368,24 @@ html = """
       text-align:center;
     }
 
-    /* HUD (apagado) */
-    #hud{ display:none !important; }
+    /* HUD */
+    #hud{
+      position:absolute; top:8px; left:8px;
+      font: 12px Arial, sans-serif;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.2);
+      border-radius: 6px;
+      padding: 6px 10px;
+      white-space: nowrap;
+      pointer-events:none;
+    }
 
-    /* ==== EDITABLES (mobile) ==== */
+    /* Mobile: solo tipografía/altura visual, NO mueve la estructura */
     @media (max-width: 520px){
-      :root{
-        --heroFs: __HERO_FS_M__px;
-        --hdrFs: __HDR_FS_M__px;
-        --btnFs: __BTN_FS_M__px;
-        --footerFs: __FOOT_FS_M__px;
-      }
+      #img{ font-size: 30px; letter-spacing:.8px; }
+      .btn{ font-size: 14px; }
+      .hdr-cell{ font-size: 13px; }
+      .hdr-logo img{ max-height: 36px; }
     }
   </style>
 </head>
@@ -427,10 +399,11 @@ html = """
 
       <div id="btn-area">
         <div id="btn-grid"></div>
+        <div id="fondo2">Fondo 2</div>
         <div id="footer">__FOOTER_TEXT__</div>
       </div>
 
-      <div id="hud"></div>
+      <div id="hud">Cargando...</div>
     </div>
   </div>
 
@@ -452,10 +425,6 @@ html = """
       var BTN_TEXTS = __BTN_TEXTS__;
       var MIN_BTN_W_PX = __MIN_BTN_W_PX__;
       var MOBILE_MAX_W_PX = __MOBILE_MAX_W_PX__;
-
-      var BTN_FS_OVR_D = __BTN_FS_OVR_D__;
-      var BTN_FS_OVR_M = __BTN_FS_OVR_M__;
-
       var LOGO_URL = "__LOGO_URL__";
       var USER_NAME = "__USER_NAME__";
 
@@ -483,7 +452,6 @@ html = """
           img.decoding = "async";
           d.appendChild(img);
         } else if (c.kind === "user"){
-          d.className += " hdr-user";
           d.textContent = USER_NAME || "";
         } else {
           d.textContent = c.t;
@@ -492,21 +460,11 @@ html = """
         hdr.appendChild(d);
       });
 
+      var hud = document.getElementById("hud");
       var grid = document.getElementById("btn-grid");
       var plan = document.getElementById("plan");
 
       function ceilDiv(a,b){ return Math.floor((a + b - 1) / b); }
-
-      function getBtnFontSize(i){
-        var vw = window.innerWidth;
-        if (vw <= 520){
-          if (BTN_FS_OVR_M && BTN_FS_OVR_M[i] != null) return BTN_FS_OVR_M[i];
-          return null;
-        } else {
-          if (BTN_FS_OVR_D && BTN_FS_OVR_D[i] != null) return BTN_FS_OVR_D[i];
-          return null;
-        }
-      }
 
       function buildButtons(){
         grid.innerHTML = "";
@@ -558,15 +516,16 @@ html = """
 
           var sp = document.createElement("span");
           sp.textContent = BTN_TEXTS[i];
-
-          var fs = getBtnFontSize(i);
-          if (fs != null){
-            sp.style.fontSize = fs + "px";
-          }
-
           d.appendChild(sp);
+
           grid.appendChild(d);
         }
+
+        hud.textContent =
+          "Viewport(px): " + Math.round(window.innerWidth) + " x " + Math.round(window.innerHeight) +
+          " | Plan(px): " + Math.round(planW) +
+          " | cols=" + cols + " rows=" + rows +
+          " | btnW=" + w.toFixed(2) + "% (" + Math.round((w/100)*planW) + "px)";
       }
 
       function update(){ buildButtons(); }
@@ -578,23 +537,6 @@ html = """
 </body>
 </html>
 """
-
-def _dict_to_js_obj(d: dict) -> str:
-    # convierte {0:15,1:14} en {"0":15,"1":14} para JS
-    parts = []
-    for k, v in d.items():
-        try:
-            ik = int(k)
-        except Exception:
-            continue
-        try:
-            fv = float(v)
-        except Exception:
-            continue
-        if fv <= 0:
-            continue
-        parts.append(f'"{ik}":{fv}')
-    return "{" + ",".join(parts) + "}"
 
 html = (
     html.replace("__PADX__", str(PAD_X_PX))
@@ -618,6 +560,7 @@ html = (
         .replace("__BTN_H__", str(BTN_H))
         .replace("__BTN_GAP_X__", str(BTN_GAP_X))
         .replace("__BTN_GAP_Y__", str(BTN_GAP_Y))
+        .replace("__F2_BOTTOM__", "22")
         .replace("__FOOT_L__", str(FOOTER_LEFT))
         .replace("__FOOT_R__", str(FOOTER_RIGHT))
         .replace("__FOOT_H__", str(FOOTER_H))
@@ -628,20 +571,6 @@ html = (
         .replace("__LOGO_URL__", LOGO_URL)
         .replace("__USER_NAME__", str(USER_NAME).replace('"', '\\"'))
         .replace("__FOOTER_TEXT__", FOOTER_TEXT)
-        .replace("__HERO_FS_D__", str(HERO_FONT_SIZE_DESKTOP_PX))
-        .replace("__HERO_FS_M__", str(HERO_FONT_SIZE_MOBILE_PX))
-        .replace("__HDR_FS_D__", str(HDR_FONT_SIZE_DESKTOP_PX))
-        .replace("__HDR_FS_M__", str(HDR_FONT_SIZE_MOBILE_PX))
-        .replace("__BTN_FS_D__", str(BTN_FONT_SIZE_DESKTOP_PX))
-        .replace("__BTN_FS_M__", str(BTN_FONT_SIZE_MOBILE_PX))
-        .replace("__FOOT_FS_D__", str(FOOTER_FONT_SIZE_DESKTOP_PX))
-        .replace("__FOOT_FS_M__", str(FOOTER_FONT_SIZE_MOBILE_PX))
-        .replace("__LOGO_PAD__", str(LOGO_CELL_PADDING_PX))
-        .replace("__LOGO_RAD__", str(LOGO_IMG_BORDER_RADIUS_PX))
-        .replace("__USER_PAD__", str(USER_CELL_PADDING_PX))
-        .replace("__LOGO_BORDER__", LOGO_IMG_BORDER)
-        .replace("__BTN_FS_OVR_D__", _dict_to_js_obj(BTN_FONT_SIZE_OVERRIDES_DESKTOP_PX))
-        .replace("__BTN_FS_OVR_M__", _dict_to_js_obj(BTN_FONT_SIZE_OVERRIDES_MOBILE_PX))
 )
 
 components.html(html, height=10, scrolling=False)
