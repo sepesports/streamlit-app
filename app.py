@@ -4,23 +4,20 @@ import streamlit.components.v1 as components
 
 # ==============================================================================
 # PLANTILLA "CALENDARIO" — BLANCO Y NEGRO (RESPONSIVA)
-# - Sin hacks de fullscreen (evita errores de sandbox).
-# - Todo se mide relativo al CUADRO (plan) + ajustes en %.
-# - Edita SOLO la sección AJUSTES.
 # ==============================================================================
 
 # ================== AJUSTES (EDITA SOLO ESTO) ==================
 
 # 1) CUADRO / MARCO (px)
-PAD_X_PX = 10          # margen externo lateral del CUADRO
-PAD_TOP_PX = 10        # margen externo superior del CUADRO
+PAD_X_PX = 10
+PAD_TOP_PX = 10
 
 # 2) ESTILO BN
 BORDER_PX = 2
 BORDER_COLOR = "#111111"
-BG_COLOR = "#FFFFFF"   # fondo general del CUADRO
-PANEL_BG = "#F6F6F6"   # paneles/zonas
-CARD_BG = "#FFFFFF"    # tarjetas internas
+BG_COLOR = "#FFFFFF"
+PANEL_BG = "#F6F6F6"
+CARD_BG = "#FFFFFF"
 TEXT_COLOR = "#111111"
 MUTED_TEXT = "#5A5A5A"
 
@@ -31,24 +28,24 @@ H2_PX = 16
 SMALL_PX = 12
 
 # 4) LAYOUT VERTICAL (en % del CUADRO)
-TOPBAR_H = 8            # barra superior (Calendario | Jefe)
-MONTHBAR_H = 10         # fila de mes (FEBRERO 2026 + flechas)
-CAL_GRID_H = 24         # grilla de días
-FILTERS_H = 10          # selects Mes/Año + botón Aplicar
-AGENDA_H = 34           # bloque agenda del día
-BOTTOMBAR_H = 10        # barra inferior (Aplicar / Modificar / Enviar)
+TOPBAR_H = 8
+MONTHBAR_H = 10
+CAL_GRID_H = 24
+FILTERS_H = 9
+AGENDA_H = 34
+BOTTOMBAR_H = 10
 
 # 5) MÁRGENES INTERNOS (en % del CUADRO)
 INNER_L = 4
 INNER_R = 4
-INNER_TOP_GAP = 2       # separación entre bloques
+INNER_TOP_GAP = 0.7   # ↓ reduce espacios entre CALENDARIO / FILTROS / AGENDA / BOTTOM
 
-# 6) CALENDARIO (grilla)
+# 6) CALENDARIO
 CAL_COLS = 7
-CAL_ROWS = 3            # semanas visibles en mock (puedes subir a 5)
-DAY_CELL_GAP_PX = 8     # separación entre celdas
+CAL_ROWS = 3
+DAY_CELL_GAP_PX = 8
 
-# 7) AGENDA (tabla)
+# 7) AGENDA
 AGENDA_ROWS = 5
 
 # ===============================================================
@@ -137,30 +134,20 @@ html = r"""
     background: var(--bg);
   }
 
-  /* Contenido interno */
   #wrap{
     position:absolute;
     left: var(--innerL);
     right: var(--innerR);
-    top: 2%;
-    bottom: 2%;
+    top: 1.4%;
+    bottom: 1.2%;
     display:flex;
     flex-direction:column;
-    gap: 0;
   }
 
-  /* Helpers */
-  .row{display:flex; align-items:center; justify-content:space-between;}
   .panel{
     background: var(--panel);
     border: var(--b) solid var(--bc);
     border-radius: 14px;
-    box-sizing:border-box;
-  }
-  .card{
-    background: var(--card);
-    border: var(--b) solid var(--bc);
-    border-radius: 12px;
     box-sizing:border-box;
   }
   .btn{
@@ -176,6 +163,7 @@ html = r"""
     align-items:center;
     justify-content:center;
     min-width: 92px;
+    white-space:nowrap;
   }
   .btn.primary{
     background: var(--txt);
@@ -186,7 +174,7 @@ html = r"""
     border-radius: 999px;
     padding: 6px 10px;
     font-size: var(--small);
-    font-weight: 700;
+    font-weight: 800;
     background: var(--card);
     color: var(--txt);
     display:inline-flex;
@@ -212,25 +200,26 @@ html = r"""
     display:flex;
     align-items:center;
     justify-content:space-between;
+    gap:10px;
   }
   #topbar .center{
     flex: 1;
     text-align:center;
-    font-weight: 800;
+    font-weight: 900;
     font-size: var(--h2);
   }
   #topbar .right{
     display:flex;
     align-items:center;
     gap:10px;
-    font-weight:700;
+    font-weight:800;
   }
 
   /* MONTHBAR */
   #monthbar{
     height: var(--monthbarH);
     margin-top: var(--gapY);
-    padding: 12px 12px;
+    padding: 10px 12px;
     display:flex;
     align-items:center;
     justify-content:space-between;
@@ -243,50 +232,35 @@ html = r"""
     flex:1;
     text-align:left;
   }
-  #monthbar .nav{
-    display:flex;
-    gap:10px;
-    align-items:center;
-  }
+  #monthbar .nav{display:flex; gap:10px; align-items:center;}
 
   /* CAL GRID */
   #calgrid{
     height: var(--calgridH);
     margin-top: var(--gapY);
-    padding: 12px 12px;
+    padding: 10px 12px;
     display:flex;
     flex-direction:column;
     gap: 10px;
   }
-
   #calgrid .head{
     display:flex;
     align-items:center;
     justify-content:space-between;
+    gap:10px;
   }
   #calgrid .head .label{
     font-weight: 900;
     font-size: var(--fbase);
   }
-  #calgrid .dow{
-    display:grid;
-    grid-template-columns: repeat(__CALCOLS__, 1fr);
-    gap: var(--cellGap);
-    font-size: var(--small);
-    font-weight: 800;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: .6px;
-  }
-
   #calgrid .days{
     display:grid;
     grid-template-columns: repeat(__CALCOLS__, 1fr);
     grid-template-rows: repeat(__CALROWS__, 1fr);
     gap: var(--cellGap);
     flex:1;
+    min-height: 0;
   }
-
   .day{
     background: var(--card);
     border: var(--b) solid var(--bc);
@@ -294,16 +268,13 @@ html = r"""
     display:flex;
     align-items:center;
     justify-content:center;
-    font-weight: 800;
+    font-weight: 900;
     user-select:none;
     position:relative;
     min-height: 34px;
   }
   .day.dim{opacity:.35;}
-  .day.sel{
-    outline: 2px solid var(--txt);
-    outline-offset: -2px;
-  }
+  .day.sel{outline: 2px solid var(--txt); outline-offset: -2px;}
   .day.mark::after{
     content:"";
     position:absolute;
@@ -314,23 +285,16 @@ html = r"""
     opacity:.9;
   }
 
-  /* Legend */
   #legend{
     display:flex;
     align-items:center;
     gap:14px;
     font-size: var(--small);
-    font-weight: 700;
+    font-weight: 800;
     color: var(--muted);
-    margin-top: 8px;
+    margin-top: 2px;
   }
-  .dot{
-    width:8px;height:8px;border-radius:50%;
-    background: var(--txt);
-    display:inline-block;
-    margin-right:6px;
-    opacity:.35;
-  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--txt);display:inline-block;margin-right:6px;opacity:.35;}
   .dot.on{opacity:1;}
   .dot.mid{opacity:.65;}
 
@@ -343,6 +307,7 @@ html = r"""
     align-items:center;
     justify-content:flex-end;
     gap: 12px;
+    overflow:hidden; /* nada puede quedar por fuera */
   }
   .select{
     min-width: 160px;
@@ -350,12 +315,14 @@ html = r"""
     background: var(--card);
     border: var(--b) solid var(--bc);
     border-radius: 10px;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--txt);
     display:flex;
     align-items:center;
     justify-content:space-between;
     gap: 10px;
+    box-sizing:border-box;
+    white-space:nowrap;
   }
   .caret{font-weight:900;}
 
@@ -363,10 +330,11 @@ html = r"""
   #agenda{
     height: var(--agendaH);
     margin-top: var(--gapY);
-    padding: 12px 12px;
+    padding: 10px 12px;
     display:flex;
     flex-direction:column;
     gap: 10px;
+    min-height: 0;
   }
   #agenda h3{
     margin:0;
@@ -377,9 +345,11 @@ html = r"""
     display:flex;
     gap: 18px;
     font-size: var(--small);
-    font-weight: 700;
+    font-weight: 800;
     color: var(--muted);
+    flex-wrap:wrap;
   }
+
   #table{
     flex:1;
     background: var(--card);
@@ -388,7 +358,9 @@ html = r"""
     overflow:hidden;
     display:flex;
     flex-direction:column;
+    min-height: 0;
   }
+
   #thead, .trow{
     display:grid;
     grid-template-columns: 30px 1fr 110px 110px 110px;
@@ -404,7 +376,7 @@ html = r"""
   }
   .trow{
     border-top: 1px solid rgba(0,0,0,.12);
-    font-weight: 700;
+    font-weight: 800;
     font-size: var(--small);
   }
   .chk{
@@ -421,9 +393,19 @@ html = r"""
     font-weight: 900;
     font-size: 11px;
     background: var(--card);
+    white-space:nowrap;
   }
   .status.free{background:#FFFFFF;}
   .status.busy{background:#EFEFEF;}
+
+  .rowmeta{
+    display:none; /* desktop off */
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 800;
+    gap: 10px;
+  }
 
   /* BOTTOM BAR */
   #bottom{
@@ -440,26 +422,92 @@ html = r"""
     align-items:center;
     gap: 12px;
     font-size: var(--small);
-    font-weight: 800;
+    font-weight: 900;
     color: var(--muted);
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
+    min-width: 0;
   }
   #bottom .actions{
     display:flex;
     gap: 10px;
     align-items:center;
+    flex-shrink:0;
   }
 
-  /* Responsivo mínimo */
+  /* ===== MOBILE (crítico: nada se sale / tabla completa) ===== */
   @media (max-width: 520px){
-    #thead, .trow{
-      grid-template-columns: 26px 1fr 78px 78px 86px;
-      gap: 8px;
+
+    /* FILTROS: 2 columnas + botón abajo (todo dentro) */
+    #filters{
+      height: auto;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      grid-auto-rows: min-content;
+      gap: 10px;
+      justify-content: stretch;
+      align-items: stretch;
     }
-    .select{min-width: 130px;}
-    .btn{min-width: 86px; padding: 9px 12px;}
+    #filters .select{
+      min-width: 0;
+      width: 100%;
+    }
+    #filters .btn{
+      grid-column: 1 / -1;
+      width: 100%;
+      min-width: 0;
+    }
+
+    /* TABLA: compacta (no recorta) */
+    #thead{
+      display:none;
+    }
+    .trow{
+      grid-template-columns: 26px 1fr;
+      grid-auto-rows: min-content;
+      gap: 10px;
+      align-items:start;
+    }
+    .trow > .col_time,
+    .trow > .col_time2,
+    .trow > .col_status{
+      display:none; /* oculta columnas separadas */
+    }
+    .rowmeta{
+      display:flex; /* muestra meta dentro del nombre */
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .rowmeta .pill{
+      border: 1px solid rgba(0,0,0,.18);
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: #f3f3f3;
+      font-weight: 900;
+      color: #111;
+      white-space:nowrap;
+    }
+
+    /* BOTTOM: que no se salga */
+    #bottom{
+      height:auto;
+      flex-direction:column;
+      align-items:stretch;
+      gap: 10px;
+    }
+    #bottom .leftinfo{
+      justify-content:space-between;
+    }
+    #bottom .actions{
+      width:100%;
+      justify-content:space-between;
+    }
+    #bottom .actions .btn{
+      flex:1;
+      min-width: 0;
+    }
+
     #monthbar .month{font-size: 16px;}
   }
 </style>
@@ -471,33 +519,26 @@ html = r"""
     <div id="plan">
       <div id="wrap">
 
-        <!-- TOPBAR -->
         <div id="topbar" class="panel">
           <div class="iconbtn">□</div>
           <div class="center">Calendario</div>
           <div class="right">
             <div>Jefe</div>
-            <div class="iconbtn" title="Git">⌁</div>
-            <div class="iconbtn" title="Menu">⋮</div>
+            <div class="iconbtn">⌁</div>
+            <div class="iconbtn">⋮</div>
           </div>
         </div>
 
-        <!-- MONTHBAR -->
         <div id="monthbar" class="panel">
-          <div class="nav">
-            <div class="iconbtn">‹</div>
-          </div>
+          <div class="nav"><div class="iconbtn">‹</div></div>
           <div class="month">FEBRERO 2026</div>
-          <div class="nav">
-            <div class="iconbtn">›</div>
-          </div>
+          <div class="nav"><div class="iconbtn">›</div></div>
         </div>
 
-        <!-- CAL GRID -->
         <div id="calgrid" class="panel">
           <div class="head">
             <div class="label">CALENDARIO</div>
-            <div class="muted" style="font-weight:800;font-size:var(--small);">MO&nbsp;&nbsp;TU&nbsp;&nbsp;WE&nbsp;&nbsp;TH&nbsp;&nbsp;FR&nbsp;&nbsp;SA&nbsp;&nbsp;SU</div>
+            <div class="muted" style="font-weight:900;font-size:var(--small);">MO TU WE TH FR SA SU</div>
           </div>
 
           <div class="days" id="days"></div>
@@ -509,14 +550,12 @@ html = r"""
           </div>
         </div>
 
-        <!-- FILTERS -->
         <div id="filters" class="panel">
           <div class="select">Mes <span class="caret">▾</span></div>
           <div class="select">Año <span class="caret">▾</span></div>
           <div class="btn primary">Aplicar</div>
         </div>
 
-        <!-- AGENDA -->
         <div id="agenda" class="panel">
           <h3>Agenda del día</h3>
           <div class="meta">
@@ -528,18 +567,12 @@ html = r"""
 
           <div id="table">
             <div id="thead">
-              <div></div>
-              <div> </div>
-              <div>Inicio</div>
-              <div>Finaliza</div>
-              <div>Estado</div>
+              <div></div><div></div><div>Inicio</div><div>Finaliza</div><div>Estado</div>
             </div>
-
             <div id="tbody"></div>
           </div>
         </div>
 
-        <!-- BOTTOM -->
         <div id="bottom" class="panel">
           <div class="leftinfo">
             <span class="chip">2026-02-15 · Rocafort · 09:00:00 → 15:00:00</span>
@@ -558,15 +591,12 @@ html = r"""
 
 <script>
 (function(){
-  // --------------------------
-  // Construye grilla calendario
-  // --------------------------
+  // Grilla calendario
   var daysEl = document.getElementById("days");
   var COLS = __CALCOLS__;
   var ROWS = __CALROWS__;
   var total = COLS * ROWS;
 
-  // Ejemplo similar a tu imagen: algunos días apagados, algunos marcados, algunos seleccionados
   var values = [
     {n:10, dim:true},{n:2},{n:3, sel:true},{n:4},{n:5},{n:6},{n:7},
     {n:11},{n:12},{n:13},{n:14, mark:true},{n:16, sel:true},{n:17},{n:14, mark:true},
@@ -584,9 +614,7 @@ html = r"""
     daysEl.appendChild(d);
   }
 
-  // --------------------------
-  // Tabla agenda (ejemplo BN)
-  // --------------------------
+  // Tabla agenda (con meta embebida para móvil)
   var tbody = document.getElementById("tbody");
   var rows = [
     {name:"Rocafort", ini:"09:00:00", fin:"15:00:00", st:"LIBRE", cls:"free", chk:false},
@@ -595,13 +623,13 @@ html = r"""
     {name:"Arsenal",  ini:"15:00:00", fin:"18:00:00", st:"LIBRE", cls:"free", chk:false},
     {name:"St. Jordi",ini:"", fin:"", st:"", cls:"free", chk:false}
   ];
-
   rows = rows.slice(0, __AGENDAROWS__);
 
   rows.forEach(function(r){
     var tr = document.createElement("div");
     tr.className = "trow";
 
+    // checkbox
     var c0 = document.createElement("div");
     c0.className = "chk";
     if (r.chk){
@@ -609,16 +637,42 @@ html = r"""
       c0.style.borderColor = "#111";
     }
 
+    // name + mobile meta
     var c1 = document.createElement("div");
-    c1.textContent = r.name;
+    c1.style.minWidth = "0";
+    var name = document.createElement("div");
+    name.textContent = r.name;
 
+    var meta = document.createElement("div");
+    meta.className = "rowmeta";
+
+    if (r.ini || r.fin){
+      var t = document.createElement("span");
+      t.className = "pill";
+      t.textContent = (r.ini || "--:--") + " → " + (r.fin || "--:--");
+      meta.appendChild(t);
+    }
+    if (r.st){
+      var s2 = document.createElement("span");
+      s2.className = "pill";
+      s2.textContent = r.st;
+      meta.appendChild(s2);
+    }
+
+    c1.appendChild(name);
+    c1.appendChild(meta);
+
+    // desktop cols
     var c2 = document.createElement("div");
+    c2.className = "col_time";
     c2.textContent = r.ini;
 
     var c3 = document.createElement("div");
+    c3.className = "col_time2";
     c3.textContent = r.fin;
 
     var c4 = document.createElement("div");
+    c4.className = "col_status";
     if (r.st){
       var s = document.createElement("span");
       s.className = "status " + r.cls;
@@ -670,4 +724,4 @@ html = (
         .replace("__AGENDAROWS__", str(AGENDA_ROWS))
 )
 
-components.html(html, height=1000, scrolling=False)
+components.html(html, height=1100, scrolling=False)
