@@ -1,576 +1,673 @@
 # app.py
 import streamlit as st
-from datetime import date, datetime, time, timedelta
-import calendar
+import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Calendario + Agenda (Checklist)", layout="centered")
+# ==============================================================================
+# PLANTILLA "CALENDARIO" — BLANCO Y NEGRO (RESPONSIVA)
+# - Sin hacks de fullscreen (evita errores de sandbox).
+# - Todo se mide relativo al CUADRO (plan) + ajustes en %.
+# - Edita SOLO la sección AJUSTES.
+# ==============================================================================
 
-# =========================
-# ESTILO
-# =========================
-CSS = """
+# ================== AJUSTES (EDITA SOLO ESTO) ==================
+
+# 1) CUADRO / MARCO (px)
+PAD_X_PX = 10          # margen externo lateral del CUADRO
+PAD_TOP_PX = 10        # margen externo superior del CUADRO
+
+# 2) ESTILO BN
+BORDER_PX = 2
+BORDER_COLOR = "#111111"
+BG_COLOR = "#FFFFFF"   # fondo general del CUADRO
+PANEL_BG = "#F6F6F6"   # paneles/zonas
+CARD_BG = "#FFFFFF"    # tarjetas internas
+TEXT_COLOR = "#111111"
+MUTED_TEXT = "#5A5A5A"
+
+# 3) TIPOGRAFÍA (px)
+FONT_BASE_PX = 14
+TITLE_PX = 18
+H2_PX = 16
+SMALL_PX = 12
+
+# 4) LAYOUT VERTICAL (en % del CUADRO)
+TOPBAR_H = 8            # barra superior (Calendario | Jefe)
+MONTHBAR_H = 10         # fila de mes (FEBRERO 2026 + flechas)
+CAL_GRID_H = 24         # grilla de días
+FILTERS_H = 10          # selects Mes/Año + botón Aplicar
+AGENDA_H = 34           # bloque agenda del día
+BOTTOMBAR_H = 10        # barra inferior (Aplicar / Modificar / Enviar)
+
+# 5) MÁRGENES INTERNOS (en % del CUADRO)
+INNER_L = 4
+INNER_R = 4
+INNER_TOP_GAP = 2       # separación entre bloques
+
+# 6) CALENDARIO (grilla)
+CAL_COLS = 7
+CAL_ROWS = 3            # semanas visibles en mock (puedes subir a 5)
+DAY_CELL_GAP_PX = 8     # separación entre celdas
+
+# 7) AGENDA (tabla)
+AGENDA_ROWS = 5
+
+# ===============================================================
+
+st.set_page_config(layout="wide")
+
+st.markdown(
+    """
+    <style>
+      .block-container{padding:0!important;margin:0!important;max-width:100%!important;}
+      section.main > div{padding:0!important;margin:0!important;}
+      header, footer{display:none!important;}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+html = r"""
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-.block-container{padding-top:14px !important; max-width:640px !important; padding-bottom:120px !important;}
-header, footer{display:none !important;}
+  :root{
+    --padx: __PADX__px;
+    --padtop: __PADTOP__px;
 
-.topbar{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:12px 14px;
-  border-radius:18px;
-  background: linear-gradient(180deg, #3b6cff 0%, #2a52f5 100%);
-  color:#fff;
-  margin-bottom:10px;
-}
-.badge{
-  font-size:12px; padding:4px 10px; border-radius:999px;
-  background: rgba(255,255,255,.18);
-  border:1px solid rgba(255,255,255,.22);
-  font-weight:900;
-}
+    --b: __B__px;
+    --bc: __BC__;
 
-.card{
-  background:#fff;
-  border:1px solid rgba(0,0,0,.08);
-  border-radius:18px;
-  padding:14px;
-  box-shadow: 0 10px 28px rgba(0,0,0,.06);
-}
-.h2{font-weight:900; margin:14px 2px 10px 2px; color:#111;}
-.hr{height:1px; background: rgba(0,0,0,.06); margin:12px 0;}
-.small{font-size:12px; opacity:.78; font-weight:800;}
+    --bg: __BG__;
+    --panel: __PANEL__;
+    --card: __CARD__;
+    --txt: __TXT__;
+    --muted: __MUTED__;
 
-/* Calendario */
-.cal-wrap{
-  border-radius:18px;
-  overflow:hidden;
-  border:1px solid rgba(0,0,0,.08);
-  background:#fff;
-}
-.cal-head{
-  padding:12px 14px;
-  background: linear-gradient(180deg, #3b6cff 0%, #2a52f5 100%);
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-}
-.cal-title{
-  font-weight:950;
-  letter-spacing:.2px;
-}
-.cal-grid{
-  padding:12px 12px 14px 12px;
-  background:#fff;
-}
-.cal-dow{
-  display:grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap:8px;
-  margin-bottom:8px;
-  color: rgba(0,0,0,.55);
-  font-size:12px;
-  font-weight:950;
-  text-align:center;
-}
-.daymark{ position:relative; margin-top:-40px; height:40px; pointer-events:none; }
-.pips{ position:absolute; left:50%; transform:translateX(-50%); bottom:6px; display:flex; gap:4px; }
-.pip{ width:6px; height:6px; border-radius:50%; }
-.pip-free{background: rgba(20,120,60,.55);}
-.pip-busy{background: rgba(200,40,40,.60);}
+    --fbase: __FBASE__px;
+    --title: __TITLE__px;
+    --h2: __H2__px;
+    --small: __SMALL__px;
 
-/* Agenda tipo tabla por instalación */
-.agenda-card{
-  border:1px solid rgba(0,0,0,.10);
-  border-radius:18px;
-  overflow:hidden;
-  background:#fff;
-}
-.agenda-head{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:10px;
-  padding:12px 14px;
-  border-bottom:1px solid rgba(0,0,0,.06);
-  background: rgba(0,0,0,.02);
-  font-weight:950;
-}
-.agenda-rowhdr{
-  display:grid;
-  grid-template-columns: 110px 1.2fr 1fr 1fr 1fr;
-  gap:10px;
-  padding:10px 14px;
-  border-bottom:1px solid rgba(0,0,0,.06);
-  color: rgba(0,0,0,.70);
-  font-weight:950;
-  font-size:13px;
-}
-.agenda-row{
-  display:grid;
-  grid-template-columns: 110px 1.2fr 1fr 1fr 1fr;
-  gap:10px;
-  padding:10px 14px;
-  border-bottom:1px solid rgba(0,0,0,.06);
-  align-items:center;
-}
-.agenda-row:last-child{border-bottom:none;}
-.cell-strong{font-weight:950;}
-.pill{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  font-size:12px;
-  padding:4px 10px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,.10);
-  background: rgba(0,0,0,.03);
-  font-weight:950;
-}
-.pill-free{ border-color: rgba(20,120,60,.25); background: rgba(20,120,60,.08); }
-.pill-busy{ border-color: rgba(200,40,40,.25); background: rgba(200,40,40,.08); }
+    --innerL: __INNERL__%;
+    --innerR: __INNERR__%;
+    --gapY: __GAPY__%;
 
-/* Barra fija inferior */
-.actionbar{
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 12px;
-  width: min(640px, calc(100vw - 24px));
-  z-index: 9999;
-}
-.actioninner{
-  background:#fff;
-  border:1px solid rgba(0,0,0,.08);
-  border-radius:18px;
-  padding:10px 10px 12px 10px;
-  box-shadow: 0 16px 40px rgba(0,0,0,.14);
-}
-.actionline{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:8px;
-}
-.actionhint{
-  font-size:12px;
-  opacity:.84;
-  font-weight:950;
-  overflow:hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+    --topbarH: __TOPBARH__%;
+    --monthbarH: __MONTHBARH__%;
+    --calgridH: __CALGRIDH__%;
+    --filtersH: __FILTERSH__%;
+    --agendaH: __AGENDAH__%;
+    --bottombarH: __BOTTOMH__%;
 
-div.stButton>button{
-  border-radius:14px !important;
-  padding:10px 12px !important;
-  font-weight:950 !important;
-}
+    --cellGap: __CELLGAP__px;
+  }
+
+  html, body{
+    margin:0; padding:0;
+    width:100%; height:100%;
+    background: var(--bg);
+    overflow:hidden;
+    font-family: Arial, sans-serif;
+    color: var(--txt);
+  }
+
+  #stage{position:fixed; inset:0; background: var(--bg);}
+
+  /* Marco (izq/der/sup) */
+  #frame{
+    position:absolute;
+    left:var(--padx); right:var(--padx);
+    top:var(--padtop); bottom:0;
+    border-left:var(--b) solid var(--bc);
+    border-right:var(--b) solid var(--bc);
+    border-top:var(--b) solid var(--bc);
+    box-sizing:border-box;
+    pointer-events:none;
+  }
+
+  /* CUADRO */
+  #plan{
+    position:absolute;
+    left:var(--padx); right:var(--padx);
+    top:var(--padtop); bottom:0;
+    overflow:hidden;
+    background: var(--bg);
+  }
+
+  /* Contenido interno */
+  #wrap{
+    position:absolute;
+    left: var(--innerL);
+    right: var(--innerR);
+    top: 2%;
+    bottom: 2%;
+    display:flex;
+    flex-direction:column;
+    gap: 0;
+  }
+
+  /* Helpers */
+  .row{display:flex; align-items:center; justify-content:space-between;}
+  .panel{
+    background: var(--panel);
+    border: var(--b) solid var(--bc);
+    border-radius: 14px;
+    box-sizing:border-box;
+  }
+  .card{
+    background: var(--card);
+    border: var(--b) solid var(--bc);
+    border-radius: 12px;
+    box-sizing:border-box;
+  }
+  .btn{
+    background: var(--card);
+    border: var(--b) solid var(--bc);
+    border-radius: 10px;
+    box-sizing:border-box;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: var(--fbase);
+    color: var(--txt);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-width: 92px;
+  }
+  .btn.primary{
+    background: var(--txt);
+    color: var(--bg);
+  }
+  .chip{
+    border: var(--b) solid var(--bc);
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: var(--small);
+    font-weight: 700;
+    background: var(--card);
+    color: var(--txt);
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    white-space:nowrap;
+  }
+  .iconbtn{
+    width:36px;height:36px;
+    border: var(--b) solid var(--bc);
+    border-radius: 10px;
+    background: var(--card);
+    display:flex;align-items:center;justify-content:center;
+    font-weight: 900;
+    user-select:none;
+  }
+  .muted{color: var(--muted);}
+
+  /* TOPBAR */
+  #topbar{
+    height: var(--topbarH);
+    padding: 10px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  #topbar .center{
+    flex: 1;
+    text-align:center;
+    font-weight: 800;
+    font-size: var(--h2);
+  }
+  #topbar .right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:700;
+  }
+
+  /* MONTHBAR */
+  #monthbar{
+    height: var(--monthbarH);
+    margin-top: var(--gapY);
+    padding: 12px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 10px;
+  }
+  #monthbar .month{
+    font-weight: 900;
+    font-size: var(--title);
+    letter-spacing: 1px;
+    flex:1;
+    text-align:left;
+  }
+  #monthbar .nav{
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+
+  /* CAL GRID */
+  #calgrid{
+    height: var(--calgridH);
+    margin-top: var(--gapY);
+    padding: 12px 12px;
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+  }
+
+  #calgrid .head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  #calgrid .head .label{
+    font-weight: 900;
+    font-size: var(--fbase);
+  }
+  #calgrid .dow{
+    display:grid;
+    grid-template-columns: repeat(__CALCOLS__, 1fr);
+    gap: var(--cellGap);
+    font-size: var(--small);
+    font-weight: 800;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+  }
+
+  #calgrid .days{
+    display:grid;
+    grid-template-columns: repeat(__CALCOLS__, 1fr);
+    grid-template-rows: repeat(__CALROWS__, 1fr);
+    gap: var(--cellGap);
+    flex:1;
+  }
+
+  .day{
+    background: var(--card);
+    border: var(--b) solid var(--bc);
+    border-radius: 10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight: 800;
+    user-select:none;
+    position:relative;
+    min-height: 34px;
+  }
+  .day.dim{opacity:.35;}
+  .day.sel{
+    outline: 2px solid var(--txt);
+    outline-offset: -2px;
+  }
+  .day.mark::after{
+    content:"";
+    position:absolute;
+    bottom:6px;
+    width:7px;height:7px;
+    border-radius:50%;
+    background: var(--txt);
+    opacity:.9;
+  }
+
+  /* Legend */
+  #legend{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    font-size: var(--small);
+    font-weight: 700;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .dot{
+    width:8px;height:8px;border-radius:50%;
+    background: var(--txt);
+    display:inline-block;
+    margin-right:6px;
+    opacity:.35;
+  }
+  .dot.on{opacity:1;}
+  .dot.mid{opacity:.65;}
+
+  /* FILTERS */
+  #filters{
+    height: var(--filtersH);
+    margin-top: var(--gapY);
+    padding: 10px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap: 12px;
+  }
+  .select{
+    min-width: 160px;
+    padding: 10px 12px;
+    background: var(--card);
+    border: var(--b) solid var(--bc);
+    border-radius: 10px;
+    font-weight: 700;
+    color: var(--txt);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 10px;
+  }
+  .caret{font-weight:900;}
+
+  /* AGENDA */
+  #agenda{
+    height: var(--agendaH);
+    margin-top: var(--gapY);
+    padding: 12px 12px;
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+  }
+  #agenda h3{
+    margin:0;
+    font-size: var(--h2);
+    font-weight: 900;
+  }
+  #agenda .meta{
+    display:flex;
+    gap: 18px;
+    font-size: var(--small);
+    font-weight: 700;
+    color: var(--muted);
+  }
+  #table{
+    flex:1;
+    background: var(--card);
+    border: var(--b) solid var(--bc);
+    border-radius: 12px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  #thead, .trow{
+    display:grid;
+    grid-template-columns: 30px 1fr 110px 110px 110px;
+    gap: 10px;
+    align-items:center;
+    padding: 10px 10px;
+    box-sizing:border-box;
+  }
+  #thead{
+    background: #EFEFEF;
+    font-weight: 900;
+    font-size: var(--small);
+  }
+  .trow{
+    border-top: 1px solid rgba(0,0,0,.12);
+    font-weight: 700;
+    font-size: var(--small);
+  }
+  .chk{
+    width:18px;height:18px;
+    border: var(--b) solid var(--bc);
+    border-radius: 4px;
+    background: var(--card);
+  }
+  .status{
+    justify-self:end;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: var(--b) solid var(--bc);
+    font-weight: 900;
+    font-size: 11px;
+    background: var(--card);
+  }
+  .status.free{background:#FFFFFF;}
+  .status.busy{background:#EFEFEF;}
+
+  /* BOTTOM BAR */
+  #bottom{
+    height: var(--bottombarH);
+    margin-top: var(--gapY);
+    padding: 10px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 12px;
+  }
+  #bottom .leftinfo{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    font-size: var(--small);
+    font-weight: 800;
+    color: var(--muted);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  #bottom .actions{
+    display:flex;
+    gap: 10px;
+    align-items:center;
+  }
+
+  /* Responsivo mínimo */
+  @media (max-width: 520px){
+    #thead, .trow{
+      grid-template-columns: 26px 1fr 78px 78px 86px;
+      gap: 8px;
+    }
+    .select{min-width: 130px;}
+    .btn{min-width: 86px; padding: 9px 12px;}
+    #monthbar .month{font-size: 16px;}
+  }
 </style>
-"""
-st.markdown(CSS, unsafe_allow_html=True)
+</head>
+<body>
+  <div id="stage">
+    <div id="frame"></div>
 
-# =========================
-# STATE
-# =========================
-if "view_year" not in st.session_state:
-    today = date.today()
-    st.session_state.view_year = today.year
-    st.session_state.view_month = today.month
+    <div id="plan">
+      <div id="wrap">
 
-if "selected_date" not in st.session_state:
-    st.session_state.selected_date = date.today()
+        <!-- TOPBAR -->
+        <div id="topbar" class="panel">
+          <div class="iconbtn">□</div>
+          <div class="center">Calendario</div>
+          <div class="right">
+            <div>Jefe</div>
+            <div class="iconbtn" title="Git">⌁</div>
+            <div class="iconbtn" title="Menu">⋮</div>
+          </div>
+        </div>
 
-if "selected_key" not in st.session_state:
-    st.session_state.selected_key = None  # identifica la franja seleccionada (idx)
+        <!-- MONTHBAR -->
+        <div id="monthbar" class="panel">
+          <div class="nav">
+            <div class="iconbtn">‹</div>
+          </div>
+          <div class="month">FEBRERO 2026</div>
+          <div class="nav">
+            <div class="iconbtn">›</div>
+          </div>
+        </div>
 
-if "filter_only_scheduled" not in st.session_state:
-    st.session_state.filter_only_scheduled = False
+        <!-- CAL GRID -->
+        <div id="calgrid" class="panel">
+          <div class="head">
+            <div class="label">CALENDARIO</div>
+            <div class="muted" style="font-weight:800;font-size:var(--small);">MO&nbsp;&nbsp;TU&nbsp;&nbsp;WE&nbsp;&nbsp;TH&nbsp;&nbsp;FR&nbsp;&nbsp;SA&nbsp;&nbsp;SU</div>
+          </div>
 
-# =========================
-# DATA DEMO
-# =========================
-# Un día puede tener múltiples franjas por diferentes instalaciones
-# Formato: fecha -> lista de franjas {inst, inicio, finaliza}
-if "supervisor_agenda" not in st.session_state:
-    st.session_state.supervisor_agenda = {
-        date(2026, 2, 15): [
-            {"inst": "Rocafort", "inicio": time(9, 0), "finaliza": time(15, 0)},
-            {"inst": "Cn Fabra", "inicio": time(9, 0), "finaliza": time(15, 0)},
-            {"inst": "Arsenal", "inicio": time(8, 0), "finaliza": time(12, 0)},
-        ],
-        date(2026, 2, 16): [
-            {"inst": "Cem", "inicio": time(10, 0), "finaliza": time(14, 0)},
-            {"inst": "Guissona", "inicio": time(9, 0), "finaliza": time(13, 0)},
-            {"inst": "St. Jordi", "inicio": time(15, 0), "finaliza": time(18, 0)},
-        ],
-    }
+          <div class="days" id="days"></div>
 
-# Ocupado (ya programado)
-if "busy_blocks" not in st.session_state:
-    st.session_state.busy_blocks = {
-        date(2026, 2, 15): [(time(10, 0), time(11, 0))],
-    }
+          <div id="legend">
+            <span><i class="dot on"></i>LIBRE</span>
+            <span><i class="dot mid"></i>OCUPADO</span>
+            <span><i class="dot"></i>OTRO</span>
+          </div>
+        </div>
 
-# Reservas creadas desde la app
-if "bookings" not in st.session_state:
-    st.session_state.bookings = []  # {"date", "inst", "inicio", "finaliza"}
+        <!-- FILTERS -->
+        <div id="filters" class="panel">
+          <div class="select">Mes <span class="caret">▾</span></div>
+          <div class="select">Año <span class="caret">▾</span></div>
+          <div class="btn primary">Aplicar</div>
+        </div>
 
-# =========================
-# HELPERS
-# =========================
-def to_minutes(t: time) -> int:
-    return t.hour * 60 + t.minute
+        <!-- AGENDA -->
+        <div id="agenda" class="panel">
+          <h3>Agenda del día</h3>
+          <div class="meta">
+            <div><b>Fecha:</b> 15 febrero 2026</div>
+            <div><b>Inicio</b></div>
+            <div><b>Finaliza</b></div>
+            <div><b>Estado</b></div>
+          </div>
 
-def overlaps(a0: time, a1: time, b0: time, b1: time) -> bool:
-    return max(to_minutes(a0), to_minutes(b0)) < min(to_minutes(a1), to_minutes(b1))
+          <div id="table">
+            <div id="thead">
+              <div></div>
+              <div> </div>
+              <div>Inicio</div>
+              <div>Finaliza</div>
+              <div>Estado</div>
+            </div>
 
-def is_busy(d: date, inicio: time, finaliza: time) -> bool:
-    for bs, be in st.session_state.busy_blocks.get(d, []):
-        if overlaps(inicio, finaliza, bs, be):
-            return True
-    for b in st.session_state.bookings:
-        if b["date"] == d and overlaps(inicio, finaliza, b["inicio"], b["finaliza"]):
-            return True
-    return False
+            <div id="tbody"></div>
+          </div>
+        </div>
 
-def fmt_time_hms(t: time) -> str:
-    return f"{t.hour:02d}:{t.minute:02d}:00"
+        <!-- BOTTOM -->
+        <div id="bottom" class="panel">
+          <div class="leftinfo">
+            <span class="chip">2026-02-15 · Rocafort · 09:00:00 → 15:00:00</span>
+            <span class="status free">LIBRE</span>
+          </div>
+          <div class="actions">
+            <div class="btn">Aplicar</div>
+            <div class="btn">Modificar</div>
+            <div class="btn primary">Enviar</div>
+          </div>
+        </div>
 
-def calc_hours(inicio: time, finaliza: time) -> str:
-    mins = to_minutes(finaliza) - to_minutes(inicio)
-    if mins < 0:
-        mins = 0
-    h = mins // 60
-    m = mins % 60
-    return f"{h}:{m:02d}:00"
-
-def day_has_agenda(d: date) -> bool:
-    return bool(st.session_state.supervisor_agenda.get(d, []))
-
-def day_status(d: date) -> str:
-    items = st.session_state.supervisor_agenda.get(d, [])
-    if not items:
-        return "free"
-    for it in items:
-        if not is_busy(d, it["inicio"], it["finaliza"]):
-            return "free"
-    return "busy"
-
-def build_month_weeks(y: int, m: int):
-    cal = calendar.Calendar(firstweekday=0)  # Monday
-    weeks = cal.monthdatescalendar(y, m)
-    while len(weeks) < 6:
-        last = weeks[-1]
-        start = last[-1] + timedelta(days=1)
-        weeks.append([start + timedelta(days=i) for i in range(7)])
-    return weeks
-
-def month_title_es(y: int, m: int) -> str:
-    meses = ["ENERO","FEBRERO","MARZO","ABRIL","MAYO","JUNIO","JULIO","AGOSTO","SEPTIEMBRE","OCTUBRE","NOVIEMBRE","DICIEMBRE"]
-    return f"{meses[m-1]} {y}"
-
-def scheduled_days_sorted():
-    days = [d for d, items in st.session_state.supervisor_agenda.items() if items]
-    days.sort()
-    return days
-
-def next_scheduled_day(from_day: date):
-    days = scheduled_days_sorted()
-    for d in days:
-        if d >= from_day:
-            return d
-    return days[0] if days else None
-
-def date_title_es(d: date) -> str:
-    meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"]
-    return f"{d.day:02d} {meses[d.month-1]} {d.year}"
-
-# =========================
-# TOP BAR
-# =========================
-st.markdown(
-    """
-    <div class="topbar">
-      <div style="font-weight:950;">Calendario</div>
-      <div class="badge">Agenda</div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-# =========================
-# BARRA DE FILTRO / SALTO
-# =========================
-with st.container():
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    c1, c2 = st.columns([1, 1])
-    with c1:
-        if st.button("Filtrar: solo días con agenda", use_container_width=True):
-            st.session_state.filter_only_scheduled = not st.session_state.filter_only_scheduled
-            if st.session_state.filter_only_scheduled and not day_has_agenda(st.session_state.selected_date):
-                nd = next_scheduled_day(st.session_state.selected_date)
-                if nd:
-                    st.session_state.selected_date = nd
-                    st.session_state.view_year = nd.year
-                    st.session_state.view_month = nd.month
-                    st.session_state.selected_key = None
-            st.rerun()
-    with c2:
-        if st.button("Ir al próximo programado", use_container_width=True):
-            nd = next_scheduled_day(st.session_state.selected_date)
-            if nd:
-                st.session_state.selected_date = nd
-                st.session_state.view_year = nd.year
-                st.session_state.view_month = nd.month
-                st.session_state.selected_key = None
-            st.rerun()
-
-    estado_filtro = "ACTIVO" if st.session_state.filter_only_scheduled else "INACTIVO"
-    st.markdown(f'<div class="small">Filtro días con agenda: <b>{estado_filtro}</b></div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# =========================
-# CALENDARIO CON NAV MES/AÑO
-# =========================
-weeks = build_month_weeks(st.session_state.view_year, st.session_state.view_month)
-title = month_title_es(st.session_state.view_year, st.session_state.view_month)
-
-st.markdown('<div class="cal-wrap">', unsafe_allow_html=True)
-st.markdown(
-    f"""
-    <div class="cal-head">
-      <div class="cal-title">{title}</div>
-      <div class="badge">Mes / Año</div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-nav1, nav2, nav3 = st.columns([1, 2, 1])
-with nav1:
-    if st.button("◀", use_container_width=True):
-        y = st.session_state.view_year
-        m = st.session_state.view_month - 1
-        if m == 0:
-            m = 12
-            y -= 1
-        st.session_state.view_year = y
-        st.session_state.view_month = m
-        st.rerun()
-with nav2:
-    months = list(range(1, 13))
-    years = list(range(st.session_state.view_year - 3, st.session_state.view_year + 4))
-    c1, c2 = st.columns(2)
-    with c1:
-        msel = st.selectbox("Mes", months, index=st.session_state.view_month - 1, label_visibility="collapsed")
-    with c2:
-        ysel = st.selectbox("Año", years, index=years.index(st.session_state.view_year), label_visibility="collapsed")
-    if (msel != st.session_state.view_month) or (ysel != st.session_state.view_year):
-        st.session_state.view_month = msel
-        st.session_state.view_year = ysel
-        st.rerun()
-with nav3:
-    if st.button("▶", use_container_width=True):
-        y = st.session_state.view_year
-        m = st.session_state.view_month + 1
-        if m == 13:
-            m = 1
-            y += 1
-        st.session_state.view_year = y
-        st.session_state.view_month = m
-        st.rerun()
-
-st.markdown('<div class="cal-grid">', unsafe_allow_html=True)
-st.markdown(
-    """
-    <div class="cal-dow">
-      <div>L</div><div>M</div><div>X</div><div>J</div><div>V</div><div>S</div><div>D</div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-for w in weeks[:6]:
-    cols = st.columns(7, gap="small")
-    for i, d in enumerate(w):
-        in_month = (d.month == st.session_state.view_month)
-        status = day_status(d)
-        pip = "pip-free" if status == "free" else "pip-busy"
-
-        disable_by_filter = st.session_state.filter_only_scheduled and (not day_has_agenda(d))
-        disabled = (not in_month) or disable_by_filter
-
-        with cols[i]:
-            clicked = st.button(str(d.day), key=f"day_{d.isoformat()}", use_container_width=True, disabled=disabled)
-            st.markdown(
-                f"""
-                <div class="daymark">
-                  <div class="pips">
-                    <span class="pip {pip}"></span>
-                  </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            if clicked:
-                st.session_state.selected_date = d
-                st.session_state.selected_key = None
-                st.rerun()
-
-st.markdown('</div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# =========================
-# AGENDA DEL DÍA (HEADER = FECHA)
-# =========================
-st.markdown('<div class="h2">Agenda del día</div>', unsafe_allow_html=True)
-
-items = st.session_state.supervisor_agenda.get(st.session_state.selected_date, [])
-
-# Header superior de la agenda: ahora muestra la FECHA, no "Instalacion"
-st.markdown(
-    f"""
-    <div class="agenda-card" style="margin-bottom:10px;">
-      <div class="agenda-head" style="grid-template-columns: 1fr;">
-        <div>Fecha: <span class="cell-strong">{date_title_es(st.session_state.selected_date)}</span></div>
       </div>
     </div>
-    """,
-    unsafe_allow_html=True
+  </div>
+
+<script>
+(function(){
+  // --------------------------
+  // Construye grilla calendario
+  // --------------------------
+  var daysEl = document.getElementById("days");
+  var COLS = __CALCOLS__;
+  var ROWS = __CALROWS__;
+  var total = COLS * ROWS;
+
+  // Ejemplo similar a tu imagen: algunos días apagados, algunos marcados, algunos seleccionados
+  var values = [
+    {n:10, dim:true},{n:2},{n:3, sel:true},{n:4},{n:5},{n:6},{n:7},
+    {n:11},{n:12},{n:13},{n:14, mark:true},{n:16, sel:true},{n:17},{n:14, mark:true},
+    {n:21},{n:22},{n:23},{n:24},{n:25},{n:26},{n:28, mark:true}
+  ];
+
+  for (var i=0;i<total;i++){
+    var v = values[i] || {n:""};
+    var d = document.createElement("div");
+    d.className = "day";
+    if (v.dim) d.classList.add("dim");
+    if (v.sel) d.classList.add("sel");
+    if (v.mark) d.classList.add("mark");
+    d.textContent = v.n;
+    daysEl.appendChild(d);
+  }
+
+  // --------------------------
+  // Tabla agenda (ejemplo BN)
+  // --------------------------
+  var tbody = document.getElementById("tbody");
+  var rows = [
+    {name:"Rocafort", ini:"09:00:00", fin:"15:00:00", st:"LIBRE", cls:"free", chk:false},
+    {name:"Cn Fabra", ini:"09:00:00", fin:"06:00:00", st:"OCUPADO", cls:"busy", chk:true},
+    {name:"Arsenal",  ini:"08:00:00", fin:"12:00:00", st:"OCUPADO", cls:"busy", chk:true},
+    {name:"Arsenal",  ini:"15:00:00", fin:"18:00:00", st:"LIBRE", cls:"free", chk:false},
+    {name:"St. Jordi",ini:"", fin:"", st:"", cls:"free", chk:false}
+  ];
+
+  rows = rows.slice(0, __AGENDAROWS__);
+
+  rows.forEach(function(r){
+    var tr = document.createElement("div");
+    tr.className = "trow";
+
+    var c0 = document.createElement("div");
+    c0.className = "chk";
+    if (r.chk){
+      c0.style.background = "#111";
+      c0.style.borderColor = "#111";
+    }
+
+    var c1 = document.createElement("div");
+    c1.textContent = r.name;
+
+    var c2 = document.createElement("div");
+    c2.textContent = r.ini;
+
+    var c3 = document.createElement("div");
+    c3.textContent = r.fin;
+
+    var c4 = document.createElement("div");
+    if (r.st){
+      var s = document.createElement("span");
+      s.className = "status " + r.cls;
+      s.textContent = r.st;
+      c4.appendChild(s);
+    }
+
+    tr.appendChild(c0);
+    tr.appendChild(c1);
+    tr.appendChild(c2);
+    tr.appendChild(c3);
+    tr.appendChild(c4);
+
+    tbody.appendChild(tr);
+  });
+})();
+</script>
+
+</body>
+</html>
+"""
+
+html = (
+    html.replace("__PADX__", str(PAD_X_PX))
+        .replace("__PADTOP__", str(PAD_TOP_PX))
+        .replace("__B__", str(BORDER_PX))
+        .replace("__BC__", BORDER_COLOR)
+        .replace("__BG__", BG_COLOR)
+        .replace("__PANEL__", PANEL_BG)
+        .replace("__CARD__", CARD_BG)
+        .replace("__TXT__", TEXT_COLOR)
+        .replace("__MUTED__", MUTED_TEXT)
+        .replace("__FBASE__", str(FONT_BASE_PX))
+        .replace("__TITLE__", str(TITLE_PX))
+        .replace("__H2__", str(H2_PX))
+        .replace("__SMALL__", str(SMALL_PX))
+        .replace("__INNERL__", str(INNER_L))
+        .replace("__INNERR__", str(INNER_R))
+        .replace("__GAPY__", str(INNER_TOP_GAP))
+        .replace("__TOPBARH__", str(TOPBAR_H))
+        .replace("__MONTHBARH__", str(MONTHBAR_H))
+        .replace("__CALGRIDH__", str(CAL_GRID_H))
+        .replace("__FILTERSH__", str(FILTERS_H))
+        .replace("__AGENDAH__", str(AGENDA_H))
+        .replace("__BOTTOMH__", str(BOTTOMBAR_H))
+        .replace("__CELLGAP__", str(DAY_CELL_GAP_PX))
+        .replace("__CALCOLS__", str(CAL_COLS))
+        .replace("__CALROWS__", str(CAL_ROWS))
+        .replace("__AGENDAROWS__", str(AGENDA_ROWS))
 )
 
-if not items:
-    st.markdown(
-        f'<div class="card"><div class="small">No hay franjas para este día.</div></div>',
-        unsafe_allow_html=True
-    )
-else:
-    # Tabla única para TODAS las franjas del día (varias instalaciones / estados)
-    st.markdown('<div class="agenda-card">', unsafe_allow_html=True)
-    st.markdown(
-        """
-        <div class="agenda-rowhdr">
-          <div>checkis</div><div>Instalacion</div><div>Inicio</div><div>Finaliza</div><div>Horas</div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    for idx, it in enumerate(items):
-        inst = it["inst"]
-        inicio = it["inicio"]
-        finaliza = it["finaliza"]
-        horas = calc_hours(inicio, finaliza)
-
-        busy = is_busy(st.session_state.selected_date, inicio, finaliza)
-        pill_txt = "OCUPADO" if busy else "LIBRE"
-        pill_cls = "pill-busy" if busy else "pill-free"
-
-        # checklist (una sola selección)
-        checked = st.checkbox(
-            "",
-            key=f"chk_{st.session_state.selected_date}_{idx}",
-            value=(st.session_state.selected_key == idx),
-            disabled=busy
-        )
-
-        if checked and st.session_state.selected_key != idx:
-            st.session_state.selected_key = idx
-            # desmarca otros
-            for j in range(len(items)):
-                k = f"chk_{st.session_state.selected_date}_{j}"
-                if k in st.session_state and j != idx:
-                    st.session_state[k] = False
-            st.rerun()
-
-        st.markdown(
-            f"""
-            <div class="agenda-row">
-              <div class="cell-strong">{'✓' if checked else ''}</div>
-              <div class="cell-strong">{inst}</div>
-              <div>{fmt_time_hms(inicio)}</div>
-              <div>{fmt_time_hms(finaliza)}</div>
-              <div style="display:flex; gap:8px; align-items:center; justify-content:space-between;">
-                <span>{horas}</span>
-                <span class="pill {pill_cls}">{pill_txt}</span>
-              </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# =========================
-# BARRA FIJA INFERIOR (3 botones)
-# =========================
-selected_ok = (st.session_state.selected_key is not None and bool(items))
-sel = None
-selected_busy = False
-
-if selected_ok:
-    sel = items[st.session_state.selected_key]
-    selected_busy = is_busy(st.session_state.selected_date, sel["inicio"], sel["finaliza"])
-
-hint = "Selecciona una franja (checkis)"
-pill_txt = "—"
-pill_cls = ""
-
-if selected_ok and sel:
-    hint = f"{st.session_state.selected_date.isoformat()} · {sel['inst']} · {fmt_time_hms(sel['inicio'])} → {fmt_time_hms(sel['finaliza'])}"
-    if selected_busy:
-        pill_txt = "OCUPADO"
-        pill_cls = "pill-busy"
-    else:
-        pill_txt = "LIBRE"
-        pill_cls = "pill-free"
-
-st.markdown('<div class="actionbar"><div class="actioninner">', unsafe_allow_html=True)
-st.markdown(
-    f"""
-    <div class="actionline">
-      <div class="actionhint">{hint}</div>
-      <div class="pill {pill_cls}">{pill_txt}</div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-b1, b2, b3 = st.columns(3, gap="small")
-
-with b1:
-    if st.button("Aplicar", use_container_width=True, disabled=(not selected_ok or selected_busy)):
-        st.session_state.bookings.append({
-            "date": st.session_state.selected_date,
-            "inst": sel["inst"],
-            "inicio": sel["inicio"],
-            "finaliza": sel["finaliza"],
-        })
-        st.rerun()
-
-with b2:
-    if st.button("Modificar", use_container_width=True, disabled=(not selected_ok)):
-        # demo: alterna instalación a "Descanso"
-        items[st.session_state.selected_key]["inst"] = "Descanso"
-        st.session_state.supervisor_agenda[st.session_state.selected_date] = items
-        sel = items[st.session_state.selected_key]
-        st.rerun()
-
-with b3:
-    if st.button("Enviar", use_container_width=True, disabled=(not selected_ok)):
-        st.session_state["_last_send"] = {
-            "date": st.session_state.selected_date.isoformat(),
-            "inst": sel["inst"],
-            "inicio": fmt_time_hms(sel["inicio"]),
-            "finaliza": fmt_time_hms(sel["finaliza"]),
-            "status": "OCUPADO" if selected_busy else "LIBRE",
-        }
-        st.rerun()
-
-st.markdown('</div></div>', unsafe_allow_html=True)
-
-if "_last_send" in st.session_state:
-    st.markdown('<div class="card" style="margin-top:10px;">', unsafe_allow_html=True)
-    st.markdown('<div style="font-weight:950;">Enviar (demo)</div>', unsafe_allow_html=True)
-    st.code(st.session_state["_last_send"], language="json")
-    st.markdown('</div>', unsafe_allow_html=True)
+components.html(html, height=1000, scrolling=False)
