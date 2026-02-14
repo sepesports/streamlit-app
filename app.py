@@ -5,13 +5,13 @@ from datetime import date, datetime, time, timedelta
 st.set_page_config(page_title="Agenda tipo Calendario", layout="centered")
 
 # =========================
-# ESTILO (iOS-like)
+# ESTILO (iOS-like) + BARRA FIJA FINAL
 # =========================
 CSS = """
 <style>
-.block-container{padding-top:14px !important; max-width:560px !important;}
+.block-container{padding-top:14px !important; max-width:560px !important; padding-bottom:120px !important;}
 header, footer{display:none !important;}
-/* Cards */
+
 .card{
   background:#fff;
   border:1px solid rgba(0,0,0,.08);
@@ -75,106 +75,93 @@ header, footer{display:none !important;}
   font-weight:800;
   text-align:center;
 }
-.cal-days{
-  display:grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap:8px;
-}
-.daybtn{
-  border-radius:14px !important;
-  height:42px !important;
-  padding:0 !important;
-  font-weight:900 !important;
-  border:1px solid rgba(0,0,0,.08) !important;
-  background:#fff !important;
-  color:#111 !important;
-}
-.daybtn:hover{border-color: rgba(59,108,255,.55) !important;}
-.daybtn.selected{
-  background: rgba(59,108,255,.14) !important;
-  border-color: rgba(59,108,255,.70) !important;
-}
-.daybtn.muted{
-  opacity:.35 !important;
-}
-.daymark{
-  position:relative;
-}
-.pips{
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
-  bottom:6px;
-  display:flex;
-  gap:4px;
-}
-.pip{width:6px; height:6px; border-radius:50%;}
+.daymark{ position:relative; margin-top:-40px; height:40px; pointer-events:none; }
+.pips{ position:absolute; left:50%; transform:translateX(-50%); bottom:6px; display:flex; gap:4px; }
+.pip{ width:6px; height:6px; border-radius:50%; }
 .pip-free{background: rgba(20,120,60,.55);}
 .pip-busy{background: rgba(200,40,40,.60);}
 .pip-part{background: rgba(255,170,0,.70);}
-/* Timeline blocks */
-.timeline{
+
+/* Agenda: filas compactas por "Instalación" */
+.agenda{
   border:1px solid rgba(0,0,0,.08);
   border-radius:18px;
   overflow:hidden;
   background:#fff;
 }
-.trow{
+.arow{
   display:grid;
-  grid-template-columns: 78px 1fr;
+  grid-template-columns: 92px 1fr;
   gap:10px;
   padding:10px 12px;
   border-bottom:1px solid rgba(0,0,0,.06);
   align-items:center;
 }
-.trow:last-child{border-bottom:none;}
-.tlabel{
+.arow:last-child{border-bottom:none;}
+.alabel{
   font-weight:900;
   color: rgba(0,0,0,.65);
   font-size:12px;
 }
-.tblock{
+.acard{
   border-radius:14px;
   border:1px solid rgba(0,0,0,.08);
   padding:10px 12px;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  cursor:pointer;
   user-select:none;
 }
-.free{
-  background: rgba(20,120,60,.08);
-  border-color: rgba(20,120,60,.22);
-}
-.busy{
-  background: rgba(200,40,40,.08);
-  border-color: rgba(200,40,40,.22);
-}
-.part{
-  background: rgba(255,170,0,.10);
-  border-color: rgba(255,170,0,.24);
-}
+.free{ background: rgba(20,120,60,.08); border-color: rgba(20,120,60,.22); }
+.busy{ background: rgba(200,40,40,.08); border-color: rgba(200,40,40,.22); }
+.part{ background: rgba(255,170,0,.10); border-color: rgba(255,170,0,.24); }
 .sel{
   outline: 3px solid rgba(59,108,255,.22);
   border-color: rgba(59,108,255,.70) !important;
   background: rgba(59,108,255,.12) !important;
 }
-.tmeta{font-size:12px; opacity:.75; font-weight:800;}
-/* Bottom action bar */
+.tmeta{font-size:12px; opacity:.78; font-weight:800;}
+/* Barra fija inferior */
 .actionbar{
-  position: sticky;
-  bottom: 10px;
-  margin-top: 12px;
-  z-index: 10;
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 12px;
+  width: min(560px, calc(100vw - 24px));
+  z-index: 9999;
 }
 .actioninner{
   background:#fff;
   border:1px solid rgba(0,0,0,.08);
   border-radius:18px;
-  padding:12px;
-  box-shadow: 0 16px 40px rgba(0,0,0,.12);
+  padding:10px 10px 12px 10px;
+  box-shadow: 0 16px 40px rgba(0,0,0,.14);
 }
+.actionline{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:8px;
+}
+.actionhint{
+  font-size:12px;
+  opacity:.80;
+  font-weight:800;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pill{
+  font-size:12px;
+  padding:4px 10px;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,.10);
+  background: rgba(0,0,0,.03);
+  font-weight:900;
+}
+.pill-free{ border-color: rgba(20,120,60,.25); background: rgba(20,120,60,.08); }
+.pill-busy{ border-color: rgba(200,40,40,.25); background: rgba(200,40,40,.08); }
 div.stButton>button{
   border-radius:14px !important;
   padding:10px 12px !important;
@@ -185,27 +172,39 @@ div.stButton>button{
 st.markdown(CSS, unsafe_allow_html=True)
 
 # =========================
-# DATA DEMO (ocupado / libre)
+# DATA DEMO
 # =========================
-# Estructura: fecha -> lista de bloques (inicio, fin)
-# NOTA: esto se reemplaza por Google Calendar / DB / API.
+# 1) Bloques ocupados (lo que ya está programado)
 if "busy_blocks" not in st.session_state:
     st.session_state.busy_blocks = {
-        date(2025, 4, 1): [(time(12, 0), time(13, 0)), (time(15, 0), time(16, 30))],
-        date(2025, 4, 2): [(time(9, 0), time(10, 30)), (time(14, 0), time(15, 0))],
-        date(2025, 4, 14): [(time(10, 0), time(12, 0))],
+        date(2026, 2, 15): [(time(10, 0), time(11, 0))],
+    }
+
+# 2) Slots habilitados por supervisor para el día (Agenda del día SOLO muestra esto)
+# Formato: fecha -> lista de opciones
+# Cada opción: {"start": time, "end": time, "inst": str, "estado": "libre"|"ocupado"} (estado puede ser derivado)
+if "supervisor_slots" not in st.session_state:
+    st.session_state.supervisor_slots = {
+        date(2026, 2, 15): [
+            {"start": time(8, 0),  "end": time(9, 0),  "inst": "Rocafort"},
+            {"start": time(12, 0), "end": time(13, 0), "inst": "Cn Fabra"},
+            {"start": time(15, 0), "end": time(16, 0), "inst": "St. Jordi"},
+        ],
+        date(2026, 2, 14): [
+            {"start": time(9, 0),  "end": time(10, 0), "inst": "Cem"},
+            {"start": time(11, 0), "end": time(12, 0), "inst": "Arsenal"},
+            {"start": time(14, 0), "end": time(15, 0), "inst": "Guissona"},
+        ],
     }
 
 if "bookings" not in st.session_state:
-    st.session_state.bookings = []  # reservas creadas desde la app
+    st.session_state.bookings = []
 
 if "selected_date" not in st.session_state:
     st.session_state.selected_date = date.today()
 
-if "selected_start" not in st.session_state:
-    st.session_state.selected_start = None  # time
-if "selected_end" not in st.session_state:
-    st.session_state.selected_end = None  # time
+if "selected_slot_idx" not in st.session_state:
+    st.session_state.selected_slot_idx = None  # índice dentro de supervisor_slots[selected_date]
 
 # =========================
 # HELPERS
@@ -216,18 +215,14 @@ def to_minutes(t: time) -> int:
 def overlaps(a0: time, a1: time, b0: time, b1: time) -> bool:
     return max(to_minutes(a0), to_minutes(b0)) < min(to_minutes(a1), to_minutes(b1))
 
-def is_busy_block(d: date, start: time, end: time) -> bool:
+def is_busy(d: date, s: time, e: time) -> bool:
     for bs, be in st.session_state.busy_blocks.get(d, []):
-        if overlaps(start, end, bs, be):
+        if overlaps(s, e, bs, be):
             return True
     for item in st.session_state.bookings:
-        if item["date"] == d and overlaps(start, end, item["start"], item["end"]):
+        if item["date"] == d and overlaps(s, e, item["start"], item["end"]):
             return True
     return False
-
-def add_minutes(t: time, mins: int) -> time:
-    dt = datetime.combine(date.today(), t) + timedelta(minutes=mins)
-    return dt.time()
 
 def fmt_time(t: time) -> str:
     h = t.hour
@@ -239,16 +234,13 @@ def fmt_time(t: time) -> str:
     return f"{hh}:{m:02d} {suffix}"
 
 def month_matrix(any_day: date):
-    # returns (year, month, matrix weeks where each week is list[date or None])
     y, m = any_day.year, any_day.month
     first = date(y, m, 1)
-    # monday=0 ... sunday=6  | queremos iniciar en Lunes
-    offset = first.weekday()
-    # start at monday of the first week
+    offset = first.weekday()  # monday=0
     start = first - timedelta(days=offset)
     weeks = []
     cur = start
-    for _ in range(6):  # max 6 semanas
+    for _ in range(6):
         week = []
         for _ in range(7):
             week.append(cur)
@@ -257,25 +249,22 @@ def month_matrix(any_day: date):
     return y, m, weeks
 
 def day_status(d: date):
-    # status for dots: busy/part/free based on any busy blocks or any booking
+    # "busy" si hay bloques ocupados o reservas o si supervisor habilitó slots pero todos están ocupados
+    slots = st.session_state.supervisor_slots.get(d, [])
+    if slots:
+        # si existe al menos 1 libre => free, si todos ocupados => busy
+        any_free = False
+        for s in slots:
+            if not is_busy(d, s["start"], s["end"]):
+                any_free = True
+                break
+        return "free" if any_free else "busy"
+
     has_busy = bool(st.session_state.busy_blocks.get(d, []))
     has_book = any(b["date"] == d for b in st.session_state.bookings)
-    if has_busy and has_book:
-        return "part"
     if has_busy or has_book:
         return "busy"
     return "free"
-
-def slot_class(d: date, s: time, e: time):
-    busy = is_busy_block(d, s, e)
-    if busy:
-        return "busy", "OCUPADO"
-    return "free", "LIBRE"
-
-def normalize_selection():
-    if st.session_state.selected_start and st.session_state.selected_end:
-        if to_minutes(st.session_state.selected_end) <= to_minutes(st.session_state.selected_start):
-            st.session_state.selected_end = add_minutes(st.session_state.selected_start, 60)
 
 # =========================
 # TOP BAR
@@ -295,14 +284,12 @@ st.markdown(
 # =========================
 with st.container():
     st.markdown('<div class="card">', unsafe_allow_html=True)
-
     c1, c2 = st.columns([1, 1])
     with c1:
         tz = st.selectbox("Zona horaria", ["America/Bogota", "America/Mexico_City", "America/Los_Angeles"], index=0)
     with c2:
         duration_min = st.selectbox("Duración", [30, 45, 60, 90, 120], index=2)
-
-    st.markdown('<div class="small">Selecciona un día del calendario y luego un bloque de hora (tipo agenda por colores).</div>', unsafe_allow_html=True)
+    st.markdown('<div class="small">Selecciona un día. En “Agenda del día” solo verás franjas habilitadas por supervisor (por instalación).</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================
@@ -335,27 +322,17 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# grid 6 semanas x 7
 for w in weeks:
     cols = st.columns(7, gap="small")
     for i, d in enumerate(w):
-        in_month = (d.month == m)
         status = day_status(d)
-        is_sel = (d == st.session_state.selected_date)
+        pip_class = "pip-free" if status == "free" else "pip-busy"
 
-        # marcadores
-        pip_class = "pip-free" if status == "free" else ("pip-busy" if status == "busy" else "pip-part")
-
-        label = str(d.day)
-        key = f"day_{d.isoformat()}"
         with cols[i]:
-            btn_label = label if in_month else f"{label}"
-            clicked = st.button(btn_label, key=key, use_container_width=True)
-            # aplica clases via markdown + css? (streamlit buttons no permiten class)
-            # workaround: si seleccionado, mostramos un indicador debajo (sin hacks raros)
+            clicked = st.button(str(d.day), key=f"day_{d.isoformat()}", use_container_width=True)
             st.markdown(
                 f"""
-                <div class="daymark" style="margin-top:-40px; height:40px; pointer-events:none;">
+                <div class="daymark">
                   <div class="pips">
                     <span class="pip {pip_class}"></span>
                   </div>
@@ -365,117 +342,117 @@ for w in weeks:
             )
             if clicked:
                 st.session_state.selected_date = d
-                st.session_state.selected_start = None
-                st.session_state.selected_end = None
+                st.session_state.selected_slot_idx = None
                 st.rerun()
 
-st.markdown('</div>', unsafe_allow_html=True)  # cal-grid
-st.markdown('</div>', unsafe_allow_html=True)  # cal-wrap
-
-# =========================
-# AGENDA POR COLORES (bloques por hora, no lista infinita)
-# =========================
-st.markdown('<div class="h2">Agenda del día</div>', unsafe_allow_html=True)
-
-day_start = time(8, 0)
-day_end = time(18, 0)
-
-# Genera bloques "compactos": 1 hora visual (y la duración real se aplica al seleccionar)
-blocks = []
-cur = day_start
-while to_minutes(cur) < to_minutes(day_end):
-    nxt = add_minutes(cur, 60)
-    blocks.append((cur, nxt))
-    cur = nxt
-
-# Si hay selección previa, ajusta end según duración
-if st.session_state.selected_start is not None:
-    st.session_state.selected_end = add_minutes(st.session_state.selected_start, duration_min)
-    normalize_selection()
-
-selected_ok = (st.session_state.selected_start is not None and st.session_state.selected_end is not None)
-selected_busy = False
-if selected_ok:
-    selected_busy = is_busy_block(st.session_state.selected_date, st.session_state.selected_start, st.session_state.selected_end)
-
-st.markdown('<div class="timeline">', unsafe_allow_html=True)
-
-for s, e in blocks:
-    # estado del bloque visual: ocupado si choca con algo (en esa hora)
-    cls, tag = slot_class(st.session_state.selected_date, s, e)
-
-    # si este bloque es el seleccionado (por start)
-    is_sel = (st.session_state.selected_start == s)
-    extra_sel = " sel" if is_sel else ""
-
-    # Render fila
-    st.markdown(
-        f"""
-        <div class="trow">
-          <div class="tlabel">{fmt_time(s)}</div>
-          <div class="tblock {cls}{extra_sel}">
-            <div class="tmeta">{tag}</div>
-            <div class="tmeta">+{duration_min} min</div>
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # Click real (botón invisible por fila) para seleccionar start
-    # (sin inventar JS; control 100% Streamlit)
-    if st.button("Seleccionar", key=f"sel_{st.session_state.selected_date}_{s}", use_container_width=True):
-        st.session_state.selected_start = s
-        st.session_state.selected_end = add_minutes(s, duration_min)
-        normalize_selection()
-        st.rerun()
-
+st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================
-# BARRA DE ACCIONES (3 botones) - se activan al seleccionar rango
+# AGENDA DEL DÍA (SOLO slots habilitados por supervisor)
 # =========================
-st.markdown('<div class="actionbar"><div class="actioninner">', unsafe_allow_html=True)
+st.markdown('<div class="h2">Agenda del día</div>', unsafe_allow_html=True)
 
-# Estado texto
-if not selected_ok:
-    st.markdown('<div class="small">Selecciona un bloque de hora para habilitar acciones.</div>', unsafe_allow_html=True)
+slots = st.session_state.supervisor_slots.get(st.session_state.selected_date, [])
+
+if not slots:
+    st.markdown('<div class="card"><div class="small">No hay franjas habilitadas para este día.</div></div>', unsafe_allow_html=True)
 else:
-    estado = "OCUPADO" if selected_busy else "LIBRE"
-    st.markdown(
-        f'<div class="small"><b>{st.session_state.selected_date.isoformat()}</b> · {fmt_time(st.session_state.selected_start)} → {fmt_time(st.session_state.selected_end)} · {tz} · <b>{estado}</b></div>',
-        unsafe_allow_html=True
-    )
+    st.markdown('<div class="agenda">', unsafe_allow_html=True)
+
+    for idx, s in enumerate(slots):
+        start = s["start"]
+        end = s["end"]
+        inst = s["inst"]
+
+        busy = is_busy(st.session_state.selected_date, start, end)
+        cls = "busy" if busy else "free"
+        tag = "OCUPADO" if busy else "LIBRE"
+
+        is_sel = (st.session_state.selected_slot_idx == idx)
+        extra_sel = " sel" if is_sel else ""
+
+        st.markdown(
+            f"""
+            <div class="arow">
+              <div class="alabel">{fmt_time(start)}</div>
+              <div class="acard {cls}{extra_sel}">
+                <div class="tmeta">{inst}</div>
+                <div class="tmeta">{tag}</div>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        if st.button("Seleccionar", key=f"slot_{st.session_state.selected_date}_{idx}", use_container_width=True):
+            st.session_state.selected_slot_idx = idx
+            st.rerun()
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# =========================
+# BARRA FIJA INFERIOR (3 botones)
+# =========================
+selected_ok = (st.session_state.selected_slot_idx is not None and slots)
+selected_busy = False
+sel_start = sel_end = sel_inst = None
+
+if selected_ok:
+    sel = slots[st.session_state.selected_slot_idx]
+    sel_start = sel["start"]
+    sel_end = sel["end"]
+    sel_inst = sel["inst"]
+    selected_busy = is_busy(st.session_state.selected_date, sel_start, sel_end)
+
+hint = "Selecciona un bloque"
+pill_txt = "—"
+pill_cls = ""
+
+if selected_ok:
+    hint = f"{st.session_state.selected_date.isoformat()} · {fmt_time(sel_start)} → {fmt_time(sel_end)} · {sel_inst}"
+    if selected_busy:
+        pill_txt = "OCUPADO"
+        pill_cls = "pill-busy"
+    else:
+        pill_txt = "LIBRE"
+        pill_cls = "pill-free"
+
+st.markdown('<div class="actionbar"><div class="actioninner">', unsafe_allow_html=True)
+st.markdown(
+    f"""
+    <div class="actionline">
+      <div class="actionhint">{hint}</div>
+      <div class="pill {pill_cls}">{pill_txt}</div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 b1, b2, b3 = st.columns(3, gap="small")
 
 with b1:
-    # Aplicar: solo si hay selección y está libre
     if st.button("Aplicar", use_container_width=True, disabled=(not selected_ok or selected_busy)):
+        # crea reserva (demo)
         st.session_state.bookings.append(
-            {"date": st.session_state.selected_date, "start": st.session_state.selected_start, "end": st.session_state.selected_end, "tz": tz}
+            {"date": st.session_state.selected_date, "start": sel_start, "end": sel_end, "inst": sel_inst, "tz": tz}
         )
-        # bloquea ocupación “demo”
         st.rerun()
 
 with b2:
-    # Modificar: si hay selección (libre u ocupado), aquí solo demo: cambia duración a 60
     if st.button("Modificar", use_container_width=True, disabled=(not selected_ok)):
-        # demo: alterna duración entre 60 y la seleccionada
-        new_dur = 60 if duration_min != 60 else 90
-        # fuerza cambio visual: setea duration seleccionada via session_state auxiliar
-        st.session_state["_force_duration"] = new_dur
-        # aplica
-        st.session_state.selected_end = add_minutes(st.session_state.selected_start, new_dur)
+        # demo: cambia instalación a "Descanso" (solo para mostrar)
+        slots[st.session_state.selected_slot_idx]["inst"] = "Descanso"
+        st.session_state.supervisor_slots[st.session_state.selected_date] = slots
         st.rerun()
 
 with b3:
-    # Enviar: demo (solo log visual)
     if st.button("Enviar", use_container_width=True, disabled=(not selected_ok)):
         st.session_state["_last_send"] = {
             "date": st.session_state.selected_date.isoformat(),
-            "start": fmt_time(st.session_state.selected_start),
-            "end": fmt_time(st.session_state.selected_end),
+            "start": fmt_time(sel_start),
+            "end": fmt_time(sel_end),
+            "inst": sel_inst,
             "tz": tz,
             "status": "OCUPADO" if selected_busy else "LIBRE",
         }
@@ -483,15 +460,8 @@ with b3:
 
 st.markdown('</div></div>', unsafe_allow_html=True)
 
-# =========================
-# LOG / DEMO OUTPUT (mínimo)
-# =========================
-if "_force_duration" in st.session_state:
-    st.markdown(f'<div class="small">Duración aplicada por "Modificar": {st.session_state["_force_duration"]} min (demo)</div>', unsafe_allow_html=True)
-    del st.session_state["_force_duration"]
-
 if "_last_send" in st.session_state:
     st.markdown('<div class="card" style="margin-top:10px;">', unsafe_allow_html=True)
-    st.markdown(f'<div style="font-weight:900;">Enviar (demo)</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-weight:900;">Enviar (demo)</div>', unsafe_allow_html=True)
     st.code(st.session_state["_last_send"], language="json")
     st.markdown('</div>', unsafe_allow_html=True)
