@@ -1,337 +1,298 @@
 # app.py
 import streamlit as st
 import streamlit.components.v1 as components
-from datetime import datetime
+from datetime import datetime, date, time, timedelta
 
-st.set_page_config(page_title="Popups / Modals Demo", layout="wide")
+st.set_page_config(page_title="Agenda tipo iOS", layout="centered")
 
-# -----------------------------
-# STATE
-# -----------------------------
-if "show_overlay" not in st.session_state:
-    st.session_state.show_overlay = False
+# =========================
+# ESTILO (tipo iOS)
+# =========================
+CSS = """
+<style>
+/* Layout general */
+.block-container{padding-top:14px !important; max-width:520px !important;}
+header, footer{display:none !important;}
+/* Tarjetas */
+.card{
+  background:#fff;
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:16px;
+  padding:14px;
+  box-shadow: 0 10px 28px rgba(0,0,0,.06);
+}
+/* Header calendario */
+.cal-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 14px;
+  border-radius:18px;
+  background: linear-gradient(180deg, #3b6cff 0%, #2a52f5 100%);
+  color:#fff;
+  margin-bottom:10px;
+}
+.cal-title{font-weight:700; letter-spacing:.3px;}
+.badge{
+  font-size:12px; padding:4px 8px; border-radius:999px;
+  background: rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.22);
+}
+.section-title{
+  font-weight:700; margin:10px 2px 8px 2px; color:#111;
+}
+.pill{
+  display:inline-flex; align-items:center; gap:8px;
+  background: rgba(0,0,0,.04);
+  border:1px solid rgba(0,0,0,.06);
+  padding:8px 10px;
+  border-radius:999px;
+  font-size:13px;
+}
+/* Slots */
+.slot{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 12px; border-radius:14px;
+  border:1px solid rgba(0,0,0,.08);
+  background:#fff;
+  margin-bottom:8px;
+}
+.slot-left{display:flex; flex-direction:column; gap:2px;}
+.slot-time{font-weight:700;}
+.slot-meta{font-size:12px; opacity:.7;}
+.tag{
+  font-size:12px; padding:5px 10px; border-radius:999px;
+  border:1px solid rgba(0,0,0,.10);
+  background: rgba(0,0,0,.03);
+}
+.tag-free{border-color: rgba(20,120,60,.25); background: rgba(20,120,60,.08);}
+.tag-busy{border-color: rgba(200,40,40,.25); background: rgba(200,40,40,.08);}
+.hr{height:1px; background: rgba(0,0,0,.06); margin:12px 0;}
+.small{font-size:12px; opacity:.75;}
+/* Botones Streamlit */
+div.stButton>button{
+  border-radius:14px !important;
+  padding:10px 12px !important;
+  font-weight:700 !important;
+}
+</style>
+"""
+st.markdown(CSS, unsafe_allow_html=True)
 
-if "show_dialog_trigger" not in st.session_state:
-    st.session_state.show_dialog_trigger = 0
+# =========================
+# ESTADO / DATA MOCK (agenda existente)
+# =========================
+# Simula "yo estoy programado" (bloques ocupados)
+# En producción esto vendría de Google Calendar / DB / API.
+if "busy_blocks" not in st.session_state:
+    st.session_state.busy_blocks = {
+        # fecha: lista de rangos ocupados (inicio, fin)
+        # (horas 24h)
+        date(2025, 4, 1): [(time(12, 0), time(13, 0)), (time(15, 30), time(16, 30))],
+        date(2025, 4, 2): [(time(9, 0), time(10, 0))],
+    }
 
-if "logs" not in st.session_state:
-    st.session_state.logs = []
+if "bookings" not in st.session_state:
+    st.session_state.bookings = []  # reservas hechas desde la app (demo)
 
+# =========================
+# HELPERS
+# =========================
+def overlaps(a_start: time, a_end: time, b_start: time, b_end: time) -> bool:
+    # convierte a minutos para comparar
+    a0 = a_start.hour * 60 + a_start.minute
+    a1 = a_end.hour * 60 + a_end.minute
+    b0 = b_start.hour * 60 + b_start.minute
+    b1 = b_end.hour * 60 + b_end.minute
+    return max(a0, b0) < min(a1, b1)
 
-def log(msg: str):
-    st.session_state.logs.insert(0, f"{datetime.now().strftime('%H:%M:%S')} · {msg}")
+def is_busy(d: date, s: time, e: time) -> bool:
+    for bs, be in st.session_state.busy_blocks.get(d, []):
+        if overlaps(s, e, bs, be):
+            return True
+    for item in st.session_state.bookings:
+        if item["date"] == d and overlaps(s, e, item["start"], item["end"]):
+            return True
+    return False
 
+def fmt_time(t: time) -> str:
+    # formato 12h tipo iOS: 12:00 p.m.
+    h = t.hour
+    m = t.minute
+    suffix = "a.m." if h < 12 else "p.m."
+    hh = h % 12
+    if hh == 0:
+        hh = 12
+    return f"{hh}:{m:02d} {suffix}"
 
-# -----------------------------
+def add_minutes(t: time, minutes: int) -> time:
+    dt = datetime.combine(date.today(), t) + timedelta(minutes=minutes)
+    return dt.time()
+
+def generate_slots(day_start=time(8, 0), day_end=time(18, 0), slot_minutes=30):
+    slots = []
+    cur = day_start
+    while True:
+        nxt = add_minutes(cur, slot_minutes)
+        if (nxt.hour * 60 + nxt.minute) > (day_end.hour * 60 + day_end.minute):
+            break
+        slots.append((cur, nxt))
+        cur = nxt
+    return slots
+
+# =========================
 # UI
-# -----------------------------
-st.title("Demo: Ventanas emergentes en Streamlit (Modal/Dialog + Overlay HTML)")
+# =========================
+st.markdown(
+    f"""
+    <div class="cal-header">
+      <div class="cal-title">Calendario</div>
+      <div class="badge">Disponibilidad</div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-colA, colB, colC = st.columns([1, 1, 2])
+with st.container():
+    st.markdown('<div class="card">', unsafe_allow_html=True)
 
-with colA:
-    st.subheader("1) Modal/Dialog (nativo)")
-    open_dialog = st.button("Abrir modal nativo", use_container_width=True)
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        selected_date = st.date_input("Día", value=date.today(), label_visibility="collapsed")
+    with col2:
+        timezone = st.selectbox("Zona horaria", ["America/Bogota", "America/Mexico_City", "America/Los_Angeles"], index=0, label_visibility="collapsed")
 
-with colB:
-    st.subheader("2) Overlay HTML (components)")
-    open_overlay = st.button("Abrir overlay HTML", use_container_width=True)
+    st.markdown('<div class="hr"></div>', unsafe_allow_html=True)
 
-with colC:
-    st.subheader("Notas rápidas")
-    st.write(
-        "- Modal nativo: recomendado si tu versión de Streamlit lo soporta.\n"
-        "- Overlay HTML: funciona en cualquier versión, controlado por session_state."
+    cA, cB = st.columns([1, 1])
+    with cA:
+        duration_min = st.selectbox("Duración", [15, 30, 45, 60, 90, 120], index=1)
+    with cB:
+        slot_step = st.selectbox("Paso (slots)", [15, 30, 60], index=1)
+
+    st.markdown('<div class="small">Selecciona un día y revisa franjas: libre u ocupado.</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown('<div class="section-title">Franjas del día</div>', unsafe_allow_html=True)
+
+slots = generate_slots(day_start=time(8, 0), day_end=time(18, 0), slot_minutes=slot_step)
+
+# =========================
+# LISTADO DE SLOTS (ver si hay franja desocupada / programado)
+# =========================
+for s, e in slots:
+    # la "aplicación" usa duración seleccionada, no necesariamente slot_step
+    e2 = add_minutes(s, duration_min)
+    # no mostrar si se pasa del final del día
+    if (e2.hour * 60 + e2.minute) > (18 * 60):
+        continue
+
+    busy = is_busy(selected_date, s, e2)
+
+    tag_class = "tag-busy" if busy else "tag-free"
+    tag_text = "OCUPADO" if busy else "LIBRE"
+
+    st.markdown(
+        f"""
+        <div class="slot">
+          <div class="slot-left">
+            <div class="slot-time">{fmt_time(s)} → {fmt_time(e2)}</div>
+            <div class="slot-meta">{timezone} · {duration_min} min</div>
+          </div>
+          <div class="tag {tag_class}">{tag_text}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
-# -----------------------------
-# ACTIONS
-# -----------------------------
-if open_dialog:
-    st.session_state.show_dialog_trigger += 1
-    log("Se solicitó abrir modal nativo")
-
-if open_overlay:
-    st.session_state.show_overlay = True
-    log("Se solicitó abrir overlay HTML")
-
-# -----------------------------
-# MODAL / DIALOG NATIVO (si existe)
-# -----------------------------
-if hasattr(st, "dialog") and st.session_state.show_dialog_trigger > 0:
-
-    @st.dialog("Modal nativo — Streamlit", width="large")
-    def native_modal():
-        st.write("Este es un modal nativo dentro de Streamlit.")
-        st.text_input("Campo dentro del modal", key="native_modal_input")
-        c1, c2, c3 = st.columns([1, 1, 2])
-        with c1:
-            if st.button("Guardar", type="primary", use_container_width=True):
-                log(f"Modal nativo: Guardar -> {st.session_state.get('native_modal_input','')}")
-                st.success("Guardado")
-        with c2:
-            if st.button("Cerrar", use_container_width=True):
-                log("Modal nativo: Cerrar")
+    # Acción: "Aplicar" solo si está libre
+    cols = st.columns([1, 1, 2])
+    with cols[0]:
+        if not busy:
+            if st.button("Aplicar", key=f"apply_{selected_date}_{s}_{duration_min}", use_container_width=True):
+                st.session_state.bookings.append(
+                    {"date": selected_date, "start": s, "end": e2, "tz": timezone}
+                )
                 st.rerun()
-        with c3:
-            st.caption("Tip: este modal no abre una nueva pestaña, es un popup dentro de la app.")
-
-    native_modal()
-
-elif st.session_state.show_dialog_trigger > 0:
-    st.warning("Tu versión de Streamlit no expone st.dialog(). Usa el Overlay HTML para probar popups.")
-    st.session_state.show_dialog_trigger = 0
-
-# -----------------------------
-# OVERLAY HTML (robusto, sin dependencias externas)
-# -----------------------------
-def render_overlay_html():
-    # Overlay con estilos y cierre por:
-    # - Click en el fondo
-    # - Botón X
-    # - Botón Cerrar
-    # - ESC
-    html = r"""
-    <div id="st_overlay_root">
-      <style>
-        #st_overlay_root{
-          position: fixed;
-          inset: 0;
-          z-index: 999999;
-          font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-        }
-        .ov_backdrop{
-          position: absolute;
-          inset: 0;
-          background: rgba(0,0,0,.55);
-          backdrop-filter: blur(4px);
-        }
-        .ov_modal{
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          transform: translate(-50%, -50%);
-          width: min(760px, calc(100vw - 26px));
-          max-height: calc(100vh - 26px);
-          overflow: auto;
-          border-radius: 16px;
-          background: #0b1220;
-          color: #e8eefc;
-          border: 1px solid rgba(255,255,255,.10);
-          box-shadow: 0 24px 80px rgba(0,0,0,.60);
-        }
-        .ov_header{
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 14px 14px 10px 14px;
-          position: sticky;
-          top: 0;
-          background: linear-gradient(180deg, rgba(18, 35, 70, .92), rgba(11, 18, 32, .92));
-          border-bottom: 1px solid rgba(255,255,255,.08);
-          z-index: 2;
-        }
-        .ov_title{
-          display:flex;
-          align-items:center;
-          gap:10px;
-          font-weight: 700;
-          letter-spacing: .2px;
-        }
-        .ov_badge{
-          font-size: 12px;
-          padding: 4px 8px;
-          border-radius: 999px;
-          background: rgba(120,210,255,.16);
-          border: 1px solid rgba(120,210,255,.22);
-          color: #cfeeff;
-        }
-        .ov_close{
-          width: 34px;
-          height: 34px;
-          border-radius: 10px;
-          border: 1px solid rgba(255,255,255,.12);
-          background: rgba(255,255,255,.06);
-          color: #e8eefc;
-          cursor: pointer;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          font-size: 18px;
-          line-height: 1;
-        }
-        .ov_close:hover{
-          background: rgba(255,255,255,.10);
-        }
-        .ov_body{
-          padding: 14px;
-        }
-        .ov_grid{
-          display:grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-          margin-top: 10px;
-        }
-        .ov_card{
-          border-radius: 14px;
-          border: 1px solid rgba(255,255,255,.10);
-          background: rgba(255,255,255,.04);
-          padding: 12px;
-        }
-        .ov_label{
-          font-size: 12px;
-          opacity: .85;
-          margin-bottom: 6px;
-        }
-        .ov_input{
-          width: 100%;
-          padding: 10px 12px;
-          border-radius: 12px;
-          border: 1px solid rgba(255,255,255,.14);
-          background: rgba(0,0,0,.22);
-          color: #e8eefc;
-          outline: none;
-        }
-        .ov_input:focus{
-          border-color: rgba(120,210,255,.55);
-          box-shadow: 0 0 0 3px rgba(120,210,255,.18);
-        }
-        .ov_footer{
-          display:flex;
-          gap: 10px;
-          justify-content: flex-end;
-          padding: 14px;
-          border-top: 1px solid rgba(255,255,255,.08);
-          background: rgba(11, 18, 32, .92);
-          position: sticky;
-          bottom: 0;
-          z-index: 2;
-        }
-        .ov_btn{
-          padding: 10px 12px;
-          border-radius: 12px;
-          cursor: pointer;
-          border: 1px solid rgba(255,255,255,.12);
-          background: rgba(255,255,255,.06);
-          color: #e8eefc;
-          font-weight: 600;
-        }
-        .ov_btn:hover{
-          background: rgba(255,255,255,.10);
-        }
-        .ov_btn_primary{
-          border-color: rgba(120,210,255,.35);
-          background: rgba(120,210,255,.18);
-        }
-        .ov_btn_primary:hover{
-          background: rgba(120,210,255,.26);
-        }
-        .ov_hint{
-          font-size: 12px;
-          opacity: .75;
-          margin-top: 8px;
-        }
-        @media (max-width: 720px){
-          .ov_grid{ grid-template-columns: 1fr; }
-        }
-      </style>
-
-      <div class="ov_backdrop" id="ov_backdrop"></div>
-
-      <div class="ov_modal" role="dialog" aria-modal="true" aria-label="Overlay Modal">
-        <div class="ov_header">
-          <div class="ov_title">
-            <span>Overlay HTML</span>
-            <span class="ov_badge">components.html</span>
-          </div>
-          <button class="ov_close" id="ov_x" aria-label="Cerrar">×</button>
-        </div>
-
-        <div class="ov_body">
-          <div class="ov_card">
-            <div><b>Prueba rápida:</b> escribe algo abajo. El cierre lo haces en Streamlit (botón "Cerrar overlay").</div>
-            <div class="ov_hint">Este overlay se cierra visualmente con JS (x / fondo / ESC), pero el estado real lo controlas en Python.</div>
-          </div>
-
-          <div class="ov_grid">
-            <div class="ov_card">
-              <div class="ov_label">Nombre</div>
-              <input class="ov_input" id="ov_name" placeholder="Ej: Jefe" />
+        else:
+            st.button("Aplicar", key=f"apply_disabled_{selected_date}_{s}_{duration_min}", disabled=True, use_container_width=True)
+    with cols[1]:
+        if st.button("Ver detalle", key=f"detail_{selected_date}_{s}_{duration_min}", use_container_width=True):
+            # modal overlay simple (solo UI) para simular "ventana emergente"
+            html = f"""
+            <div id="ovroot">
+              <style>
+                #ovroot{{position:fixed; inset:0; z-index:999999; font-family:system-ui;}}
+                .bk{{position:absolute; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(4px);}}
+                .md{{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+                     width:min(460px, calc(100vw - 28px));
+                     border-radius:18px; background:#fff; border:1px solid rgba(0,0,0,.10);
+                     box-shadow:0 20px 70px rgba(0,0,0,.35); overflow:hidden;}}
+                .hd{{padding:14px 14px 10px 14px; background:linear-gradient(180deg,#f5f7ff,#ffffff);
+                     display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(0,0,0,.06);}}
+                .tt{{font-weight:800;}}
+                .x{{width:34px; height:34px; border-radius:12px; border:1px solid rgba(0,0,0,.10);
+                    background:rgba(0,0,0,.03); cursor:pointer; font-size:18px;}}
+                .bd{{padding:14px;}}
+                .row{{display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(0,0,0,.06);}}
+                .k{{opacity:.75;}}
+                .v{{font-weight:800;}}
+                .ft{{padding:14px; display:flex; gap:10px; justify-content:flex-end;}}
+                .btn{{padding:10px 12px; border-radius:14px; border:1px solid rgba(0,0,0,.12); background:rgba(0,0,0,.03); cursor:pointer; font-weight:800;}}
+              </style>
+              <div class="bk" id="bk"></div>
+              <div class="md" role="dialog" aria-modal="true">
+                <div class="hd">
+                  <div class="tt">Detalle de franja</div>
+                  <button class="x" id="x">×</button>
+                </div>
+                <div class="bd">
+                  <div class="row"><div class="k">Día</div><div class="v">{selected_date.isoformat()}</div></div>
+                  <div class="row"><div class="k">Hora</div><div class="v">{fmt_time(s)} → {fmt_time(e2)}</div></div>
+                  <div class="row"><div class="k">Estado</div><div class="v">{"OCUPADO" if busy else "LIBRE"}</div></div>
+                  <div class="row" style="border-bottom:none;"><div class="k">Zona horaria</div><div class="v">{timezone}</div></div>
+                </div>
+                <div class="ft">
+                  <button class="btn" id="c">Cerrar</button>
+                </div>
+              </div>
+              <script>
+                (function(){{
+                  const r = document.getElementById("ovroot");
+                  const bk = document.getElementById("bk");
+                  const x = document.getElementById("x");
+                  const c = document.getElementById("c");
+                  function close(){{ if(r) r.remove(); }}
+                  bk.addEventListener("click", close);
+                  x.addEventListener("click", close);
+                  c.addEventListener("click", close);
+                  document.addEventListener("keydown", (e)=>{{ if(e.key==="Escape") close(); }});
+                }})();
+              </script>
             </div>
-            <div class="ov_card">
-              <div class="ov_label">Correo</div>
-              <input class="ov_input" id="ov_email" placeholder="correo@dominio.com" />
-            </div>
-          </div>
+            """
+            components.html(html, height=0, width=0)
 
-          <div class="ov_card" style="margin-top:12px;">
-            <div class="ov_label">Texto libre</div>
-            <textarea class="ov_input" id="ov_text" rows="4" placeholder="Escribe algo..."></textarea>
-          </div>
-        </div>
+    with cols[2]:
+        st.markdown("", unsafe_allow_html=True)
 
-        <div class="ov_footer">
-          <button class="ov_btn" id="ov_close_btn">Cerrar (solo UI)</button>
-          <button class="ov_btn ov_btn_primary" id="ov_save_btn">Simular Guardar (solo UI)</button>
-        </div>
-      </div>
+st.markdown('<div class="hr"></div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">Reservas hechas (demo)</div>', unsafe_allow_html=True)
 
-      <script>
-        (function(){
-          const root = document.getElementById("st_overlay_root");
-          const backdrop = document.getElementById("ov_backdrop");
-          const xbtn = document.getElementById("ov_x");
-          const closeBtn = document.getElementById("ov_close_btn");
-          const saveBtn = document.getElementById("ov_save_btn");
-
-          function hideUI(){
-            if(root) root.style.display = "none";
-          }
-
-          function onEsc(e){
-            if(e.key === "Escape"){ hideUI(); }
-          }
-
-          backdrop.addEventListener("click", hideUI);
-          xbtn.addEventListener("click", hideUI);
-          closeBtn.addEventListener("click", hideUI);
-
-          saveBtn.addEventListener("click", function(){
-            const name = (document.getElementById("ov_name")||{}).value || "";
-            const email = (document.getElementById("ov_email")||{}).value || "";
-            const text = (document.getElementById("ov_text")||{}).value || "";
-            console.log("[Overlay Save]", {name, email, text});
-            hideUI();
-          });
-
-          document.addEventListener("keydown", onEsc);
-        })();
-      </script>
-    </div>
-    """
-    components.html(html, height=0, width=0)
-
-
-if st.session_state.show_overlay:
-    render_overlay_html()
-    st.info("Overlay visible. Ciérralo en UI (X / fondo / ESC) y luego cierra el estado aquí para finalizar.")
-
-    c1, c2 = st.columns([1, 3])
-    with c1:
-        if st.button("Cerrar overlay (estado)", type="primary", use_container_width=True):
-            st.session_state.show_overlay = False
-            log("Overlay: estado cerrado desde Streamlit")
-            st.rerun()
-    with c2:
-        st.caption("El cierre por JS solo oculta la UI; este botón cierra el estado real en Streamlit.")
-
-
-# -----------------------------
-# LOGS
-# -----------------------------
-st.divider()
-st.subheader("Logs")
-if st.session_state.logs:
-    st.code("\n".join(st.session_state.logs), language="text")
+if not st.session_state.bookings:
+    st.markdown('<div class="pill">Sin reservas todavía</div>', unsafe_allow_html=True)
 else:
-    st.caption("Sin eventos todavía.")
+    for i, b in enumerate(st.session_state.bookings):
+        st.markdown(
+            f"""
+            <div class="card" style="margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-weight:800;">{b["date"].isoformat()}</div>
+                <div class="tag tag-free">RESERVADO</div>
+              </div>
+              <div class="small">{fmt_time(b["start"])} → {fmt_time(b["end"])} · {b["tz"]}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        if st.button("Eliminar", key=f"del_{i}", use_container_width=True):
+            st.session_state.bookings.pop(i)
+            st.rerun()
