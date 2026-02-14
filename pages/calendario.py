@@ -3,23 +3,23 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # ==============================================================================
-# PLANTILLA "CALENDARIO" — BLANCO Y NEGRO (RESPONSIVA)
+# PLANTILLA "CALENDARIO" — (MISMA ESTRUCTURA / MISMAS MEDIDAS) + TEMA HUD NARANJA
 # ==============================================================================
 
-# ================== AJUSTES (EDITA SOLO ESTO) ==================
+# ================== AJUSTES (NO TOCAR MEDIDAS) ==================
 
 # 1) CUADRO / MARCO (px)
 PAD_X_PX = 10
 PAD_TOP_PX = 10
 
-# 2) ESTILO BN
+# 2) COLORES (solo visual)
 BORDER_PX = 2
-BORDER_COLOR = "#111111"
-BG_COLOR = "#FFFFFF"
-PANEL_BG = "#F6F6F6"
-CARD_BG = "#FFFFFF"
-TEXT_COLOR = "#111111"
-MUTED_TEXT = "#5A5A5A"
+BORDER_COLOR = "rgba(255,255,255,.12)"          # antes #111111
+BG_COLOR = "#081a3a"                            # antes #FFFFFF
+PANEL_BG = "rgba(255,255,255,.06)"             # antes #F6F6F6
+CARD_BG = "rgba(255,255,255,.07)"              # antes #FFFFFF
+TEXT_COLOR = "#eaf2ff"                          # antes #111111
+MUTED_TEXT = "rgba(234,242,255,.75)"            # antes #5A5A5A
 
 # 3) TIPOGRAFÍA (px)
 FONT_BASE_PX = 14
@@ -100,20 +100,53 @@ html = r"""
     --bottombarH: __BOTTOMH__%;
 
     --cellGap: __CELLGAP__px;
+
+    /* TEMA HUD */
+    --bg0:#06132c;
+    --bg1:#081a3a;
+    --bg2:#0c2248;
+
+    --line: rgba(255,255,255,.12);
+    --line2: rgba(255,255,255,.10);
+
+    --shadow0: 0 18px 40px rgba(0,0,0,.55);
+    --shadow1: 0 12px 26px rgba(0,0,0,.45);
+    --shadow2: 0 10px 18px rgba(0,0,0,.38);
+
+    --accent: #ff7c2c;
+    --accentGlow: 0 0 18px rgba(255,124,44,.35);
+
+    --ok: rgba(40,200,120,.95);
+    --okBg: rgba(40,200,120,.12);
+    --okLine: rgba(40,200,120,.28);
+
+    --bad: rgba(255,80,80,.95);
+    --badBg: rgba(255,80,80,.12);
+    --badLine: rgba(255,80,80,.28);
   }
 
   html, body{
     margin:0; padding:0;
     width:100%; height:100%;
-    background: var(--bg);
     overflow:hidden;
-    font-family: Arial, sans-serif;
+    font-family: "Segoe UI", Arial, sans-serif;
     color: var(--txt);
+    background:
+      radial-gradient(1200px 700px at 50% 12%, rgba(60,140,255,.35) 0%, rgba(60,140,255,.12) 35%, rgba(6,19,44,0) 72%),
+      radial-gradient(900px 520px at 20% 55%, rgba(255,124,44,.12) 0%, rgba(255,124,44,0) 65%),
+      linear-gradient(180deg, var(--bg2) 0%, var(--bg1) 55%, var(--bg0) 100%);
   }
 
-  #stage{position:fixed; inset:0; background: var(--bg);}
+  #stage{
+    position:fixed;
+    inset:0;
+    background:
+      radial-gradient(1200px 700px at 50% 12%, rgba(60,140,255,.35) 0%, rgba(60,140,255,.12) 35%, rgba(6,19,44,0) 72%),
+      radial-gradient(900px 520px at 20% 55%, rgba(255,124,44,.12) 0%, rgba(255,124,44,0) 65%),
+      linear-gradient(180deg, var(--bg2) 0%, var(--bg1) 55%, var(--bg0) 100%);
+  }
 
-  /* Marco (izq/der/sup) */
+  /* Marco (izq/der/sup) — MISMA ESTRUCTURA */
   #frame{
     position:absolute;
     left:var(--padx); right:var(--padx);
@@ -123,15 +156,16 @@ html = r"""
     border-top:var(--b) solid var(--bc);
     box-sizing:border-box;
     pointer-events:none;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.35);
   }
 
-  /* CUADRO */
+  /* CUADRO — MISMA ESTRUCTURA */
   #plan{
     position:absolute;
     left:var(--padx); right:var(--padx);
     top:var(--padtop); bottom:0;
     overflow:hidden;
-    background: var(--bg);
+    background: transparent;
   }
 
   #wrap{
@@ -145,14 +179,20 @@ html = r"""
   }
 
   .panel{
-    background: var(--panel);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 55%, rgba(255,255,255,.04) 100%);
     border: var(--b) solid var(--bc);
     border-radius: 14px;
     box-sizing:border-box;
+    box-shadow: var(--shadow1);
+    backdrop-filter: blur(10px);
   }
+
   .btn{
-    background: var(--card);
-    border: var(--b) solid var(--bc);
+    background:
+      radial-gradient(220px 80px at 24% 50%, rgba(120,210,255,.18) 0%, rgba(120,210,255,0) 68%),
+      linear-gradient(180deg, rgba(18,78,185,.30) 0%, rgba(8,42,110,.42) 55%, rgba(4,24,66,.62) 100%);
+    border: var(--b) solid rgba(255,255,255,.14);
     border-radius: 10px;
     box-sizing:border-box;
     padding: 10px 14px;
@@ -164,36 +204,56 @@ html = r"""
     justify-content:center;
     min-width: 92px;
     white-space:nowrap;
+    box-shadow: var(--shadow2);
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, filter .12s ease;
+    user-select:none;
   }
+  .btn:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px rgba(0,0,0,.52);
+    border-color: rgba(255,124,44,.35);
+    filter: saturate(1.06);
+  }
+  .btn:active{ transform: translateY(0px); }
+
   .btn.primary{
-    background: var(--txt);
-    color: var(--bg);
+    background: linear-gradient(180deg, rgba(255,124,44,.95) 0%, rgba(255,106,0,.92) 100%);
+    border-color: rgba(255,124,44,.55);
+    color: #ffffff;
+    box-shadow: var(--accentGlow), var(--shadow2);
   }
+
   .chip{
-    border: var(--b) solid var(--bc);
+    border: var(--b) solid rgba(255,255,255,.14);
     border-radius: 999px;
     padding: 6px 10px;
     font-size: var(--small);
     font-weight: 800;
-    background: var(--card);
+    background: rgba(255,255,255,.06);
     color: var(--txt);
     display:inline-flex;
     align-items:center;
     gap:8px;
     white-space:nowrap;
+    box-shadow: var(--shadow2);
   }
+
   .iconbtn{
     width:36px;height:36px;
-    border: var(--b) solid var(--bc);
+    border: var(--b) solid rgba(255,255,255,.14);
     border-radius: 10px;
-    background: var(--card);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
     display:flex;align-items:center;justify-content:center;
     font-weight: 900;
+    color: var(--txt);
     user-select:none;
+    box-shadow: var(--shadow2);
   }
+
   .muted{color: var(--muted);}
 
-  /* TOPBAR */
+  /* TOPBAR — MISMA ESTRUCTURA */
   #topbar{
     height: var(--topbarH);
     padding: 10px 12px;
@@ -201,12 +261,16 @@ html = r"""
     align-items:center;
     justify-content:space-between;
     gap:10px;
+    background:
+      radial-gradient(900px 240px at 35% 25%, rgba(120,210,255,.18) 0%, rgba(120,210,255,0) 70%),
+      linear-gradient(180deg, rgba(30,70,150,.86) 0%, rgba(10,30,80,.92) 70%, rgba(6,19,44,.94) 100%);
   }
   #topbar .center{
     flex: 1;
     text-align:center;
     font-weight: 900;
     font-size: var(--h2);
+    text-shadow: 0 2px 12px rgba(0,0,0,.35);
   }
   #topbar .right{
     display:flex;
@@ -215,7 +279,7 @@ html = r"""
     font-weight:800;
   }
 
-  /* MONTHBAR */
+  /* MONTHBAR — MISMA ESTRUCTURA */
   #monthbar{
     height: var(--monthbarH);
     margin-top: var(--gapY);
@@ -224,6 +288,8 @@ html = r"""
     align-items:center;
     justify-content:space-between;
     gap: 10px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
   }
   #monthbar .month{
     font-weight: 900;
@@ -231,10 +297,11 @@ html = r"""
     letter-spacing: 1px;
     flex:1;
     text-align:left;
+    text-shadow: 0 2px 12px rgba(0,0,0,.28);
   }
   #monthbar .nav{display:flex; gap:10px; align-items:center;}
 
-  /* CAL GRID */
+  /* CAL GRID — MISMA ESTRUCTURA */
   #calgrid{
     height: var(--calgridH);
     margin-top: var(--gapY);
@@ -242,6 +309,8 @@ html = r"""
     display:flex;
     flex-direction:column;
     gap: 10px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
   }
   #calgrid .head{
     display:flex;
@@ -252,6 +321,7 @@ html = r"""
   #calgrid .head .label{
     font-weight: 900;
     font-size: var(--fbase);
+    letter-spacing:.6px;
   }
   #calgrid .days{
     display:grid;
@@ -262,8 +332,9 @@ html = r"""
     min-height: 0;
   }
   .day{
-    background: var(--card);
-    border: var(--b) solid var(--bc);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
+    border: var(--b) solid rgba(255,255,255,.14);
     border-radius: 10px;
     display:flex;
     align-items:center;
@@ -272,17 +343,28 @@ html = r"""
     user-select:none;
     position:relative;
     min-height: 34px;
+    color: var(--txt);
+    box-shadow: var(--shadow2);
   }
   .day.dim{opacity:.35;}
-  .day.sel{outline: 2px solid var(--txt); outline-offset: -2px;}
+
+  /* Selección: NARANJA */
+  .day.sel{
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    box-shadow: var(--accentGlow), var(--shadow2);
+  }
+
+  /* Marcador inferior (punto) */
   .day.mark::after{
     content:"";
     position:absolute;
     bottom:6px;
     width:7px;height:7px;
     border-radius:50%;
-    background: var(--txt);
-    opacity:.9;
+    background: var(--accent);
+    opacity:.95;
+    box-shadow: 0 0 10px rgba(255,124,44,.35);
   }
 
   #legend{
@@ -294,11 +376,11 @@ html = r"""
     color: var(--muted);
     margin-top: 2px;
   }
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--txt);display:inline-block;margin-right:6px;opacity:.35;}
-  .dot.on{opacity:1;}
-  .dot.mid{opacity:.65;}
+  .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.35);display:inline-block;margin-right:6px;opacity:.35;}
+  .dot.on{opacity:1; background: rgba(40,200,120,.65);}
+  .dot.mid{opacity:1; background: rgba(255,80,80,.65);}
 
-  /* FILTERS */
+  /* FILTERS — MISMA ESTRUCTURA */
   #filters{
     height: var(--filtersH);
     margin-top: var(--gapY);
@@ -307,13 +389,16 @@ html = r"""
     align-items:center;
     justify-content:flex-end;
     gap: 12px;
-    overflow:hidden; /* nada puede quedar por fuera */
+    overflow:hidden;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
   }
   .select{
     min-width: 160px;
     padding: 10px 12px;
-    background: var(--card);
-    border: var(--b) solid var(--bc);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
+    border: var(--b) solid rgba(255,255,255,.14);
     border-radius: 10px;
     font-weight: 800;
     color: var(--txt);
@@ -323,10 +408,11 @@ html = r"""
     gap: 10px;
     box-sizing:border-box;
     white-space:nowrap;
+    box-shadow: var(--shadow2);
   }
   .caret{font-weight:900;}
 
-  /* AGENDA */
+  /* AGENDA — MISMA ESTRUCTURA */
   #agenda{
     height: var(--agendaH);
     margin-top: var(--gapY);
@@ -335,11 +421,14 @@ html = r"""
     flex-direction:column;
     gap: 10px;
     min-height: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
   }
   #agenda h3{
     margin:0;
     font-size: var(--h2);
     font-weight: 900;
+    text-shadow: 0 2px 12px rgba(0,0,0,.28);
   }
   #agenda .meta{
     display:flex;
@@ -352,13 +441,15 @@ html = r"""
 
   #table{
     flex:1;
-    background: var(--card);
-    border: var(--b) solid var(--bc);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
+    border: var(--b) solid rgba(255,255,255,.14);
     border-radius: 12px;
     overflow:hidden;
     display:flex;
     flex-direction:column;
     min-height: 0;
+    box-shadow: var(--shadow2);
   }
 
   #thead, .trow{
@@ -369,37 +460,56 @@ html = r"""
     padding: 10px 10px;
     box-sizing:border-box;
   }
+
+  /* Header tabla: glass */
   #thead{
-    background: #EFEFEF;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.06) 100%);
     font-weight: 900;
     font-size: var(--small);
+    color: rgba(234,242,255,.85);
+    border-bottom: 1px solid rgba(255,255,255,.10);
   }
+
   .trow{
-    border-top: 1px solid rgba(0,0,0,.12);
+    border-top: 1px solid rgba(255,255,255,.08);
     font-weight: 800;
     font-size: var(--small);
+    color: var(--txt);
   }
+
   .chk{
     width:18px;height:18px;
-    border: var(--b) solid var(--bc);
+    border: var(--b) solid rgba(255,255,255,.18);
     border-radius: 4px;
-    background: var(--card);
+    background: rgba(255,255,255,.06);
   }
+
   .status{
     justify-self:end;
     padding: 5px 10px;
     border-radius: 999px;
-    border: var(--b) solid var(--bc);
+    border: var(--b) solid rgba(255,255,255,.14);
     font-weight: 900;
     font-size: 11px;
-    background: var(--card);
+    background: rgba(255,255,255,.06);
     white-space:nowrap;
+    color: var(--txt);
   }
-  .status.free{background:#FFFFFF;}
-  .status.busy{background:#EFEFEF;}
+
+  .status.free{
+    border-color: var(--okLine);
+    background: var(--okBg);
+    color: rgba(210,255,235,.95);
+  }
+  .status.busy{
+    border-color: var(--badLine);
+    background: var(--badBg);
+    color: rgba(255,220,220,.95);
+  }
 
   .rowmeta{
-    display:none; /* desktop off */
+    display:none;
     margin-top: 4px;
     font-size: 11px;
     color: var(--muted);
@@ -407,7 +517,7 @@ html = r"""
     gap: 10px;
   }
 
-  /* BOTTOM BAR */
+  /* BOTTOM BAR — MISMA ESTRUCTURA */
   #bottom{
     height: var(--bottombarH);
     margin-top: var(--gapY);
@@ -416,6 +526,10 @@ html = r"""
     align-items:center;
     justify-content:space-between;
     gap: 12px;
+    background:
+      radial-gradient(900px 240px at 30% 10%, rgba(120,210,255,.12) 0%, rgba(120,210,255,0) 70%),
+      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 55%, rgba(255,255,255,.04) 100%);
+    box-shadow: var(--shadow0);
   }
   #bottom .leftinfo{
     display:flex;
@@ -436,10 +550,9 @@ html = r"""
     flex-shrink:0;
   }
 
-  /* ===== MOBILE (crítico: nada se sale / tabla completa) ===== */
+  /* ===== MOBILE (MISMA ESTRUCTURA / sin recortes) ===== */
   @media (max-width: 520px){
 
-    /* FILTROS: 2 columnas + botón abajo (todo dentro) */
     #filters{
       height: auto;
       display:grid;
@@ -459,10 +572,8 @@ html = r"""
       min-width: 0;
     }
 
-    /* TABLA: compacta (no recorta) */
-    #thead{
-      display:none;
-    }
+    #thead{ display:none; }
+
     .trow{
       grid-template-columns: 26px 1fr;
       grid-auto-rows: min-content;
@@ -472,24 +583,24 @@ html = r"""
     .trow > .col_time,
     .trow > .col_time2,
     .trow > .col_status{
-      display:none; /* oculta columnas separadas */
+      display:none;
     }
+
     .rowmeta{
-      display:flex; /* muestra meta dentro del nombre */
+      display:flex;
       flex-wrap:wrap;
       align-items:center;
     }
     .rowmeta .pill{
-      border: 1px solid rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.16);
       border-radius: 999px;
       padding: 3px 8px;
-      background: #f3f3f3;
+      background: rgba(255,255,255,.08);
       font-weight: 900;
-      color: #111;
+      color: var(--txt);
       white-space:nowrap;
     }
 
-    /* BOTTOM: que no se salga */
     #bottom{
       height:auto;
       flex-direction:column;
@@ -633,8 +744,9 @@ html = r"""
     var c0 = document.createElement("div");
     c0.className = "chk";
     if (r.chk){
-      c0.style.background = "#111";
-      c0.style.borderColor = "#111";
+      c0.style.background = "rgba(255,124,44,.95)";
+      c0.style.borderColor = "rgba(255,124,44,.55)";
+      c0.style.boxShadow = "0 0 14px rgba(255,124,44,.28)";
     }
 
     // name + mobile meta
