@@ -58,22 +58,6 @@ header, footer{display:none !important;}
   font-weight:950;
   letter-spacing:.2px;
 }
-.cal-nav{
-  display:flex;
-  gap:8px;
-  align-items:center;
-}
-.cal-btn{
-  padding:6px 10px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.22);
-  background: rgba(255,255,255,.14);
-  color:#fff;
-  font-weight:950;
-  cursor:pointer;
-}
-.cal-btn:hover{ background: rgba(255,255,255,.20); }
-
 .cal-grid{
   padding:12px 12px 14px 12px;
   background:#fff;
@@ -197,13 +181,14 @@ if "selected_date" not in st.session_state:
     st.session_state.selected_date = date.today()
 
 if "selected_inst" not in st.session_state:
-    st.session_state.selected_inst = None  # nombre instalación seleccionada (checklist)
+    st.session_state.selected_inst = None
+
+if "filter_only_scheduled" not in st.session_state:
+    st.session_state.filter_only_scheduled = False
 
 # =========================
 # DATA DEMO
 # =========================
-# Slots habilitados por supervisor: fecha -> lista por instalación
-# Formato: {"inst": str, "inicio": time, "finaliza": time}
 if "supervisor_agenda" not in st.session_state:
     st.session_state.supervisor_agenda = {
         date(2026, 2, 15): [
@@ -217,15 +202,13 @@ if "supervisor_agenda" not in st.session_state:
         ],
     }
 
-# Ocupado (ya programado)
 if "busy_blocks" not in st.session_state:
     st.session_state.busy_blocks = {
-        date(2026, 2, 15): [(time(10, 0), time(11, 0))],  # ejemplo
+        date(2026, 2, 15): [(time(10, 0), time(11, 0))],
     }
 
-# Reservas creadas desde la app
 if "bookings" not in st.session_state:
-    st.session_state.bookings = []  # {"date", "inst", "inicio", "finaliza"}
+    st.session_state.bookings = []
 
 # =========================
 # HELPERS
@@ -256,8 +239,10 @@ def calc_hours(inicio: time, finaliza: time) -> str:
     m = mins % 60
     return f"{h}:{m:02d}:00"
 
+def day_has_agenda(d: date) -> bool:
+    return bool(st.session_state.supervisor_agenda.get(d, []))
+
 def day_status(d: date) -> str:
-    # verde si hay al menos 1 instalación libre en ese día (agenda supervisor)
     items = st.session_state.supervisor_agenda.get(d, [])
     if not items:
         return "free"
@@ -267,7 +252,7 @@ def day_status(d: date) -> str:
     return "busy"
 
 def build_month_weeks(y: int, m: int):
-    cal = calendar.Calendar(firstweekday=0)  # 0 = Monday
+    cal = calendar.Calendar(firstweekday=0)  # Monday
     weeks = cal.monthdatescalendar(y, m)
     while len(weeks) < 6:
         last = weeks[-1]
@@ -276,9 +261,21 @@ def build_month_weeks(y: int, m: int):
     return weeks
 
 def month_title_es(y: int, m: int) -> str:
-    # sin locales del sistema: mapeo manual
     meses = ["ENERO","FEBRERO","MARZO","ABRIL","MAYO","JUNIO","JULIO","AGOSTO","SEPTIEMBRE","OCTUBRE","NOVIEMBRE","DICIEMBRE"]
     return f"{meses[m-1]} {y}"
+
+def scheduled_days_sorted():
+    # solo llaves que tengan lista no vacía
+    days = [d for d, items in st.session_state.supervisor_agenda.items() if items]
+    days.sort()
+    return days
+
+def next_scheduled_day(from_day: date):
+    days = scheduled_days_sorted()
+    for d in days:
+        if d >= from_day:
+            return d
+    return days[0] if days else None
 
 # =========================
 # TOP BAR
@@ -294,6 +291,38 @@ st.markdown(
 )
 
 # =========================
+# BARRA DE FILTRO / SALTO
+# =========================
+with st.container():
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    c1, c2 = st.columns([1, 1])
+    with c1:
+        if st.button("Filtrar: solo días con agenda", use_container_width=True):
+            st.session_state.filter_only_scheduled = not st.session_state.filter_only_scheduled
+            # si activas filtro y el día actual no tiene agenda, salta al próximo programado
+            if st.session_state.filter_only_scheduled and not day_has_agenda(st.session_state.selected_date):
+                nd = next_scheduled_day(st.session_state.selected_date)
+                if nd:
+                    st.session_state.selected_date = nd
+                    st.session_state.view_year = nd.year
+                    st.session_state.view_month = nd.month
+                    st.session_state.selected_inst = None
+            st.rerun()
+    with c2:
+        if st.button("Ir al próximo programado", use_container_width=True):
+            nd = next_scheduled_day(st.session_state.selected_date)
+            if nd:
+                st.session_state.selected_date = nd
+                st.session_state.view_year = nd.year
+                st.session_state.view_month = nd.month
+                st.session_state.selected_inst = None
+            st.rerun()
+
+    estado_filtro = "ACTIVO" if st.session_state.filter_only_scheduled else "INACTIVO"
+    st.markdown(f'<div class="small">Filtro días con agenda: <b>{estado_filtro}</b></div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# =========================
 # CALENDARIO CON NAV MES/AÑO
 # =========================
 weeks = build_month_weeks(st.session_state.view_year, st.session_state.view_month)
@@ -304,15 +333,12 @@ st.markdown(
     f"""
     <div class="cal-head">
       <div class="cal-title">{title}</div>
-      <div class="cal-nav">
-        <span class="cal-btn" style="pointer-events:none;">Mes</span>
-      </div>
+      <div class="badge">Mes / Año</div>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# Navegación real (sin hacks): botones Streamlit
 nav1, nav2, nav3 = st.columns([1, 2, 1])
 with nav1:
     if st.button("◀", use_container_width=True):
@@ -325,7 +351,6 @@ with nav1:
         st.session_state.view_month = m
         st.rerun()
 with nav2:
-    # selector mes/año
     months = list(range(1, 13))
     years = list(range(st.session_state.view_year - 3, st.session_state.view_year + 4))
     c1, c2 = st.columns(2)
@@ -365,9 +390,12 @@ for w in weeks[:6]:
         status = day_status(d)
         pip = "pip-free" if status == "free" else "pip-busy"
 
+        # filtro: si está activo, deshabilita días sin agenda
+        disable_by_filter = st.session_state.filter_only_scheduled and (not day_has_agenda(d))
+        disabled = (not in_month) or disable_by_filter
+
         with cols[i]:
-            label = str(d.day)
-            clicked = st.button(label, key=f"day_{d.isoformat()}", use_container_width=True, disabled=(not in_month))
+            clicked = st.button(str(d.day), key=f"day_{d.isoformat()}", use_container_width=True, disabled=disabled)
             st.markdown(
                 f"""
                 <div class="daymark">
@@ -387,14 +415,17 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================
-# AGENDA DEL DÍA (formato como tu imagen)
+# AGENDA DEL DÍA
 # =========================
 st.markdown('<div class="h2">Agenda del día</div>', unsafe_allow_html=True)
 
 items = st.session_state.supervisor_agenda.get(st.session_state.selected_date, [])
 
 if not items:
-    st.markdown('<div class="card"><div class="small">No hay agenda para este día.</div></div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="card"><div class="small">No hay agenda para <b>{st.session_state.selected_date.isoformat()}</b>.</div></div>',
+        unsafe_allow_html=True
+    )
 else:
     for idx, it in enumerate(items):
         inst = it["inst"]
@@ -406,21 +437,21 @@ else:
         pill_txt = "OCUPADO" if busy else "LIBRE"
         pill_cls = "pill-busy" if busy else "pill-free"
 
-        checked = st.checkbox("checkis", key=f"chk_{st.session_state.selected_date}_{idx}",
-                              value=(st.session_state.selected_inst == inst),
-                              disabled=busy)
+        checked = st.checkbox(
+            "checkis",
+            key=f"chk_{st.session_state.selected_date}_{idx}",
+            value=(st.session_state.selected_inst == inst),
+            disabled=busy
+        )
 
-        # si marca, deja solo ese seleccionado
         if checked and st.session_state.selected_inst != inst:
             st.session_state.selected_inst = inst
-            # desmarca otros checkboxes
             for j, _ in enumerate(items):
                 k = f"chk_{st.session_state.selected_date}_{j}"
                 if k in st.session_state and j != idx:
                     st.session_state[k] = False
             st.rerun()
 
-        # card tabla
         st.markdown('<div class="agenda-card">', unsafe_allow_html=True)
         st.markdown(
             f"""
@@ -444,16 +475,15 @@ else:
             """,
             unsafe_allow_html=True
         )
-
         st.markdown('<div style="height:10px;"></div>', unsafe_allow_html=True)
 
 # =========================
-# BARRA FIJA INFERIOR (3 botones, se habilitan al seleccionar checklist)
+# BARRA FIJA INFERIOR (3 botones)
 # =========================
 selected_ok = (st.session_state.selected_inst is not None)
 
-# trae datos del seleccionado
 sel = None
+selected_busy = False
 if selected_ok:
     for it in items:
         if it["inst"] == st.session_state.selected_inst:
@@ -462,14 +492,14 @@ if selected_ok:
     if sel is None:
         selected_ok = False
         st.session_state.selected_inst = None
+    else:
+        selected_busy = is_busy(st.session_state.selected_date, sel["inicio"], sel["finaliza"])
 
 hint = "Selecciona una instalación (checkis)"
 pill_txt = "—"
 pill_cls = ""
 
-selected_busy = False
 if selected_ok and sel:
-    selected_busy = is_busy(st.session_state.selected_date, sel["inicio"], sel["finaliza"])
     hint = f"{st.session_state.selected_date.isoformat()} · {st.session_state.selected_inst} · {fmt_time_hms(sel['inicio'])} → {fmt_time_hms(sel['finaliza'])}"
     if selected_busy:
         pill_txt = "OCUPADO"
