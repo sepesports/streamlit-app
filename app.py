@@ -373,8 +373,6 @@ cursor:pointer;
 user-select:none;
 
 
-
-
       
     }
 
@@ -585,6 +583,20 @@ user-select:none;
           if (fs != null) sp.style.fontSize = fs + "px";
 
           d.appendChild(sp);
+
+          // ✅ SOLO AJUSTE: Horarios -> /calendario (mantiene querystring + auth=ok)
+          if (BTN_TEXTS[i] === "Horarios") {
+            d.addEventListener("click", function(){
+              try{
+                var params = new URLSearchParams(window.location.search || "");
+                params.set("auth","ok");
+                window.location.href = "/calendario?" + params.toString();
+              }catch(e){
+                window.location.href = "/calendario?auth=ok";
+              }
+            });
+          }
+
           grid.appendChild(d);
         }
       }
