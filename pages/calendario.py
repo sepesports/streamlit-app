@@ -1,4 +1,4 @@
-# app.py
+# calendario.py
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -8,26 +8,22 @@ import streamlit.components.v1 as components
 
 # ================== AJUSTES (NO TOCAR MEDIDAS) ==================
 
-# 1) CUADRO / MARCO (px)
 PAD_X_PX = 10
 PAD_TOP_PX = 10
 
-# 2) COLORES (solo visual)
 BORDER_PX = 2
-BORDER_COLOR = "rgba(255,255,255,.12)"          # antes #111111
-BG_COLOR = "#081a3a"                            # antes #FFFFFF
-PANEL_BG = "rgba(255,255,255,.06)"             # antes #F6F6F6
-CARD_BG = "rgba(255,255,255,.07)"              # antes #FFFFFF
-TEXT_COLOR = "#eaf2ff"                          # antes #111111
-MUTED_TEXT = "rgba(234,242,255,.75)"            # antes #5A5A5A
+BORDER_COLOR = "rgba(255,255,255,.12)"
+BG_COLOR = "#081a3a"
+PANEL_BG = "rgba(255,255,255,.06)"
+CARD_BG = "rgba(255,255,255,.07)"
+TEXT_COLOR = "#eaf2ff"
+MUTED_TEXT = "rgba(234,242,255,.75)"
 
-# 3) TIPOGRAFÍA (px)
 FONT_BASE_PX = 14
 TITLE_PX = 18
 H2_PX = 16
 SMALL_PX = 12
 
-# 4) LAYOUT VERTICAL (en % del CUADRO)
 TOPBAR_H = 8
 MONTHBAR_H = 10
 CAL_GRID_H = 24
@@ -35,17 +31,14 @@ FILTERS_H = 9
 AGENDA_H = 34
 BOTTOMBAR_H = 10
 
-# 5) MÁRGENES INTERNOS (en % del CUADRO)
 INNER_L = 4
 INNER_R = 4
-INNER_TOP_GAP = 0.7   # ↓ reduce espacios entre CALENDARIO / FILTROS / AGENDA / BOTTOM
+INNER_TOP_GAP = 0.7
 
-# 6) CALENDARIO
 CAL_COLS = 7
 CAL_ROWS = 3
 DAY_CELL_GAP_PX = 8
 
-# 7) AGENDA
 AGENDA_ROWS = 5
 
 # ===============================================================
@@ -146,7 +139,6 @@ html = r"""
       linear-gradient(180deg, var(--bg2) 0%, var(--bg1) 55%, var(--bg0) 100%);
   }
 
-  /* Marco (izq/der/sup) — MISMA ESTRUCTURA */
   #frame{
     position:absolute;
     left:var(--padx); right:var(--padx);
@@ -159,7 +151,6 @@ html = r"""
     box-shadow: inset 0 0 0 1px rgba(0,0,0,.35);
   }
 
-  /* CUADRO — MISMA ESTRUCTURA */
   #plan{
     position:absolute;
     left:var(--padx); right:var(--padx);
@@ -253,7 +244,6 @@ html = r"""
 
   .muted{color: var(--muted);}
 
-  /* TOPBAR — MISMA ESTRUCTURA */
   #topbar{
     height: var(--topbarH);
     padding: 10px 12px;
@@ -279,7 +269,6 @@ html = r"""
     font-weight:800;
   }
 
-  /* MONTHBAR — MISMA ESTRUCTURA */
   #monthbar{
     height: var(--monthbarH);
     margin-top: var(--gapY);
@@ -301,7 +290,6 @@ html = r"""
   }
   #monthbar .nav{display:flex; gap:10px; align-items:center;}
 
-  /* CAL GRID — MISMA ESTRUCTURA */
   #calgrid{
     height: var(--calgridH);
     margin-top: var(--gapY);
@@ -348,14 +336,12 @@ html = r"""
   }
   .day.dim{opacity:.35;}
 
-  /* Selección: NARANJA */
   .day.sel{
     outline: 2px solid var(--accent);
     outline-offset: -2px;
     box-shadow: var(--accentGlow), var(--shadow2);
   }
 
-  /* Marcador inferior (punto) */
   .day.mark::after{
     content:"";
     position:absolute;
@@ -380,7 +366,6 @@ html = r"""
   .dot.on{opacity:1; background: rgba(40,200,120,.65);}
   .dot.mid{opacity:1; background: rgba(255,80,80,.65);}
 
-  /* FILTERS — MISMA ESTRUCTURA */
   #filters{
     height: var(--filtersH);
     margin-top: var(--gapY);
@@ -409,10 +394,21 @@ html = r"""
     box-sizing:border-box;
     white-space:nowrap;
     box-shadow: var(--shadow2);
+    position:relative;
   }
-  .caret{font-weight:900;}
+  .select select{
+    background:transparent;
+    border:none;
+    color:inherit;
+    font:inherit;
+    outline:none;
+    width:100%;
+    appearance:none;
+    -webkit-appearance:none;
+    cursor:pointer;
+  }
+  .caret{font-weight:900; pointer-events:none;}
 
-  /* AGENDA — MISMA ESTRUCTURA */
   #agenda{
     height: var(--agendaH);
     margin-top: var(--gapY);
@@ -454,14 +450,13 @@ html = r"""
 
   #thead, .trow{
     display:grid;
-    grid-template-columns: 30px 1fr 110px 110px 110px;
+    grid-template-columns: 1fr 110px 110px 110px 110px;
     gap: 10px;
     align-items:center;
     padding: 10px 10px;
     box-sizing:border-box;
   }
 
-  /* Header tabla: glass */
   #thead{
     background:
       linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.06) 100%);
@@ -483,6 +478,9 @@ html = r"""
     border: var(--b) solid rgba(255,255,255,.18);
     border-radius: 4px;
     background: rgba(255,255,255,.06);
+    display:inline-block;
+    margin-right:8px;
+    vertical-align:middle;
   }
 
   .status{
@@ -517,7 +515,6 @@ html = r"""
     gap: 10px;
   }
 
-  /* BOTTOM BAR — MISMA ESTRUCTURA */
   #bottom{
     height: var(--bottombarH);
     margin-top: var(--gapY);
@@ -550,7 +547,7 @@ html = r"""
     flex-shrink:0;
   }
 
-  /* ===== MOBILE (MISMA ESTRUCTURA / sin recortes) ===== */
+  /* ===== MOBILE ===== */
   @media (max-width: 520px){
 
     #filters{
@@ -634,22 +631,22 @@ html = r"""
           <div class="iconbtn">□</div>
           <div class="center">Calendario</div>
           <div class="right">
-            <div>Jefe</div>
+            <div id="userDisplay">Jefe</div>
             <div class="iconbtn">⌁</div>
             <div class="iconbtn">⋮</div>
           </div>
         </div>
 
         <div id="monthbar" class="panel">
-          <div class="nav"><div class="iconbtn">‹</div></div>
-          <div class="month">FEBRERO 2026</div>
-          <div class="nav"><div class="iconbtn">›</div></div>
+          <div class="nav"><div class="iconbtn" id="prevMonth">‹</div></div>
+          <div class="month" id="monthDisplay">FEBRERO 2026</div>
+          <div class="nav"><div class="iconbtn" id="nextMonth">›</div></div>
         </div>
 
         <div id="calgrid" class="panel">
           <div class="head">
             <div class="label">CALENDARIO</div>
-            <div class="muted" style="font-weight:900;font-size:var(--small);">MO TU WE TH FR SA SU</div>
+            <div class="muted" style="font-weight:900;font-size:var(--small);">LU MA MI JU VI SA DO</div>
           </div>
 
           <div class="days" id="days"></div>
@@ -662,23 +659,39 @@ html = r"""
         </div>
 
         <div id="filters" class="panel">
-          <div class="select">Mes <span class="caret">▾</span></div>
-          <div class="select">Año <span class="caret">▾</span></div>
-          <div class="btn primary">Aplicar</div>
+          <div class="select">
+            <select id="monthSelect">
+              <option value="0">Enero</option>
+              <option value="1">Febrero</option>
+              <option value="2">Marzo</option>
+              <option value="3">Abril</option>
+              <option value="4">Mayo</option>
+              <option value="5">Junio</option>
+              <option value="6">Julio</option>
+              <option value="7">Agosto</option>
+              <option value="8">Septiembre</option>
+              <option value="9">Octubre</option>
+              <option value="10">Noviembre</option>
+              <option value="11">Diciembre</option>
+            </select>
+            <span class="caret">▾</span>
+          </div>
+          <div class="select">
+            <select id="yearSelect"></select>
+            <span class="caret">▾</span>
+          </div>
+          <div class="btn primary" id="applyFilters">Aplicar</div>
         </div>
 
         <div id="agenda" class="panel">
           <h3>Agenda del día</h3>
-          <div class="meta">
-            <div><b>Fecha:</b> 15 febrero 2026</div>
-            <div><b>Inicio</b></div>
-            <div><b>Finaliza</b></div>
-            <div><b>Estado</b></div>
+          <div class="meta" id="agendaMeta">
+            <div><b>Fecha:</b> <span id="fechaDisplay">15 febrero 2026</span></div>
           </div>
 
           <div id="table">
             <div id="thead">
-              <div></div><div></div><div>Inicio</div><div>Finaliza</div><div>Estado</div>
+              <div>Instalación</div><div>Inicio</div><div>Finaliza</div><div>Horas</div><div>Estado</div>
             </div>
             <div id="tbody"></div>
           </div>
@@ -686,8 +699,8 @@ html = r"""
 
         <div id="bottom" class="panel">
           <div class="leftinfo">
-            <span class="chip">2026-02-15 · Rocafort · 09:00:00 → 15:00:00</span>
-            <span class="status free">LIBRE</span>
+            <span class="chip" id="bottomFecha">2026-02-15 · Rocafort · 09:00:00 → 15:00:00</span>
+            <span class="status free" id="bottomEstado">LIBRE</span>
           </div>
           <div class="actions">
             <div class="btn">Aplicar</div>
@@ -702,104 +715,242 @@ html = r"""
 
 <script>
 (function(){
-  // Grilla calendario
-  var daysEl = document.getElementById("days");
-  var COLS = __CALCOLS__;
-  var ROWS = __CALROWS__;
-  var total = COLS * ROWS;
+  // ==================== OBTENER USUARIO ====================
+  function getQueryParam(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+  }
+  const userName = getQueryParam('usuario') || 'Usuario';
+  document.getElementById('userDisplay').textContent = userName;
 
-  var values = [
-    {n:10, dim:true},{n:2},{n:3, sel:true},{n:4},{n:5},{n:6},{n:7},
-    {n:11},{n:12},{n:13},{n:14, mark:true},{n:16, sel:true},{n:17},{n:14, mark:true},
-    {n:21},{n:22},{n:23},{n:24},{n:25},{n:26},{n:28, mark:true}
-  ];
+  // ==================== VARIABLES GLOBALES ====================
+  let currentDate = new Date(); // hoy
+  let selectedDate = new Date(currentDate); // copia
+  // Ajustar a medianoche para evitar problemas de zona horaria
+  currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+  selectedDate = new Date(currentDate);
 
-  for (var i=0;i<total;i++){
-    var v = values[i] || {n:""};
-    var d = document.createElement("div");
-    d.className = "day";
-    if (v.dim) d.classList.add("dim");
-    if (v.sel) d.classList.add("sel");
-    if (v.mark) d.classList.add("mark");
-    d.textContent = v.n;
-    daysEl.appendChild(d);
+  // ==================== UTILIDADES ====================
+  function formatDate(date) {
+    const d = date.getDate().toString().padStart(2,'0');
+    const m = (date.getMonth()+1).toString().padStart(2,'0');
+    const y = date.getFullYear();
+    return `${y}-${m}-${d}`;
   }
 
-  // Tabla agenda (con meta embebida para móvil)
-  var tbody = document.getElementById("tbody");
-  var rows = [
-    {name:"Rocafort", ini:"09:00:00", fin:"15:00:00", st:"LIBRE", cls:"free", chk:false},
-    {name:"Cn Fabra", ini:"09:00:00", fin:"06:00:00", st:"OCUPADO", cls:"busy", chk:true},
-    {name:"Arsenal",  ini:"08:00:00", fin:"12:00:00", st:"OCUPADO", cls:"busy", chk:true},
-    {name:"Arsenal",  ini:"15:00:00", fin:"18:00:00", st:"LIBRE", cls:"free", chk:false},
-    {name:"St. Jordi",ini:"", fin:"", st:"", cls:"free", chk:false}
-  ];
-  rows = rows.slice(0, __AGENDAROWS__);
+  function formatDisplayDate(date) {
+    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
 
-  rows.forEach(function(r){
-    var tr = document.createElement("div");
-    tr.className = "trow";
+  function getMonday(date) {
+    const d = new Date(date);
+    const day = d.getDay(); // 0 domingo, 1 lunes, ...
+    const diff = (day === 0 ? 6 : day - 1); // si domingo, restar 6 para ir al lunes anterior
+    d.setDate(d.getDate() - diff);
+    return d;
+  }
 
-    // checkbox
-    var c0 = document.createElement("div");
-    c0.className = "chk";
-    if (r.chk){
-      c0.style.background = "rgba(255,124,44,.95)";
-      c0.style.borderColor = "rgba(255,124,44,.55)";
-      c0.style.boxShadow = "0 0 14px rgba(255,124,44,.28)";
+  // Obtiene 21 días (3 semanas) centrados en la semana que contiene centerDate
+  function getThreeWeeks(centerDate) {
+    const mondayCenter = getMonday(centerDate);
+    const prevMonday = new Date(mondayCenter);
+    prevMonday.setDate(mondayCenter.getDate() - 7);
+    const nextMonday = new Date(mondayCenter);
+    nextMonday.setDate(mondayCenter.getDate() + 7);
+
+    const weeks = [prevMonday, mondayCenter, nextMonday];
+    const days = [];
+    for (let w = 0; w < 3; w++) {
+      for (let d = 0; d < 7; d++) {
+        const day = new Date(weeks[w]);
+        day.setDate(weeks[w].getDate() + d);
+        days.push(day);
+      }
+    }
+    return days;
+  }
+
+  // ==================== RENDERIZAR CALENDARIO ====================
+  function renderCalendar(centerDate) {
+    const daysEl = document.getElementById('days');
+    daysEl.innerHTML = '';
+
+    const days = getThreeWeeks(centerDate);
+    const currentYear = centerDate.getFullYear();
+    const currentMonth = centerDate.getMonth();
+
+    days.forEach(date => {
+      const cell = document.createElement('div');
+      cell.className = 'day';
+      cell.textContent = date.getDate();
+
+      // Si el día no es del mes actual, atenuar
+      if (date.getMonth() !== currentMonth) {
+        cell.classList.add('dim');
+      }
+
+      // Marcar si es el día seleccionado
+      if (date.toDateString() === selectedDate.toDateString()) {
+        cell.classList.add('sel');
+      }
+
+      // Añadir evento de selección
+      cell.addEventListener('click', function() {
+        selectedDate = new Date(date);
+        renderCalendar(centerDate); // re-renderiza con el mismo centro (puede no estar visible si cambia mes)
+        // Pero para asegurar que el día seleccionado esté visible, deberíamos recentrar
+        // Para simplificar, recentramos en el día seleccionado
+        renderCalendar(selectedDate);
+        updateAgenda(selectedDate);
+        updateBottomBar(selectedDate);
+        updateMonthYearDisplay(selectedDate);
+      });
+
+      daysEl.appendChild(cell);
+    });
+
+    // Actualizar título del mes
+    document.getElementById('monthDisplay').textContent = 
+      centerDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
+  }
+
+  // ==================== ACTUALIZAR SELECTORES MES/AÑO ====================
+  function updateMonthYearDisplay(date) {
+    const monthSelect = document.getElementById('monthSelect');
+    const yearSelect = document.getElementById('yearSelect');
+    monthSelect.value = date.getMonth();
+    yearSelect.value = date.getFullYear();
+  }
+
+  // ==================== RENDERIZAR AGENDA ====================
+  function updateAgenda(date) {
+    const fechaSpan = document.getElementById('fechaDisplay');
+    fechaSpan.textContent = formatDisplayDate(date);
+
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = '';
+
+    // Datos de ejemplo (pueden ser reemplazados por fetch a Google Sheets)
+    const instalaciones = ['Cn Fabra', 'Arsenal', 'Guissona', 'Descanso', 'St. Jordi'];
+    // Generar eventos aleatorios pero coherentes con el día
+    const numEventos = 5; // para llenar la tabla
+    for (let i = 0; i < numEventos; i++) {
+      const inst = instalaciones[i % instalaciones.length];
+      const inicio = `${8 + i}:00:00`;
+      const fin = `${12 + i}:00:00`;
+      const estado = i % 2 === 0 ? 'LIBRE' : 'OCUPADO';
+      const estadoClass = estado === 'LIBRE' ? 'free' : 'busy';
+      // Calcular horas (ejemplo simple)
+      const horas = (parseInt(fin) - parseInt(inicio)) + 'h';
+
+      const row = document.createElement('div');
+      row.className = 'trow';
+
+      // Columna Instalación (con checkbox)
+      const col0 = document.createElement('div');
+      const chk = document.createElement('span');
+      chk.className = 'chk';
+      if (i === 0) chk.style.background = 'rgba(255,124,44,.95)'; // ejemplo marcado
+      col0.appendChild(chk);
+      col0.appendChild(document.createTextNode(' ' + inst));
+
+      // Columnas de tiempo y estado
+      const col1 = document.createElement('div');
+      col1.textContent = inicio;
+      const col2 = document.createElement('div');
+      col2.textContent = fin;
+      const col3 = document.createElement('div');
+      col3.textContent = horas;
+      const col4 = document.createElement('div');
+      const statusSpan = document.createElement('span');
+      statusSpan.className = 'status ' + estadoClass;
+      statusSpan.textContent = estado;
+      col4.appendChild(statusSpan);
+
+      row.appendChild(col0);
+      row.appendChild(col1);
+      row.appendChild(col2);
+      row.appendChild(col3);
+      row.appendChild(col4);
+
+      // Para móvil, añadir meta (ya lo maneja el CSS)
+      tbody.appendChild(row);
+    }
+  }
+
+  // ==================== ACTUALIZAR BARRA INFERIOR ====================
+  function updateBottomBar(date) {
+    // Ejemplo con datos fijos, se puede adaptar
+    document.getElementById('bottomFecha').textContent = formatDate(date) + ' · Rocafort · 09:00:00 → 15:00:00';
+    // Podríamos cambiar el estado según el día
+    document.getElementById('bottomEstado').textContent = 'LIBRE';
+    document.getElementById('bottomEstado').className = 'status free';
+  }
+
+  // ==================== CAMBIO DE MES ====================
+  function changeMonth(delta) {
+    let newDate = new Date(selectedDate);
+    newDate.setMonth(selectedDate.getMonth() + delta);
+    selectedDate = newDate;
+    renderCalendar(selectedDate);
+    updateAgenda(selectedDate);
+    updateBottomBar(selectedDate);
+    updateMonthYearDisplay(selectedDate);
+  }
+
+  // ==================== INICIALIZACIÓN ====================
+  function init() {
+    // Llenar selector de años (desde 2020 hasta 2030)
+    const yearSelect = document.getElementById('yearSelect');
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear - 5; y <= currentYear + 5; y++) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      yearSelect.appendChild(opt);
     }
 
-    // name + mobile meta
-    var c1 = document.createElement("div");
-    c1.style.minWidth = "0";
-    var name = document.createElement("div");
-    name.textContent = r.name;
+    // Eventos de navegación
+    document.getElementById('prevMonth').addEventListener('click', () => changeMonth(-1));
+    document.getElementById('nextMonth').addEventListener('click', () => changeMonth(1));
 
-    var meta = document.createElement("div");
-    meta.className = "rowmeta";
+    // Evento de aplicar filtros (mes/año)
+    document.getElementById('applyFilters').addEventListener('click', () => {
+      const newMonth = parseInt(document.getElementById('monthSelect').value);
+      const newYear = parseInt(document.getElementById('yearSelect').value);
+      // Crear nueva fecha con el primer día del mes seleccionado
+      const newDate = new Date(newYear, newMonth, 1);
+      selectedDate = newDate;
+      renderCalendar(selectedDate);
+      updateAgenda(selectedDate);
+      updateBottomBar(selectedDate);
+      updateMonthYearDisplay(selectedDate);
+    });
 
-    if (r.ini || r.fin){
-      var t = document.createElement("span");
-      t.className = "pill";
-      t.textContent = (r.ini || "--:--") + " → " + (r.fin || "--:--");
-      meta.appendChild(t);
+    // Render inicial con hoy
+    renderCalendar(selectedDate);
+    updateAgenda(selectedDate);
+    updateBottomBar(selectedDate);
+    updateMonthYearDisplay(selectedDate);
+  }
+
+  init();
+
+  // Ajustar frame
+  (function(){
+    var fe = window.frameElement;
+    if (fe){
+      fe.style.position = "fixed";
+      fe.style.inset = "0";
+      fe.style.width = "100vw";
+      fe.style.height = "100vh";
+      fe.style.border = "0";
+      fe.style.margin = "0";
+      fe.style.padding = "0";
+      fe.style.zIndex = "999999";
+      fe.style.background = "transparent";
     }
-    if (r.st){
-      var s2 = document.createElement("span");
-      s2.className = "pill";
-      s2.textContent = r.st;
-      meta.appendChild(s2);
-    }
-
-    c1.appendChild(name);
-    c1.appendChild(meta);
-
-    // desktop cols
-    var c2 = document.createElement("div");
-    c2.className = "col_time";
-    c2.textContent = r.ini;
-
-    var c3 = document.createElement("div");
-    c3.className = "col_time2";
-    c3.textContent = r.fin;
-
-    var c4 = document.createElement("div");
-    c4.className = "col_status";
-    if (r.st){
-      var s = document.createElement("span");
-      s.className = "status " + r.cls;
-      s.textContent = r.st;
-      c4.appendChild(s);
-    }
-
-    tr.appendChild(c0);
-    tr.appendChild(c1);
-    tr.appendChild(c2);
-    tr.appendChild(c3);
-    tr.appendChild(c4);
-
-    tbody.appendChild(tr);
-  });
+  })();
 })();
 </script>
 
