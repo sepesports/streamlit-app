@@ -65,18 +65,13 @@ MOBILE_MAX_W_PX = 500
 LOGO_URL = "https://files.catbox.moe/056m6v.jpg"
 FOOTER_TEXT = "2026 Socorrista ProVersión 1.0. Todos los derechos reservados"
 
-# NUEVO: imagen de fondo del bloque detrás de ¡BIENVENIDO!
 HERO_BG_IMAGE_URL = "https://files.catbox.moe/16109j.jpeg"
-HERO_BG_IMAGE_FIT = "cover"     # cover / contain
-HERO_BG_IMAGE_POS = "center"    # center / top / etc
+HERO_BG_IMAGE_FIT = "cover"
+HERO_BG_IMAGE_POS = "center"
 
-# nombre del usuario (prioriza ?usuario=..., si no existe usa ?user=..., si no existe deja "Login")
 USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or "Login"
 
-# ===================== AJUSTES EDITABLES (DESKTOP / MÓVIL) =====================
-# (solo cambia estilo, NO mueve estructura)
-
-# Tipografías generales
+# ===================== AJUSTES EDITABLES =====================
 HERO_FONT_SIZE_DESKTOP_PX = 44
 HERO_FONT_SIZE_MOBILE_PX = 13
 
@@ -89,29 +84,13 @@ BTN_FONT_SIZE_MOBILE_PX = 17
 FOOTER_FONT_SIZE_DESKTOP_PX = 13
 FOOTER_FONT_SIZE_MOBILE_PX = 13
 
-# Tamaño de texto por botón (índice 0..5) — opcional
-BTN_FONT_OVERRIDES_DESKTOP_PX = {
-    # 0: 17,  # Horarios
-    # 1: 17,  # Control de Asistencia
-    # 2: 17,  # Nomina y Pagos
-    # 3: 17,  # Incidencias
-    # 4: 17,  # Formación
-    # 5: 17,  # Comunicados 17
-}
-BTN_FONT_OVERRIDES_MOBILE_PX = {
-    # 0: 14,
-    # 1: 14,
-    # 2: 14,
-    # 3: 14,
-    # 4: 14,
-    # 5: 14,
-}
+BTN_FONT_OVERRIDES_DESKTOP_PX = {}
+BTN_FONT_OVERRIDES_MOBILE_PX = {}
 
-# Logo (ocupa TODA la caja)
 LOGO_PADDING_PX_DESKTOP = 0
 LOGO_PADDING_PX_MOBILE = 0
 LOGO_BORDER_RADIUS_PX = 0
-LOGO_OBJECT_FIT = "cover"  # cover / contain
+LOGO_OBJECT_FIT = "cover"
 LOGO_BORDER = "0px solid rgba(255,255,255,.0)"
 
 st.set_page_config(layout="wide")
@@ -180,7 +159,6 @@ html = """
         linear-gradient(280deg, #03102a 0%, #020a1a 70%, #010612 100%);
     }
 
-    /* marco (no cambia estructura) */
     #frame{
       position:absolute;
       left:var(--padx); right:var(--padx);
@@ -243,7 +221,6 @@ html = """
     }
     .hdr-cell:last-child{ border-right: none; }
 
-    /* Logo: ocupa toda la caja asignada */
     .hdr-logo{
       padding: var(--logoPad) !important;
     }
@@ -279,7 +256,6 @@ html = """
       box-shadow: var(--shadow0);
       overflow:hidden;
 
-      /* NUEVO: imagen de fondo + overlays (no cambia estructura) */
       background-image:
         linear-gradient(180deg, rgba(0,0,0,.22) 0%, rgba(0,0,0,.12) 55%, rgba(0,0,0,.18) 100%),
         radial-gradient(900px 220px at 50% 35%, rgba(100,190,255,.22) 0%, rgba(35,120,255,.10) 32%, rgba(2,10,26,0) 68%),
@@ -584,7 +560,7 @@ user-select:none;
 
           d.appendChild(sp);
 
-          // ✅ SOLO AJUSTE: Horarios -> /calendario (mantiene querystring + auth=ok)
+          // ✅ Horarios -> /calendario (mantiene querystring)
           if (BTN_TEXTS[i] === "Horarios") {
             d.addEventListener("click", function(){
               try{
@@ -611,7 +587,6 @@ user-select:none;
 """
 
 def _dict_to_js_obj(d: dict) -> str:
-    # {0:15,1:14} -> {"0":15,"1":14} (usable como objeto en JS)
     parts = []
     for k, v in d.items():
         try:
