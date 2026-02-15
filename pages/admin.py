@@ -197,9 +197,6 @@ html, body{
 
 /* =========================================================
    LOGO (DESKTOP por defecto)
-   - Tamaño: --logoWDesktop
-   - Posición vertical: --logoTopDesktop
-   - Movimiento X: --logoXDesktop (px)
    ========================================================= */
 .logo{
   position:absolute;
@@ -215,9 +212,6 @@ html, body{
 
 /* =========================================================
    TÍTULO (DESKTOP por defecto)
-   - Tamaño: --titleSizeDesktop
-   - Posición vertical: --titleTopDesktop
-   - Movimiento X: --titleXDesktop (px)
    ========================================================= */
 .title{
   position:absolute;
@@ -303,8 +297,7 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
 #hud{ display:none !important; }
 
 /* =========================================================
-   POSICIONES DESKTOP (override a los inline style)
-   Edita variables arriba, no toques el HTML si no quieres.
+   POSICIONES DESKTOP
    ========================================================= */
 #lblUser{ top: var(--lblUserTopDesktop) !important; }
 #inUser{  top: var(--inUserTopDesktop) !important; }
@@ -316,8 +309,7 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
 #linkReg{ top: var(--linkRegTopDesktop) !important; left: var(--linkRegLeftDesktop) !important; }
 
 /* =========================================================
-   MODO MÓVIL (posiciones/tamaños distintos)
-   Edita variables Mobile arriba.
+   MODO MÓVIL
    ========================================================= */
 @media (max-width: 640px){
   .logo{
@@ -353,14 +345,12 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
 
   <div id="plan">
     <div id="card">
-      <!-- LOGO: cambia tamaño/posición con variables Desktop/Mobile en :root -->
+      <!-- LOGO -->
       <img class="logo" src="https://files.catbox.moe/056m6v.jpg" alt="Logo"/>
 
-      <!-- TÍTULO: cambia tamaño/posición con variables Desktop/Mobile en :root -->
+      <!-- TÍTULO -->
       <div class="title">¡BIENVENIDO!</div>
 
-      <!-- Estos inline style quedan como “fallback”.
-           Las posiciones reales se controlan por variables (CSS) por modo. -->
       <div id="lblUser" class="label" style="top:22%;">Usuario:</div>
       <input id="inUser" class="field" style="top:28%;" autocomplete="username"/>
 
@@ -392,7 +382,8 @@ async function doLogin(){
     const j = await r.json();
 
     if (j && j.ok === true){
-      window.location.href = "/?auth=ok";
+      // ✅ Pasamos el nombre de usuario en la URL
+      window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u);
     } else {
       alert("Credenciales inválidas");
     }
