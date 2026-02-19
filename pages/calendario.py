@@ -311,6 +311,27 @@ html = r"""
     font-size: var(--fbase);
     letter-spacing:.6px;
   }
+
+  /* Encabezado de días (L M X J V S D) alineado a columnas */
+  #calgrid .weekheads{
+    display:grid;
+    grid-template-columns: repeat(__CALCOLS__, 1fr);
+    gap: var(--cellGap);
+    align-items:center;
+    justify-items:center;
+    font-size: var(--small);
+    font-weight: 900;
+    letter-spacing:.6px;
+    color: rgba(234,242,255,.82);
+    margin-top: -2px;
+  }
+  #calgrid .weekheads .w{
+    width: 100%;
+    text-align:center;
+    user-select:none;
+    opacity:.92;
+  }
+
   #calgrid .days{
     display:grid;
     grid-template-columns: repeat(__CALCOLS__, 1fr);
@@ -650,7 +671,17 @@ html = r"""
         <div id="calgrid" class="panel">
           <div class="head">
             <div class="label">CALENDARIO</div>
-            <div class="muted" style="font-weight:900;font-size:var(--small);">LU MA MI JU VI SA DO</div>
+            <div class="muted" style="font-weight:900;font-size:var(--small);">L M X J V S D</div>
+          </div>
+
+          <div class="weekheads" aria-hidden="true">
+            <div class="w">L</div>
+            <div class="w">M</div>
+            <div class="w">X</div>
+            <div class="w">J</div>
+            <div class="w">V</div>
+            <div class="w">S</div>
+            <div class="w">D</div>
           </div>
 
           <div class="days" id="days"></div>
@@ -763,7 +794,7 @@ html = r"""
   function getMonthDays(year, month) {
     const firstDay = getFirstDayOfMonth(year, month); // 1..7 (lunes=1)
     const totalDays = daysInMonth(year, month);
-    
+
     const days = [];
     // Días del mes anterior que entran en la primera semana
     const prevMonthDays = firstDay - 1; // número de celdas vacías al inicio
@@ -778,7 +809,7 @@ html = r"""
         });
       }
     }
-    
+
     // Días del mes actual
     for (let d = 1; d <= totalDays; d++) {
       days.push({
@@ -786,7 +817,7 @@ html = r"""
         currentMonth: true
       });
     }
-    
+
     // Completar hasta tener múltiplo de 7 (para que grid de 7 columnas funcione)
     const remaining = 7 - (days.length % 7);
     if (remaining < 7) {
@@ -799,7 +830,7 @@ html = r"""
         });
       }
     }
-    
+
     return days;
   }
 
@@ -847,7 +878,7 @@ html = r"""
     });
 
     // Actualizar título del mes
-    document.getElementById('monthDisplay').textContent = 
+    document.getElementById('monthDisplay').textContent =
       new Date(year, month, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
   }
 
