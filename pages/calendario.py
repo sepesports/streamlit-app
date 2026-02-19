@@ -36,8 +36,8 @@ INNER_R = 4
 INNER_TOP_GAP = 0.7
 
 CAL_COLS = 7
-CAL_ROWS = 6  # Cambiado de 3 a 6 para mostrar mes completo
-DAY_CELL_GAP_PX = 8
+CAL_ROWS = 6
+DAY_CELL_GAP_PX = 6
 
 AGENDA_ROWS = 5
 
@@ -293,10 +293,10 @@ html = r"""
   #calgrid{
     height: var(--calgridH);
     margin-top: var(--gapY);
-    padding: 10px 12px;
+    padding: 8px 12px;
     display:flex;
     flex-direction:column;
-    gap: 10px;
+    gap: 6px;
     background:
       linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
   }
@@ -324,11 +324,11 @@ html = r"""
     letter-spacing:.6px;
     color: rgba(234,242,255,.82);
     margin-top: -2px;
+    user-select:none;
   }
   #calgrid .weekheads .w{
-    width: 100%;
+    width:100%;
     text-align:center;
-    user-select:none;
     opacity:.92;
   }
 
@@ -349,9 +349,9 @@ html = r"""
     align-items:center;
     justify-content:center;
     font-weight: 900;
+    font-size: var(--small);
     user-select:none;
     position:relative;
-    min-height: 34px;
     color: var(--txt);
     box-shadow: var(--shadow2);
   }
@@ -366,8 +366,8 @@ html = r"""
   .day.mark::after{
     content:"";
     position:absolute;
-    bottom:6px;
-    width:7px;height:7px;
+    bottom:4px;
+    width:6px;height:6px;
     border-radius:50%;
     background: var(--accent);
     opacity:.95;
@@ -378,10 +378,10 @@ html = r"""
     display:flex;
     align-items:center;
     gap:14px;
-    font-size: var(--small);
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 900;
     color: var(--muted);
-    margin-top: 2px;
+    margin-top: 0px;
   }
   .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.35);display:inline-block;margin-right:6px;opacity:.35;}
   .dot.on{opacity:1; background: rgba(40,200,120,.65);}
@@ -671,7 +671,6 @@ html = r"""
         <div id="calgrid" class="panel">
           <div class="head">
             <div class="label">CALENDARIO</div>
-            <div class="muted" style="font-weight:900;font-size:var(--small);">L M X J V S D</div>
           </div>
 
           <div class="weekheads" aria-hidden="true">
@@ -750,7 +749,6 @@ html = r"""
 
 <script>
 (function(){
-  // ==================== OBTENER USUARIO ====================
   function getQueryParam(name) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(name);
@@ -758,15 +756,12 @@ html = r"""
   const userName = getQueryParam('usuario') || 'Usuario';
   document.getElementById('userDisplay').textContent = userName;
 
-  // ==================== VARIABLES GLOBALES ====================
-  let currentDate = new Date(); // hoy
-  // Ajustar a medianoche para evitar problemas de zona horaria
+  let currentDate = new Date();
   currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
   let selectedDate = new Date(currentDate);
   let currentMonth = selectedDate.getMonth();
   let currentYear = selectedDate.getFullYear();
 
-  // ==================== UTILIDADES ====================
   function formatDate(date) {
     const d = date.getDate().toString().padStart(2,'0');
     const m = (date.getMonth()+1).toString().padStart(2,'0');
@@ -778,26 +773,22 @@ html = r"""
     return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
-  // Obtiene el número de días en un mes
   function daysInMonth(year, month) {
     return new Date(year, month + 1, 0).getDate();
   }
 
-  // Obtiene el día de la semana del primer día del mes (lunes = 1, domingo = 0)
   function getFirstDayOfMonth(year, month) {
     let day = new Date(year, month, 1).getDay();
-    // Convertir: domingo (0) -> 7, lunes (1) -> 1, ..., sábado (6) -> 6
     return day === 0 ? 7 : day;
   }
 
-  // Genera array de días para el mes, incluyendo días de meses anterior/posterior para llenar semanas completas (lunes a domingo)
   function getMonthDays(year, month) {
-    const firstDay = getFirstDayOfMonth(year, month); // 1..7 (lunes=1)
+    const firstDay = getFirstDayOfMonth(year, month);
     const totalDays = daysInMonth(year, month);
 
     const days = [];
-    // Días del mes anterior que entran en la primera semana
-    const prevMonthDays = firstDay - 1; // número de celdas vacías al inicio
+    const prevMonthDays = firstDay - 1;
+
     if (prevMonthDays > 0) {
       const prevMonth = month === 0 ? 11 : month - 1;
       const prevYear = month === 0 ? year - 1 : year;
@@ -810,7 +801,6 @@ html = r"""
       }
     }
 
-    // Días del mes actual
     for (let d = 1; d <= totalDays; d++) {
       days.push({
         date: new Date(year, month, d),
@@ -818,7 +808,6 @@ html = r"""
       });
     }
 
-    // Completar hasta tener múltiplo de 7 (para que grid de 7 columnas funcione)
     const remaining = 7 - (days.length % 7);
     if (remaining < 7) {
       const nextMonth = month === 11 ? 0 : month + 1;
@@ -834,7 +823,6 @@ html = r"""
     return days;
   }
 
-  // ==================== RENDERIZAR CALENDARIO ====================
   function renderCalendar(year, month) {
     const daysEl = document.getElementById('days');
     daysEl.innerHTML = '';
@@ -851,7 +839,6 @@ html = r"""
         cell.classList.add('dim');
       }
 
-      // Marcar si es el día seleccionado (comparar solo año/mes/día)
       if (date.getFullYear() === selectedDate.getFullYear() &&
           date.getMonth() === selectedDate.getMonth() &&
           date.getDate() === selectedDate.getDate()) {
@@ -860,14 +847,12 @@ html = r"""
 
       cell.addEventListener('click', function() {
         selectedDate = new Date(date);
-        // Si el día seleccionado no es del mes actual, cambiar el mes actual a ese mes
         if (date.getMonth() !== month || date.getFullYear() !== year) {
           currentMonth = date.getMonth();
           currentYear = date.getFullYear();
           renderCalendar(currentYear, currentMonth);
           updateMonthYearDisplay(currentYear, currentMonth);
         } else {
-          // Solo re-renderizar para actualizar la clase 'sel'
           renderCalendar(year, month);
         }
         updateAgenda(selectedDate);
@@ -877,12 +862,10 @@ html = r"""
       daysEl.appendChild(cell);
     });
 
-    // Actualizar título del mes
     document.getElementById('monthDisplay').textContent =
       new Date(year, month, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
   }
 
-  // ==================== ACTUALIZAR SELECTORES MES/AÑO ====================
   function updateMonthYearDisplay(year, month) {
     const monthSelect = document.getElementById('monthSelect');
     const yearSelect = document.getElementById('yearSelect');
@@ -890,15 +873,12 @@ html = r"""
     yearSelect.value = year;
   }
 
-  // ==================== RENDERIZAR AGENDA ====================
   function updateAgenda(date) {
-    const fechaSpan = document.getElementById('fechaDisplay');
-    fechaSpan.textContent = formatDisplayDate(date);
+    document.getElementById('fechaDisplay').textContent = formatDisplayDate(date);
 
     const tbody = document.getElementById('tbody');
     tbody.innerHTML = '';
 
-    // Datos de ejemplo (pueden ser reemplazados por fetch a Google Sheets)
     const instalaciones = ['Cn Fabra', 'Arsenal', 'Guissona', 'Descanso', 'St. Jordi'];
     const numEventos = 5;
     for (let i = 0; i < numEventos; i++) {
@@ -921,10 +901,13 @@ html = r"""
 
       const col1 = document.createElement('div');
       col1.textContent = inicio;
+
       const col2 = document.createElement('div');
       col2.textContent = fin;
+
       const col3 = document.createElement('div');
       col3.textContent = horas;
+
       const col4 = document.createElement('div');
       const statusSpan = document.createElement('span');
       statusSpan.className = 'status ' + estadoClass;
@@ -941,78 +924,67 @@ html = r"""
     }
   }
 
-  // ==================== ACTUALIZAR BARRA INFERIOR ====================
   function updateBottomBar(date) {
     document.getElementById('bottomFecha').textContent = formatDate(date) + ' · Rocafort · 09:00:00 → 15:00:00';
     document.getElementById('bottomEstado').textContent = 'LIBRE';
     document.getElementById('bottomEstado').className = 'status free';
   }
 
-  // ==================== CAMBIO DE MES (NAVEGACIÓN) ====================
   function changeMonth(delta) {
     let newMonth = currentMonth + delta;
     let newYear = currentYear;
-    if (newMonth < 0) {
-      newMonth = 11;
-      newYear--;
-    } else if (newMonth > 11) {
-      newMonth = 0;
-      newYear++;
-    }
+    if (newMonth < 0) { newMonth = 11; newYear--; }
+    else if (newMonth > 11) { newMonth = 0; newYear++; }
+
     currentMonth = newMonth;
     currentYear = newYear;
-    // Ajustar selectedDate para que sea un día válido en el nuevo mes (por ejemplo, el mismo día si existe, sino el último día)
+
     let newSelectedDay = selectedDate.getDate();
-    const daysInNewMonth = daysInMonth(newYear, newMonth);
-    if (newSelectedDay > daysInNewMonth) {
-      newSelectedDay = daysInNewMonth;
-    }
+    const dim = daysInMonth(newYear, newMonth);
+    if (newSelectedDay > dim) newSelectedDay = dim;
+
     selectedDate = new Date(newYear, newMonth, newSelectedDay);
+
     renderCalendar(currentYear, currentMonth);
     updateAgenda(selectedDate);
     updateBottomBar(selectedDate);
     updateMonthYearDisplay(currentYear, currentMonth);
   }
 
-  // ==================== INICIALIZACIÓN ====================
   function init() {
-    // Llenar selector de años (desde 2020 hasta 2030)
     const yearSelect = document.getElementById('yearSelect');
-    const currentYear = new Date().getFullYear();
-    for (let y = currentYear - 5; y <= currentYear + 5; y++) {
+    const y0 = new Date().getFullYear();
+    for (let y = y0 - 5; y <= y0 + 5; y++) {
       const opt = document.createElement('option');
       opt.value = y;
       opt.textContent = y;
       yearSelect.appendChild(opt);
     }
 
-    // Establecer valores actuales en selects
     updateMonthYearDisplay(currentYear, currentMonth);
 
-    // Eventos de navegación por mes
     document.getElementById('prevMonth').addEventListener('click', () => changeMonth(-1));
     document.getElementById('nextMonth').addEventListener('click', () => changeMonth(1));
 
-    // Evento de aplicar filtros (mes/año)
     document.getElementById('applyFilters').addEventListener('click', () => {
       const newMonth = parseInt(document.getElementById('monthSelect').value);
       const newYear = parseInt(document.getElementById('yearSelect').value);
+
       currentMonth = newMonth;
       currentYear = newYear;
-      // Ajustar día seleccionado si es necesario
+
       let newSelectedDay = selectedDate.getDate();
-      const daysInNewMonth = daysInMonth(newYear, newMonth);
-      if (newSelectedDay > daysInNewMonth) {
-        newSelectedDay = daysInNewMonth;
-      }
+      const dim = daysInMonth(newYear, newMonth);
+      if (newSelectedDay > dim) newSelectedDay = dim;
+
       selectedDate = new Date(newYear, newMonth, newSelectedDay);
+
       renderCalendar(currentYear, currentMonth);
       updateAgenda(selectedDate);
       updateBottomBar(selectedDate);
       updateMonthYearDisplay(currentYear, currentMonth);
     });
 
-    // Render inicial con hoy
     renderCalendar(currentYear, currentMonth);
     updateAgenda(selectedDate);
     updateBottomBar(selectedDate);
@@ -1020,7 +992,6 @@ html = r"""
 
   init();
 
-  // Ajustar frame
   (function(){
     var fe = window.frameElement;
     if (fe){
