@@ -4,9 +4,8 @@ import streamlit.components.v1 as components
 
 # ==============================================================================
 # PLANTILLA "CALENDARIO" — (MISMA ESTRUCTURA / MISMAS MEDIDAS) + TEMA HUD NARANJA
+# FIX: NO forzar el iframe a position:fixed en móvil (rompía el alto y “montaba” bloques)
 # ==============================================================================
-
-# ================== AJUSTES (NO TOCAR MEDIDAS) ==================
 
 PAD_X_PX = 10
 PAD_TOP_PX = 10
@@ -40,8 +39,6 @@ CAL_ROWS = 6
 DAY_CELL_GAP_PX = 6
 
 AGENDA_ROWS = 5
-
-# ===============================================================
 
 st.set_page_config(layout="wide")
 
@@ -94,13 +91,9 @@ html = r"""
 
     --cellGap: __CELLGAP__px;
 
-    /* TEMA HUD */
     --bg0:#06132c;
     --bg1:#081a3a;
     --bg2:#0c2248;
-
-    --line: rgba(255,255,255,.12);
-    --line2: rgba(255,255,255,.10);
 
     --shadow0: 0 18px 40px rgba(0,0,0,.55);
     --shadow1: 0 12px 26px rgba(0,0,0,.45);
@@ -109,11 +102,9 @@ html = r"""
     --accent: #ff7c2c;
     --accentGlow: 0 0 18px rgba(255,124,44,.35);
 
-    --ok: rgba(40,200,120,.95);
     --okBg: rgba(40,200,120,.12);
     --okLine: rgba(40,200,120,.28);
 
-    --bad: rgba(255,80,80,.95);
     --badBg: rgba(255,80,80,.12);
     --badLine: rgba(255,80,80,.28);
   }
@@ -170,8 +161,7 @@ html = r"""
   }
 
   .panel{
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 55%, rgba(255,255,255,.04) 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 55%, rgba(255,255,255,.04) 100%);
     border: var(--b) solid var(--bc);
     border-radius: 14px;
     box-sizing:border-box;
@@ -196,21 +186,12 @@ html = r"""
     min-width: 92px;
     white-space:nowrap;
     box-shadow: var(--shadow2);
-    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, filter .12s ease;
     user-select:none;
   }
-  .btn:hover{
-    transform: translateY(-2px);
-    box-shadow: 0 16px 34px rgba(0,0,0,.52);
-    border-color: rgba(255,124,44,.35);
-    filter: saturate(1.06);
-  }
-  .btn:active{ transform: translateY(0px); }
-
   .btn.primary{
     background: linear-gradient(180deg, rgba(255,124,44,.95) 0%, rgba(255,106,0,.92) 100%);
     border-color: rgba(255,124,44,.55);
-    color: #ffffff;
+    color:#fff;
     box-shadow: var(--accentGlow), var(--shadow2);
   }
 
@@ -233,8 +214,7 @@ html = r"""
     width:36px;height:36px;
     border: var(--b) solid rgba(255,255,255,.14);
     border-radius: 10px;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
     display:flex;align-items:center;justify-content:center;
     font-weight: 900;
     color: var(--txt);
@@ -277,8 +257,7 @@ html = r"""
     align-items:center;
     justify-content:space-between;
     gap: 10px;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
   }
   #monthbar .month{
     font-weight: 900;
@@ -297,8 +276,7 @@ html = r"""
     display:flex;
     flex-direction:column;
     gap: 6px;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
   }
   #calgrid .head{
     display:flex;
@@ -312,7 +290,6 @@ html = r"""
     letter-spacing:.6px;
   }
 
-  /* Encabezado de días (L M X J V S D) alineado a columnas */
   #calgrid .weekheads{
     display:grid;
     grid-template-columns: repeat(__CALCOLS__, 1fr);
@@ -326,11 +303,7 @@ html = r"""
     margin-top: -2px;
     user-select:none;
   }
-  #calgrid .weekheads .w{
-    width:100%;
-    text-align:center;
-    opacity:.92;
-  }
+  #calgrid .weekheads .w{width:100%;text-align:center;opacity:.92;}
 
   #calgrid .days{
     display:grid;
@@ -341,8 +314,7 @@ html = r"""
     min-height: 0;
   }
   .day{
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
     border: var(--b) solid rgba(255,255,255,.14);
     border-radius: 10px;
     display:flex;
@@ -356,22 +328,10 @@ html = r"""
     box-shadow: var(--shadow2);
   }
   .day.dim{opacity:.35;}
-
   .day.sel{
     outline: 2px solid var(--accent);
     outline-offset: -2px;
     box-shadow: var(--accentGlow), var(--shadow2);
-  }
-
-  .day.mark::after{
-    content:"";
-    position:absolute;
-    bottom:4px;
-    width:6px;height:6px;
-    border-radius:50%;
-    background: var(--accent);
-    opacity:.95;
-    box-shadow: 0 0 10px rgba(255,124,44,.35);
   }
 
   #legend{
@@ -396,14 +356,12 @@ html = r"""
     justify-content:flex-end;
     gap: 12px;
     overflow:hidden;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
   }
   .select{
     min-width: 160px;
     padding: 10px 12px;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
     border: var(--b) solid rgba(255,255,255,.14);
     border-radius: 10px;
     font-weight: 800;
@@ -428,10 +386,7 @@ html = r"""
     -webkit-appearance: none;
     cursor: pointer;
   }
-  .select select option {
-    background: #0c2248;
-    color: #eaf2ff;
-  }
+  .select select option {background:#0c2248;color:#eaf2ff;}
   .caret{font-weight:900; pointer-events:none;}
 
   #agenda{
@@ -442,28 +397,13 @@ html = r"""
     flex-direction:column;
     gap: 10px;
     min-height: 0;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
   }
-  #agenda h3{
-    margin:0;
-    font-size: var(--h2);
-    font-weight: 900;
-    text-shadow: 0 2px 12px rgba(0,0,0,.28);
-  }
-  #agenda .meta{
-    display:flex;
-    gap: 18px;
-    font-size: var(--small);
-    font-weight: 800;
-    color: var(--muted);
-    flex-wrap:wrap;
-  }
+  #agenda h3{margin:0;font-size: var(--h2);font-weight: 900;text-shadow: 0 2px 12px rgba(0,0,0,.28);}
 
   #table{
     flex:1;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
     border: var(--b) solid rgba(255,255,255,.14);
     border-radius: 12px;
     overflow:hidden;
@@ -481,16 +421,13 @@ html = r"""
     padding: 10px 10px;
     box-sizing:border-box;
   }
-
   #thead{
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.06) 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.06) 100%);
     font-weight: 900;
     font-size: var(--small);
     color: rgba(234,242,255,.85);
     border-bottom: 1px solid rgba(255,255,255,.10);
   }
-
   .trow{
     border-top: 1px solid rgba(255,255,255,.08);
     font-weight: 800;
@@ -519,26 +456,8 @@ html = r"""
     white-space:nowrap;
     color: var(--txt);
   }
-
-  .status.free{
-    border-color: var(--okLine);
-    background: var(--okBg);
-    color: rgba(210,255,235,.95);
-  }
-  .status.busy{
-    border-color: var(--badLine);
-    background: var(--badBg);
-    color: rgba(255,220,220,.95);
-  }
-
-  .rowmeta{
-    display:none;
-    margin-top: 4px;
-    font-size: 11px;
-    color: var(--muted);
-    font-weight: 800;
-    gap: 10px;
-  }
+  .status.free{border-color: var(--okLine);background: var(--okBg);color: rgba(210,255,235,.95);}
+  .status.busy{border-color: var(--badLine);background: var(--badBg);color: rgba(255,220,220,.95);}
 
   #bottom{
     height: var(--bottombarH);
@@ -565,15 +484,12 @@ html = r"""
     text-overflow:ellipsis;
     min-width: 0;
   }
-  #bottom .actions{
-    display:flex;
-    gap: 10px;
-    align-items:center;
-    flex-shrink:0;
-  }
+  #bottom .actions{display:flex;gap:10px;align-items:center;flex-shrink:0;}
 
   /* ===== MOBILE ===== */
   @media (max-width: 520px){
+    /* Mantener layout móvil sin “forzar” alto del iframe */
+    html, body{overflow:hidden;}
 
     #filters{
       height: auto;
@@ -584,43 +500,15 @@ html = r"""
       justify-content: stretch;
       align-items: stretch;
     }
-    #filters .select{
-      min-width: 0;
-      width: 100%;
-    }
-    #filters .btn{
-      grid-column: 1 / -1;
-      width: 100%;
-      min-width: 0;
-    }
+    #filters .select{min-width:0;width:100%;}
+    #filters .btn{grid-column:1/-1;width:100%;min-width:0;}
 
-    #thead{ display:none; }
-
+    #thead{display:none;}
     .trow{
       grid-template-columns: 26px 1fr;
       grid-auto-rows: min-content;
       gap: 10px;
       align-items:start;
-    }
-    .trow > .col_time,
-    .trow > .col_time2,
-    .trow > .col_status{
-      display:none;
-    }
-
-    .rowmeta{
-      display:flex;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .rowmeta .pill{
-      border: 1px solid rgba(255,255,255,.16);
-      border-radius: 999px;
-      padding: 3px 8px;
-      background: rgba(255,255,255,.08);
-      font-weight: 900;
-      color: var(--txt);
-      white-space:nowrap;
     }
 
     #bottom{
@@ -629,19 +517,10 @@ html = r"""
       align-items:stretch;
       gap: 10px;
     }
-    #bottom .leftinfo{
-      justify-content:space-between;
-    }
-    #bottom .actions{
-      width:100%;
-      justify-content:space-between;
-    }
-    #bottom .actions .btn{
-      flex:1;
-      min-width: 0;
-    }
+    #bottom .actions{width:100%;justify-content:space-between;}
+    #bottom .actions .btn{flex:1;min-width:0;}
 
-    #monthbar .month{font-size: 16px;}
+    #monthbar .month{font-size:16px;}
   }
 </style>
 </head>
@@ -794,18 +673,12 @@ html = r"""
       const prevYear = month === 0 ? year - 1 : year;
       const daysPrev = daysInMonth(prevYear, prevMonth);
       for (let i = prevMonthDays; i > 0; i--) {
-        days.push({
-          date: new Date(prevYear, prevMonth, daysPrev - i + 1),
-          currentMonth: false
-        });
+        days.push({ date: new Date(prevYear, prevMonth, daysPrev - i + 1), currentMonth: false });
       }
     }
 
     for (let d = 1; d <= totalDays; d++) {
-      days.push({
-        date: new Date(year, month, d),
-        currentMonth: true
-      });
+      days.push({ date: new Date(year, month, d), currentMonth: true });
     }
 
     const remaining = 7 - (days.length % 7);
@@ -813,12 +686,17 @@ html = r"""
       const nextMonth = month === 11 ? 0 : month + 1;
       const nextYear = month === 11 ? year + 1 : year;
       for (let i = 1; i <= remaining; i++) {
-        days.push({
-          date: new Date(nextYear, nextMonth, i),
-          currentMonth: false
-        });
+        days.push({ date: new Date(nextYear, nextMonth, i), currentMonth: false });
       }
     }
+
+    // Forzar 6 filas exactas (42 celdas) para estabilidad del layout
+    while (days.length < 42) {
+      const last = days[days.length - 1].date;
+      const nd = new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1);
+      days.push({ date: nd, currentMonth: false });
+    }
+    if (days.length > 42) days.length = 42;
 
     return days;
   }
@@ -835,9 +713,7 @@ html = r"""
       cell.className = 'day';
       cell.textContent = date.getDate();
 
-      if (!dayInfo.currentMonth) {
-        cell.classList.add('dim');
-      }
+      if (!dayInfo.currentMonth) cell.classList.add('dim');
 
       if (date.getFullYear() === selectedDate.getFullYear() &&
           date.getMonth() === selectedDate.getMonth() &&
@@ -867,10 +743,8 @@ html = r"""
   }
 
   function updateMonthYearDisplay(year, month) {
-    const monthSelect = document.getElementById('monthSelect');
-    const yearSelect = document.getElementById('yearSelect');
-    monthSelect.value = month;
-    yearSelect.value = year;
+    document.getElementById('monthSelect').value = month;
+    document.getElementById('yearSelect').value = year;
   }
 
   function updateAgenda(date) {
@@ -881,6 +755,7 @@ html = r"""
 
     const instalaciones = ['Cn Fabra', 'Arsenal', 'Guissona', 'Descanso', 'St. Jordi'];
     const numEventos = 5;
+
     for (let i = 0; i < numEventos; i++) {
       const inst = instalaciones[i % instalaciones.length];
       const inicio = `${8 + i}:00:00`;
@@ -899,14 +774,9 @@ html = r"""
       col0.appendChild(chk);
       col0.appendChild(document.createTextNode(' ' + inst));
 
-      const col1 = document.createElement('div');
-      col1.textContent = inicio;
-
-      const col2 = document.createElement('div');
-      col2.textContent = fin;
-
-      const col3 = document.createElement('div');
-      col3.textContent = horas;
+      const col1 = document.createElement('div'); col1.textContent = inicio;
+      const col2 = document.createElement('div'); col2.textContent = fin;
+      const col3 = document.createElement('div'); col3.textContent = horas;
 
       const col4 = document.createElement('div');
       const statusSpan = document.createElement('span');
@@ -991,21 +861,6 @@ html = r"""
   }
 
   init();
-
-  (function(){
-    var fe = window.frameElement;
-    if (fe){
-      fe.style.position = "fixed";
-      fe.style.inset = "0";
-      fe.style.width = "100vw";
-      fe.style.height = "100vh";
-      fe.style.border = "0";
-      fe.style.margin = "0";
-      fe.style.padding = "0";
-      fe.style.zIndex = "999999";
-      fe.style.background = "transparent";
-    }
-  })();
 })();
 </script>
 
