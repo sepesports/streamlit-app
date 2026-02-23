@@ -5,6 +5,7 @@ import streamlit.components.v1 as components
 # ==============================================================================
 # PLANTILLA "CALENDARIO" — (MISMA ESTRUCTURA / MISMAS MEDIDAS) + TEMA HUD NARANJA
 # FIX: NO forzar el iframe a position:fixed en móvil (rompía el alto y “montaba” bloques)
+# + DATA REAL: /api/mallas (PythonAnywhere) -> Calendario + Agenda del día + Filtro Socorrista
 # ==============================================================================
 
 PAD_X_PX = 10
@@ -288,7 +289,22 @@ html = r"""
     font-weight: 900;
     font-size: var(--fbase);
     letter-spacing:.6px;
+    display:flex;
+    align-items:center;
+    gap:10px;
   }
+  #syncBadge{
+    font-size: 11px;
+    font-weight: 900;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: var(--b) solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    color: rgba(234,242,255,.85);
+    white-space:nowrap;
+  }
+  #syncBadge.ok{border-color: rgba(40,200,120,.35); background: rgba(40,200,120,.10); color: rgba(210,255,235,.95);}
+  #syncBadge.err{border-color: rgba(255,80,80,.35); background: rgba(255,80,80,.10); color: rgba(255,220,220,.95);}
 
   #calgrid .weekheads{
     display:grid;
@@ -313,6 +329,7 @@ html = r"""
     flex:1;
     min-height: 0;
   }
+
   .day{
     background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.05) 100%);
     border: var(--b) solid rgba(255,255,255,.14);
@@ -326,12 +343,32 @@ html = r"""
     position:relative;
     color: var(--txt);
     box-shadow: var(--shadow2);
+    cursor:pointer;
   }
   .day.dim{opacity:.35;}
   .day.sel{
     outline: 2px solid var(--accent);
     outline-offset: -2px;
     box-shadow: var(--accentGlow), var(--shadow2);
+  }
+
+  /* indicador "hay datos" */
+  .day.hasdata::after{
+    content:"";
+    position:absolute;
+    width:7px;height:7px;
+    border-radius:50%;
+    right:7px; bottom:7px;
+    background: rgba(40,200,120,.70);
+    box-shadow: 0 0 10px rgba(40,200,120,.35);
+  }
+
+  /* bloquear días antes de hoy (socorrista = desde hoy en adelante) */
+  .day.past{
+    opacity:.22;
+    cursor:default;
+    pointer-events:none;
+    filter: grayscale(35%);
   }
 
   #legend{
@@ -458,6 +495,7 @@ html = r"""
   }
   .status.free{border-color: var(--okLine);background: var(--okBg);color: rgba(210,255,235,.95);}
   .status.busy{border-color: var(--badLine);background: var(--badBg);color: rgba(255,220,220,.95);}
+  .status.other{border-color: rgba(255,255,255,.18);background: rgba(255,255,255,.06);color: rgba(234,242,255,.85);}
 
   #bottom{
     height: var(--bottombarH);
@@ -488,7 +526,6 @@ html = r"""
 
   /* ===== MOBILE ===== */
   @media (max-width: 520px){
-    /* Mantener layout móvil sin “forzar” alto del iframe */
     html, body{overflow:hidden;}
 
     #filters{
@@ -535,7 +572,7 @@ html = r"""
           <div class="iconbtn">□</div>
           <div class="center">Calendario</div>
           <div class="right">
-            <div id="userDisplay">Jefe</div>
+            <div id="userDisplay">Usuario</div>
             <div class="iconbtn">⌁</div>
             <div class="iconbtn">⋮</div>
           </div>
@@ -543,13 +580,16 @@ html = r"""
 
         <div id="monthbar" class="panel">
           <div class="nav"><div class="iconbtn" id="prevMonth">‹</div></div>
-          <div class="month" id="monthDisplay">FEBRERO 2026</div>
+          <div class="month" id="monthDisplay">—</div>
           <div class="nav"><div class="iconbtn" id="nextMonth">›</div></div>
         </div>
 
         <div id="calgrid" class="panel">
           <div class="head">
-            <div class="label">CALENDARIO</div>
+            <div class="label">
+              <span>CALENDARIO</span>
+              <span id="syncBadge">SYNC…</span>
+            </div>
           </div>
 
           <div class="weekheads" aria-hidden="true">
@@ -565,9 +605,8 @@ html = r"""
           <div class="days" id="days"></div>
 
           <div id="legend">
-            <span><i class="dot on"></i>LIBRE</span>
-            <span><i class="dot mid"></i>OCUPADO</span>
-            <span><i class="dot"></i>OTRO</span>
+            <span><i class="dot on"></i>HAY DATOS</span>
+            <span><i class="dot"></i>SIN DATOS</span>
           </div>
         </div>
 
@@ -589,17 +628,34 @@ html = r"""
             </select>
             <span class="caret">▾</span>
           </div>
+
           <div class="select">
             <select id="yearSelect"></select>
             <span class="caret">▾</span>
           </div>
+
+          <div class="select">
+            <select id="socorristaSelect">
+              <option value="">Todos los socorristas</option>
+            </select>
+            <span class="caret">▾</span>
+          </div>
+
+          <div class="select">
+            <select id="modeSelect">
+              <option value="dia">Por día</option>
+              <option value="todo">Ver todo (desde hoy)</option>
+            </select>
+            <span class="caret">▾</span>
+          </div>
+
           <div class="btn primary" id="applyFilters">Aplicar</div>
         </div>
 
         <div id="agenda" class="panel">
           <h3>Agenda del día</h3>
           <div class="meta" id="agendaMeta">
-            <div><b>Fecha:</b> <span id="fechaDisplay">15 febrero 2026</span></div>
+            <div><b>Fecha:</b> <span id="fechaDisplay">—</span></div>
           </div>
 
           <div id="table">
@@ -612,8 +668,8 @@ html = r"""
 
         <div id="bottom" class="panel">
           <div class="leftinfo">
-            <span class="chip" id="bottomFecha">2026-02-15 · Rocafort · 09:00:00 → 15:00:00</span>
-            <span class="status free" id="bottomEstado">LIBRE</span>
+            <span class="chip" id="bottomFecha">—</span>
+            <span class="status other" id="bottomEstado">—</span>
           </div>
           <div class="actions">
             <div class="btn">Aplicar</div>
@@ -628,6 +684,9 @@ html = r"""
 
 <script>
 (function(){
+  const API_BASE = "https://camilo27.pythonanywhere.com";
+  const ENDPOINT_MALLAS = API_BASE + "/api/mallas";
+
   function getQueryParam(name) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(name);
@@ -637,19 +696,66 @@ html = r"""
 
   let currentDate = new Date();
   currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+
   let selectedDate = new Date(currentDate);
   let currentMonth = selectedDate.getMonth();
   let currentYear = selectedDate.getFullYear();
 
-  function formatDate(date) {
-    const d = date.getDate().toString().padStart(2,'0');
-    const m = (date.getMonth()+1).toString().padStart(2,'0');
-    const y = date.getFullYear();
-    return `${y}-${m}-${d}`;
+  // Data real
+  let ALL_ROWS = [];
+  let AVAILABLE_DATES = new Set(); // yyyy-mm-dd
+  let SOCORRISTAS = []; // unique sorted
+
+  let FILTER_SOCORRISTA = "";
+  let FILTER_MODE = "dia"; // dia | todo
+
+  function pad2(n){ return String(n).padStart(2,'0'); }
+
+  function toKeyYMD(y,m,d){
+    return `${y}-${pad2(m)}-${pad2(d)}`;
+  }
+
+  function formatDateKey(date) {
+    return toKeyYMD(date.getFullYear(), date.getMonth()+1, date.getDate());
   }
 
   function formatDisplayDate(date) {
     return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  function parseSheetDateToKey(fechaStr){
+    // soporta: dd/mm/yyyy o yyyy-mm-dd
+    const s = (fechaStr || "").trim();
+    if(!s) return "";
+    if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){
+      const [dd,mm,yyyy] = s.split("/");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+      return s;
+    }
+    return "";
+  }
+
+  function getField(row, keys){
+    for(const k of keys){
+      if(row && Object.prototype.hasOwnProperty.call(row, k)) return row[k];
+    }
+    return "";
+  }
+
+  function normalizeEstado(s){
+    const v = String(s || "").trim().toLowerCase();
+    if(!v) return {label:"OTRO", cls:"other"};
+    if(v.includes("libre")) return {label:"LIBRE", cls:"free"};
+    if(v.includes("ocup")) return {label:"OCUPADO", cls:"busy"};
+    return {label:String(s).toUpperCase(), cls:"other"};
+  }
+
+  function setSyncBadge(ok, text){
+    const el = document.getElementById("syncBadge");
+    el.textContent = text;
+    el.className = ok ? "ok" : "err";
   }
 
   function daysInMonth(year, month) {
@@ -690,7 +796,6 @@ html = r"""
       }
     }
 
-    // Forzar 6 filas exactas (42 celdas) para estabilidad del layout
     while (days.length < 42) {
       const last = days[days.length - 1].date;
       const nd = new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1);
@@ -699,6 +804,11 @@ html = r"""
     if (days.length > 42) days.length = 42;
 
     return days;
+  }
+
+  function updateMonthYearDisplay(year, month) {
+    document.getElementById('monthSelect').value = month;
+    document.getElementById('yearSelect').value = year;
   }
 
   function renderCalendar(year, month) {
@@ -715,6 +825,12 @@ html = r"""
 
       if (!dayInfo.currentMonth) cell.classList.add('dim');
 
+      const isPast = date < currentDate;
+      if(isPast) cell.classList.add('past');
+
+      const key = formatDateKey(date);
+      if(AVAILABLE_DATES.has(key)) cell.classList.add('hasdata');
+
       if (date.getFullYear() === selectedDate.getFullYear() &&
           date.getMonth() === selectedDate.getMonth() &&
           date.getDate() === selectedDate.getDate()) {
@@ -722,6 +838,8 @@ html = r"""
       }
 
       cell.addEventListener('click', function() {
+        if(date < currentDate) return;
+
         selectedDate = new Date(date);
         if (date.getMonth() !== month || date.getFullYear() !== year) {
           currentMonth = date.getMonth();
@@ -731,8 +849,8 @@ html = r"""
         } else {
           renderCalendar(year, month);
         }
-        updateAgenda(selectedDate);
-        updateBottomBar(selectedDate);
+        updateAgenda();
+        updateBottomBar();
       });
 
       daysEl.appendChild(cell);
@@ -742,62 +860,121 @@ html = r"""
       new Date(year, month, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
   }
 
-  function updateMonthYearDisplay(year, month) {
-    document.getElementById('monthSelect').value = month;
-    document.getElementById('yearSelect').value = year;
+  function getFilteredRows(){
+    const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
+    const keySel = formatDateKey(selectedDate);
+
+    const rows = ALL_ROWS.filter(r => {
+      const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
+      if(!fechaKey) return false;
+
+      // desde hoy
+      if(fechaKey < formatDateKey(currentDate)) return false;
+
+      // filtro socorrista
+      if(soc){
+        const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
+        if(rs !== soc) return false;
+      }
+
+      // modo por día / todo
+      if(FILTER_MODE === "dia"){
+        return fechaKey === keySel;
+      }
+      return true;
+    });
+
+    return rows;
   }
 
-  function updateAgenda(date) {
-    document.getElementById('fechaDisplay').textContent = formatDisplayDate(date);
+  function buildRowUI(r){
+    const inst = getField(r, ["Instalacion","Instalación","instalacion"]);
+    const ini  = getField(r, ["Ingreso","Inicio","ingreso","inicio"]);
+    const fin  = getField(r, ["Salida","Finaliza","finaliza","salida"]);
+    const hrs  = getField(r, ["Intensidad_horaria","Intensidad_ho","Horas","horas"]);
+    const est0 = getField(r, ["estado","Estado","estado "]);
 
+    const est = normalizeEstado(est0);
+
+    const row = document.createElement('div');
+    row.className = 'trow';
+
+    const col0 = document.createElement('div');
+    const chk = document.createElement('span');
+    chk.className = 'chk';
+    col0.appendChild(chk);
+    col0.appendChild(document.createTextNode(' ' + (inst || '-')));
+
+    const col1 = document.createElement('div'); col1.textContent = (ini || '-');
+    const col2 = document.createElement('div'); col2.textContent = (fin || '-');
+    const col3 = document.createElement('div'); col3.textContent = (hrs || '-');
+
+    const col4 = document.createElement('div');
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'status ' + est.cls;
+    statusSpan.textContent = est.label;
+    col4.appendChild(statusSpan);
+
+    row.appendChild(col0);
+    row.appendChild(col1);
+    row.appendChild(col2);
+    row.appendChild(col3);
+    row.appendChild(col4);
+
+    return {row, est};
+  }
+
+  function updateAgenda(){
     const tbody = document.getElementById('tbody');
     tbody.innerHTML = '';
 
-    const instalaciones = ['Cn Fabra', 'Arsenal', 'Guissona', 'Descanso', 'St. Jordi'];
-    const numEventos = 5;
-
-    for (let i = 0; i < numEventos; i++) {
-      const inst = instalaciones[i % instalaciones.length];
-      const inicio = `${8 + i}:00:00`;
-      const fin = `${12 + i}:00:00`;
-      const estado = i % 2 === 0 ? 'LIBRE' : 'OCUPADO';
-      const estadoClass = estado === 'LIBRE' ? 'free' : 'busy';
-      const horas = (parseInt(fin) - parseInt(inicio)) + 'h';
-
-      const row = document.createElement('div');
-      row.className = 'trow';
-
-      const col0 = document.createElement('div');
-      const chk = document.createElement('span');
-      chk.className = 'chk';
-      if (i === 0) chk.style.background = 'rgba(255,124,44,.95)';
-      col0.appendChild(chk);
-      col0.appendChild(document.createTextNode(' ' + inst));
-
-      const col1 = document.createElement('div'); col1.textContent = inicio;
-      const col2 = document.createElement('div'); col2.textContent = fin;
-      const col3 = document.createElement('div'); col3.textContent = horas;
-
-      const col4 = document.createElement('div');
-      const statusSpan = document.createElement('span');
-      statusSpan.className = 'status ' + estadoClass;
-      statusSpan.textContent = estado;
-      col4.appendChild(statusSpan);
-
-      row.appendChild(col0);
-      row.appendChild(col1);
-      row.appendChild(col2);
-      row.appendChild(col3);
-      row.appendChild(col4);
-
-      tbody.appendChild(row);
+    // fecha label
+    if(FILTER_MODE === "dia"){
+      document.getElementById('fechaDisplay').textContent = formatDisplayDate(selectedDate);
+    }else{
+      document.getElementById('fechaDisplay').textContent = "Desde hoy";
     }
+
+    const rows = getFilteredRows();
+
+    if(rows.length === 0){
+      const empty = document.createElement('div');
+      empty.className = 'trow';
+      empty.style.gridTemplateColumns = '1fr';
+      empty.innerHTML = '<div class="muted">Sin registros para el filtro actual</div>';
+      tbody.appendChild(empty);
+      return;
+    }
+
+    rows.forEach(r => {
+      const built = buildRowUI(r);
+      tbody.appendChild(built.row);
+    });
   }
 
-  function updateBottomBar(date) {
-    document.getElementById('bottomFecha').textContent = formatDate(date) + ' · Rocafort · 09:00:00 → 15:00:00';
-    document.getElementById('bottomEstado').textContent = 'LIBRE';
-    document.getElementById('bottomEstado').className = 'status free';
+  function updateBottomBar(){
+    const rows = getFilteredRows();
+    if(rows.length === 0){
+      document.getElementById('bottomFecha').textContent = '—';
+      const be = document.getElementById('bottomEstado');
+      be.textContent = '—';
+      be.className = 'status other';
+      return;
+    }
+
+    const r0 = rows[0];
+    const fechaKey = parseSheetDateToKey(getField(r0, ["Fecha","fecha"])) || formatDateKey(selectedDate);
+    const inst = getField(r0, ["Instalacion","Instalación","instalacion"]) || "-";
+    const ini  = getField(r0, ["Ingreso","Inicio","ingreso","inicio"]) || "-";
+    const fin  = getField(r0, ["Salida","Finaliza","finaliza","salida"]) || "-";
+    const est0 = getField(r0, ["estado","Estado","estado "]);
+
+    document.getElementById('bottomFecha').textContent = `${fechaKey} · ${inst} · ${ini} → ${fin}`;
+
+    const est = normalizeEstado(est0);
+    const be = document.getElementById('bottomEstado');
+    be.textContent = est.label;
+    be.className = 'status ' + est.cls;
   }
 
   function changeMonth(delta) {
@@ -816,9 +993,81 @@ html = r"""
     selectedDate = new Date(newYear, newMonth, newSelectedDay);
 
     renderCalendar(currentYear, currentMonth);
-    updateAgenda(selectedDate);
-    updateBottomBar(selectedDate);
+    updateAgenda();
+    updateBottomBar();
     updateMonthYearDisplay(currentYear, currentMonth);
+  }
+
+  function fillSocorristaSelect(){
+    const sel = document.getElementById("socorristaSelect");
+    // reset dejando "Todos"
+    sel.innerHTML = '<option value="">Todos los socorristas</option>';
+
+    SOCORRISTAS.forEach(name => {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      sel.appendChild(opt);
+    });
+
+    sel.value = FILTER_SOCORRISTA || "";
+  }
+
+  function rebuildAvailability(){
+    AVAILABLE_DATES = new Set();
+    const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
+
+    ALL_ROWS.forEach(r => {
+      const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
+      if(!fechaKey) return;
+
+      // desde hoy
+      if(fechaKey < formatDateKey(currentDate)) return;
+
+      if(soc){
+        const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
+        if(rs !== soc) return;
+      }
+      AVAILABLE_DATES.add(fechaKey);
+    });
+  }
+
+  async function loadMallas(){
+    setSyncBadge(false, "SYNC…");
+    try{
+      const res = await fetch(ENDPOINT_MALLAS, {method:"GET"});
+      if(!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      if(!data || data.ok !== true || !Array.isArray(data.rows)) throw new Error("JSON inválido");
+
+      ALL_ROWS = data.rows;
+
+      // SOCORRISTAS únicos
+      const setS = new Set();
+      ALL_ROWS.forEach(r => {
+        const s = String(getField(r, ["Socorrista","socorrista"])).trim();
+        if(s) setS.add(s);
+      });
+      SOCORRISTAS = Array.from(setS).sort((a,b)=>a.localeCompare(b, 'es', {sensitivity:'base'}));
+
+      fillSocorristaSelect();
+
+      rebuildAvailability();
+      setSyncBadge(true, "SYNC OK");
+
+      // pintar calendar y agenda
+      renderCalendar(currentYear, currentMonth);
+      updateAgenda();
+      updateBottomBar();
+    }catch(e){
+      ALL_ROWS = [];
+      SOCORRISTAS = [];
+      AVAILABLE_DATES = new Set();
+      setSyncBadge(false, "SYNC ERROR");
+      renderCalendar(currentYear, currentMonth);
+      updateAgenda();
+      updateBottomBar();
+    }
   }
 
   function init() {
@@ -839,25 +1088,33 @@ html = r"""
     document.getElementById('applyFilters').addEventListener('click', () => {
       const newMonth = parseInt(document.getElementById('monthSelect').value);
       const newYear = parseInt(document.getElementById('yearSelect').value);
+      FILTER_SOCORRISTA = document.getElementById('socorristaSelect').value || "";
+      FILTER_MODE = document.getElementById('modeSelect').value || "dia";
 
       currentMonth = newMonth;
       currentYear = newYear;
 
+      // mantener día válido
       let newSelectedDay = selectedDate.getDate();
       const dim = daysInMonth(newYear, newMonth);
       if (newSelectedDay > dim) newSelectedDay = dim;
 
       selectedDate = new Date(newYear, newMonth, newSelectedDay);
 
+      rebuildAvailability();
       renderCalendar(currentYear, currentMonth);
-      updateAgenda(selectedDate);
-      updateBottomBar(selectedDate);
+      updateAgenda();
+      updateBottomBar();
       updateMonthYearDisplay(currentYear, currentMonth);
     });
 
+    // inicial UI sin datos (hasta cargar)
     renderCalendar(currentYear, currentMonth);
-    updateAgenda(selectedDate);
-    updateBottomBar(selectedDate);
+    updateAgenda();
+    updateBottomBar();
+
+    // cargar datos reales
+    loadMallas();
   }
 
   init();
