@@ -4,8 +4,8 @@ import streamlit.components.v1 as components
 
 # ==============================================================================
 # PLANTILLA "CALENDARIO" — (MISMA ESTRUCTURA / MISMAS MEDIDAS) + TEMA HUD NARANJA
-# FIX: NO forzar el iframe a position:fixed en móvil (rompía el alto y “montaba” bloques)
-# + DATA REAL: /api/mallas (PythonAnywhere) -> Calendario + Agenda del día + Filtro Socorrista
+# FIX: Margen superior eliminado, encabezado simplificado, tabla con 6 columnas,
+# vista móvil mejorada con recorte de textos y capacidad para 8+ filas.
 # ==============================================================================
 
 PAD_X_PX = 10
@@ -124,7 +124,7 @@ html = r"""
   body{
     font-family: "Inter", system-ui, -apple-system, "SF Pro Display", Segoe UI, Roboto, Arial, sans-serif;
     color:var(--txt-0);
-    background: none; /* background handled by #stage */
+    background: none;
   }
   #stage{
     position:fixed;
@@ -135,7 +135,7 @@ html = r"""
       radial-gradient(900px 750px at 50% 95%, rgba(96,196,255,.12), transparent 60%),
       linear-gradient(180deg, var(--bg-2), var(--bg-0));
     display: flex;
-    align-items: center;
+    align-items: flex-start;  /* Elimina margen superior */
     justify-content: center;
   }
 
@@ -145,7 +145,7 @@ html = r"""
     position: relative;
     width: min(420px, 92vw);
     margin: 0 auto;
-    padding: 0 var(--pad-outer) var(--pad-outer) var(--pad-outer); /* top padding 0 */
+    padding: var(--pad-outer);
     border-radius: var(--radius-outer);
     background: rgba(10, 16, 26, .58);
     border:1px solid var(--stroke);
@@ -169,7 +169,7 @@ html = r"""
     mix-blend-mode: screen;
   }
 
-  /* Para pantallas grandes: ancho mayor pero con límite */
+  /* Para pantallas grandes */
   @media (min-width: 1400px) {
     #wrap {
       width: min(1200px, 80vw);
@@ -177,10 +177,10 @@ html = r"""
     }
   }
 
-  /* Month block (ahora única línea superior) */
+  /* Month block (ahora es el primer elemento) */
   .monthBlock{
-    margin-top: 8px;  /* pequeño margen superior */
-    padding: 12px 8px 6px;
+    margin-top:0;
+    padding:12px 8px 6px;
     display:flex;
     align-items:center;
     justify-content:space-between;
@@ -400,29 +400,28 @@ html = r"""
     background:var(--glass-2);
     border:1px solid var(--stroke);
     box-shadow:0 0 34px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
-    overflow-x: auto;  /* permite scroll horizontal si es necesario */
+    overflow:hidden;
     flex:1;
     display:flex;
     flex-direction:column;
     min-height:0;
   }
-  /* Cabecera y filas: ahora la primera columna es la instalación (con checkbox) y tiene ancho flexible */
+  /* Estilos para la tabla (6 columnas) */
   .tableHeader, .trow {
-    display:grid;
-    grid-template-columns: minmax(120px, 1.5fr) 92px 92px 86px auto;
-    gap:10px;
-    padding:12px 14px;
-    align-items:center;
-    white-space: nowrap;
+    display: grid;
+    grid-template-columns: 26px 1fr 92px 92px 86px auto;
+    gap: 10px;
+    align-items: center;
   }
-  .tableHeader {
+  .tableHeader{
+    padding:12px 14px;
     font-size:12px;
     font-weight:700;
     color:var(--txt-2);
     background:rgba(255,255,255,.03);
     border-bottom:1px solid rgba(255,255,255,.08);
   }
-  .trow {
+  .trow{
     padding:11px 14px;
     border-bottom:1px solid rgba(255,255,255,.06);
   }
@@ -434,17 +433,6 @@ html = r"""
     display:flex;
     align-items:center;
     gap:8px;
-  }
-  .trow div:nth-child(2),
-  .trow div:nth-child(3),
-  .trow div:nth-child(4){
-    font-size:12.5px;
-    color:var(--txt-1);
-    font-variant-numeric:tabular-nums;
-  }
-  .trow div:nth-child(5){
-    display:flex;
-    justify-content:flex-end;
   }
   .chk{
     width:16px; height:16px;
@@ -465,8 +453,6 @@ html = r"""
     font-weight:800;
     letter-spacing:.3px;
     color:rgba(0,0,0,.78);
-    white-space: nowrap;
-    max-width: 100px; /* evitar desbordes muy largos */
   }
   .status.free{
     background:linear-gradient(180deg, rgba(79,227,140,1), rgba(46,196,118,1));
@@ -545,16 +531,7 @@ html = r"""
     box-shadow:0 0 18px var(--glow-orange-2), inset 0 1px 0 rgba(255,255,255,.10);
   }
 
-  /* Responsive */
-  @media (max-width:380px){
-    :root{
-      --fs-title:24px;
-    }
-    .calendarGrid{gap:8px;}
-    .day{height:34px;}
-  }
-
-  /* MÓVIL (max-width:520px) */
+  /* ========== VERSIÓN MÓVIL MEJORADA ========== */
   @media (max-width:520px){
     .controlsRow{
       grid-template-columns:1fr 1fr;
@@ -563,71 +540,84 @@ html = r"""
     .controlsRow .applyBtn{
       grid-column:1/-1;
     }
-    .tableHeader{
-      display:none;
-    }
-    /* Reorganización de filas de agenda en móvil */
-    .trow {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 6px 10px;
-      padding: 10px;
-      white-space: normal;
-      grid-template-columns: unset; /* anula grid */
-    }
-    .trow > div {
-      display: inline;  /* reset */
-    }
-    /* Ocultar checkbox en móvil */
-    .chk {
+    .tableHeader {
       display: none;
     }
-    /* Primera línea: instalación y estado */
-    .trow div:nth-child(1) {
+    .trow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 8px 12px;  /* Padding vertical reducido para más filas */
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    /* Ocultar checkbox */
+    .trow > div:nth-child(1) { display: none; }
+    /* Instalación */
+    .trow > div:nth-child(2) {
+      grid-column: 1;
+      grid-row: 1;
       font-weight: bold;
-      font-size: 14px;
-      order: 1;
-      flex: 1 1 auto;
-      min-width: 120px;
-      white-space: normal;
-      word-break: break-word;
-    }
-    .trow div:nth-child(5) {
-      order: 2;
-      flex: 0 0 auto;
-    }
-    /* Segunda línea: inicio, finaliza, horas */
-    .trow div:nth-child(2),
-    .trow div:nth-child(3),
-    .trow div:nth-child(4) {
-      order: 3;
-      font-size: 12px;
-      color: var(--txt-2);
-      background: rgba(255,255,255,.05);
-      padding: 2px 8px;
-      border-radius: 12px;
       white-space: nowrap;
-    }
-    /* Aseguramos que el estado no se desborde */
-    .status {
-      max-width: 90px;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .footerActions{
-      grid-template-columns:1fr 1fr;
+    /* Estado */
+    .trow > div:nth-child(6) {
+      grid-column: 2;
+      grid-row: 1;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .footerActions .btn:last-child{
-      grid-column:span 2;
+    /* Inicio */
+    .trow > div:nth-child(3) {
+      grid-column: 1;
+      grid-row: 2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* Finaliza */
+    .trow > div:nth-child(4) {
+      grid-column: 2;
+      grid-row: 2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* Horas */
+    .trow > div:nth-child(5) {
+      grid-column: 1 / -1;
+      grid-row: 3;
+      text-align: center;
+      font-size: 0.9em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .trow > div {
+      font-size: 13px;
     }
   }
 
-  /* Ajuste adicional para pantallas muy grandes */
+  /* Ajuste para pantallas muy grandes */
   @media (min-width: 1400px) {
     .controlsRow {
       grid-template-columns: repeat(4, 1fr) auto;
     }
+    .tableHeader, .trow {
+      grid-template-columns: 26px 2fr 1fr 1fr 1fr 1fr;
+    }
+  }
+
+  /* Ajuste para pantallas muy pequeñas */
+  @media (max-width:380px){
+    :root{
+      --fs-title:24px;
+    }
+    .calendarGrid{gap:8px;}
+    .day{height:34px;}
   }
 </style>
 </head>
@@ -638,7 +628,8 @@ html = r"""
     <div id="plan">
       <div id="wrap">
 
-        <!-- Solo mes y navegación -->
+        <!-- Topbar eliminado -->
+
         <div id="monthbar" class="panel monthBlock">
           <div class="nav"><div class="iconbtn monthNav__btn" id="prevMonth">‹</div></div>
           <div class="month monthNav__title" id="monthDisplay">—</div>
@@ -721,7 +712,12 @@ html = r"""
 
           <div id="table" class="tableCard">
             <div id="thead" class="tableHeader">
-              <div>Instalación</div><div>Inicio</div><div>Finaliza</div><div>Horas</div><div>Estado</div>
+              <div></div> <!-- checkbox -->
+              <div>Instalación</div>
+              <div>Inicio</div>
+              <div>Finaliza</div>
+              <div>Horas</div>
+              <div>Estado</div>
             </div>
             <div id="tbody"></div>
           </div>
@@ -778,7 +774,6 @@ html = r"""
   }
 
   function parseSheetDateToKey(fechaStr){
-    // soporta: dd/mm/yyyy o yyyy-mm-dd
     const s = (fechaStr || "").trim();
     if(!s) return "";
     if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){
@@ -806,14 +801,11 @@ html = r"""
     return {label:String(s).toUpperCase(), cls:"other"};
   }
 
-  // Función para quitar segundos de horas (HH:MM:SS -> HH:MM)
-  function formatTime(timeStr) {
-    if (!timeStr) return '-';
-    const parts = timeStr.split(':');
-    if (parts.length >= 2) {
-      return parts[0] + ':' + parts[1];
-    }
-    return timeStr;
+  // Quita segundos de las horas (15:00:00 -> 15:00)
+  function formatTime(t) {
+    if (!t) return '-';
+    const str = String(t);
+    return str.replace(/(\d{1,2}:\d{2}):\d{2}$/, '$1');
   }
 
   function setSyncBadge(ok, text){
@@ -932,16 +924,13 @@ html = r"""
       const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
       if(!fechaKey) return false;
 
-      // desde hoy
       if(fechaKey < formatDateKey(currentDate)) return false;
 
-      // filtro socorrista
       if(soc){
         const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
         if(rs !== soc) return false;
       }
 
-      // modo por día / todo
       if(FILTER_MODE === "dia"){
         return fechaKey === keySel;
       }
@@ -955,7 +944,7 @@ html = r"""
     const inst = getField(r, ["Instalacion","Instalación","instalacion"]);
     const ini  = formatTime(getField(r, ["Ingreso","Inicio","ingreso","inicio"]));
     const fin  = formatTime(getField(r, ["Salida","Finaliza","finaliza","salida"]));
-    const hrs  = getField(r, ["Intensidad_horaria","Intensidad_ho","Horas","horas"]);
+    const hrs  = formatTime(getField(r, ["Intensidad_horaria","Intensidad_ho","Horas","horas"]));
     const est0 = getField(r, ["estado","Estado","estado "]);
 
     const est = normalizeEstado(est0);
@@ -963,26 +952,41 @@ html = r"""
     const row = document.createElement('div');
     row.className = 'trow';
 
+    // Columna 0: checkbox
     const col0 = document.createElement('div');
     const chk = document.createElement('span');
     chk.className = 'chk';
     col0.appendChild(chk);
-    col0.appendChild(document.createTextNode(' ' + (inst || '-')));
 
-    const col1 = document.createElement('div'); col1.textContent = (ini || '-');
-    const col2 = document.createElement('div'); col2.textContent = (fin || '-');
-    const col3 = document.createElement('div'); col3.textContent = (hrs || '-');
+    // Columna 1: instalación
+    const col1 = document.createElement('div');
+    col1.textContent = inst || '-';
+
+    // Columna 2: inicio
+    const col2 = document.createElement('div');
+    col2.textContent = ini;
+
+    // Columna 3: finaliza
+    const col3 = document.createElement('div');
+    col3.textContent = fin;
+
+    // Columna 4: horas
     const col4 = document.createElement('div');
+    col4.textContent = hrs;
+
+    // Columna 5: estado
+    const col5 = document.createElement('div');
     const statusSpan = document.createElement('span');
     statusSpan.className = 'status ' + est.cls;
     statusSpan.textContent = est.label;
-    col4.appendChild(statusSpan);
+    col5.appendChild(statusSpan);
 
     row.appendChild(col0);
     row.appendChild(col1);
     row.appendChild(col2);
     row.appendChild(col3);
     row.appendChild(col4);
+    row.appendChild(col5);
 
     return {row, est};
   }
@@ -991,7 +995,6 @@ html = r"""
     const tbody = document.getElementById('tbody');
     tbody.innerHTML = '';
 
-    // fecha label
     if(FILTER_MODE === "dia"){
       document.getElementById('fechaDisplay').textContent = formatDisplayDate(selectedDate);
     }else{
@@ -1028,8 +1031,8 @@ html = r"""
     const r0 = rows[0];
     const fechaKey = parseSheetDateToKey(getField(r0, ["Fecha","fecha"])) || formatDateKey(selectedDate);
     const inst = getField(r0, ["Instalacion","Instalación","instalacion"]) || "-";
-    const ini  = formatTime(getField(r0, ["Ingreso","Inicio","ingreso","inicio"])) || "-";
-    const fin  = formatTime(getField(r0, ["Salida","Finaliza","finaliza","salida"])) || "-";
+    const ini  = formatTime(getField(r0, ["Ingreso","Inicio","ingreso","inicio"]));
+    const fin  = formatTime(getField(r0, ["Salida","Finaliza","finaliza","salida"]));
     const est0 = getField(r0, ["estado","Estado","estado "]);
 
     document.getElementById('bottomFecha').textContent = `${fechaKey} · ${inst} · ${ini} → ${fin}`;
@@ -1063,7 +1066,6 @@ html = r"""
 
   function fillSocorristaSelect(){
     const sel = document.getElementById("socorristaSelect");
-    // reset dejando "Todos"
     sel.innerHTML = '<option value="">Todos los socorristas</option>';
 
     SOCORRISTAS.forEach(name => {
@@ -1084,7 +1086,6 @@ html = r"""
       const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
       if(!fechaKey) return;
 
-      // desde hoy
       if(fechaKey < formatDateKey(currentDate)) return;
 
       if(soc){
@@ -1105,7 +1106,6 @@ html = r"""
 
       ALL_ROWS = data.rows;
 
-      // SOCORRISTAS únicos
       const setS = new Set();
       ALL_ROWS.forEach(r => {
         const s = String(getField(r, ["Socorrista","socorrista"])).trim();
@@ -1118,7 +1118,6 @@ html = r"""
       rebuildAvailability();
       setSyncBadge(true, "SYNC OK");
 
-      // pintar calendar y agenda
       renderCalendar(currentYear, currentMonth);
       updateAgenda();
       updateBottomBar();
@@ -1157,7 +1156,6 @@ html = r"""
       currentMonth = newMonth;
       currentYear = newYear;
 
-      // mantener día válido
       let newSelectedDay = selectedDate.getDate();
       const dim = daysInMonth(newYear, newMonth);
       if (newSelectedDay > dim) newSelectedDay = dim;
@@ -1171,12 +1169,10 @@ html = r"""
       updateMonthYearDisplay(currentYear, currentMonth);
     });
 
-    // inicial UI sin datos (hasta cargar)
     renderCalendar(currentYear, currentMonth);
     updateAgenda();
     updateBottomBar();
 
-    // cargar datos reales
     loadMallas();
   }
 
@@ -1188,8 +1184,7 @@ html = r"""
 </html>
 """
 
-html = (
-    html.replace("__PADX__", str(PAD_X_PX))
+html = (html.replace("__PADX__", str(PAD_X_PX))
         .replace("__PADTOP__", str(PAD_TOP_PX))
         .replace("__B__", str(BORDER_PX))
         .replace("__BC__", BORDER_COLOR)
