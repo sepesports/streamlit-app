@@ -61,7 +61,7 @@ html = r"""
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root {
-    --bg-0:#070b12;
+    --bg-0:#0a1a55;
     --bg-1:#0b1320;
     --bg-2:#0f1c2a;
     --glass: rgba(255,255,255,.06);
