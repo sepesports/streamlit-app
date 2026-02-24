@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 
 # ==============================================================================
 # PLANTILLA "CALENDARIO" — TEMA HUD NARANJA
-# Versión con agenda móvil mejorada: cabecera visible, más ancho y 15+ filas.
+# Versión con agenda móvil mejorada: cabecera visible, scroll general sin superposición.
 # ==============================================================================
 
 PAD_X_PX = 10
@@ -131,7 +131,7 @@ html = r"""
     box-shadow:var(--shadow-soft);
     backdrop-filter:blur(var(--blur));
     -webkit-backdrop-filter:blur(var(--blur));
-    overflow:hidden;
+    overflow: hidden;  /* Por defecto oculto, en móvil se cambia a auto */
     display:flex;
     flex-direction:column;
     max-height: 95vh;
@@ -378,7 +378,7 @@ html = r"""
     background:var(--glass-2);
     border:1px solid var(--stroke);
     box-shadow:0 0 34px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
-    overflow:hidden;
+    overflow: hidden;
     flex:1;
     display:flex;
     flex-direction:column;
@@ -450,7 +450,7 @@ html = r"""
 
   /* Estilos para móvil (filas expandibles) */
   .mobile-header {
-    display: none; /* Oculto por defecto, se muestra en móvil */
+    display: none;
     padding: 10px 12px;
     background: rgba(255,255,255,.03);
     border-bottom: 1px solid rgba(255,255,255,.08);
@@ -463,9 +463,9 @@ html = r"""
     gap: 8px;
     flex: 1;
   }
-  .mobile-header .horas span:first-child { width: 70px; } /* inicio */
-  .mobile-header .horas span:nth-child(2) { width: 70px; } /* finaliza */
-  .mobile-header .horas span:last-child { width: 60px; text-align: right; } /* horas */
+  .mobile-header .horas span:first-child { width: 70px; }
+  .mobile-header .horas span:nth-child(2) { width: 70px; }
+  .mobile-header .horas span:last-child { width: 60px; text-align: right; }
 
   .trow.mobile {
     display: block;
@@ -476,7 +476,7 @@ html = r"""
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 12px; /* Reducido para más filas */
+    padding: 8px 12px;
     cursor: pointer;
     background: rgba(255,255,255,.02);
   }
@@ -491,9 +491,9 @@ html = r"""
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .row-main .horas span:first-child { width: 70px; } /* inicio */
-  .row-main .horas span:nth-child(2) { width: 70px; } /* finaliza */
-  .row-main .horas span:last-child { width: 60px; text-align: right; } /* horas */
+  .row-main .horas span:first-child { width: 70px; }
+  .row-main .horas span:nth-child(2) { width: 70px; }
+  .row-main .horas span:last-child { width: 60px; text-align: right; }
   .expand-icon {
     width: 24px;
     height: 24px;
@@ -602,12 +602,16 @@ html = r"""
     }
   }
 
-  /* Ajustes para móvil: más ancho y altura para 15+ filas */
+  /* Ajustes para móvil: scroll general y sin superposición */
   @media (max-width:520px){
-    /* Hacer el contenedor principal más ancho */
+    /* El contenedor principal ahora hace scroll */
     #wrap {
-      width: 98vw;  /* Ocupa casi todo el ancho */
+      width: 98vw;
       padding: 12px;
+      overflow-y: auto;
+      display: block;  /* Eliminamos flex para que los hijos fluyan */
+      max-height: 95vh;
+      height: 95vh;    /* Altura fija para que scroll funcione */
     }
 
     .controlsRow{
@@ -618,9 +622,12 @@ html = r"""
       grid-column:1/-1;
     }
 
-    /* Ocultar cabecera de escritorio */
+    /* Ocultar cabecera de escritorio y resumen */
     .tableHeader {
       display: none;
+    }
+    .footerBlock .summaryRow {
+      display: none;   /* Eliminamos el resumen */
     }
 
     /* Mostrar cabecera móvil */
@@ -636,14 +643,14 @@ html = r"""
       display: block;
     }
 
-    /* Ajustar altura de la tabla para que quepan al menos 15 filas */
+    /* La tabla ya no tiene restricciones de altura */
     .tableCard {
-      max-height: none;  /* Permitir que crezca */
+      max-height: none;
       height: auto;
-      min-height: 600px;  /* Aproximadamente 15 filas * 40px */
+      min-height: 0;
     }
 
-    /* Reducir padding para más espacio */
+    /* Ajustes de espaciado */
     .agendaBlock {
       margin-top: 12px;
     }
@@ -733,9 +740,9 @@ html = r"""
                 <span>Finaliza</span>
                 <span>Horas</span>
               </div>
-              <div style="width:24px;"></div> <!-- Espacio para el icono -->
+              <div style="width:24px;"></div> <!-- espacio para icono -->
             </div>
-            <!-- Cabecera para desktop (se mantiene) -->
+            <!-- Cabecera para desktop -->
             <div id="thead" class="tableHeader">
               <div></div><div>Instalación</div><div>Inicio</div><div>Finaliza</div><div>Horas</div><div>Estado</div>
             </div>
@@ -744,6 +751,7 @@ html = r"""
         </div>
 
         <div id="bottom" class="panel footerBlock">
+          <!-- Resumen eliminado en móvil mediante CSS, en desktop se mantiene -->
           <div class="leftinfo summaryRow">
             <span class="chip" id="bottomFecha">—</span>
             <span class="status other" id="bottomEstado">—</span>
