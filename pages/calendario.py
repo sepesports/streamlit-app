@@ -3,9 +3,9 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # ==============================================================================
-# PLANTILLA "CALENDARIO" — (MISMA ESTRUCTURA / MISMAS MEDIDAS) + TEMA HUD NARANJA
-# FIX: Margen superior eliminado, encabezado simplificado, tabla con 6 columnas,
-# vista móvil mejorada con recorte de textos y capacidad para 8+ filas.
+# PLANTILLA "CALENDARIO" — TEMA HUD NARANJA
+# Versión con agenda móvil: solo 3 columnas (Inicio, Finaliza, Horas) y
+# detalles (Instalación, Estado) en desplegable por fila.
 # ==============================================================================
 
 PAD_X_PX = 10
@@ -62,63 +62,43 @@ html = r"""
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root {
-    /* Fondo */
-    --bg-0:#070b12;       /* base */
-    --bg-1:#0b1320;       /* capas */
-    --bg-2:#0f1c2a;       /* panel */
-
-    /* Glass */
+    --bg-0:#070b12;
+    --bg-1:#0b1320;
+    --bg-2:#0f1c2a;
     --glass: rgba(255,255,255,.06);
     --glass-2: rgba(255,255,255,.08);
     --stroke: rgba(255,255,255,.10);
     --stroke-2: rgba(255,255,255,.14);
-
-    /* Glow */
     --glow-blue: rgba(96, 196, 255, .45);
     --glow-blue-2: rgba(96, 196, 255, .22);
     --glow-orange: rgba(255, 142, 64, .50);
     --glow-orange-2: rgba(255, 142, 64, .22);
-
-    /* Texto */
     --txt-0: rgba(255,255,255,.95);
     --txt-1: rgba(255,255,255,.78);
     --txt-2: rgba(255,255,255,.55);
     --txt-3: rgba(255,255,255,.35);
-
-    /* Estados */
     --free:#4fe38c;
     --busy:#ff4b4b;
     --other:#ff7c2c;
-
-    /* Layout */
     --radius-outer: 26px;
     --radius-card: 18px;
     --radius-pill: 999px;
     --radius-cell: 12px;
-
-    /* Sombras */
     --shadow-soft: 0 18px 40px rgba(0,0,0,.45);
     --shadow-inner: inset 0 1px 0 rgba(255,255,255,.08);
-
-    /* Blur */
     --blur: 18px;
-
-    /* Tamaños sugeridos (móvil) */
-    --fs-top: 14px;      /* header */
-    --fs-title: 28px;    /* FEBRERO 2026 */
-    --fs-sub: 12px;      /* labels */
-    --fs-day: 11px;      /* MO..FRI */
-    --fs-cell: 14px;     /* números calendario */
-    --fs-h3: 18px;       /* "Agenda del día" */
-    --fs-table: 13px;    /* tabla */
-    --fs-btn: 14px;      /* botones */
-
-    /* Espaciados */
+    --fs-top: 14px;
+    --fs-title: 28px;
+    --fs-sub: 12px;
+    --fs-day: 11px;
+    --fs-cell: 14px;
+    --fs-h3: 18px;
+    --fs-table: 13px;
+    --fs-btn: 14px;
     --pad-outer: 16px;
     --pad-block: 14px;
   }
 
-  /* ---------- 1) RESET BÁSICO ---------- */
   *{box-sizing:border-box;}
   html,body{height:100%;margin:0;padding:0;}
   body{
@@ -135,7 +115,7 @@ html = r"""
       radial-gradient(900px 750px at 50% 95%, rgba(96,196,255,.12), transparent 60%),
       linear-gradient(180deg, var(--bg-2), var(--bg-0));
     display: flex;
-    align-items: flex-start;  /* Elimina margen superior */
+    align-items: flex-start;
     justify-content: center;
   }
 
@@ -169,7 +149,6 @@ html = r"""
     mix-blend-mode: screen;
   }
 
-  /* Para pantallas grandes */
   @media (min-width: 1400px) {
     #wrap {
       width: min(1200px, 80vw);
@@ -177,7 +156,7 @@ html = r"""
     }
   }
 
-  /* Month block (ahora es el primer elemento) */
+  /* Month block */
   .monthBlock{
     margin-top:0;
     padding:12px 8px 6px;
@@ -406,8 +385,9 @@ html = r"""
     flex-direction:column;
     min-height:0;
   }
-  /* Estilos para la tabla (6 columnas) */
-  .tableHeader, .trow {
+
+  /* Estilos para desktop (6 columnas) */
+  .tableHeader, .trow.desktop {
     display: grid;
     grid-template-columns: 26px 1fr 92px 92px 86px auto;
     gap: 10px;
@@ -421,12 +401,12 @@ html = r"""
     background:rgba(255,255,255,.03);
     border-bottom:1px solid rgba(255,255,255,.08);
   }
-  .trow{
+  .trow.desktop{
     padding:11px 14px;
     border-bottom:1px solid rgba(255,255,255,.06);
   }
-  .trow:last-child{border-bottom:none;}
-  .trow div:nth-child(1){
+  .trow.desktop:last-child{border-bottom:none;}
+  .trow.desktop div:nth-child(1){
     font-size:var(--fs-table);
     color:var(--txt-0);
     font-weight:650;
@@ -468,9 +448,73 @@ html = r"""
     border:1px solid rgba(255,255,255,.2);
     color:var(--txt-1);
   }
-  #tbody{
-    flex:1;
-    overflow-y:auto;
+
+  /* Estilos para móvil (filas expandibles) */
+  .trow.mobile {
+    display: block;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    padding: 0;
+  }
+  .row-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    cursor: pointer;
+    background: rgba(255,255,255,.02);
+  }
+  .row-main .horas {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    font-size: 13px;
+  }
+  .row-main .horas span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .row-main .horas span:first-child { width: 70px; } /* inicio */
+  .row-main .horas span:nth-child(2) { width: 70px; } /* finaliza */
+  .row-main .horas span:last-child { width: 60px; text-align: right; } /* horas */
+  .expand-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: var(--glass);
+    border: 1px solid var(--stroke);
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--txt-1);
+    transition: transform 0.2s;
+  }
+  .row-detail {
+    display: none;
+    padding: 8px 12px 12px;
+    background: rgba(0,0,0,.2);
+    border-top: 1px solid rgba(255,255,255,.05);
+    font-size: 13px;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+  .row-detail .instalacion {
+    color: var(--txt-0);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .row-detail .estado {
+    justify-self: end;
+  }
+  .trow.mobile.expanded .row-detail {
+    display: grid;
+  }
+  .trow.mobile.expanded .expand-icon {
+    transform: rotate(45deg);
   }
 
   /* Footer block */
@@ -531,7 +575,16 @@ html = r"""
     box-shadow:0 0 18px var(--glow-orange-2), inset 0 1px 0 rgba(255,255,255,.10);
   }
 
-  /* ========== VERSIÓN MÓVIL MEJORADA ========== */
+  /* Responsive */
+  @media (min-width: 1400px) {
+    .controlsRow {
+      grid-template-columns: repeat(4, 1fr) auto;
+    }
+    .tableHeader, .trow.desktop {
+      grid-template-columns: 26px 2fr 1fr 1fr 1fr 1fr;
+    }
+  }
+
   @media (max-width:520px){
     .controlsRow{
       grid-template-columns:1fr 1fr;
@@ -540,78 +593,19 @@ html = r"""
     .controlsRow .applyBtn{
       grid-column:1/-1;
     }
+    /* Ocultar cabecera de tabla en móvil */
     .tableHeader {
       display: none;
     }
-    .trow {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      padding: 8px 12px;  /* Padding vertical reducido para más filas */
-      border-bottom: 1px solid rgba(255,255,255,.06);
+    /* Las filas de desktop se ocultan, las de móvil se muestran */
+    .trow.desktop {
+      display: none;
     }
-    /* Ocultar checkbox */
-    .trow > div:nth-child(1) { display: none; }
-    /* Instalación */
-    .trow > div:nth-child(2) {
-      grid-column: 1;
-      grid-row: 1;
-      font-weight: bold;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    /* Estado */
-    .trow > div:nth-child(6) {
-      grid-column: 2;
-      grid-row: 1;
-      text-align: right;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    /* Inicio */
-    .trow > div:nth-child(3) {
-      grid-column: 1;
-      grid-row: 2;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    /* Finaliza */
-    .trow > div:nth-child(4) {
-      grid-column: 2;
-      grid-row: 2;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    /* Horas */
-    .trow > div:nth-child(5) {
-      grid-column: 1 / -1;
-      grid-row: 3;
-      text-align: center;
-      font-size: 0.9em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .trow > div {
-      font-size: 13px;
+    .trow.mobile {
+      display: block;
     }
   }
 
-  /* Ajuste para pantallas muy grandes */
-  @media (min-width: 1400px) {
-    .controlsRow {
-      grid-template-columns: repeat(4, 1fr) auto;
-    }
-    .tableHeader, .trow {
-      grid-template-columns: 26px 2fr 1fr 1fr 1fr 1fr;
-    }
-  }
-
-  /* Ajuste para pantallas muy pequeñas */
   @media (max-width:380px){
     :root{
       --fs-title:24px;
@@ -624,12 +618,9 @@ html = r"""
 <body>
   <div id="stage">
     <div id="frame"></div>
-
     <div id="plan">
       <div id="wrap">
-
         <!-- Topbar eliminado -->
-
         <div id="monthbar" class="panel monthBlock">
           <div class="nav"><div class="iconbtn monthNav__btn" id="prevMonth">‹</div></div>
           <div class="month monthNav__title" id="monthDisplay">—</div>
@@ -643,19 +634,10 @@ html = r"""
               <span id="syncBadge">SYNC…</span>
             </div>
           </div>
-
           <div class="weekheads weekdays" aria-hidden="true">
-            <div class="w">L</div>
-            <div class="w">M</div>
-            <div class="w">X</div>
-            <div class="w">J</div>
-            <div class="w">V</div>
-            <div class="w">S</div>
-            <div class="w">D</div>
+            <div class="w">L</div><div class="w">M</div><div class="w">X</div><div class="w">J</div><div class="w">V</div><div class="w">S</div><div class="w">D</div>
           </div>
-
           <div class="days calendarGrid" id="days"></div>
-
           <div id="legend" class="legend">
             <span class="legend__item"><i class="dot on legend__dot"></i>HAY DATOS</span>
             <span class="legend__item"><i class="dot legend__dot"></i>SIN DATOS</span>
@@ -665,34 +647,20 @@ html = r"""
         <div id="filters" class="panel controlsRow">
           <div class="select selectPill">
             <select id="monthSelect">
-              <option value="0">Enero</option>
-              <option value="1">Febrero</option>
-              <option value="2">Marzo</option>
-              <option value="3">Abril</option>
-              <option value="4">Mayo</option>
-              <option value="5">Junio</option>
-              <option value="6">Julio</option>
-              <option value="7">Agosto</option>
-              <option value="8">Septiembre</option>
-              <option value="9">Octubre</option>
-              <option value="10">Noviembre</option>
-              <option value="11">Diciembre</option>
+              <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
             </select>
             <span class="caret">▾</span>
           </div>
-
           <div class="select selectPill">
             <select id="yearSelect"></select>
             <span class="caret">▾</span>
           </div>
-
           <div class="select selectPill">
             <select id="socorristaSelect">
               <option value="">Todos los socorristas</option>
             </select>
             <span class="caret">▾</span>
           </div>
-
           <div class="select selectPill">
             <select id="modeSelect">
               <option value="dia">Por día</option>
@@ -700,7 +668,6 @@ html = r"""
             </select>
             <span class="caret">▾</span>
           </div>
-
           <div class="btn primary applyBtn" id="applyFilters">Aplicar</div>
         </div>
 
@@ -709,15 +676,9 @@ html = r"""
           <div class="meta agendaMeta" id="agendaMeta">
             <div><b>Fecha:</b> <span id="fechaDisplay">—</span></div>
           </div>
-
           <div id="table" class="tableCard">
             <div id="thead" class="tableHeader">
-              <div></div> <!-- checkbox -->
-              <div>Instalación</div>
-              <div>Inicio</div>
-              <div>Finaliza</div>
-              <div>Horas</div>
-              <div>Estado</div>
+              <div></div><div>Instalación</div><div>Inicio</div><div>Finaliza</div><div>Horas</div><div>Estado</div>
             </div>
             <div id="tbody"></div>
           </div>
@@ -734,7 +695,6 @@ html = r"""
             <div class="btn primary btn--primary">Enviar</div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -751,13 +711,12 @@ html = r"""
   let currentMonth = selectedDate.getMonth();
   let currentYear = selectedDate.getFullYear();
 
-  // Data real
   let ALL_ROWS = [];
-  let AVAILABLE_DATES = new Set(); // yyyy-mm-dd
-  let SOCORRISTAS = []; // unique sorted
+  let AVAILABLE_DATES = new Set();
+  let SOCORRISTAS = [];
 
   let FILTER_SOCORRISTA = "";
-  let FILTER_MODE = "dia"; // dia | todo
+  let FILTER_MODE = "dia";
 
   function pad2(n){ return String(n).padStart(2,'0'); }
 
@@ -801,7 +760,6 @@ html = r"""
     return {label:String(s).toUpperCase(), cls:"other"};
   }
 
-  // Quita segundos de las horas (15:00:00 -> 15:00)
   function formatTime(t) {
     if (!t) return '-';
     const str = String(t);
@@ -826,10 +784,8 @@ html = r"""
   function getMonthDays(year, month) {
     const firstDay = getFirstDayOfMonth(year, month);
     const totalDays = daysInMonth(year, month);
-
     const days = [];
     const prevMonthDays = firstDay - 1;
-
     if (prevMonthDays > 0) {
       const prevMonth = month === 0 ? 11 : month - 1;
       const prevYear = month === 0 ? year - 1 : year;
@@ -838,11 +794,9 @@ html = r"""
         days.push({ date: new Date(prevYear, prevMonth, daysPrev - i + 1), currentMonth: false });
       }
     }
-
     for (let d = 1; d <= totalDays; d++) {
       days.push({ date: new Date(year, month, d), currentMonth: true });
     }
-
     const remaining = 7 - (days.length % 7);
     if (remaining < 7) {
       const nextMonth = month === 11 ? 0 : month + 1;
@@ -851,14 +805,12 @@ html = r"""
         days.push({ date: new Date(nextYear, nextMonth, i), currentMonth: false });
       }
     }
-
     while (days.length < 42) {
       const last = days[days.length - 1].date;
       const nd = new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1);
       days.push({ date: nd, currentMonth: false });
     }
     if (days.length > 42) days.length = 42;
-
     return days;
   }
 
@@ -870,32 +822,24 @@ html = r"""
   function renderCalendar(year, month) {
     const daysEl = document.getElementById('days');
     daysEl.innerHTML = '';
-
     const days = getMonthDays(year, month);
-
     days.forEach(dayInfo => {
       const date = dayInfo.date;
       const cell = document.createElement('div');
       cell.className = 'day';
       cell.textContent = date.getDate();
-
       if (!dayInfo.currentMonth) cell.classList.add('dim');
-
       const isPast = date < currentDate;
       if(isPast) cell.classList.add('past');
-
       const key = formatDateKey(date);
       if(AVAILABLE_DATES.has(key)) cell.classList.add('hasdata');
-
       if (date.getFullYear() === selectedDate.getFullYear() &&
           date.getMonth() === selectedDate.getMonth() &&
           date.getDate() === selectedDate.getDate()) {
         cell.classList.add('sel');
       }
-
       cell.addEventListener('click', function() {
         if(date < currentDate) return;
-
         selectedDate = new Date(date);
         if (date.getMonth() !== month || date.getFullYear() !== year) {
           currentMonth = date.getMonth();
@@ -908,10 +852,8 @@ html = r"""
         updateAgenda();
         updateBottomBar();
       });
-
       daysEl.appendChild(cell);
     });
-
     document.getElementById('monthDisplay').textContent =
       new Date(year, month, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
   }
@@ -919,62 +861,46 @@ html = r"""
   function getFilteredRows(){
     const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
     const keySel = formatDateKey(selectedDate);
-
-    const rows = ALL_ROWS.filter(r => {
+    return ALL_ROWS.filter(r => {
       const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
       if(!fechaKey) return false;
-
       if(fechaKey < formatDateKey(currentDate)) return false;
-
       if(soc){
         const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
         if(rs !== soc) return false;
       }
-
       if(FILTER_MODE === "dia"){
         return fechaKey === keySel;
       }
       return true;
     });
-
-    return rows;
   }
 
-  function buildRowUI(r){
+  function isMobile() {
+    return window.innerWidth <= 520;
+  }
+
+  // Crear fila para desktop (6 columnas)
+  function buildDesktopRow(r) {
     const inst = getField(r, ["Instalacion","Instalación","instalacion"]);
     const ini  = formatTime(getField(r, ["Ingreso","Inicio","ingreso","inicio"]));
     const fin  = formatTime(getField(r, ["Salida","Finaliza","finaliza","salida"]));
     const hrs  = formatTime(getField(r, ["Intensidad_horaria","Intensidad_ho","Horas","horas"]));
     const est0 = getField(r, ["estado","Estado","estado "]);
-
     const est = normalizeEstado(est0);
 
     const row = document.createElement('div');
-    row.className = 'trow';
+    row.className = 'trow desktop';
 
-    // Columna 0: checkbox
     const col0 = document.createElement('div');
     const chk = document.createElement('span');
     chk.className = 'chk';
     col0.appendChild(chk);
 
-    // Columna 1: instalación
-    const col1 = document.createElement('div');
-    col1.textContent = inst || '-';
-
-    // Columna 2: inicio
-    const col2 = document.createElement('div');
-    col2.textContent = ini;
-
-    // Columna 3: finaliza
-    const col3 = document.createElement('div');
-    col3.textContent = fin;
-
-    // Columna 4: horas
-    const col4 = document.createElement('div');
-    col4.textContent = hrs;
-
-    // Columna 5: estado
+    const col1 = document.createElement('div'); col1.textContent = inst || '-';
+    const col2 = document.createElement('div'); col2.textContent = ini;
+    const col3 = document.createElement('div'); col3.textContent = fin;
+    const col4 = document.createElement('div'); col4.textContent = hrs;
     const col5 = document.createElement('div');
     const statusSpan = document.createElement('span');
     statusSpan.className = 'status ' + est.cls;
@@ -988,7 +914,70 @@ html = r"""
     row.appendChild(col4);
     row.appendChild(col5);
 
-    return {row, est};
+    return row;
+  }
+
+  // Crear fila para móvil (expandible)
+  function buildMobileRow(r) {
+    const inst = getField(r, ["Instalacion","Instalación","instalacion"]) || '-';
+    const ini  = formatTime(getField(r, ["Ingreso","Inicio","ingreso","inicio"]));
+    const fin  = formatTime(getField(r, ["Salida","Finaliza","finaliza","salida"]));
+    const hrs  = formatTime(getField(r, ["Intensidad_horaria","Intensidad_ho","Horas","horas"]));
+    const est0 = getField(r, ["estado","Estado","estado "]);
+    const est = normalizeEstado(est0);
+
+    const row = document.createElement('div');
+    row.className = 'trow mobile';
+
+    // Parte principal con horas
+    const main = document.createElement('div');
+    main.className = 'row-main';
+
+    const horasDiv = document.createElement('div');
+    horasDiv.className = 'horas';
+    const spanIni = document.createElement('span'); spanIni.textContent = ini;
+    const spanFin = document.createElement('span'); spanFin.textContent = fin;
+    const spanHrs = document.createElement('span'); spanHrs.textContent = hrs;
+    horasDiv.appendChild(spanIni);
+    horasDiv.appendChild(spanFin);
+    horasDiv.appendChild(spanHrs);
+
+    const expandIcon = document.createElement('div');
+    expandIcon.className = 'expand-icon';
+    expandIcon.textContent = '+';
+
+    main.appendChild(horasDiv);
+    main.appendChild(expandIcon);
+
+    // Detalle oculto
+    const detail = document.createElement('div');
+    detail.className = 'row-detail';
+
+    const instDiv = document.createElement('div');
+    instDiv.className = 'instalacion';
+    instDiv.textContent = inst;
+
+    const estadoDiv = document.createElement('div');
+    estadoDiv.className = 'estado';
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'status ' + est.cls;
+    statusSpan.textContent = est.label;
+    estadoDiv.appendChild(statusSpan);
+
+    detail.appendChild(instDiv);
+    detail.appendChild(estadoDiv);
+
+    row.appendChild(main);
+    row.appendChild(detail);
+
+    // Evento de expansión
+    main.addEventListener('click', function(e) {
+      e.stopPropagation();
+      row.classList.toggle('expanded');
+      expandIcon.textContent = row.classList.contains('expanded') ? '−' : '+';
+    });
+
+    return row;
   }
 
   function updateAgenda(){
@@ -1005,16 +994,18 @@ html = r"""
 
     if(rows.length === 0){
       const empty = document.createElement('div');
-      empty.className = 'trow';
-      empty.style.gridTemplateColumns = '1fr';
+      empty.className = isMobile() ? 'trow mobile' : 'trow desktop';
+      empty.style.textAlign = 'center';
+      empty.style.padding = '20px';
       empty.innerHTML = '<div class="muted">Sin registros para el filtro actual</div>';
       tbody.appendChild(empty);
       return;
     }
 
+    const mobile = isMobile();
     rows.forEach(r => {
-      const built = buildRowUI(r);
-      tbody.appendChild(built.row);
+      const row = mobile ? buildMobileRow(r) : buildDesktopRow(r);
+      tbody.appendChild(row);
     });
   }
 
@@ -1027,16 +1018,13 @@ html = r"""
       be.className = 'status other';
       return;
     }
-
     const r0 = rows[0];
     const fechaKey = parseSheetDateToKey(getField(r0, ["Fecha","fecha"])) || formatDateKey(selectedDate);
     const inst = getField(r0, ["Instalacion","Instalación","instalacion"]) || "-";
     const ini  = formatTime(getField(r0, ["Ingreso","Inicio","ingreso","inicio"]));
     const fin  = formatTime(getField(r0, ["Salida","Finaliza","finaliza","salida"]));
     const est0 = getField(r0, ["estado","Estado","estado "]);
-
     document.getElementById('bottomFecha').textContent = `${fechaKey} · ${inst} · ${ini} → ${fin}`;
-
     const est = normalizeEstado(est0);
     const be = document.getElementById('bottomEstado');
     be.textContent = est.label;
@@ -1048,16 +1036,12 @@ html = r"""
     let newYear = currentYear;
     if (newMonth < 0) { newMonth = 11; newYear--; }
     else if (newMonth > 11) { newMonth = 0; newYear++; }
-
     currentMonth = newMonth;
     currentYear = newYear;
-
     let newSelectedDay = selectedDate.getDate();
     const dim = daysInMonth(newYear, newMonth);
     if (newSelectedDay > dim) newSelectedDay = dim;
-
     selectedDate = new Date(newYear, newMonth, newSelectedDay);
-
     renderCalendar(currentYear, currentMonth);
     updateAgenda();
     updateBottomBar();
@@ -1067,27 +1051,22 @@ html = r"""
   function fillSocorristaSelect(){
     const sel = document.getElementById("socorristaSelect");
     sel.innerHTML = '<option value="">Todos los socorristas</option>';
-
     SOCORRISTAS.forEach(name => {
       const opt = document.createElement("option");
       opt.value = name;
       opt.textContent = name;
       sel.appendChild(opt);
     });
-
     sel.value = FILTER_SOCORRISTA || "";
   }
 
   function rebuildAvailability(){
     AVAILABLE_DATES = new Set();
     const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
-
     ALL_ROWS.forEach(r => {
       const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
       if(!fechaKey) return;
-
       if(fechaKey < formatDateKey(currentDate)) return;
-
       if(soc){
         const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
         if(rs !== soc) return;
@@ -1103,21 +1082,16 @@ html = r"""
       if(!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
       if(!data || data.ok !== true || !Array.isArray(data.rows)) throw new Error("JSON inválido");
-
       ALL_ROWS = data.rows;
-
       const setS = new Set();
       ALL_ROWS.forEach(r => {
         const s = String(getField(r, ["Socorrista","socorrista"])).trim();
         if(s) setS.add(s);
       });
       SOCORRISTAS = Array.from(setS).sort((a,b)=>a.localeCompare(b, 'es', {sensitivity:'base'}));
-
       fillSocorristaSelect();
-
       rebuildAvailability();
       setSyncBadge(true, "SYNC OK");
-
       renderCalendar(currentYear, currentMonth);
       updateAgenda();
       updateBottomBar();
@@ -1141,7 +1115,6 @@ html = r"""
       opt.textContent = y;
       yearSelect.appendChild(opt);
     }
-
     updateMonthYearDisplay(currentYear, currentMonth);
 
     document.getElementById('prevMonth').addEventListener('click', () => changeMonth(-1));
@@ -1152,16 +1125,12 @@ html = r"""
       const newYear = parseInt(document.getElementById('yearSelect').value);
       FILTER_SOCORRISTA = document.getElementById('socorristaSelect').value || "";
       FILTER_MODE = document.getElementById('modeSelect').value || "dia";
-
       currentMonth = newMonth;
       currentYear = newYear;
-
       let newSelectedDay = selectedDate.getDate();
       const dim = daysInMonth(newYear, newMonth);
       if (newSelectedDay > dim) newSelectedDay = dim;
-
       selectedDate = new Date(newYear, newMonth, newSelectedDay);
-
       rebuildAvailability();
       renderCalendar(currentYear, currentMonth);
       updateAgenda();
@@ -1169,10 +1138,17 @@ html = r"""
       updateMonthYearDisplay(currentYear, currentMonth);
     });
 
+    // Escuchar cambios de tamaño para alternar entre modos si es necesario
+    window.addEventListener('resize', function() {
+      // Solo actualizamos si cambia el modo (de móvil a desktop o viceversa)
+      // Para evitar recargas constantes, comparamos el ancho anterior
+      // Pero por simplicidad, podemos recargar la agenda
+      updateAgenda();
+    });
+
     renderCalendar(currentYear, currentMonth);
     updateAgenda();
     updateBottomBar();
-
     loadMallas();
   }
 
