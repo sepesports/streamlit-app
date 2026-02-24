@@ -134,15 +134,19 @@ html = r"""
       radial-gradient(900px 650px at 90% 18%, rgba(96,196,255,.22), transparent 55%),
       radial-gradient(900px 750px at 50% 95%, rgba(96,196,255,.12), transparent 60%),
       linear-gradient(180deg, var(--bg-2), var(--bg-0));
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   #frame{display:none;}
 
   #wrap{
-    position:absolute;
-    left:0; right:0; top:0; bottom:0;
-    padding:var(--pad-outer);
-    border-radius:var(--radius-outer);
+    position: relative;
+    width: min(420px, 92vw);
+    margin: 0 auto;
+    padding: var(--pad-outer);
+    border-radius: var(--radius-outer);
     background: rgba(10, 16, 26, .58);
     border:1px solid var(--stroke);
     box-shadow:var(--shadow-soft);
@@ -151,6 +155,7 @@ html = r"""
     overflow:hidden;
     display:flex;
     flex-direction:column;
+    max-height: 95vh;
   }
   #wrap::before{
     content:"";
@@ -162,6 +167,14 @@ html = r"""
       radial-gradient(800px 500px at 85% 20%, rgba(96,196,255,.18), transparent 60%),
       radial-gradient(700px 500px at 20% 20%, rgba(255,124,44,.12), transparent 65%);
     mix-blend-mode: screen;
+  }
+
+  /* Para pantallas grandes: ancho mayor pero con límite */
+  @media (min-width: 1400px) {
+    #wrap {
+      width: min(1200px, 80vw);
+      max-width: 1400px;
+    }
   }
 
   /* Topbar */
@@ -363,6 +376,7 @@ html = r"""
     align-items:center;
     justify-content:space-between;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+    backdrop-filter:blur(calc(var(--blur) - 6px));
   }
   .selectPill select{
     background:transparent;
@@ -374,6 +388,10 @@ html = r"""
     appearance:none;
     -webkit-appearance:none;
     cursor:pointer;
+  }
+  .selectPill select option {
+    background: var(--bg-1);
+    color: var(--txt-0);
   }
   .selectPill .caret{
     font-weight:900;
@@ -602,6 +620,19 @@ html = r"""
     }
     .footerActions .btn:last-child{
       grid-column:span 2;
+    }
+  }
+
+  /* Ajuste adicional para pantallas muy grandes */
+  @media (min-width: 1400px) {
+    .controlsRow {
+      grid-template-columns: repeat(4, 1fr) auto;
+    }
+    .tableHeader {
+      grid-template-columns: 26px 2fr 1fr 1fr 1fr 1fr;
+    }
+    .trow {
+      grid-template-columns: 26px 2fr 1fr 1fr 1fr 1fr;
     }
   }
 </style>
