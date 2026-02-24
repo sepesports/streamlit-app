@@ -4,8 +4,7 @@ import streamlit.components.v1 as components
 
 # ==============================================================================
 # PLANTILLA "CALENDARIO" — TEMA HUD NARANJA
-# Versión con agenda móvil: solo 3 columnas (Inicio, Finaliza, Horas) y
-# detalles (Instalación, Estado) en desplegable por fila.
+# Versión con agenda móvil mejorada: cabecera visible, más ancho y 15+ filas.
 # ==============================================================================
 
 PAD_X_PX = 10
@@ -450,6 +449,24 @@ html = r"""
   }
 
   /* Estilos para móvil (filas expandibles) */
+  .mobile-header {
+    display: none; /* Oculto por defecto, se muestra en móvil */
+    padding: 10px 12px;
+    background: rgba(255,255,255,.03);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    font-weight: 700;
+    color: var(--txt-2);
+    font-size: 12px;
+  }
+  .mobile-header .horas {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+  }
+  .mobile-header .horas span:first-child { width: 70px; } /* inicio */
+  .mobile-header .horas span:nth-child(2) { width: 70px; } /* finaliza */
+  .mobile-header .horas span:last-child { width: 60px; text-align: right; } /* horas */
+
   .trow.mobile {
     display: block;
     border-bottom: 1px solid rgba(255,255,255,.06);
@@ -459,7 +476,7 @@ html = r"""
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 12px;
+    padding: 8px 12px; /* Reducido para más filas */
     cursor: pointer;
     background: rgba(255,255,255,.02);
   }
@@ -585,7 +602,14 @@ html = r"""
     }
   }
 
+  /* Ajustes para móvil: más ancho y altura para 15+ filas */
   @media (max-width:520px){
+    /* Hacer el contenedor principal más ancho */
+    #wrap {
+      width: 98vw;  /* Ocupa casi todo el ancho */
+      padding: 12px;
+    }
+
     .controlsRow{
       grid-template-columns:1fr 1fr;
       grid-auto-rows:min-content;
@@ -593,16 +617,41 @@ html = r"""
     .controlsRow .applyBtn{
       grid-column:1/-1;
     }
-    /* Ocultar cabecera de tabla en móvil */
+
+    /* Ocultar cabecera de escritorio */
     .tableHeader {
       display: none;
     }
+
+    /* Mostrar cabecera móvil */
+    .mobile-header {
+      display: block;
+    }
+
     /* Las filas de desktop se ocultan, las de móvil se muestran */
     .trow.desktop {
       display: none;
     }
     .trow.mobile {
       display: block;
+    }
+
+    /* Ajustar altura de la tabla para que quepan al menos 15 filas */
+    .tableCard {
+      max-height: none;  /* Permitir que crezca */
+      height: auto;
+      min-height: 600px;  /* Aproximadamente 15 filas * 40px */
+    }
+
+    /* Reducir padding para más espacio */
+    .agendaBlock {
+      margin-top: 12px;
+    }
+    .agendaTitle {
+      margin-bottom: 5px;
+    }
+    .agendaMeta {
+      margin-bottom: 5px;
     }
   }
 
@@ -677,6 +726,16 @@ html = r"""
             <div><b>Fecha:</b> <span id="fechaDisplay">—</span></div>
           </div>
           <div id="table" class="tableCard">
+            <!-- Cabecera para móvil -->
+            <div class="mobile-header">
+              <div class="horas">
+                <span>Inicio</span>
+                <span>Finaliza</span>
+                <span>Horas</span>
+              </div>
+              <div style="width:24px;"></div> <!-- Espacio para el icono -->
+            </div>
+            <!-- Cabecera para desktop (se mantiene) -->
             <div id="thead" class="tableHeader">
               <div></div><div>Instalación</div><div>Inicio</div><div>Finaliza</div><div>Horas</div><div>Estado</div>
             </div>
@@ -1138,11 +1197,7 @@ html = r"""
       updateMonthYearDisplay(currentYear, currentMonth);
     });
 
-    // Escuchar cambios de tamaño para alternar entre modos si es necesario
     window.addEventListener('resize', function() {
-      // Solo actualizamos si cambia el modo (de móvil a desktop o viceversa)
-      // Para evitar recargas constantes, comparamos el ancho anterior
-      // Pero por simplicidad, podemos recargar la agenda
       updateAgenda();
     });
 
