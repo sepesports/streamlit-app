@@ -145,7 +145,7 @@ html = r"""
     position: relative;
     width: min(420px, 92vw);
     margin: 0 auto;
-    padding: var(--pad-outer);
+    padding: 0 var(--pad-outer) var(--pad-outer) var(--pad-outer); /* top padding 0 */
     border-radius: var(--radius-outer);
     background: rgba(10, 16, 26, .58);
     border:1px solid var(--stroke);
@@ -177,49 +177,10 @@ html = r"""
     }
   }
 
-  /* Topbar */
-  .topbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    padding:10px 12px;
-    border-radius:18px;
-    background:var(--glass);
-    border:1px solid var(--stroke);
-    box-shadow:var(--shadow-inner);
-    backdrop-filter:blur(calc(var(--blur) - 6px));
-  }
-  .topbar__iconBtn{
-    width:34px; height:34px;
-    border-radius:12px;
-    display:grid;
-    place-items:center;
-    background:rgba(255,255,255,.05);
-    border:1px solid var(--stroke);
-    box-shadow:0 0 18px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08);
-  }
-  .topbar__title{
-    font-size:var(--fs-top);
-    font-weight:600;
-    color:var(--txt-0);
-    letter-spacing:.2px;
-  }
-  .topbar__user{
-    font-size:var(--fs-top);
-    font-weight:600;
-    color:var(--txt-1);
-  }
-  .topbar__right{
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
-
-  /* Month block */
+  /* Month block (ahora única línea superior) */
   .monthBlock{
-    margin-top:14px;
-    padding:12px 8px 6px;
+    margin-top: 8px;  /* pequeño margen superior */
+    padding: 12px 8px 6px;
     display:flex;
     align-items:center;
     justify-content:space-between;
@@ -439,7 +400,7 @@ html = r"""
     background:var(--glass-2);
     border:1px solid var(--stroke);
     box-shadow:0 0 34px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
-    overflow:hidden;
+    overflow-x: auto;  /* permite scroll horizontal si es necesario */
     flex:1;
     display:flex;
     flex-direction:column;
@@ -455,6 +416,7 @@ html = r"""
     color:var(--txt-2);
     background:rgba(255,255,255,.03);
     border-bottom:1px solid rgba(255,255,255,.08);
+    white-space: nowrap;
   }
   .trow{
     display:grid;
@@ -463,6 +425,7 @@ html = r"""
     padding:11px 14px;
     align-items:center;
     border-bottom:1px solid rgba(255,255,255,.06);
+    white-space: nowrap;
   }
   .trow:last-child{border-bottom:none;}
   .trow div:nth-child(1){
@@ -588,10 +551,10 @@ html = r"""
     }
     .calendarGrid{gap:8px;}
     .day{height:34px;}
-    .tableHeader, .trow{
-      grid-template-columns:24px 1fr 84px 84px 78px;
-    }
+    /* No aplicamos cambios de tabla aquí, se maneja en 520px */
   }
+
+  /* MÓVIL (max-width:520px) */
   @media (max-width:520px){
     .controlsRow{
       grid-template-columns:1fr 1fr;
@@ -603,18 +566,50 @@ html = r"""
     .tableHeader{
       display:none;
     }
-    .trow{
-      grid-template-columns:1fr;
-      gap:5px;
-      padding:10px;
+    /* Reorganización de filas de agenda en móvil */
+    .trow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 10px;
+      padding: 10px;
+      white-space: normal;
     }
-    .trow div{
-      display:flex;
-      align-items:center;
+    .trow > div {
+      display: inline;  /* reset */
     }
-    .trow div:nth-child(1){
-      font-weight:bold;
+    /* Ocultar checkbox en móvil */
+    .chk {
+      display: none;
     }
+    /* Primera línea: instalación y estado */
+    .trow div:nth-child(1) {
+      font-weight: bold;
+      font-size: 14px;
+      order: 1;
+      flex: 1 1 auto;
+      min-width: 120px;
+    }
+    .trow div:nth-child(5) {
+      order: 2;
+      flex: 0 0 auto;
+    }
+    /* Segunda línea: inicio, finaliza, horas */
+    .trow div:nth-child(2),
+    .trow div:nth-child(3),
+    .trow div:nth-child(4) {
+      order: 3;
+      font-size: 12px;
+      color: var(--txt-2);
+      background: rgba(255,255,255,.05);
+      padding: 2px 8px;
+      border-radius: 12px;
+      white-space: nowrap;
+    }
+    .trow div:nth-child(2) { margin-left: 0; }
+    .trow div:nth-child(3) { }
+    .trow div:nth-child(4) { }
+
     .footerActions{
       grid-template-columns:1fr 1fr;
     }
@@ -644,16 +639,8 @@ html = r"""
     <div id="plan">
       <div id="wrap">
 
-        <div id="topbar" class="panel topbar">
-          <div class="iconbtn topbar__iconBtn">□</div>
-          <div class="center topbar__title">Calendario</div>
-          <div class="right topbar__right">
-            <div id="userDisplay" class="topbar__user">Usuario</div>
-            <div class="iconbtn topbar__iconBtn">⌁</div>
-            <div class="iconbtn topbar__iconBtn">⋮</div>
-          </div>
-        </div>
-
+        <!-- Eliminada la topbar con iconos y usuario -->
+        <!-- Solo mes y navegación -->
         <div id="monthbar" class="panel monthBlock">
           <div class="nav"><div class="iconbtn monthNav__btn" id="prevMonth">‹</div></div>
           <div class="month monthNav__title" id="monthDisplay">—</div>
@@ -763,12 +750,7 @@ html = r"""
   const API_BASE = "https://camilo27.pythonanywhere.com";
   const ENDPOINT_MALLAS = API_BASE + "/api/mallas";
 
-  function getQueryParam(name) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(name);
-  }
-  const userName = getQueryParam('usuario') || 'Usuario';
-  document.getElementById('userDisplay').textContent = userName;
+  // Eliminada la obtención de usuario y su display
 
   let currentDate = new Date();
   currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
@@ -826,6 +808,16 @@ html = r"""
     if(v.includes("libre")) return {label:"LIBRE", cls:"free"};
     if(v.includes("ocup")) return {label:"OCUPADO", cls:"busy"};
     return {label:String(s).toUpperCase(), cls:"other"};
+  }
+
+  // Función para quitar segundos de horas (HH:MM:SS -> HH:MM)
+  function formatTime(timeStr) {
+    if (!timeStr) return '-';
+    const parts = timeStr.split(':');
+    if (parts.length >= 2) {
+      return parts[0] + ':' + parts[1];
+    }
+    return timeStr;
   }
 
   function setSyncBadge(ok, text){
@@ -965,9 +957,9 @@ html = r"""
 
   function buildRowUI(r){
     const inst = getField(r, ["Instalacion","Instalación","instalacion"]);
-    const ini  = getField(r, ["Ingreso","Inicio","ingreso","inicio"]);
-    const fin  = getField(r, ["Salida","Finaliza","finaliza","salida"]);
-    const hrs  = getField(r, ["Intensidad_horaria","Intensidad_ho","Horas","horas"]);
+    const ini  = formatTime(getField(r, ["Ingreso","Inicio","ingreso","inicio"]));
+    const fin  = formatTime(getField(r, ["Salida","Finaliza","finaliza","salida"]));
+    const hrs  = getField(r, ["Intensidad_horaria","Intensidad_ho","Horas","horas"]); // horas pueden ser decimal, no formato tiempo
     const est0 = getField(r, ["estado","Estado","estado "]);
 
     const est = normalizeEstado(est0);
@@ -984,7 +976,6 @@ html = r"""
     const col1 = document.createElement('div'); col1.textContent = (ini || '-');
     const col2 = document.createElement('div'); col2.textContent = (fin || '-');
     const col3 = document.createElement('div'); col3.textContent = (hrs || '-');
-
     const col4 = document.createElement('div');
     const statusSpan = document.createElement('span');
     statusSpan.className = 'status ' + est.cls;
@@ -1041,8 +1032,8 @@ html = r"""
     const r0 = rows[0];
     const fechaKey = parseSheetDateToKey(getField(r0, ["Fecha","fecha"])) || formatDateKey(selectedDate);
     const inst = getField(r0, ["Instalacion","Instalación","instalacion"]) || "-";
-    const ini  = getField(r0, ["Ingreso","Inicio","ingreso","inicio"]) || "-";
-    const fin  = getField(r0, ["Salida","Finaliza","finaliza","salida"]) || "-";
+    const ini  = formatTime(getField(r0, ["Ingreso","Inicio","ingreso","inicio"])) || "-";
+    const fin  = formatTime(getField(r0, ["Salida","Finaliza","finaliza","salida"])) || "-";
     const est0 = getField(r0, ["estado","Estado","estado "]);
 
     document.getElementById('bottomFecha').textContent = `${fechaKey} · ${inst} · ${ini} → ${fin}`;
