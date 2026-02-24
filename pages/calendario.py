@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 
 # ==============================================================================
 # PLANTILLA "CALENDARIO" — TEMA HUD NARANJA
-# Versión con agenda móvil mejorada: cabecera visible, scroll general sin superposición.
+# Versión final: sin resumen entre tabla y botones, scroll general en móvil.
 # ==============================================================================
 
 PAD_X_PX = 10
@@ -61,9 +61,9 @@ html = r"""
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root {
-    --bg-0:#0a1a55;
+    --bg-0:#070b12;
     --bg-1:#0b1320;
-    --bg-2:#081a3a;
+    --bg-2:#0f1c2a;
     --glass: rgba(255,255,255,.06);
     --glass-2: rgba(255,255,255,.08);
     --stroke: rgba(255,255,255,.10);
@@ -131,7 +131,7 @@ html = r"""
     box-shadow:var(--shadow-soft);
     backdrop-filter:blur(var(--blur));
     -webkit-backdrop-filter:blur(var(--blur));
-    overflow: hidden;  /* Por defecto oculto, en móvil se cambia a auto */
+    overflow: hidden;
     display:flex;
     flex-direction:column;
     max-height: 95vh;
@@ -534,35 +534,11 @@ html = r"""
     transform: rotate(45deg);
   }
 
-  /* Footer block */
+  /* Footer block - sin resumen */
   .footerBlock{
     margin-top:14px;
     padding-top:12px;
     border-top:1px solid rgba(255,255,255,.08);
-  }
-  .summaryRow{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    color:var(--txt-2);
-    font-size:12.5px;
-    font-variant-numeric:tabular-nums;
-    padding:8px 2px;
-  }
-  .chip{
-    border:1px solid var(--stroke);
-    border-radius:var(--radius-pill);
-    padding:6px 10px;
-    font-size:12px;
-    font-weight:800;
-    background:var(--glass);
-    color:var(--txt-1);
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    white-space:nowrap;
-    box-shadow:0 10px 18px rgba(0,0,0,.38);
   }
   .footerActions{
     margin-top:12px;
@@ -602,16 +578,15 @@ html = r"""
     }
   }
 
-  /* Ajustes para móvil: scroll general y sin superposición */
+  /* Ajustes para móvil: scroll general */
   @media (max-width:520px){
-    /* El contenedor principal ahora hace scroll */
     #wrap {
       width: 98vw;
       padding: 12px;
       overflow-y: auto;
-      display: block;  /* Eliminamos flex para que los hijos fluyan */
+      display: block;
       max-height: 95vh;
-      height: 95vh;    /* Altura fija para que scroll funcione */
+      height: 95vh;
     }
 
     .controlsRow{
@@ -622,20 +597,14 @@ html = r"""
       grid-column:1/-1;
     }
 
-    /* Ocultar cabecera de escritorio y resumen */
     .tableHeader {
       display: none;
     }
-    .footerBlock .summaryRow {
-      display: none;   /* Eliminamos el resumen */
-    }
 
-    /* Mostrar cabecera móvil */
     .mobile-header {
       display: block;
     }
 
-    /* Las filas de desktop se ocultan, las de móvil se muestran */
     .trow.desktop {
       display: none;
     }
@@ -643,14 +612,12 @@ html = r"""
       display: block;
     }
 
-    /* La tabla ya no tiene restricciones de altura */
     .tableCard {
       max-height: none;
       height: auto;
       min-height: 0;
     }
 
-    /* Ajustes de espaciado */
     .agendaBlock {
       margin-top: 12px;
     }
@@ -740,7 +707,7 @@ html = r"""
                 <span>Finaliza</span>
                 <span>Horas</span>
               </div>
-              <div style="width:24px;"></div> <!-- espacio para icono -->
+              <div style="width:24px;"></div>
             </div>
             <!-- Cabecera para desktop -->
             <div id="thead" class="tableHeader">
@@ -751,11 +718,7 @@ html = r"""
         </div>
 
         <div id="bottom" class="panel footerBlock">
-          <!-- Resumen eliminado en móvil mediante CSS, en desktop se mantiene -->
-          <div class="leftinfo summaryRow">
-            <span class="chip" id="bottomFecha">—</span>
-            <span class="status other" id="bottomEstado">—</span>
-          </div>
+          <!-- Resumen eliminado completamente -->
           <div class="actions footerActions">
             <div class="btn">Aplicar</div>
             <div class="btn">Modificar</div>
@@ -996,7 +959,6 @@ html = r"""
     const row = document.createElement('div');
     row.className = 'trow mobile';
 
-    // Parte principal con horas
     const main = document.createElement('div');
     main.className = 'row-main';
 
@@ -1016,7 +978,6 @@ html = r"""
     main.appendChild(horasDiv);
     main.appendChild(expandIcon);
 
-    // Detalle oculto
     const detail = document.createElement('div');
     detail.className = 'row-detail';
 
@@ -1037,7 +998,6 @@ html = r"""
     row.appendChild(main);
     row.appendChild(detail);
 
-    // Evento de expansión
     main.addEventListener('click', function(e) {
       e.stopPropagation();
       row.classList.toggle('expanded');
@@ -1077,25 +1037,9 @@ html = r"""
   }
 
   function updateBottomBar(){
-    const rows = getFilteredRows();
-    if(rows.length === 0){
-      document.getElementById('bottomFecha').textContent = '—';
-      const be = document.getElementById('bottomEstado');
-      be.textContent = '—';
-      be.className = 'status other';
-      return;
-    }
-    const r0 = rows[0];
-    const fechaKey = parseSheetDateToKey(getField(r0, ["Fecha","fecha"])) || formatDateKey(selectedDate);
-    const inst = getField(r0, ["Instalacion","Instalación","instalacion"]) || "-";
-    const ini  = formatTime(getField(r0, ["Ingreso","Inicio","ingreso","inicio"]));
-    const fin  = formatTime(getField(r0, ["Salida","Finaliza","finaliza","salida"]));
-    const est0 = getField(r0, ["estado","Estado","estado "]);
-    document.getElementById('bottomFecha').textContent = `${fechaKey} · ${inst} · ${ini} → ${fin}`;
-    const est = normalizeEstado(est0);
-    const be = document.getElementById('bottomEstado');
-    be.textContent = est.label;
-    be.className = 'status ' + est.cls;
+    // Esta función ya no se usa porque eliminamos el resumen,
+    // pero la dejamos por si se necesita en el futuro.
+    // Por ahora no hace nada.
   }
 
   function changeMonth(delta) {
@@ -1111,7 +1055,6 @@ html = r"""
     selectedDate = new Date(newYear, newMonth, newSelectedDay);
     renderCalendar(currentYear, currentMonth);
     updateAgenda();
-    updateBottomBar();
     updateMonthYearDisplay(currentYear, currentMonth);
   }
 
@@ -1161,7 +1104,6 @@ html = r"""
       setSyncBadge(true, "SYNC OK");
       renderCalendar(currentYear, currentMonth);
       updateAgenda();
-      updateBottomBar();
     }catch(e){
       ALL_ROWS = [];
       SOCORRISTAS = [];
@@ -1169,7 +1111,6 @@ html = r"""
       setSyncBadge(false, "SYNC ERROR");
       renderCalendar(currentYear, currentMonth);
       updateAgenda();
-      updateBottomBar();
     }
   }
 
@@ -1201,7 +1142,6 @@ html = r"""
       rebuildAvailability();
       renderCalendar(currentYear, currentMonth);
       updateAgenda();
-      updateBottomBar();
       updateMonthYearDisplay(currentYear, currentMonth);
     });
 
@@ -1211,7 +1151,6 @@ html = r"""
 
     renderCalendar(currentYear, currentMonth);
     updateAgenda();
-    updateBottomBar();
     loadMallas();
   }
 
