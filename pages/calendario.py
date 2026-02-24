@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 
 # ==============================================================================
 # PLANTILLA "CALENDARIO" — TEMA HUD NARANJA
-# Versión con lógica de estados y selección de filas + modal para Modificar.
+# Versión final: con estados personalizados, checkboxes y modal.
 # ==============================================================================
 
 PAD_X_PX = 10
@@ -421,26 +421,6 @@ html = r"""
     box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
     display:inline-block;
   }
-  /* Checkbox estilizado */
-  .checkbox-custom {
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
-    border: 1px solid var(--stroke);
-    background: rgba(255,255,255,.05);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-  .checkbox-custom.checked::after {
-    content: "✓";
-    color: var(--glow-orange);
-    font-weight: bold;
-  }
-  input[type="checkbox"] {
-    display: none;
-  }
   .status{
     height:22px;
     padding:0 10px;
@@ -467,21 +447,6 @@ html = r"""
     border:1px solid rgba(255,255,255,.2);
     color:var(--txt-1);
   }
-  .status.programado {
-    background: linear-gradient(180deg, #4a90e2, #2a6fc9);
-    box-shadow: 0 0 14px rgba(74,144,226,.3);
-    color: white;
-  }
-  .status.cerrado {
-    background: linear-gradient(180deg, #9b9b9b, #6e6e6e);
-    box-shadow: 0 0 14px rgba(155,155,155,.3);
-    color: white;
-  }
-  .status.disponible {
-    background: linear-gradient(180deg, #4fe38c, #2ec476);
-    box-shadow: 0 0 14px rgba(79,227,140,.22);
-    color: black;
-  }
 
   /* Estilos para móvil (filas expandibles) */
   .mobile-header {
@@ -497,7 +462,6 @@ html = r"""
     display: flex;
     gap: 8px;
     flex: 1;
-    margin-left: 30px; /* espacio para checkbox */
   }
   .mobile-header .horas span:first-child { width: 70px; }
   .mobile-header .horas span:nth-child(2) { width: 70px; }
@@ -515,13 +479,6 @@ html = r"""
     padding: 8px 12px;
     cursor: pointer;
     background: rgba(255,255,255,.02);
-  }
-  .row-main .checkbox-wrapper {
-    width: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 8px;
   }
   .row-main .horas {
     display: flex;
@@ -550,7 +507,6 @@ html = r"""
     font-weight: bold;
     color: var(--txt-1);
     transition: transform 0.2s;
-    margin-left: 8px;
   }
   .row-detail {
     display: none;
@@ -606,8 +562,8 @@ html = r"""
     cursor:pointer;
     transition: opacity 0.2s;
   }
-  .btn:disabled {
-    opacity: 0.3;
+  .btn:disabled, .btn.disabled {
+    opacity: 0.4;
     pointer-events: none;
   }
   .btn--primary, .btn.primary{
@@ -619,10 +575,11 @@ html = r"""
 
   /* Modal */
   .modal-overlay {
-    display: none;
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(5px);
+    display: none;
     align-items: center;
     justify-content: center;
     z-index: 1000;
@@ -632,48 +589,41 @@ html = r"""
     border: 1px solid var(--stroke);
     border-radius: var(--radius-card);
     padding: 24px;
-    width: 90%;
     max-width: 400px;
-    backdrop-filter: blur(var(--blur));
+    width: 90%;
     box-shadow: var(--shadow-soft);
+    color: var(--txt-0);
   }
   .modal h3 {
     margin-top: 0;
-    color: var(--txt-0);
   }
-  .modal-options {
-    margin: 20px 0;
+  .modal-option {
+    margin: 12px 0;
   }
-  .modal-options label {
-    display: block;
-    margin-bottom: 10px;
-    color: var(--txt-1);
+  .modal-option label {
+    margin-left: 8px;
   }
-  .modal-options input[type="radio"] {
-    margin-right: 8px;
+  .modal-input {
+    margin-top: 8px;
+    margin-left: 24px;
   }
-  .modal-options textarea {
+  .modal-input input {
     width: 100%;
-    margin-top: 10px;
     padding: 8px;
     border-radius: 8px;
-    background: var(--glass);
     border: 1px solid var(--stroke);
+    background: var(--glass);
     color: var(--txt-0);
-    display: none;
-  }
-  .modal-options textarea.visible {
-    display: block;
   }
   .modal-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
+    gap: 12px;
+    margin-top: 24px;
   }
   .modal-actions .btn {
-    height: 36px;
-    padding: 0 16px;
+    width: auto;
+    padding: 0 20px;
   }
 
   /* Responsive */
@@ -810,6 +760,7 @@ html = r"""
           <div id="table" class="tableCard">
             <!-- Cabecera para móvil -->
             <div class="mobile-header">
+              <div style="width:26px;"></div> <!-- checkbox placeholder -->
               <div class="horas">
                 <span>Inicio</span>
                 <span>Finaliza</span>
@@ -827,9 +778,9 @@ html = r"""
 
         <div id="bottom" class="panel footerBlock">
           <div class="actions footerActions">
-            <button class="btn" id="aplicarBtn" disabled>Aplicar</button>
-            <button class="btn" id="modificarBtn" disabled>Modificar</button>
-            <button class="btn primary" id="enviarBtn">Enviar</button>
+            <button class="btn" id="btnAplicar">Aplicar</button>
+            <button class="btn" id="btnModificar">Modificar</button>
+            <button class="btn primary btn--primary" id="btnEnviar">Enviar</button>
           </div>
         </div>
       </div>
@@ -837,18 +788,27 @@ html = r"""
   </div>
 
   <!-- Modal para Modificar -->
-  <div id="modalOverlay" class="modal-overlay">
-    <div class="modal">
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
       <h3>Modificar turno</h3>
-      <div class="modal-options">
-        <label><input type="radio" name="opcion" value="liberar"> Liberar Turno</label>
-        <label><input type="radio" name="opcion" value="novedad"> Novedad</label>
-        <textarea id="novedadTexto" placeholder="Escriba la novedad..."></textarea>
-        <label><input type="radio" name="opcion" value="calamidad"> Calamidad</label>
+      <div class="modal-option">
+        <input type="radio" name="modalOption" id="optLiberar" value="liberar" checked>
+        <label for="optLiberar">Liberar Turno</label>
+      </div>
+      <div class="modal-option">
+        <input type="radio" name="modalOption" id="optNovedad" value="novedad">
+        <label for="optNovedad">Novedad</label>
+        <div class="modal-input" id="novedadInput" style="display:none;">
+          <input type="text" placeholder="Escriba la novedad...">
+        </div>
+      </div>
+      <div class="modal-option">
+        <input type="radio" name="modalOption" id="optCalamidad" value="calamidad">
+        <label for="optCalamidad">Calamidad</label>
       </div>
       <div class="modal-actions">
-        <button class="btn" id="modalCancelar">Cancelar</button>
-        <button class="btn primary" id="modalEnviar">Enviar</button>
+        <button class="btn" id="modalCancel">Cancelar</button>
+        <button class="btn primary" id="modalSend">Enviar</button>
       </div>
     </div>
   </div>
@@ -858,12 +818,8 @@ html = r"""
   const API_BASE = "https://camilo27.pythonanywhere.com";
   const ENDPOINT_MALLAS = API_BASE + "/api/mallas";
 
-  // Obtener usuario de la URL
-  function getQueryParam(name) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(name);
-  }
-  const CURRENT_USER = getQueryParam('usuario') || 'Bilal'; // valor por defecto para prueba
+  // Usuario conectado (hardcodeado para demo)
+  const CURRENT_USER = "Bilal";
 
   let currentDate = new Date();
   currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
@@ -879,8 +835,9 @@ html = r"""
   let FILTER_SOCORRISTA = "";
   let FILTER_MODE = "dia";
 
-  // Para manejo de checkboxes y botones
-  let selectedRows = new Set(); // guardaremos índices o IDs
+  // Para manejo de selección
+  let selectedRows = new Set(); // almacena índices de filas seleccionadas (frente al array filtrado actual)
+  let currentFilteredRows = [];  // se actualiza en cada updateAgenda
 
   function pad2(n){ return String(n).padStart(2,'0'); }
 
@@ -916,22 +873,29 @@ html = r"""
     return "";
   }
 
-  // Nueva función para determinar estado visible según reglas
-  function getVisibleEstado(row) {
-    const estadoOrig = String(getField(row, ["estado","Estado","estado "])).trim().toLowerCase();
-    const socorrista = String(getField(row, ["Socorrista","socorrista"])).trim();
-    
-    if (estadoOrig.includes("libre")) {
-      return { label: "Disponible", cls: "disponible" };
-    } else if (estadoOrig.includes("programado") || estadoOrig.includes("ocup")) { // asumimos que "programado" puede venir como "ocupado"
-      if (socorrista === CURRENT_USER) {
-        return { label: "Programado", cls: "programado" };
+  // Normalizador original (para fallback)
+  function normalizeEstado(s){
+    const v = String(s || "").trim().toLowerCase();
+    if(!v) return {label:"OTRO", cls:"other"};
+    if(v.includes("libre")) return {label:"LIBRE", cls:"free"};
+    if(v.includes("ocup")) return {label:"OCUPADO", cls:"busy"};
+    return {label:String(s).toUpperCase(), cls:"other"};
+  }
+
+  // Nuevo: devuelve estado visible según reglas
+  function getDisplayStatus(row) {
+    const rawEstado = getField(row, ["estado","Estado","estado "]).toLowerCase().trim();
+    const socorrista = getField(row, ["Socorrista","socorrista"]).trim();
+    if (rawEstado.includes("disponible")) {
+      return { label: "Disponible", cls: "free" };
+    } else if (rawEstado.includes("programado")) {
+      if (socorrista.toLowerCase() === CURRENT_USER.toLowerCase()) {
+        return { label: "Programado", cls: "free" };
       } else {
-        return { label: "Cerrado", cls: "cerrado" };
+        return { label: "Cerrado", cls: "busy" };
       }
     } else {
-      // Otros estados
-      return { label: String(estadoOrig).toUpperCase(), cls: "other" };
+      return normalizeEstado(rawEstado);
     }
   }
 
@@ -1025,7 +989,7 @@ html = r"""
           renderCalendar(year, month);
         }
         updateAgenda();
-        // No hay bottom bar que actualizar
+        updateBottomBar();
       });
       daysEl.appendChild(cell);
     });
@@ -1055,48 +1019,58 @@ html = r"""
     return window.innerWidth <= 520;
   }
 
-  // Actualizar botones según selección
+  // Actualiza estado de botones según selección
   function updateButtons() {
-    const aplicarBtn = document.getElementById('aplicarBtn');
-    const modificarBtn = document.getElementById('modificarBtn');
-    let algunDisponible = false;
-    let algunProgramado = false;
+    const aplicarBtn = document.getElementById('btnAplicar');
+    const modificarBtn = document.getElementById('btnModificar');
+    if (!aplicarBtn || !modificarBtn) return;
 
-    selectedRows.forEach(index => {
-      const row = ALL_ROWS[index]; // Necesitamos acceso a la fila original
-      if (!row) return;
-      const estadoVisible = getVisibleEstado(row);
-      if (estadoVisible.label === "Disponible") algunDisponible = true;
-      if (estadoVisible.label === "Programado") algunProgramado = true;
-    });
+    const selectedIndices = Array.from(selectedRows);
+    if (selectedIndices.length === 0) {
+      aplicarBtn.disabled = true;
+      modificarBtn.disabled = true;
+      return;
+    }
 
-    aplicarBtn.disabled = !algunDisponible;
-    modificarBtn.disabled = !algunProgramado;
+    let allDisponible = true;
+    let allProgramado = true;
+
+    for (let idx of selectedIndices) {
+      const row = currentFilteredRows[idx];
+      if (!row) continue;
+      const status = getDisplayStatus(row).label;
+      if (status !== 'Disponible') allDisponible = false;
+      if (status !== 'Programado') allProgramado = false;
+    }
+
+    aplicarBtn.disabled = !allDisponible;
+    modificarBtn.disabled = !allProgramado;
   }
 
-  // Crear fila para desktop (6 columnas)
-  function buildDesktopRow(r, index) {
+  // Crear fila para desktop (6 columnas) con checkbox
+  function buildDesktopRow(r, idx) {
     const inst = getField(r, ["Instalacion","Instalación","instalacion"]);
     const ini  = formatTime(getField(r, ["Ingreso","Inicio","ingreso","inicio"]));
     const fin  = formatTime(getField(r, ["Salida","Finaliza","finaliza","salida"]));
     const hrs  = formatTime(getField(r, ["Intensidad_horaria","Intensidad_ho","Horas","horas"]));
-    const estadoVisible = getVisibleEstado(r);
+    const est = getDisplayStatus(r);
 
     const row = document.createElement('div');
     row.className = 'trow desktop';
-    row.dataset.index = index;
+    row.dataset.index = idx;
 
-    // Columna checkbox
     const col0 = document.createElement('div');
     const chk = document.createElement('input');
     chk.type = 'checkbox';
     chk.className = 'row-checkbox';
-    chk.dataset.index = index;
-    chk.addEventListener('change', function(e) {
-      if (this.checked) {
-        selectedRows.add(parseInt(this.dataset.index));
+    chk.dataset.index = idx;
+    chk.checked = selectedRows.has(idx);
+    chk.addEventListener('click', (e) => e.stopPropagation());
+    chk.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        selectedRows.add(idx);
       } else {
-        selectedRows.delete(parseInt(this.dataset.index));
+        selectedRows.delete(idx);
       }
       updateButtons();
     });
@@ -1108,8 +1082,8 @@ html = r"""
     const col4 = document.createElement('div'); col4.textContent = hrs;
     const col5 = document.createElement('div');
     const statusSpan = document.createElement('span');
-    statusSpan.className = 'status ' + estadoVisible.cls;
-    statusSpan.textContent = estadoVisible.label;
+    statusSpan.className = 'status ' + est.cls;
+    statusSpan.textContent = est.label;
     col5.appendChild(statusSpan);
 
     row.appendChild(col0);
@@ -1122,38 +1096,37 @@ html = r"""
     return row;
   }
 
-  // Crear fila para móvil (expandible)
-  function buildMobileRow(r, index) {
+  // Crear fila para móvil (expandible) con checkbox
+  function buildMobileRow(r, idx) {
     const inst = getField(r, ["Instalacion","Instalación","instalacion"]) || '-';
     const ini  = formatTime(getField(r, ["Ingreso","Inicio","ingreso","inicio"]));
     const fin  = formatTime(getField(r, ["Salida","Finaliza","finaliza","salida"]));
     const hrs  = formatTime(getField(r, ["Intensidad_horaria","Intensidad_ho","Horas","horas"]));
-    const estadoVisible = getVisibleEstado(r);
+    const est = getDisplayStatus(r);
 
     const row = document.createElement('div');
     row.className = 'trow mobile';
-    row.dataset.index = index;
+    row.dataset.index = idx;
 
-    // Parte principal con checkbox y horas
     const main = document.createElement('div');
     main.className = 'row-main';
 
-    const chkWrapper = document.createElement('div');
-    chkWrapper.className = 'checkbox-wrapper';
+    // Checkbox
     const chk = document.createElement('input');
     chk.type = 'checkbox';
     chk.className = 'row-checkbox';
-    chk.dataset.index = index;
-    chk.addEventListener('change', function(e) {
-      e.stopPropagation(); // Evitar que el clic en checkbox expanda la fila
-      if (this.checked) {
-        selectedRows.add(parseInt(this.dataset.index));
+    chk.dataset.index = idx;
+    chk.checked = selectedRows.has(idx);
+    chk.addEventListener('click', (e) => e.stopPropagation());
+    chk.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        selectedRows.add(idx);
       } else {
-        selectedRows.delete(parseInt(this.dataset.index));
+        selectedRows.delete(idx);
       }
       updateButtons();
     });
-    chkWrapper.appendChild(chk);
+    main.appendChild(chk);
 
     const horasDiv = document.createElement('div');
     horasDiv.className = 'horas';
@@ -1168,11 +1141,9 @@ html = r"""
     expandIcon.className = 'expand-icon';
     expandIcon.textContent = '+';
 
-    main.appendChild(chkWrapper);
     main.appendChild(horasDiv);
     main.appendChild(expandIcon);
 
-    // Detalle oculto
     const detail = document.createElement('div');
     detail.className = 'row-detail';
 
@@ -1183,8 +1154,8 @@ html = r"""
     const estadoDiv = document.createElement('div');
     estadoDiv.className = 'estado';
     const statusSpan = document.createElement('span');
-    statusSpan.className = 'status ' + estadoVisible.cls;
-    statusSpan.textContent = estadoVisible.label;
+    statusSpan.className = 'status ' + est.cls;
+    statusSpan.textContent = est.label;
     estadoDiv.appendChild(statusSpan);
 
     detail.appendChild(instDiv);
@@ -1193,12 +1164,12 @@ html = r"""
     row.appendChild(main);
     row.appendChild(detail);
 
-    // Evento de expansión (solo si no se hizo clic en checkbox)
     main.addEventListener('click', function(e) {
-      if (e.target.type !== 'checkbox') {
-        row.classList.toggle('expanded');
-        expandIcon.textContent = row.classList.contains('expanded') ? '−' : '+';
-      }
+      // Si el clic fue en el checkbox, no expandimos
+      if (e.target.type === 'checkbox') return;
+      e.stopPropagation();
+      row.classList.toggle('expanded');
+      expandIcon.textContent = row.classList.contains('expanded') ? '−' : '+';
     });
 
     return row;
@@ -1207,7 +1178,6 @@ html = r"""
   function updateAgenda(){
     const tbody = document.getElementById('tbody');
     tbody.innerHTML = '';
-    selectedRows.clear(); // Limpiar selección al recargar agenda
 
     if(FILTER_MODE === "dia"){
       document.getElementById('fechaDisplay').textContent = formatDisplayDate(selectedDate);
@@ -1216,6 +1186,8 @@ html = r"""
     }
 
     const rows = getFilteredRows();
+    currentFilteredRows = rows; // guardar para referencias en botones
+    selectedRows.clear(); // al cambiar filtros, se pierde selección
 
     if(rows.length === 0){
       const empty = document.createElement('div');
@@ -1230,63 +1202,16 @@ html = r"""
 
     const mobile = isMobile();
     rows.forEach((r, idx) => {
-      // Necesitamos un índice único que podamos usar para referenciar la fila original en ALL_ROWS
-      // Como rows es un subconjunto, podemos guardar el índice original. Pero para simplificar,
-      // usaremos el índice en ALL_ROWS. Buscamos el índice real.
-      const realIndex = ALL_ROWS.indexOf(r);
-      const row = mobile ? buildMobileRow(r, realIndex) : buildDesktopRow(r, realIndex);
+      const row = mobile ? buildMobileRow(r, idx) : buildDesktopRow(r, idx);
       tbody.appendChild(row);
     });
+
     updateButtons();
   }
 
-  // Modal
-  const modalOverlay = document.getElementById('modalOverlay');
-  const modalCancelar = document.getElementById('modalCancelar');
-  const modalEnviar = document.getElementById('modalEnviar');
-  const opcionesRadio = document.querySelectorAll('input[name="opcion"]');
-  const novedadText = document.getElementById('novedadTexto');
-
-  opcionesRadio.forEach(radio => {
-    radio.addEventListener('change', function() {
-      if (this.value === 'novedad') {
-        novedadText.classList.add('visible');
-      } else {
-        novedadText.classList.remove('visible');
-      }
-    });
-  });
-
-  document.getElementById('modificarBtn').addEventListener('click', function() {
-    if (this.disabled) return;
-    modalOverlay.style.display = 'flex';
-  });
-
-  modalCancelar.addEventListener('click', function() {
-    modalOverlay.style.display = 'none';
-    // Resetear opciones
-    opcionesRadio.forEach(r => r.checked = false);
-    novedadText.classList.remove('visible');
-    novedadText.value = '';
-  });
-
-  modalEnviar.addEventListener('click', function() {
-    // Por ahora solo cierra el modal
-    modalOverlay.style.display = 'none';
-    opcionesRadio.forEach(r => r.checked = false);
-    novedadText.classList.remove('visible');
-    novedadText.value = '';
-  });
-
-  // Cerrar modal si se hace clic fuera del contenido
-  modalOverlay.addEventListener('click', function(e) {
-    if (e.target === modalOverlay) {
-      modalOverlay.style.display = 'none';
-      opcionesRadio.forEach(r => r.checked = false);
-      novedadText.classList.remove('visible');
-      novedadText.value = '';
-    }
-  });
+  function updateBottomBar(){
+    // No se usa, pero se deja por compatibilidad
+  }
 
   function changeMonth(delta) {
     let newMonth = currentMonth + delta;
@@ -1360,6 +1285,37 @@ html = r"""
     }
   }
 
+  // Modal logic
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modal = document.getElementById('modal');
+  const modalCancel = document.getElementById('modalCancel');
+  const modalSend = document.getElementById('modalSend');
+  const optNovedad = document.getElementById('optNovedad');
+  const novedadInput = document.getElementById('novedadInput');
+
+  function showModal() {
+    modalOverlay.style.display = 'flex';
+  }
+
+  function hideModal() {
+    modalOverlay.style.display = 'none';
+  }
+
+  optNovedad.addEventListener('change', function(e) {
+    novedadInput.style.display = e.target.checked ? 'block' : 'none';
+  });
+
+  modalCancel.addEventListener('click', hideModal);
+  modalSend.addEventListener('click', function() {
+    hideModal();
+    // Por ahora solo cierra
+  });
+
+  // Cerrar modal si se hace clic fuera del contenido
+  modalOverlay.addEventListener('click', function(e) {
+    if (e.target === modalOverlay) hideModal();
+  });
+
   function init() {
     const yearSelect = document.getElementById('yearSelect');
     const y0 = new Date().getFullYear();
@@ -1394,6 +1350,17 @@ html = r"""
     window.addEventListener('resize', function() {
       updateAgenda();
     });
+
+    // Botones inferiores
+    document.getElementById('btnModificar').addEventListener('click', function() {
+      if (!this.disabled) {
+        showModal();
+      }
+    });
+
+    // Inicialmente deshabilitados
+    document.getElementById('btnAplicar').disabled = true;
+    document.getElementById('btnModificar').disabled = true;
 
     renderCalendar(currentYear, currentMonth);
     updateAgenda();
