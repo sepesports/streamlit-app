@@ -10,6 +10,7 @@ st.markdown(
       .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
       section.main > div{padding:0 !important;margin:0 !important;}
       header, footer{display:none !important;}
+      iframe{display:block !important;}
     </style>
     """,
     unsafe_allow_html=True,
@@ -30,18 +31,25 @@ html = r"""
       --yellow:#f2b400;
       --pink:#f3a3a3;
 
-      --radius:52px;
-      --maxW:1280px;
+      --outerPad:10px;
 
-      --hdrH:54px;
+      --radiusDesk:52px;
+      --radiusMob:44px;
 
-      --labelH:40px;
-      --inputH:40px;
+      --hdrHDesk:54px;
+      --hdrHMob:62px;
+
+      --shellBorder:4px solid #7a7a7a;
+
+      --fieldBorder:2px solid #6f7680;
+
+      --labelMin:140px;
+      --labelMinSmall:110px;
       --rowGap:14px;
       --colGap:26px;
 
-      --fieldBorder:#6f7680;
-      --shellBorder:#7a7a7a;
+      --inputHDesk:40px;
+      --inputHMob:56px;
     }
 
     html, body{
@@ -61,7 +69,8 @@ html = r"""
 
     #outer{
       position:absolute;
-      left:10px; right:10px; top:10px; bottom:10px;
+      left:var(--outerPad); right:var(--outerPad);
+      top:var(--outerPad); bottom:var(--outerPad);
       border:var(--border) solid var(--borderColor);
       box-sizing:border-box;
       background:transparent;
@@ -69,23 +78,25 @@ html = r"""
 
     #wrap{
       position:absolute;
-      left:10px; right:10px; top:10px; bottom:10px;
+      left:var(--outerPad); right:var(--outerPad);
+      top:var(--outerPad); bottom:var(--outerPad);
+      box-sizing:border-box;
+      padding:10px;
       display:flex;
       justify-content:center;
       align-items:stretch;
-      box-sizing:border-box;
-      padding:10px;
     }
 
     #app{
       width:100%;
-      max-width:var(--maxW);
       height:100%;
+      max-width:1280px;
       display:flex;
       gap:22px;
       box-sizing:border-box;
     }
 
+    /* ===== DESKTOP LAYOUT ===== */
     .col-left{
       flex:0 0 32%;
       display:flex;
@@ -118,14 +129,14 @@ html = r"""
 
     .desc{
       flex:1;
+      min-height:260px;
       display:flex;
       align-items:center;
       justify-content:center;
-      min-height:260px;
     }
 
     .hdr{
-      height:var(--hdrH);
+      height:var(--hdrHDesk);
       display:flex;
       align-items:center;
       justify-content:center;
@@ -146,8 +157,8 @@ html = r"""
 
     .form-shell{
       flex:1;
-      border:4px solid var(--shellBorder);
-      border-radius:var(--radius);
+      border:var(--shellBorder);
+      border-radius:var(--radiusDesk);
       box-sizing:border-box;
       padding:18px;
       position:relative;
@@ -202,15 +213,17 @@ html = r"""
       gap:var(--rowGap);
     }
 
-    .row{
-      display:flex;
+    /* row label + input (desktop: lado a lado) */
+    .qrow{
+      display:grid;
+      grid-template-columns: auto 1fr;
+      column-gap:0;
       align-items:stretch;
-      gap:0;
     }
 
     .label{
-      height:var(--labelH);
-      min-width:140px;
+      height:var(--inputHDesk);
+      min-width:var(--labelMin);
       padding:0 12px;
       background:var(--yellow);
       border:var(--border) solid var(--borderColor);
@@ -220,24 +233,26 @@ html = r"""
       font-weight:800;
       box-sizing:border-box;
       font-size:16px;
+      white-space:nowrap;
     }
 
-    .label.small{ min-width:110px; }
+    .label.small{ min-width:var(--labelMinSmall); }
 
     .input{
-      flex:1;
-      height:var(--inputH);
-      border:2px solid var(--fieldBorder);
+      height:var(--inputHDesk);
+      border:var(--fieldBorder);
       background:#fff;
       box-sizing:border-box;
       border-left:none;
       padding:0 10px;
       font-size:15px;
       outline:none;
+      width:100%;
     }
 
+    /* BLOQUES ROSAS (desktop columna derecha) */
     .pink-block{
-      border:2px solid var(--fieldBorder);
+      border:var(--fieldBorder);
       background:var(--pink);
       padding:10px 12px 12px 12px;
       box-sizing:border-box;
@@ -254,7 +269,7 @@ html = r"""
     .pink-input{
       width:100%;
       height:40px;
-      border:2px solid var(--fieldBorder);
+      border:var(--fieldBorder);
       background:#fff;
       box-sizing:border-box;
       padding:0 10px;
@@ -274,7 +289,7 @@ html = r"""
     .cal-ico{
       width:44px;
       height:40px;
-      border:2px solid var(--fieldBorder);
+      border:var(--fieldBorder);
       background:#efefef;
       display:flex;
       align-items:center;
@@ -304,7 +319,14 @@ html = r"""
       background:#fff;
     }
 
-    /* MÓVIL: si no cabe al lado, input debajo de cada pregunta */
+    .mobile-next{
+      display:none;
+    }
+
+    /* ===== MOBILE LAYOUT =====
+       - Mantiene "plano" (sin romper tamaños base)
+       - Si no cabe input al lado: input debajo (por fila)
+    */
     @media (max-width: 768px){
       #wrap{ padding:0; }
       #app{
@@ -319,11 +341,12 @@ html = r"""
         width:100%;
         flex:1;
         gap:10px;
+        min-width:0;
       }
 
       .hdr{
         margin:0 10px;
-        height:62px;
+        height:var(--hdrHMob);
         font-size:34px;
         border:none;
       }
@@ -336,7 +359,7 @@ html = r"""
 
       .form-shell{
         margin:0 10px;
-        border-radius:44px;
+        border-radius:var(--radiusMob);
         padding:16px;
       }
 
@@ -344,7 +367,6 @@ html = r"""
         left:16px; right:16px; top:16px; bottom:16px;
       }
 
-      .row-top{ margin-bottom:14px; }
       .pill{
         width:100%;
         max-width:520px;
@@ -352,31 +374,44 @@ html = r"""
         font-size:26px;
       }
 
+      /* En móvil: una sola columna (solo 8 preguntas como en imagen) */
       .grid-2{ display:block; }
       .stack-right{ display:none; }
 
       .stack{ gap:18px; }
 
-      .row{
-        flex-direction:column;
-        gap:0;
+      /* Fila: intenta lado a lado; si no cabe, cae a 1 columna (label arriba, input abajo) */
+      .qrow{
+        grid-template-columns: minmax(140px, 42%) 1fr;
       }
 
       .label{
-        width:100%;
-        min-width:unset;
-        height:56px;
+        height:var(--inputHMob);
+        min-width:0;
         font-size:26px;
         justify-content:flex-start;
         padding-left:18px;
       }
 
       .input{
-        width:100%;
-        height:56px;
+        height:var(--inputHMob);
         font-size:20px;
-        border-left:2px solid var(--fieldBorder);
-        border-top:none;
+      }
+
+      /* BREAKPOINT interno por ancho útil: input debajo */
+      @media (max-width: 520px){
+        .qrow{
+          grid-template-columns: 1fr;
+          row-gap:0;
+        }
+        .label{
+          justify-content:flex-start;
+          padding-left:18px;
+        }
+        .input{
+          border-left:var(--fieldBorder);
+          border-top:none;
+        }
       }
 
       .terms-inside{
@@ -408,7 +443,7 @@ html = r"""
     <div id="wrap">
       <div id="app">
 
-        <!-- IZQUIERDA (DESKTOP): Logo / Descripción -->
+        <!-- IZQUIERDA (DESKTOP) -->
         <div class="col-left">
           <div class="blk logo">Logo</div>
           <div class="blk desc">Descripcion</div>
@@ -427,45 +462,45 @@ html = r"""
 
               <div class="grid-2">
 
-                <!-- COLUMNA IZQUIERDA (desktop) / ÚNICA (móvil) -->
+                <!-- IZQUIERDA / MÓVIL -->
                 <div class="stack">
 
-                  <div class="row">
+                  <div class="qrow">
                     <div class="label">NOMBRE:</div>
                     <input class="input" type="text" />
                   </div>
 
-                  <div class="row">
+                  <div class="qrow">
                     <div class="label">DNI:</div>
                     <input class="input" type="text" />
                   </div>
 
-                  <div class="row">
+                  <div class="qrow">
                     <div class="label">NACION:</div>
                     <input class="input" type="text" />
                   </div>
 
-                  <div class="row">
+                  <div class="qrow">
                     <div class="label">NAFF:</div>
                     <input class="input" type="text" />
                   </div>
 
-                  <div class="row">
+                  <div class="qrow">
                     <div class="label">CALLE:</div>
                     <input class="input" type="text" />
                   </div>
 
-                  <div class="row">
+                  <div class="qrow">
                     <div class="label">POBL:</div>
                     <input class="input" type="text" />
                   </div>
 
-                  <div class="row">
+                  <div class="qrow">
                     <div class="label">COMARCA:</div>
                     <input class="input" type="text" />
                   </div>
 
-                  <div class="row">
+                  <div class="qrow">
                     <div class="label">C.P:</div>
                     <input class="input" type="text" />
                   </div>
@@ -476,30 +511,30 @@ html = r"""
                   </div>
                 </div>
 
-                <!-- COLUMNA DERECHA (solo desktop) -->
+                <!-- DERECHA (SOLO DESKTOP) -->
                 <div class="stack-right">
 
-                  <div class="row">
+                  <div class="qrow">
                     <div class="label small">TLF:</div>
                     <input class="input" type="text" />
                   </div>
 
-                  <div class="row">
+                  <div class="qrow">
                     <div class="label small">CORREO:</div>
                     <input class="input" type="email" />
                   </div>
 
-                  <div class="row">
+                  <div class="qrow">
                     <div class="label">NACIMIENTO:</div>
                     <input class="input" type="text" />
                   </div>
 
-                  <div class="row">
+                  <div class="qrow">
                     <div class="label">ESTADO CIV:</div>
                     <input class="input" type="text" />
                   </div>
 
-                  <div class="row">
+                  <div class="qrow">
                     <div class="label small">IBAN:</div>
                     <input class="input" type="text" />
                   </div>
@@ -519,12 +554,12 @@ html = r"""
 
                   <!-- HORAS ELIMINADO -->
                 </div>
-              </div>
 
+              </div>
             </div>
           </div>
 
-          <div class="mobile-next" style="display:none;">Siguiente</div>
+          <div class="mobile-next">Siguiente</div>
         </div>
 
       </div>
@@ -533,6 +568,7 @@ html = r"""
 
   <script>
     (function(){
+      // Full-screen real del iframe en Streamlit
       var fe = window.frameElement;
       if (fe){
         fe.style.position = "fixed";
@@ -545,16 +581,6 @@ html = r"""
         fe.style.zIndex = "999999";
         fe.style.background = "transparent";
       }
-
-      function syncMobile(){
-        var isMobile = window.matchMedia("(max-width: 768px)").matches;
-        var mobileNext = document.querySelector(".mobile-next");
-        if (mobileNext){
-          mobileNext.style.display = isMobile ? "flex" : "none";
-        }
-      }
-      window.addEventListener("resize", syncMobile);
-      syncMobile();
     })();
   </script>
 </body>
