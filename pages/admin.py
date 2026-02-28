@@ -672,7 +672,7 @@ html = r"""
 
                 <div class="grid-2">
 
-                  <!-- IZQUIERDA / MÓVIL -->
+                  <!-- IZQUIERDA / MÓVIL (se muestran todos los campos en móvil) -->
                   <div class="stack">
 
                     <div class="qrow">
@@ -712,6 +712,47 @@ html = r"""
 
                     <div class="qrow">
                       <div class="label">C.P:</div>
+                      <input class="input" type="text" />
+                    </div>
+
+                    <!-- CAMPOS ADICIONALES PARA MÓVIL (antes solo en desktop) -->
+                    <div class="qrow">
+                      <div class="label small">TLF:</div>
+                      <input class="input" type="text" />
+                    </div>
+
+                    <div class="qrow">
+                      <div class="label small">CORREO:</div>
+                      <input class="input" type="email" />
+                    </div>
+
+                    <div class="qrow">
+                      <div class="label">NACIMIENTO:</div>
+                      <input class="input" type="text" />
+                    </div>
+
+                    <div class="qrow">
+                      <div class="label">ESTADO CIV:</div>
+                      <input class="input" type="text" />
+                    </div>
+
+                    <div class="qrow">
+                      <div class="label small">IBAN:</div>
+                      <input class="input" type="text" />
+                    </div>
+
+                    <div class="qrow">
+                      <div class="label">INSTALACION:</div>
+                      <input class="input" type="text" />
+                    </div>
+
+                    <div class="qrow">
+                      <div class="label">FECHA FIN:</div>
+                      <input class="input" type="text" />
+                    </div>
+
+                    <div class="qrow">
+                      <div class="label">HORAS:</div>
                       <input class="input" type="text" />
                     </div>
 
@@ -762,7 +803,7 @@ html = r"""
                       </div>
                     </div>
 
-                    <!-- HORAS ELIMINADO -->
+                    <!-- HORAS ELIMINADO (se añade como fila normal en móvil) -->
                   </div>
 
                 </div>
