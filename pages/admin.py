@@ -37,7 +37,7 @@ html = r"""
       --radiusMob:44px;
 
       --hdrHDesk:54px;
-      --hdrHMob:42px;          /* reducido para 7 filas */
+      --hdrHMob:42px;
 
       --shellBorder:4px solid #7a7a7a;
 
@@ -45,11 +45,11 @@ html = r"""
 
       --labelMin:140px;
       --labelMinSmall:110px;
-      --rowGap:4px;            /* mínimo gap entre filas */
+      --rowGap:4px;
       --colGap:26px;
 
       --inputHDesk:40px;
-      --inputHMob:38px;         /* altura más compacta */
+      --inputHMob:38px;
 
       /* nuevos colores oscuros (tipo calendario) */
       --bg-0:#070b12;
@@ -155,6 +155,11 @@ html = r"""
       min-width:420px;
     }
 
+    /* Logo solo visible en móvil, oculto en desktop */
+    .mobile-logo {
+      display: none;
+    }
+
     .blk{
       border:1px solid var(--stroke);
       box-sizing:border-box;
@@ -170,7 +175,13 @@ html = r"""
       display:flex;
       align-items:center;
       justify-content:center;
-      font-weight:700;
+      overflow: hidden;
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     .desc{
@@ -401,9 +412,7 @@ html = r"""
       display:none;
     }
 
-    /* ===== MOBILE LAYOUT =====
-       - Ajustado para mostrar 7 filas visibles
-    */
+    /* ===== MOBILE LAYOUT ===== */
     @media (max-width: 768px){
       #wrap{ padding:0; }
       #app{
@@ -414,17 +423,36 @@ html = r"""
 
       .col-left{ display:none; }
 
+      .mobile-logo {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 70px;
+        margin: 5px 10px 0 10px;
+        background: var(--glass);
+        border: 1px solid var(--stroke);
+        border-radius: var(--radius-card);
+        padding: 5px;
+        box-sizing: border-box;
+      }
+
+      .mobile-logo img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
       .col-right{
         width:100%;
         flex:1;
-        gap:6px;                /* reducido */
+        gap:6px;
         min-width:0;
       }
 
       .hdr{
         margin:0 10px;
         height:var(--hdrHMob);
-        font-size:20px;          /* más pequeño */
+        font-size:20px;
         border:none;
       }
 
@@ -437,7 +465,7 @@ html = r"""
       .form-shell{
         margin:0 10px;
         border-radius:var(--radiusMob);
-        padding:8px;             /* reducido de 12px a 8px */
+        padding:8px;
       }
 
       .form-scroll{
@@ -447,16 +475,15 @@ html = r"""
       .pill{
         width:100%;
         max-width:480px;
-        height:34px;             /* más compacto */
-        font-size:18px;          /* reducido */
+        height:34px;
+        font-size:18px;
       }
 
       .grid-2{ display:block; }
       .stack-right{ display:none; }
 
-      .stack{ gap:4px; }         /* mínimo gap */
+      .stack{ gap:4px; }
 
-      /* Fila: lado a lado con columna más estrecha */
       .qrow{
         grid-template-columns: minmax(100px, 35%) 1fr;
       }
@@ -464,18 +491,17 @@ html = r"""
       .label{
         height:var(--inputHMob);
         min-width:0;
-        font-size:15px;           /* más pequeño */
+        font-size:15px;
         justify-content:flex-start;
-        padding-left:8px;         /* reducido */
+        padding-left:8px;
         border-right:1px solid var(--glow-orange);
       }
 
       .input{
         height:var(--inputHMob);
-        font-size:14px;           /* más pequeño */
+        font-size:14px;
       }
 
-      /* BREAKPOINT interno por ancho útil: input debajo */
       @media (max-width: 520px){
         .qrow{
           grid-template-columns: 1fr;
@@ -505,7 +531,7 @@ html = r"""
 
       .mobile-next{
         margin:6px 10px 8px 10px;
-        height:42px;              /* reducido */
+        height:42px;
         border:1px solid var(--stroke);
         display:flex;
         align-items:center;
@@ -513,7 +539,7 @@ html = r"""
         font-weight:800;
         background:var(--glass);
         box-sizing:border-box;
-        font-size:18px;           /* reducido */
+        font-size:18px;
         border-radius:var(--radius-pill);
         backdrop-filter:blur(calc(var(--blur) - 6px));
       }
@@ -530,12 +556,19 @@ html = r"""
 
         <!-- IZQUIERDA (DESKTOP) -->
         <div class="col-left">
-          <div class="blk logo">Logo</div>
+          <div class="blk logo">
+            <img src="https://files.catbox.moe/056m6v.jpg" alt="Logo">
+          </div>
           <div class="blk desc">Descripcion</div>
         </div>
 
         <!-- DERECHA -->
         <div class="col-right">
+          <!-- Logo para móvil (visible solo en móvil) -->
+          <div class="mobile-logo">
+            <img src="https://files.catbox.moe/056m6v.jpg" alt="Logo">
+          </div>
+
           <div class="blk hdr">Formulario</div>
 
           <div class="form-shell">
@@ -653,7 +686,6 @@ html = r"""
 
   <script>
     (function(){
-      // Full-screen real del iframe en Streamlit
       var fe = window.frameElement;
       if (fe){
         fe.style.position = "fixed";
