@@ -37,7 +37,7 @@ html = r"""
       --radiusMob:44px;
 
       --hdrHDesk:54px;
-      --hdrHMob:48px;          /* reducido */
+      --hdrHMob:42px;          /* reducido para 7 filas */
 
       --shellBorder:4px solid #7a7a7a;
 
@@ -45,11 +45,11 @@ html = r"""
 
       --labelMin:140px;
       --labelMinSmall:110px;
-      --rowGap:8px;            /* reducido de 14px a 8px */
+      --rowGap:4px;            /* mínimo gap entre filas */
       --colGap:26px;
 
       --inputHDesk:40px;
-      --inputHMob:42px;         /* reducido de 56px a 42px */
+      --inputHMob:38px;         /* altura más compacta */
 
       /* nuevos colores oscuros (tipo calendario) */
       --bg-0:#070b12;
@@ -230,7 +230,7 @@ html = r"""
       width:100%;
       display:flex;
       justify-content:center;
-      margin-bottom:12px;        /* reducido de 16px a 12px */
+      margin-bottom:16px;
     }
 
     .pill{
@@ -378,18 +378,18 @@ html = r"""
     }
 
     .terms-inside{
-      margin-top:12px;           /* reducido de 16px */
-      padding-top:8px;           /* reducido de 12px */
+      margin-top:16px;
+      padding-top:12px;
       border-top:1px solid var(--stroke);
       display:flex;
       align-items:center;
       gap:10px;
-      font-size:16px;            /* reducido de 18px */
+      font-size:18px;
       color:var(--txt-1);
     }
 
     .chk{
-      width:16px; height:16px;   /* un poco más pequeño */
+      width:18px; height:18px;
       border:2px solid var(--stroke);
       border-radius:3px;
       display:inline-block;
@@ -402,7 +402,7 @@ html = r"""
     }
 
     /* ===== MOBILE LAYOUT =====
-       - Ajustado para mostrar aprox. 6 filas visibles
+       - Ajustado para mostrar 7 filas visibles
     */
     @media (max-width: 768px){
       #wrap{ padding:0; }
@@ -417,62 +417,62 @@ html = r"""
       .col-right{
         width:100%;
         flex:1;
-        gap:8px;                /* reducido de 10px */
+        gap:6px;                /* reducido */
         min-width:0;
       }
 
       .hdr{
         margin:0 10px;
         height:var(--hdrHMob);
-        font-size:24px;          /* reducido de 34px */
+        font-size:20px;          /* más pequeño */
         border:none;
       }
 
       .hdr::after{
         left:18px; right:18px;
-        bottom:8px;              /* ajustado */
+        bottom:6px;
         height:2px;
       }
 
       .form-shell{
         margin:0 10px;
         border-radius:var(--radiusMob);
-        padding:12px;            /* reducido de 16px */
+        padding:8px;             /* reducido de 12px a 8px */
       }
 
       .form-scroll{
-        left:12px; right:12px; top:12px; bottom:12px;
+        left:8px; right:8px; top:8px; bottom:8px;
       }
 
       .pill{
         width:100%;
         max-width:480px;
-        height:38px;             /* reducido de 46px */
-        font-size:20px;          /* reducido de 26px */
+        height:34px;             /* más compacto */
+        font-size:18px;          /* reducido */
       }
 
       .grid-2{ display:block; }
       .stack-right{ display:none; }
 
-      .stack{ gap:6px; }         /* reducido de 18px a 6px */
+      .stack{ gap:4px; }         /* mínimo gap */
 
-      /* Fila: intenta lado a lado */
+      /* Fila: lado a lado con columna más estrecha */
       .qrow{
-        grid-template-columns: minmax(120px, 38%) 1fr;  /* columna más estrecha */
+        grid-template-columns: minmax(100px, 35%) 1fr;
       }
 
       .label{
         height:var(--inputHMob);
         min-width:0;
-        font-size:18px;           /* reducido de 26px */
+        font-size:15px;           /* más pequeño */
         justify-content:flex-start;
-        padding-left:12px;        /* reducido de 18px */
+        padding-left:8px;         /* reducido */
         border-right:1px solid var(--glow-orange);
       }
 
       .input{
         height:var(--inputHMob);
-        font-size:16px;           /* reducido de 20px */
+        font-size:14px;           /* más pequeño */
       }
 
       /* BREAKPOINT interno por ancho útil: input debajo */
@@ -483,7 +483,7 @@ html = r"""
         }
         .label{
           justify-content:flex-start;
-          padding-left:12px;
+          padding-left:8px;
           border-right:1px solid var(--glow-orange);
           border-bottom:none;
         }
@@ -494,14 +494,18 @@ html = r"""
       }
 
       .terms-inside{
-        margin-top:10px;
-        padding-top:8px;
-        font-size:15px;
+        margin-top:8px;
+        padding-top:6px;
+        font-size:14px;
+      }
+
+      .chk{
+        width:14px; height:14px;
       }
 
       .mobile-next{
-        margin:8px 10px 10px 10px;
-        height:48px;              /* reducido de 64px */
+        margin:6px 10px 8px 10px;
+        height:42px;              /* reducido */
         border:1px solid var(--stroke);
         display:flex;
         align-items:center;
@@ -509,7 +513,7 @@ html = r"""
         font-weight:800;
         background:var(--glass);
         box-sizing:border-box;
-        font-size:22px;           /* reducido de 34px */
+        font-size:18px;           /* reducido */
         border-radius:var(--radius-pill);
         backdrop-filter:blur(calc(var(--blur) - 6px));
       }
