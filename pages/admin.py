@@ -37,7 +37,7 @@ html = r"""
       --radiusMob:44px;
 
       --hdrHDesk:54px;
-      --hdrHMob:62px;
+      --hdrHMob:48px;          /* reducido */
 
       --shellBorder:4px solid #7a7a7a;
 
@@ -45,11 +45,11 @@ html = r"""
 
       --labelMin:140px;
       --labelMinSmall:110px;
-      --rowGap:14px;
+      --rowGap:8px;            /* reducido de 14px a 8px */
       --colGap:26px;
 
       --inputHDesk:40px;
-      --inputHMob:56px;
+      --inputHMob:42px;         /* reducido de 56px a 42px */
 
       /* nuevos colores oscuros (tipo calendario) */
       --bg-0:#070b12;
@@ -230,7 +230,7 @@ html = r"""
       width:100%;
       display:flex;
       justify-content:center;
-      margin-bottom:16px;
+      margin-bottom:12px;        /* reducido de 16px a 12px */
     }
 
     .pill{
@@ -378,18 +378,18 @@ html = r"""
     }
 
     .terms-inside{
-      margin-top:16px;
-      padding-top:12px;
+      margin-top:12px;           /* reducido de 16px */
+      padding-top:8px;           /* reducido de 12px */
       border-top:1px solid var(--stroke);
       display:flex;
       align-items:center;
       gap:10px;
-      font-size:18px;
+      font-size:16px;            /* reducido de 18px */
       color:var(--txt-1);
     }
 
     .chk{
-      width:18px; height:18px;
+      width:16px; height:16px;   /* un poco más pequeño */
       border:2px solid var(--stroke);
       border-radius:3px;
       display:inline-block;
@@ -402,8 +402,7 @@ html = r"""
     }
 
     /* ===== MOBILE LAYOUT =====
-       - Mantiene "plano" (sin romper tamaños base)
-       - Si no cabe input al lado: input debajo (por fila)
+       - Ajustado para mostrar aprox. 6 filas visibles
     */
     @media (max-width: 768px){
       #wrap{ padding:0; }
@@ -418,63 +417,62 @@ html = r"""
       .col-right{
         width:100%;
         flex:1;
-        gap:10px;
+        gap:8px;                /* reducido de 10px */
         min-width:0;
       }
 
       .hdr{
         margin:0 10px;
         height:var(--hdrHMob);
-        font-size:34px;
+        font-size:24px;          /* reducido de 34px */
         border:none;
       }
 
       .hdr::after{
         left:18px; right:18px;
-        bottom:10px;
+        bottom:8px;              /* ajustado */
         height:2px;
       }
 
       .form-shell{
         margin:0 10px;
         border-radius:var(--radiusMob);
-        padding:16px;
+        padding:12px;            /* reducido de 16px */
       }
 
       .form-scroll{
-        left:16px; right:16px; top:16px; bottom:16px;
+        left:12px; right:12px; top:12px; bottom:12px;
       }
 
       .pill{
         width:100%;
-        max-width:520px;
-        height:46px;
-        font-size:26px;
+        max-width:480px;
+        height:38px;             /* reducido de 46px */
+        font-size:20px;          /* reducido de 26px */
       }
 
-      /* En móvil: una sola columna (solo 8 preguntas como en imagen) */
       .grid-2{ display:block; }
       .stack-right{ display:none; }
 
-      .stack{ gap:18px; }
+      .stack{ gap:6px; }         /* reducido de 18px a 6px */
 
-      /* Fila: intenta lado a lado; si no cabe, cae a 1 columna (label arriba, input abajo) */
+      /* Fila: intenta lado a lado */
       .qrow{
-        grid-template-columns: minmax(140px, 42%) 1fr;
+        grid-template-columns: minmax(120px, 38%) 1fr;  /* columna más estrecha */
       }
 
       .label{
         height:var(--inputHMob);
         min-width:0;
-        font-size:26px;
+        font-size:18px;           /* reducido de 26px */
         justify-content:flex-start;
-        padding-left:18px;
-        border-right:1px solid var(--glow-orange); /* en móvil recuperamos borde derecho porque el input se coloca debajo en el breakpoint */
+        padding-left:12px;        /* reducido de 18px */
+        border-right:1px solid var(--glow-orange);
       }
 
       .input{
         height:var(--inputHMob);
-        font-size:20px;
+        font-size:16px;           /* reducido de 20px */
       }
 
       /* BREAKPOINT interno por ancho útil: input debajo */
@@ -485,7 +483,7 @@ html = r"""
         }
         .label{
           justify-content:flex-start;
-          padding-left:18px;
+          padding-left:12px;
           border-right:1px solid var(--glow-orange);
           border-bottom:none;
         }
@@ -496,14 +494,14 @@ html = r"""
       }
 
       .terms-inside{
-        margin-top:18px;
-        padding-top:14px;
-        font-size:18px;
+        margin-top:10px;
+        padding-top:8px;
+        font-size:15px;
       }
 
       .mobile-next{
-        margin:12px 10px 14px 10px;
-        height:64px;
+        margin:8px 10px 10px 10px;
+        height:48px;              /* reducido de 64px */
         border:1px solid var(--stroke);
         display:flex;
         align-items:center;
@@ -511,8 +509,7 @@ html = r"""
         font-weight:800;
         background:var(--glass);
         box-sizing:border-box;
-        font-size:34px;
-        color:var(--txt-0);
+        font-size:22px;           /* reducido de 34px */
         border-radius:var(--radius-pill);
         backdrop-filter:blur(calc(var(--blur) - 6px));
       }
