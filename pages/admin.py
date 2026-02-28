@@ -155,9 +155,35 @@ html = r"""
       min-width:420px;
     }
 
-    /* Logo solo visible en móvil, oculto en desktop */
+    /* Logo sin marco (ambas versiones) */
+    .logo, .mobile-logo {
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .logo {
+      height: 90px;
+    }
+
+    .logo img, .mobile-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* Logo móvil más grande */
     .mobile-logo {
-      display: none;
+      display: none; /* visible solo en móvil */
+      height: 140px; /* duplicado aprox */
+      margin: 5px 10px 0 10px;
+      padding: 5px;
+      box-sizing: border-box;
     }
 
     .blk{
@@ -168,20 +194,6 @@ html = r"""
       border-radius:var(--radius-card);
       box-shadow:var(--shadow-soft), var(--shadow-inner);
       color:var(--txt-0);
-    }
-
-    .logo{
-      height:90px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow: hidden;
-    }
-
-    .logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
     }
 
     .desc{
@@ -244,21 +256,26 @@ html = r"""
       margin-bottom:16px;
     }
 
-    .pill{
-      width:210px;
-      height:34px;
-      background:linear-gradient(180deg, rgba(255,124,44,.3), rgba(255,124,44,.1));
-      border:1px solid var(--glow-orange);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:800;
-      letter-spacing:0.5px;
-      box-sizing:border-box;
-      border-radius:var(--radius-pill);
-      color:var(--txt-0);
-      text-shadow:0 0 8px var(--glow-orange);
-      box-shadow:0 0 18px var(--glow-orange-2), var(--shadow-inner);
+    /* Campo FOMUL - input de solo lectura con estilo pill */
+    .pill-input {
+      width: 210px;
+      height: 34px;
+      background: linear-gradient(180deg, rgba(255,124,44,.3), rgba(255,124,44,.1));
+      border: 1px solid var(--glow-orange);
+      border-radius: var(--radius-pill);
+      color: var(--txt-0);
+      text-shadow: 0 0 8px var(--glow-orange);
+      box-shadow: 0 0 18px var(--glow-orange-2), var(--shadow-inner);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      box-sizing: border-box;
+      text-align: center;
+      font-size: 16px;
+      outline: none;
+      cursor: default;
     }
 
     .grid-2{
@@ -327,7 +344,7 @@ html = r"""
       box-shadow:0 0 10px var(--glow-orange-2);
     }
 
-    /* BLOQUES AZULES (antes rosas) */
+    /* BLOQUES AZULES */
     .pink-block{
       border:1px solid var(--glow-blue);
       background:rgba(96,196,255,.08);
@@ -397,6 +414,10 @@ html = r"""
       gap:10px;
       font-size:18px;
       color:var(--txt-1);
+      /* Aseguramos visibilidad */
+      background: rgba(0,0,0,0.2); /* sutil fondo para destacar */
+      border-radius: 4px;
+      padding: 8px 12px;
     }
 
     .chk{
@@ -406,6 +427,33 @@ html = r"""
       display:inline-block;
       box-sizing:border-box;
       background:rgba(0,0,0,.3);
+    }
+
+    /* Botón de registro en escritorio */
+    .desktop-register {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .register-btn {
+      background: linear-gradient(180deg, rgba(255,124,44,.8), rgba(255,124,44,.4));
+      border: 1px solid var(--glow-orange);
+      color: var(--txt-0);
+      font-weight: 800;
+      font-size: 18px;
+      padding: 12px 40px;
+      border-radius: var(--radius-pill);
+      box-shadow: 0 0 30px var(--glow-orange-2), var(--shadow-inner);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .register-btn:hover {
+      background: rgba(255,124,44,.9);
+      box-shadow: 0 0 40px var(--glow-orange);
     }
 
     .mobile-next{
@@ -424,22 +472,7 @@ html = r"""
       .col-left{ display:none; }
 
       .mobile-logo {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 70px;
-        margin: 5px 10px 0 10px;
-        background: var(--glass);
-        border: 1px solid var(--stroke);
-        border-radius: var(--radius-card);
-        padding: 5px;
-        box-sizing: border-box;
-      }
-
-      .mobile-logo img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
+        display: flex; /* visible en móvil */
       }
 
       .col-right{
@@ -472,11 +505,15 @@ html = r"""
         left:8px; right:8px; top:8px; bottom:8px;
       }
 
-      .pill{
-        width:100%;
-        max-width:480px;
-        height:34px;
-        font-size:18px;
+      .row-top {
+        margin-bottom: 12px;
+      }
+
+      .pill-input {
+        width: 100%;
+        max-width: 480px;
+        height: 38px;
+        font-size: 18px;
       }
 
       .grid-2{ display:block; }
@@ -523,12 +560,14 @@ html = r"""
         margin-top:8px;
         padding-top:6px;
         font-size:14px;
+        background: rgba(0,0,0,0.3);
       }
 
       .chk{
         width:14px; height:14px;
       }
 
+      /* Botón móvil con texto "Registro" */
       .mobile-next{
         margin:6px 10px 8px 10px;
         height:42px;
@@ -542,6 +581,20 @@ html = r"""
         font-size:18px;
         border-radius:var(--radius-pill);
         backdrop-filter:blur(calc(var(--blur) - 6px));
+        color: var(--txt-0);
+        text-transform: uppercase;
+      }
+
+      /* Ocultamos botón escritorio en móvil */
+      .desktop-register {
+        display: none;
+      }
+    }
+
+    /* En escritorio ocultamos el botón móvil */
+    @media (min-width: 769px) {
+      .mobile-next {
+        display: none;
       }
     }
   </style>
@@ -556,7 +609,7 @@ html = r"""
 
         <!-- IZQUIERDA (DESKTOP) -->
         <div class="col-left">
-          <div class="blk logo">
+          <div class="logo">
             <img src="https://files.catbox.moe/056m6v.jpg" alt="Logo">
           </div>
           <div class="blk desc">Descripcion</div>
@@ -575,7 +628,8 @@ html = r"""
             <div class="form-scroll">
 
               <div class="row-top">
-                <div class="pill">FOMUL</div>
+                <!-- Campo FOMUL con fecha actual -->
+                <input type="text" id="fechaActual" class="pill-input" readonly>
               </div>
 
               <div class="grid-2">
@@ -674,10 +728,17 @@ html = r"""
                 </div>
 
               </div>
+
+              <!-- Botón de registro en escritorio -->
+              <div class="desktop-register">
+                <button class="register-btn">Registro</button>
+              </div>
+
             </div>
           </div>
 
-          <div class="mobile-next">Siguiente</div>
+          <!-- Botón móvil -->
+          <div class="mobile-next">Registro</div>
         </div>
 
       </div>
@@ -686,6 +747,7 @@ html = r"""
 
   <script>
     (function(){
+      // Full-screen real del iframe en Streamlit
       var fe = window.frameElement;
       if (fe){
         fe.style.position = "fixed";
@@ -698,6 +760,21 @@ html = r"""
         fe.style.zIndex = "999999";
         fe.style.background = "transparent";
       }
+
+      // Insertar fecha actual en el campo FOMUL (formato dd/mm/yyyy)
+      function actualizarFecha() {
+        const hoy = new Date();
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const año = hoy.getFullYear();
+        const fechaFormateada = `${dia}/${mes}/${año}`;
+        const campoFecha = document.getElementById('fechaActual');
+        if (campoFecha) {
+          campoFecha.value = fechaFormateada;
+        }
+      }
+
+      actualizarFecha();
     })();
   </script>
 </body>
