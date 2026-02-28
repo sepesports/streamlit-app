@@ -31,12 +31,9 @@ html = r"""
       --pink:#f3a3a3;
 
       --radius:52px;
-      --gap:18px;
-
       --maxW:1280px;
 
       --hdrH:54px;
-      --termsH:34px;
 
       --labelH:40px;
       --inputH:40px;
@@ -56,14 +53,12 @@ html = r"""
       color:#111;
     }
 
-    /* Forzar iframe a full screen dentro de Streamlit */
     #stage{
       position:fixed; inset:0;
       width:100vw; height:100vh;
       background:var(--bg);
     }
 
-    /* Marco exterior */
     #outer{
       position:absolute;
       left:10px; right:10px; top:10px; bottom:10px;
@@ -72,7 +67,6 @@ html = r"""
       background:transparent;
     }
 
-    /* Layout */
     #wrap{
       position:absolute;
       left:10px; right:10px; top:10px; bottom:10px;
@@ -92,7 +86,6 @@ html = r"""
       box-sizing:border-box;
     }
 
-    /* Desktop: 2 columnas */
     .col-left{
       flex:0 0 32%;
       display:flex;
@@ -109,7 +102,6 @@ html = r"""
       min-width:420px;
     }
 
-    /* Bloques */
     .blk{
       border:var(--border) solid var(--borderColor);
       box-sizing:border-box;
@@ -132,9 +124,6 @@ html = r"""
       min-height:260px;
     }
 
-    /* En la imagen nueva, "Acepta..." está dentro del formulario, NO como bloque izquierdo */
-    .terms-left{ display:none; }
-
     .hdr{
       height:var(--hdrH);
       display:flex;
@@ -155,7 +144,6 @@ html = r"""
       background:#b7bcc3;
     }
 
-    /* Contenedor formulario (borde redondeado grande) */
     .form-shell{
       flex:1;
       border:4px solid var(--shellBorder);
@@ -167,7 +155,6 @@ html = r"""
       background:#fff;
     }
 
-    /* Scroll interno para no romper layout */
     .form-scroll{
       position:absolute;
       left:18px; right:18px; top:18px; bottom:18px;
@@ -176,7 +163,6 @@ html = r"""
       box-sizing:border-box;
     }
 
-    /* FOMUL */
     .row-top{
       width:100%;
       display:flex;
@@ -197,7 +183,6 @@ html = r"""
       box-sizing:border-box;
     }
 
-    /* Desktop grid: 2 columnas */
     .grid-2{
       display:grid;
       grid-template-columns: 1fr 0.95fr;
@@ -217,7 +202,6 @@ html = r"""
       gap:var(--rowGap);
     }
 
-    /* Fila label+input */
     .row{
       display:flex;
       align-items:stretch;
@@ -252,7 +236,6 @@ html = r"""
       outline:none;
     }
 
-    /* Bloques rosas (INSTALACION / FECHA FIN / HORAS) */
     .pink-block{
       border:2px solid var(--fieldBorder);
       background:var(--pink);
@@ -302,7 +285,6 @@ html = r"""
       user-select:none;
     }
 
-    /* Línea + checkbox dentro del formulario (desktop imagen nueva) */
     .terms-inside{
       margin-top:16px;
       padding-top:12px;
@@ -322,7 +304,7 @@ html = r"""
       background:#fff;
     }
 
-    /* Móvil */
+    /* MÓVIL: si no cabe al lado, input debajo de cada pregunta */
     @media (max-width: 768px){
       #wrap{ padding:0; }
       #app{
@@ -370,25 +352,31 @@ html = r"""
         font-size:26px;
       }
 
-      /* Móvil: 1 columna de filas */
       .grid-2{ display:block; }
       .stack-right{ display:none; }
 
-      .stack{
-        gap:18px;
+      .stack{ gap:18px; }
+
+      .row{
+        flex-direction:column;
+        gap:0;
       }
 
       .label{
-        min-width:150px;
+        width:100%;
+        min-width:unset;
         height:56px;
         font-size:26px;
-        justify-content:center;
+        justify-content:flex-start;
+        padding-left:18px;
       }
 
-      .row{ gap:0; }
       .input{
+        width:100%;
         height:56px;
         font-size:20px;
+        border-left:2px solid var(--fieldBorder);
+        border-top:none;
       }
 
       .terms-inside{
@@ -397,7 +385,6 @@ html = r"""
         font-size:18px;
       }
 
-      /* Botón Siguiente bloque (móvil) */
       .mobile-next{
         margin:12px 10px 14px 10px;
         height:64px;
@@ -483,7 +470,6 @@ html = r"""
                     <input class="input" type="text" />
                   </div>
 
-                  <!-- En móvil solo mostramos estos 8 campos (como imagen) -->
                   <div class="terms-inside">
                     <span class="chk"></span>
                     <span>Acepta terminos y condiciones</span>
@@ -531,10 +517,7 @@ html = r"""
                     </div>
                   </div>
 
-                  <div class="pink-block">
-                    <div class="pink-title">HORAS:</div>
-                  </div>
-
+                  <!-- HORAS ELIMINADO -->
                 </div>
               </div>
 
