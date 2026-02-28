@@ -1,4 +1,4 @@
-# pages/admin.py
+# app.py
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -10,404 +10,414 @@ st.markdown(
       .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
       section.main > div{padding:0 !important;margin:0 !important;}
       header, footer{display:none !important;}
-      [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-html = """
+html = r"""
 <!doctype html>
 <html>
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --border:2px;
+      --borderColor:#111;
+      --bg:#fff;
 
-<style>
-:root{
-  /* =========================================================
-     PALETA (AZUL base #040e31) -> ajusta tonos globales aquí
-     ========================================================= */
-  --baseBlue: #040e31;            /* BASE requerida */
-  --bgTop:  #0a1a55;              /* superior (más claro) */
-  --bgMid:  #061240;              /* medio */
-  --bgDeep: #02071c;              /* inferior (más oscuro) */
+      --yellow:#f2b400;
+      --pink:#f3a3a3;
 
-  --overlay1: rgba(40, 120, 255, .16); /* corte diagonal claro */
-  --overlay2: rgba(0,  10,  40, .62);  /* corte diagonal oscuro */
+      --radius:48px;
+      --gap:18px;
+      --pad:18px;
+      --text:#111;
 
-  --ink: rgba(255,255,255,.92);
-  --muted: rgba(255,255,255,.62);
+      --fieldH:40px;
+      --headerH:44px;
+      --termsH:34px;
 
-  --pill: rgba(238, 245, 255, .92);
-  --pill2: rgba(255,255,255,.86);
+      --maxW:1200px;
+    }
 
-  --btn1:#2f7de1;
-  --btn2:#1e5fc4;
+    html, body{
+      margin:0; padding:0;
+      width:100%; height:100%;
+      background:var(--bg);
+      overflow:hidden;
+      font-family: Arial, Helvetica, sans-serif;
+      color:var(--text);
+    }
 
-  --shadow1: 0 22px 55px rgba(0,0,0,.55);
-  --shadow2: 0 10px 22px rgba(0,0,0,.40);
-  --blur: 14px;
+    /* Forzar iframe a full screen dentro de Streamlit */
+    #stage{
+      position:fixed; inset:0;
+      width:100vw; height:100vh;
+      background:var(--bg);
+    }
 
-  /* =========================================================
-     CONTROLES DESKTOP (pantalla completa)
-     Cambia AQUÍ posición/tamaño para desktop
-     ========================================================= */
-  --logoWDesktop: 310px;     /* tamaño logo desktop */
-  --logoTopDesktop: 0.0%;    /* subir/bajar logo desktop */
-  --logoXDesktop: 0px;       /* mover logo izq/der desktop (px) */
+    /* Marco exterior */
+    #outer{
+      position:absolute;
+      left:10px; right:10px; top:10px; bottom:10px;
+      border:var(--border) solid var(--borderColor);
+      box-sizing:border-box;
+      background:transparent;
+    }
 
-  --titleTopDesktop: 20%;    /* subir/bajar título desktop */
-  --titleSizeDesktop: 22px;  /* tamaño título desktop */ 
-  --titleXDesktop: 0px;      /* mover título izq/der desktop (px) */
+    /* Layout general */
+    #wrap{
+      position:absolute;
+      left:10px; right:10px; top:10px; bottom:10px;
+      display:flex;
+      justify-content:center;
+      align-items:stretch;
+      box-sizing:border-box;
+      padding:10px;
+    }
 
-  --lblUserTopDesktop: 22%;
-  --inUserTopDesktop: 28%;
-  --lblPassTopDesktop: 42%;
-  --inPassTopDesktop: 48%;
-  --btnTopDesktop: 67%;
+    #app{
+      width:100%;
+      max-width:var(--maxW);
+      height:100%;
+      display:flex;
+      gap:22px;
+      box-sizing:border-box;
+    }
 
-  --linkPolTopDesktop: 78%;
-  --linkPolLeftDesktop: 20%;
-  --linkRegTopDesktop: 78%;
-  --linkRegLeftDesktop: 68%;
+    /* Desktop: 2 columnas */
+    .col-left{
+      flex:0 0 32%;
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      min-width:260px;
+    }
 
-  --labelSizeDesktop: 22px; /* 14px */
-  --inputSizeDesktop: 22px; /* 14px */
-  --btnTextSizeDesktop: 22px; /* 14px */
-  --linkSizeDesktop: 22px; /* 13px estoy aqui */
+    .col-right{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      min-width:320px;
+    }
 
-  /* =========================================================
-     CONTROLES MÓVIL
-     Cambia AQUÍ posición/tamaño para móvil
-     ========================================================= */
-  --logoWMobile: 150px;      /* tamaño logo móvil */
-  --logoTopMobile: 6%;       /* subir/bajar logo móvil */
-  --logoXMobile: 0px;        /* mover logo izq/der móvil (px) *
+    /* Bloques */
+    .blk{
+      border:var(--border) solid var(--borderColor);
+      box-sizing:border-box;
+      background:#fff;
+    }
 
-  --titleTopMobile: 20%;     /* subir/bajar título móvil */
-  --titleSizeMobile: 18px;   /* tamaño título móvil */
-  --titleXMobile: 0px;       /* mover título izq/der móvil (px) */
+    .logo{
+      height:88px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+    }
 
-  --lblUserTopMobile: 22%;
-  --inUserTopMobile: 28%;     /* 28 */
-  --lblPassTopMobile: 42%;  /* 42 */
-  --inPassTopMobile: 48%;    /* 48 */
-  --btnTopMobile: 65%;     /* 67%*/
+    .desc{
+      flex:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:220px;
+    }
 
-  --linkPolTopMobile: 78%; /* 78 */
-  --linkPolLeftMobile: 20%; /* 20 */
-  --linkRegTopMobile: 78%;
-  --linkRegLeftMobile: 68%; /* 68 */
+    .terms{
+      height:var(--termsH);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:13px;
+      padding:0 10px;
+      box-sizing:border-box;
+      white-space:nowrap;
+    }
 
-  --labelSizeMobile: 16px;    /* 16 */
-  --inputSizeMobile: 16px;    /* 16 */
-  --btnTextSizeMobile: 18px; /* 14 */
-  --linkSizeMobile: 15px;  /* 13*/
-}
+    .hdr{
+      height:var(--headerH);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+    }
 
-/* RESET */
-*{box-sizing:border-box}
-html, body{
-  margin:0;
-  padding:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background: var(--baseBlue);
-}
+    /* Contenedor formulario (borde redondeado grande) */
+    .form-shell{
+      flex:1;
+      border:3px solid #777;
+      border-radius:var(--radius);
+      box-sizing:border-box;
+      padding:18px 18px 18px 18px;
+      position:relative;
+      overflow:hidden;
+      background:#fff;
+    }
 
-/* FONDO EXTERIOR */
-#stage{
-  position:fixed;
-  inset:0;
-  width:100vw;
-  height:100vh;
-  background:
-    radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.14), transparent 60%),
-    radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
-    linear-gradient(180deg, #020614 0%, var(--baseBlue) 100%);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-}
+    /* Area scroll para que quepan 17 preguntas sin romper bloques */
+    .form-scroll{
+      position:absolute;
+      left:18px; right:18px; top:18px; bottom:18px;
+      overflow:auto;
+      padding-right:6px;
+      box-sizing:border-box;
+    }
 
-/* PANEL PRINCIPAL */
-#plan{
-  position:absolute;
-  left:10px; right:10px;
-  top:10px; bottom:0;
-  overflow:hidden;
-  border-radius: 34px;
-  box-shadow: var(--shadow1);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 22%),
-    linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #05164d 58%, var(--bgDeep) 100%);
-}
+    /* Top "FOMUL" centrado */
+    .row-top{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      margin-bottom:16px;
+    }
 
-/* CORTE DIAGONAL */
-#plan::before{
-  content:"";
-  position:absolute;
-  inset:-10%;
-  background:
-    linear-gradient(135deg,
-      transparent 0%,
-      transparent 32%,
-      var(--overlay1) 32%,
-      var(--overlay2) 66%,
-      transparent 66%);
-  transform: rotate(-10deg);
-  opacity:.95;
-  pointer-events:none;
-}
+    .pill{
+      width:140px;
+      height:30px;
+      background:var(--yellow);
+      border:var(--border) solid var(--borderColor);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      box-sizing:border-box;
+    }
 
-/* VIÑETA */
-#plan::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(50% 60% at 50% 25%, rgba(255,255,255,.06), transparent 55%),
-    radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
-    linear-gradient(180deg, transparent 55%, rgba(0,0,0,.65) 100%);
-  pointer-events:none;
-}
+    /* Grilla 2 columnas (desktop) */
+    .grid-2{
+      display:grid;
+      grid-template-columns: 1fr 0.75fr;
+      gap:18px 28px;
+      align-items:start;
+    }
 
-/* MARCO */
-#frame{
-  position:absolute;
-  left:9px; right:9px;
-  top:10px; bottom:0;
-  border-left: 2px solid rgba(255,255,255,.14);
-  border-right:2px solid rgba(255,255,255,.14);
-  border-top:  2px solid rgba(255,255,255,.14);
-  box-sizing:border-box;
-  pointer-events:none;
-  border-radius: 34px;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
-}
+    /* Columna izquierda con 8 campos */
+    .stack{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
 
-/* CONTENEDOR */
-#card{
-  position:absolute;
-  left:6%;
-  right:6%;
-  top:6%;
-  bottom:6%;
-}
+    /* Columna derecha con 8 campos */
+    .stack-right{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      padding-top:0px;
+    }
 
-/* =========================================================
-   LOGO (DESKTOP por defecto)
-   ========================================================= */
-.logo{
-  position:absolute;
-  left:50%;
-  top: var(--logoTopDesktop) !important;
-  transform: translateX(-50%) translateX(var(--logoXDesktop)) !important;
-  width: var(--logoWDesktop) !important;
-  height:auto;
-  display:block;
-  border-radius: 10px;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
-}
+    /* Campo */
+    .field{
+      height:var(--fieldH);
+      border:var(--border) solid var(--borderColor);
+      background:var(--yellow);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      box-sizing:border-box;
+    }
 
-/* =========================================================
-   TÍTULO (DESKTOP por defecto)
-   ========================================================= */
-.title{
-  position:absolute;
-  left:0; right:0;
-  top: var(--titleTopDesktop) !important;
-  text-align:center;
-  font:800 var(--titleSizeDesktop) Arial, sans-serif !important;
-  color: var(--ink);
-  text-shadow: 0 8px 18px rgba(0,0,0,.35);
-  letter-spacing: .2px;
-  transform: translateX(var(--titleXDesktop)) !important;
-}
+    .field.small{ height:34px; font-size:13px; font-style:italic; font-weight:700; }
+    .field.tall{ height:52px; }
+    .field.pink{ background:var(--pink); font-style:italic; }
 
-/* LABELS */
-.label{
-  position:absolute;
-  left:18%;
-  right:18%;
-  font:700 var(--labelSizeDesktop) Arial, sans-serif !important;
-  color: rgba(255,255,255,.82);
-  text-shadow: 0 6px 14px rgba(0,0,0,.30);
-}
+    /* Ajustes tipo imagen (algunos más altos) */
+    .field.nacion, .field.naff, .field.pobl{ height:54px; }
+    .field.nacimiento{ height:54px; }
+    .field.instalacion{ height:50px; }
+    .field.fecha_fin{ height:38px; }
+    .field.horas{ height:34px; }
 
-/* INPUTS */
-input.field{
-  position:absolute;
-  left:22%; /* 16 */
-  right:22%; /* 16 */
-  height:10%; /* 16 */
-  border: 1px solid rgba(255,255,255,.55);
-  border-radius: 999px;
-  box-sizing:border-box;
-  background: linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
-  padding: 0 16px; /* 14 */
-  font:700 var(--inputSizeDesktop) Arial, sans-serif !important;
-  color: rgba(30,40,55,.92);
-  outline:none;
-  box-shadow:
-    0 15px 18px rgba(0,0,0,.22), /*0 10px */
-    inset 0 1px 0 rgba(255,255,255,.55);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
-}
-input.field::placeholder{ color: rgba(60,70,85,.55); }
+    /* ---- MÓVIL ---- */
+    @media (max-width: 768px){
+      #wrap{ padding:0; }
+      #app{
+        max-width:none;
+        gap:0;
+        flex-direction:column;
+      }
 
-/* BOTÓN */
-.btn{
-  position:absolute;
-  left:32%;
-  right:32%;
-  height:10%;  
-  border: 1px solid rgba(255,255,255,.10);/* Estoy aqui 10*/
-  border-radius: 999px;
-  box-sizing:border-box;
-  background:
-    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%), /* Estoy aqui transparent 80%*/
-    linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
-  box-shadow:
-    0 22px 26px rgba(0,0,0,.28),/* Estoy aqui 0 18px */
-    inset 0 1px 0 rgba(255,255,255,.22);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font:700 var(--btnTextSizeDesktop) Arial, sans-serif !important;
-  color: rgba(255,255,255,.92);
-  cursor:pointer;
-  user-select:none;
-  transition: transform .12s ease, filter .12s ease;
-}
-.btn:active{ transform: scale(.985); filter: brightness(.98); }
+      .col-left{ display:none; }
 
-/* LINKS */
-.link{
-  position:absolute;
-  font:700 var(--linkSizeDesktop) Arial, sans-serif !important;
-  color: rgba(255,255,255,.70);
-  white-space:nowrap;
-  text-shadow: 0 6px 14px rgba(0,0,0,.30);
-}
-.link:hover{ color: rgba(255,255,255,.85); }
+      .col-right{
+        width:100%;
+        flex:1;
+        gap:10px;
+      }
 
-/* HUD oculto */
-#hud{ display:none !important; }
+      .hdr{
+        margin:0 10px;
+      }
 
-/* =========================================================
-   POSICIONES DESKTOP
-   ========================================================= */
-#lblUser{ top: var(--lblUserTopDesktop) !important; }
-#inUser{  top: var(--inUserTopDesktop) !important; }
-#lblPass{ top: var(--lblPassTopDesktop) !important; }
-#inPass{  top: var(--inPassTopDesktop) !important; }
-#btnLogin{ top: var(--btnTopDesktop) !important; }
+      .form-shell{
+        margin:0 10px;
+        border-radius:36px;
+        padding:14px;
+      }
 
-#linkPol{ top: var(--linkPolTopDesktop) !important; left: var(--linkPolLeftDesktop) !important; }
-#linkReg{ top: var(--linkRegTopDesktop) !important; left: var(--linkRegLeftDesktop) !important; }
+      .form-scroll{
+        left:14px; right:14px; top:14px; bottom:14px;
+      }
 
-/* =========================================================
-   MODO MÓVIL
-   ========================================================= */
-@media (max-width: 640px){
-  .logo{
-    top: var(--logoTopMobile) !important;
-    width: var(--logoWMobile) !important;
-    transform: translateX(-50%) translateX(var(--logoXMobile)) !important;
-  }
-  .title{
-    top: var(--titleTopMobile) !important;
-    font:800 var(--titleSizeMobile) Arial, sans-serif !important;
-    transform: translateX(var(--titleXMobile)) !important;
-  }
-  .label{ font:700 var(--labelSizeMobile) Arial, sans-serif !important; }
-  input.field{ font:700 var(--inputSizeMobile) Arial, sans-serif !important; }
-  .btn{ font:700 var(--btnTextSizeMobile) Arial, sans-serif !important; }
-  .link{ font:700 var(--linkSizeMobile) Arial, sans-serif !important; }
+      /* En móvil: lista 1 columna (17 preguntas) */
+      .grid-2{ display:block; }
+      .stack, .stack-right{ padding:0; }
+      .stack-right{ margin-top:14px; }
 
-  #lblUser{ top: var(--lblUserTopMobile) !important; }
-  #inUser{  top: var(--inUserTopMobile) !important; }
-  #lblPass{ top: var(--lblPassTopMobile) !important; }
-  #inPass{  top: var(--inPassTopMobile) !important; }
-  #btnLogin{ top: var(--btnTopMobile) !important; }
+      .row-top{ margin-bottom:12px; }
 
-  #linkPol{ top: var(--linkPolTopMobile) !important; left: var(--linkPolLeftMobile) !important; }
-  #linkReg{ top: var(--linkRegTopMobile) !important; left: var(--linkRegLeftMobile) !important; }
-}
-</style>
+      .pill{ width:78%; max-width:260px; }
+
+      /* Botón siguiente bloque aparte */
+      .mobile-next{
+        margin:10px 10px 12px 10px;
+        height:48px;
+        border:var(--border) solid var(--borderColor);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-weight:700;
+        background:#fff;
+        box-sizing:border-box;
+      }
+
+      /* En móvil ocultamos la columna derecha “pareada” y lo convertimos a 17 campos apilados */
+      .stack-right{ display:none; }
+      .mobile-fields{ display:flex; flex-direction:column; gap:12px; }
+      .mobile-fields .field{ height:44px; font-size:14px; }
+      .mobile-fields .field.pink{ height:44px; }
+    }
+  </style>
 </head>
 
 <body>
-<div id="stage">
-  <div id="frame"></div>
+  <div id="stage">
+    <div id="outer"></div>
 
-  <div id="plan">
-    <div id="card">
-      <!-- LOGO -->
-      <img class="logo" src="https://files.catbox.moe/056m6v.jpg" alt="Logo"/>
+    <div id="wrap">
+      <div id="app">
 
-      <!-- TÍTULO -->
-      <div class="title">¡BIENVENIDO!</div>
+        <!-- IZQUIERDA (DESKTOP): Logo / Descripción / Términos -->
+        <div class="col-left">
+          <div class="blk logo">Logo</div>
+          <div class="blk desc">Descripcion</div>
+          <div class="blk terms">Acepta terminos y condiciones</div>
+        </div>
 
-      <div id="lblUser" class="label" style="top:22%;">Usuario:</div>
-      <input id="inUser" class="field" style="top:28%;" autocomplete="username"/>
+        <!-- DERECHA: Header Formulario + Área preguntas -->
+        <div class="col-right">
+          <div class="blk hdr">Formulario</div>
 
-      <div id="lblPass" class="label" style="top:42%;">Contraseña:</div>
-      <input id="inPass" class="field" style="top:48%;" type="password" autocomplete="current-password"/>
+          <div class="form-shell">
+            <div class="form-scroll">
 
-      <div id="btnLogin" class="btn" style="top:67%;" onclick="doLogin()">Login</div>
+              <div class="row-top">
+                <div class="pill">FOMUL</div>
+              </div>
 
-      <div id="linkPol" class="link" style="top:78%; left:20%;">Politicas:</div>
-      <div id="linkReg" class="link" style="top:78%; left:68%;">Registrarse:</div>
+              <!-- DESKTOP: 2 columnas (como imagen 1) -->
+              <div class="grid-2">
+                <div class="stack">
+                  <div class="field">NOMBRE</div>
+                  <div class="field">DNI</div>
+                  <div class="field nacion">NACION</div>
+                  <div class="field naff">NAFF</div>
+                  <div class="field">CALLE</div>
+                  <div class="field pobl">POBL</div>
+                  <div class="field">COMARCA</div>
+                  <div class="field">C.P</div>
+                </div>
+
+                <div class="stack-right">
+                  <div class="field small">TLF</div>
+                  <div class="field small">CORREO</div>
+                  <div class="field small nacimiento">NACIMIENTO</div>
+                  <div class="field small">ESTADO CIV</div>
+                  <div class="field small">IBAN</div>
+
+                  <div class="field pink instalacion">INSTALACION</div>
+                  <div class="field pink fecha_fin">FECHA FIN</div>
+                  <div class="field pink horas">HORAS</div>
+                </div>
+
+                <!-- MÓVIL: 17 preguntas apiladas -->
+                <div class="mobile-fields" style="display:none;">
+                  <div class="field">FOMUL</div>
+                  <div class="field">NOMBRE</div>
+                  <div class="field">DNI</div>
+                  <div class="field">NACION</div>
+                  <div class="field">NAFF</div>
+                  <div class="field">CALLE</div>
+                  <div class="field">POBL</div>
+                  <div class="field">COMARCA</div>
+                  <div class="field">C.P</div>
+                  <div class="field">TLF</div>
+                  <div class="field">CORREO</div>
+                  <div class="field">NACIMIENTO</div>
+                  <div class="field">ESTADO CIV</div>
+                  <div class="field">IBAN</div>
+                  <div class="field pink">INSTALACION</div>
+                  <div class="field pink">FECHA FIN</div>
+                  <div class="field pink">HORAS</div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Botón siguiente (solo móvil) -->
+          <div class="mobile-next" style="display:none;">Siguiente</div>
+        </div>
+
+      </div>
     </div>
-
-    <div id="hud"></div>
   </div>
-</div>
 
-<script>
-async function doLogin(){
-  const u = (document.getElementById("inUser").value || "").trim();
-  const p = (document.getElementById("inPass").value || "").trim();
+  <script>
+    (function(){
+      var fe = window.frameElement;
+      if (fe){
+        fe.style.position = "fixed";
+        fe.style.inset = "0";
+        fe.style.width = "100vw";
+        fe.style.height = "100vh";
+        fe.style.border = "0";
+        fe.style.margin = "0";
+        fe.style.padding = "0";
+        fe.style.zIndex = "999999";
+        fe.style.background = "transparent";
+      }
 
-  try{
-    const r = await fetch("https://camilo27.pythonanywhere.com/api/auth", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({usuario:u, password:p})
-    });
+      function syncMobile(){
+        var isMobile = window.matchMedia("(max-width: 768px)").matches;
 
-    const j = await r.json();
+        var mobileNext = document.querySelector(".mobile-next");
+        var mobileFields = document.querySelector(".mobile-fields");
+        var stackRight = document.querySelector(".stack-right");
+        var rowTop = document.querySelector(".row-top");
 
-    if (j && j.ok === true){
-      // ✅ Pasamos el nombre de usuario en la URL
-      window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u);
-    } else {
-      alert("Credenciales inválidas");
-    }
-  }catch(e){
-    alert("Error de conexión");
-  }
-}
+        if (isMobile){
+          if (mobileNext) mobileNext.style.display = "flex";
+          if (mobileFields) mobileFields.style.display = "flex";
+          if (stackRight) stackRight.style.display = "none";
+          if (rowTop) rowTop.style.display = "none"; // en móvil FOMUL va dentro de las 17 preguntas
+        } else {
+          if (mobileNext) mobileNext.style.display = "none";
+          if (mobileFields) mobileFields.style.display = "none";
+          if (stackRight) stackRight.style.display = "flex";
+          if (rowTop) rowTop.style.display = "flex";
+        }
+      }
 
-(function(){
-  var fe = window.frameElement;
-  if (fe){
-    fe.style.position="fixed";
-    fe.style.inset="0";
-    fe.style.width="100vw";
-    fe.style.height="100vh";
-    fe.style.border="0";
-    fe.style.margin="0";
-    fe.style.padding="0";
-    fe.style.zIndex="999999";
-    fe.style.background="transparent";
-  }
-})();
-</script>
-
+      window.addEventListener("resize", syncMobile);
+      syncMobile();
+    })();
+  </script>
 </body>
 </html>
 """
