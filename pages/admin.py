@@ -30,16 +30,21 @@ html = r"""
       --yellow:#f2b400;
       --pink:#f3a3a3;
 
-      --radius:48px;
+      --radius:52px;
       --gap:18px;
-      --pad:18px;
-      --text:#111;
 
-      --fieldH:40px;
-      --headerH:44px;
+      --maxW:1280px;
+
+      --hdrH:54px;
       --termsH:34px;
 
-      --maxW:1200px;
+      --labelH:40px;
+      --inputH:40px;
+      --rowGap:14px;
+      --colGap:26px;
+
+      --fieldBorder:#6f7680;
+      --shellBorder:#7a7a7a;
     }
 
     html, body{
@@ -48,7 +53,7 @@ html = r"""
       background:var(--bg);
       overflow:hidden;
       font-family: Arial, Helvetica, sans-serif;
-      color:var(--text);
+      color:#111;
     }
 
     /* Forzar iframe a full screen dentro de Streamlit */
@@ -67,7 +72,7 @@ html = r"""
       background:transparent;
     }
 
-    /* Layout general */
+    /* Layout */
     #wrap{
       position:absolute;
       left:10px; right:10px; top:10px; bottom:10px;
@@ -100,8 +105,8 @@ html = r"""
       flex:1;
       display:flex;
       flex-direction:column;
-      gap:16px;
-      min-width:320px;
+      gap:12px;
+      min-width:420px;
     }
 
     /* Bloques */
@@ -112,7 +117,7 @@ html = r"""
     }
 
     .logo{
-      height:88px;
+      height:90px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -124,50 +129,54 @@ html = r"""
       display:flex;
       align-items:center;
       justify-content:center;
-      min-height:220px;
+      min-height:260px;
     }
 
-    .terms{
-      height:var(--termsH);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:13px;
-      padding:0 10px;
-      box-sizing:border-box;
-      white-space:nowrap;
-    }
+    /* En la imagen nueva, "Acepta..." está dentro del formulario, NO como bloque izquierdo */
+    .terms-left{ display:none; }
 
     .hdr{
-      height:var(--headerH);
+      height:var(--hdrH);
       display:flex;
       align-items:center;
       justify-content:center;
       font-weight:700;
+      font-size:18px;
+      position:relative;
+      background:#fff;
+    }
+
+    .hdr::after{
+      content:"";
+      position:absolute;
+      left:14px; right:14px;
+      bottom:10px;
+      height:2px;
+      background:#b7bcc3;
     }
 
     /* Contenedor formulario (borde redondeado grande) */
     .form-shell{
       flex:1;
-      border:3px solid #777;
+      border:4px solid var(--shellBorder);
       border-radius:var(--radius);
       box-sizing:border-box;
-      padding:18px 18px 18px 18px;
+      padding:18px;
       position:relative;
       overflow:hidden;
       background:#fff;
     }
 
-    /* Area scroll para que quepan 17 preguntas sin romper bloques */
+    /* Scroll interno para no romper layout */
     .form-scroll{
       position:absolute;
       left:18px; right:18px; top:18px; bottom:18px;
       overflow:auto;
-      padding-right:6px;
+      padding-right:8px;
       box-sizing:border-box;
     }
 
-    /* Top "FOMUL" centrado */
+    /* FOMUL */
     .row-top{
       width:100%;
       display:flex;
@@ -176,64 +185,144 @@ html = r"""
     }
 
     .pill{
-      width:140px;
-      height:30px;
+      width:210px;
+      height:34px;
       background:var(--yellow);
       border:var(--border) solid var(--borderColor);
       display:flex;
       align-items:center;
       justify-content:center;
-      font-weight:700;
+      font-weight:800;
+      letter-spacing:0.5px;
       box-sizing:border-box;
     }
 
-    /* Grilla 2 columnas (desktop) */
+    /* Desktop grid: 2 columnas */
     .grid-2{
       display:grid;
-      grid-template-columns: 1fr 0.75fr;
-      gap:18px 28px;
+      grid-template-columns: 1fr 0.95fr;
+      gap:18px var(--colGap);
       align-items:start;
     }
 
-    /* Columna izquierda con 8 campos */
     .stack{
       display:flex;
       flex-direction:column;
-      gap:14px;
+      gap:var(--rowGap);
     }
 
-    /* Columna derecha con 8 campos */
     .stack-right{
       display:flex;
       flex-direction:column;
-      gap:14px;
-      padding-top:0px;
+      gap:var(--rowGap);
     }
 
-    /* Campo */
-    .field{
-      height:var(--fieldH);
-      border:var(--border) solid var(--borderColor);
+    /* Fila label+input */
+    .row{
+      display:flex;
+      align-items:stretch;
+      gap:0;
+    }
+
+    .label{
+      height:var(--labelH);
+      min-width:140px;
+      padding:0 12px;
       background:var(--yellow);
+      border:var(--border) solid var(--borderColor);
       display:flex;
       align-items:center;
       justify-content:center;
-      font-weight:700;
+      font-weight:800;
+      box-sizing:border-box;
+      font-size:16px;
+    }
+
+    .label.small{ min-width:110px; }
+
+    .input{
+      flex:1;
+      height:var(--inputH);
+      border:2px solid var(--fieldBorder);
+      background:#fff;
+      box-sizing:border-box;
+      border-left:none;
+      padding:0 10px;
+      font-size:15px;
+      outline:none;
+    }
+
+    /* Bloques rosas (INSTALACION / FECHA FIN / HORAS) */
+    .pink-block{
+      border:2px solid var(--fieldBorder);
+      background:var(--pink);
+      padding:10px 12px 12px 12px;
       box-sizing:border-box;
     }
 
-    .field.small{ height:34px; font-size:13px; font-style:italic; font-weight:700; }
-    .field.tall{ height:52px; }
-    .field.pink{ background:var(--pink); font-style:italic; }
+    .pink-title{
+      font-weight:800;
+      text-align:center;
+      margin:0 0 10px 0;
+      font-size:16px;
+      letter-spacing:0.5px;
+    }
 
-    /* Ajustes tipo imagen (algunos más altos) */
-    .field.nacion, .field.naff, .field.pobl{ height:54px; }
-    .field.nacimiento{ height:54px; }
-    .field.instalacion{ height:50px; }
-    .field.fecha_fin{ height:38px; }
-    .field.horas{ height:34px; }
+    .pink-input{
+      width:100%;
+      height:40px;
+      border:2px solid var(--fieldBorder);
+      background:#fff;
+      box-sizing:border-box;
+      padding:0 10px;
+      font-size:15px;
+      outline:none;
+      border-radius:3px;
+    }
 
-    /* ---- MÓVIL ---- */
+    .date-row{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+
+    .date-input{ flex:1; }
+
+    .cal-ico{
+      width:44px;
+      height:40px;
+      border:2px solid var(--fieldBorder);
+      background:#efefef;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-sizing:border-box;
+      border-radius:3px;
+      font-size:18px;
+      user-select:none;
+    }
+
+    /* Línea + checkbox dentro del formulario (desktop imagen nueva) */
+    .terms-inside{
+      margin-top:16px;
+      padding-top:12px;
+      border-top:2px solid #b7bcc3;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:18px;
+    }
+
+    .chk{
+      width:18px; height:18px;
+      border:2px solid #666;
+      border-radius:3px;
+      display:inline-block;
+      box-sizing:border-box;
+      background:#fff;
+    }
+
+    /* Móvil */
     @media (max-width: 768px){
       #wrap{ padding:0; }
       #app{
@@ -252,45 +341,75 @@ html = r"""
 
       .hdr{
         margin:0 10px;
+        height:62px;
+        font-size:34px;
+        border:none;
+      }
+
+      .hdr::after{
+        left:18px; right:18px;
+        bottom:10px;
+        height:2px;
       }
 
       .form-shell{
         margin:0 10px;
-        border-radius:36px;
-        padding:14px;
+        border-radius:44px;
+        padding:16px;
       }
 
       .form-scroll{
-        left:14px; right:14px; top:14px; bottom:14px;
+        left:16px; right:16px; top:16px; bottom:16px;
       }
 
-      /* En móvil: lista 1 columna (17 preguntas) */
+      .row-top{ margin-bottom:14px; }
+      .pill{
+        width:100%;
+        max-width:520px;
+        height:46px;
+        font-size:26px;
+      }
+
+      /* Móvil: 1 columna de filas */
       .grid-2{ display:block; }
-      .stack, .stack-right{ padding:0; }
-      .stack-right{ margin-top:14px; }
+      .stack-right{ display:none; }
 
-      .row-top{ margin-bottom:12px; }
+      .stack{
+        gap:18px;
+      }
 
-      .pill{ width:78%; max-width:260px; }
+      .label{
+        min-width:150px;
+        height:56px;
+        font-size:26px;
+        justify-content:center;
+      }
 
-      /* Botón siguiente bloque aparte */
+      .row{ gap:0; }
+      .input{
+        height:56px;
+        font-size:20px;
+      }
+
+      .terms-inside{
+        margin-top:18px;
+        padding-top:14px;
+        font-size:18px;
+      }
+
+      /* Botón Siguiente bloque (móvil) */
       .mobile-next{
-        margin:10px 10px 12px 10px;
-        height:48px;
-        border:var(--border) solid var(--borderColor);
+        margin:12px 10px 14px 10px;
+        height:64px;
+        border:3px solid #111;
         display:flex;
         align-items:center;
         justify-content:center;
-        font-weight:700;
-        background:#fff;
+        font-weight:800;
+        background:#efefef;
         box-sizing:border-box;
+        font-size:34px;
       }
-
-      /* En móvil ocultamos la columna derecha “pareada” y lo convertimos a 17 campos apilados */
-      .stack-right{ display:none; }
-      .mobile-fields{ display:flex; flex-direction:column; gap:12px; }
-      .mobile-fields .field{ height:44px; font-size:14px; }
-      .mobile-fields .field.pink{ height:44px; }
     }
   </style>
 </head>
@@ -302,14 +421,13 @@ html = r"""
     <div id="wrap">
       <div id="app">
 
-        <!-- IZQUIERDA (DESKTOP): Logo / Descripción / Términos -->
+        <!-- IZQUIERDA (DESKTOP): Logo / Descripción -->
         <div class="col-left">
           <div class="blk logo">Logo</div>
           <div class="blk desc">Descripcion</div>
-          <div class="blk terms">Acepta terminos y condiciones</div>
         </div>
 
-        <!-- DERECHA: Header Formulario + Área preguntas -->
+        <!-- DERECHA -->
         <div class="col-right">
           <div class="blk hdr">Formulario</div>
 
@@ -320,57 +438,109 @@ html = r"""
                 <div class="pill">FOMUL</div>
               </div>
 
-              <!-- DESKTOP: 2 columnas (como imagen 1) -->
               <div class="grid-2">
+
+                <!-- COLUMNA IZQUIERDA (desktop) / ÚNICA (móvil) -->
                 <div class="stack">
-                  <div class="field">NOMBRE</div>
-                  <div class="field">DNI</div>
-                  <div class="field nacion">NACION</div>
-                  <div class="field naff">NAFF</div>
-                  <div class="field">CALLE</div>
-                  <div class="field pobl">POBL</div>
-                  <div class="field">COMARCA</div>
-                  <div class="field">C.P</div>
+
+                  <div class="row">
+                    <div class="label">NOMBRE:</div>
+                    <input class="input" type="text" />
+                  </div>
+
+                  <div class="row">
+                    <div class="label">DNI:</div>
+                    <input class="input" type="text" />
+                  </div>
+
+                  <div class="row">
+                    <div class="label">NACION:</div>
+                    <input class="input" type="text" />
+                  </div>
+
+                  <div class="row">
+                    <div class="label">NAFF:</div>
+                    <input class="input" type="text" />
+                  </div>
+
+                  <div class="row">
+                    <div class="label">CALLE:</div>
+                    <input class="input" type="text" />
+                  </div>
+
+                  <div class="row">
+                    <div class="label">POBL:</div>
+                    <input class="input" type="text" />
+                  </div>
+
+                  <div class="row">
+                    <div class="label">COMARCA:</div>
+                    <input class="input" type="text" />
+                  </div>
+
+                  <div class="row">
+                    <div class="label">C.P:</div>
+                    <input class="input" type="text" />
+                  </div>
+
+                  <!-- En móvil solo mostramos estos 8 campos (como imagen) -->
+                  <div class="terms-inside">
+                    <span class="chk"></span>
+                    <span>Acepta terminos y condiciones</span>
+                  </div>
                 </div>
 
+                <!-- COLUMNA DERECHA (solo desktop) -->
                 <div class="stack-right">
-                  <div class="field small">TLF</div>
-                  <div class="field small">CORREO</div>
-                  <div class="field small nacimiento">NACIMIENTO</div>
-                  <div class="field small">ESTADO CIV</div>
-                  <div class="field small">IBAN</div>
 
-                  <div class="field pink instalacion">INSTALACION</div>
-                  <div class="field pink fecha_fin">FECHA FIN</div>
-                  <div class="field pink horas">HORAS</div>
+                  <div class="row">
+                    <div class="label small">TLF:</div>
+                    <input class="input" type="text" />
+                  </div>
+
+                  <div class="row">
+                    <div class="label small">CORREO:</div>
+                    <input class="input" type="email" />
+                  </div>
+
+                  <div class="row">
+                    <div class="label">NACIMIENTO:</div>
+                    <input class="input" type="text" />
+                  </div>
+
+                  <div class="row">
+                    <div class="label">ESTADO CIV:</div>
+                    <input class="input" type="text" />
+                  </div>
+
+                  <div class="row">
+                    <div class="label small">IBAN:</div>
+                    <input class="input" type="text" />
+                  </div>
+
+                  <div class="pink-block">
+                    <div class="pink-title">INSTALACION:</div>
+                    <input class="pink-input" type="text" />
+                  </div>
+
+                  <div class="pink-block">
+                    <div class="pink-title">FECHA FIN:</div>
+                    <div class="date-row">
+                      <input class="pink-input date-input" type="text" />
+                      <div class="cal-ico">🗓️</div>
+                    </div>
+                  </div>
+
+                  <div class="pink-block">
+                    <div class="pink-title">HORAS:</div>
+                  </div>
+
                 </div>
-
-                <!-- MÓVIL: 17 preguntas apiladas -->
-                <div class="mobile-fields" style="display:none;">
-                  <div class="field">FOMUL</div>
-                  <div class="field">NOMBRE</div>
-                  <div class="field">DNI</div>
-                  <div class="field">NACION</div>
-                  <div class="field">NAFF</div>
-                  <div class="field">CALLE</div>
-                  <div class="field">POBL</div>
-                  <div class="field">COMARCA</div>
-                  <div class="field">C.P</div>
-                  <div class="field">TLF</div>
-                  <div class="field">CORREO</div>
-                  <div class="field">NACIMIENTO</div>
-                  <div class="field">ESTADO CIV</div>
-                  <div class="field">IBAN</div>
-                  <div class="field pink">INSTALACION</div>
-                  <div class="field pink">FECHA FIN</div>
-                  <div class="field pink">HORAS</div>
-                </div>
-
               </div>
+
             </div>
           </div>
 
-          <!-- Botón siguiente (solo móvil) -->
           <div class="mobile-next" style="display:none;">Siguiente</div>
         </div>
 
@@ -395,25 +565,11 @@ html = r"""
 
       function syncMobile(){
         var isMobile = window.matchMedia("(max-width: 768px)").matches;
-
         var mobileNext = document.querySelector(".mobile-next");
-        var mobileFields = document.querySelector(".mobile-fields");
-        var stackRight = document.querySelector(".stack-right");
-        var rowTop = document.querySelector(".row-top");
-
-        if (isMobile){
-          if (mobileNext) mobileNext.style.display = "flex";
-          if (mobileFields) mobileFields.style.display = "flex";
-          if (stackRight) stackRight.style.display = "none";
-          if (rowTop) rowTop.style.display = "none"; // en móvil FOMUL va dentro de las 17 preguntas
-        } else {
-          if (mobileNext) mobileNext.style.display = "none";
-          if (mobileFields) mobileFields.style.display = "none";
-          if (stackRight) stackRight.style.display = "flex";
-          if (rowTop) rowTop.style.display = "flex";
+        if (mobileNext){
+          mobileNext.style.display = isMobile ? "flex" : "none";
         }
       }
-
       window.addEventListener("resize", syncMobile);
       syncMobile();
     })();
