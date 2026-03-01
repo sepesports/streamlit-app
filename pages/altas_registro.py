@@ -1,4 +1,4 @@
-# app.py
+# github_altas_registro.py
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -17,17 +17,16 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-html = r"""
+API_URL = "https://camilo27.pythonanywhere.com/api/altas/registro"
+
+html = rf"""
 <!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root{
-      /* =========================================================
-         PALETA HEREDADA DEL ADMINISTRADOR (azul base #040e31)
-         ========================================================= */
+    :root{{
       --baseBlue: #040e31;
       --bgTop:  #0a1a55;
       --bgMid:  #061240;
@@ -49,7 +48,6 @@ html = r"""
       --shadow2: 0 10px 22px rgba(0,0,0,.40);
       --blur: 14px;
 
-      /* Variables originales de estructura (se mantienen) */
       --border:2px;
       --borderColor:#111;
       --outerPad:10px;
@@ -63,28 +61,27 @@ html = r"""
       --colGap:26px;
       --inputHDesk:40px;
       --inputHMob:38px;
-    }
+    }}
 
-    html, body{
+    html, body{{
       margin:0; padding:0;
       width:100%; height:100%;
       background:var(--baseBlue);
       overflow:hidden;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color:var(--ink);
-    }
+    }}
 
-    #stage{
+    #stage{{
       position:fixed; inset:0;
       width:100vw; height:100vh;
       background:
         radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.14), transparent 60%),
         radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
         linear-gradient(180deg, #020614 0%, var(--baseBlue) 100%);
-    }
+    }}
 
-    /* PANEL PRINCIPAL (similar al #plan del admin) */
-    #plan{
+    #plan{{
       position:absolute;
       left:10px; right:10px;
       top:10px; bottom:0;
@@ -94,10 +91,9 @@ html = r"""
       background:
         linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 22%),
         linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #05164d 58%, var(--bgDeep) 100%);
-    }
+    }}
 
-    /* CORTE DIAGONAL */
-    #plan::before{
+    #plan::before{{
       content:"";
       position:absolute;
       inset:-10%;
@@ -111,10 +107,9 @@ html = r"""
       transform: rotate(-10deg);
       opacity:.95;
       pointer-events:none;
-    }
+    }}
 
-    /* VIÑETA */
-    #plan::after{
+    #plan::after{{
       content:"";
       position:absolute;
       inset:0;
@@ -123,10 +118,9 @@ html = r"""
         radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
         linear-gradient(180deg, transparent 55%, rgba(0,0,0,.65) 100%);
       pointer-events:none;
-    }
+    }}
 
-    /* MARCO */
-    #frame{
+    #frame{{
       position:absolute;
       left:9px; right:9px;
       top:10px; bottom:0;
@@ -138,9 +132,9 @@ html = r"""
       border-radius: 34px;
       box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
       z-index:5;
-    }
+    }}
 
-    #outer{
+    #outer{{
       position:absolute;
       left:var(--outerPad); right:var(--outerPad);
       top:var(--outerPad); bottom:var(--outerPad);
@@ -151,9 +145,9 @@ html = r"""
       backdrop-filter:blur(var(--blur));
       -webkit-backdrop-filter:blur(var(--blur));
       z-index:10;
-    }
+    }}
 
-    #wrap{
+    #wrap{{
       position:absolute;
       left:var(--outerPad); right:var(--outerPad);
       top:var(--outerPad); bottom:var(--outerPad);
@@ -163,36 +157,34 @@ html = r"""
       justify-content:center;
       align-items:stretch;
       z-index:20;
-    }
+    }}
 
-    #app{
+    #app{{
       width:100%;
       height:100%;
       max-width:1280px;
       display:flex;
       gap:22px;
       box-sizing:border-box;
-    }
+    }}
 
-    /* ===== DESKTOP LAYOUT ===== */
-    .col-left{
+    .col-left{{
       flex:0 0 32%;
       display:flex;
       flex-direction:column;
       gap:18px;
       min-width:260px;
-    }
+    }}
 
-    .col-right{
+    .col-right{{
       flex:1;
       display:flex;
       flex-direction:column;
       gap:12px;
       min-width:420px;
-    }
+    }}
 
-    /* Logo sin marco (ambas versiones) */
-    .logo, .mobile-logo {
+    .logo, .mobile-logo {{
       border: none !important;
       background: transparent !important;
       box-shadow: none !important;
@@ -201,29 +193,27 @@ html = r"""
       align-items: center;
       justify-content: center;
       overflow: hidden;
-    }
+    }}
 
-    .logo {
-      height: 180px;
-    }
+    .logo {{ height: 180px; }}
 
-    .logo img, .mobile-logo img {
+    .logo img, .mobile-logo img {{
       width: 100%;
       height: 100%;
       object-fit: contain;
       filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
       border-radius: 10px;
-    }
+    }}
 
-    .mobile-logo {
+    .mobile-logo {{
       display: none;
       height: 140px;
       margin: 5px 10px 0 10px;
       padding: 5px;
       box-sizing: border-box;
-    }
+    }}
 
-    .blk{
+    .blk{{
       border:1px solid rgba(255,255,255,.10);
       box-sizing:border-box;
       background:rgba(255,255,255,.04);
@@ -231,9 +221,9 @@ html = r"""
       border-radius:24px;
       box-shadow:var(--shadow2), inset 0 1px 0 rgba(255,255,255,.08);
       color:var(--ink);
-    }
+    }}
 
-    .desc {
+    .desc {{
       flex:1;
       min-height:260px;
       display: flex;
@@ -246,19 +236,12 @@ html = r"""
       font-size: 15px;
       line-height: 1.5;
       gap: 12px;
-    }
+    }}
 
-    .desc p {
-      margin: 0;
-      max-width: 90%;
-    }
+    .desc p {{ margin: 0; max-width: 90%; }}
+    .desc p:first-child {{ font-weight: 600; color: var(--ink); }}
 
-    .desc p:first-child {
-      font-weight: 600;
-      color: var(--ink);
-    }
-
-    .hdr{
+    .hdr{{
       height:var(--hdrHDesk);
       display:flex;
       align-items:center;
@@ -272,18 +255,18 @@ html = r"""
       backdrop-filter:blur(calc(var(--blur) - 6px));
       color:var(--ink);
       text-shadow: 0 8px 18px rgba(0,0,0,.35);
-    }
+    }}
 
-    .hdr::after{
+    .hdr::after{{
       content:"";
       position:absolute;
       left:14px; right:14px;
       bottom:10px;
       height:2px;
       background:linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
-    }
+    }}
 
-    .form-shell{
+    .form-shell{{
       flex:1;
       border:1px solid rgba(255,255,255,.10);
       border-radius:var(--radiusDesk);
@@ -294,24 +277,24 @@ html = r"""
       background:rgba(255,255,255,.02);
       backdrop-filter:blur(calc(var(--blur) - 6px));
       box-shadow:var(--shadow2), inset 0 1px 0 rgba(255,255,255,.08);
-    }
+    }}
 
-    .form-scroll{
+    .form-scroll{{
       position:absolute;
       left:18px; right:18px; top:18px; bottom:18px;
       overflow:auto;
       padding-right:8px;
       box-sizing:border-box;
-    }
+    }}
 
-    .row-top{
+    .row-top{{
       width:100%;
       display:flex;
       justify-content:center;
       margin-bottom:16px;
-    }
+    }}
 
-    .pill-input {
+    .pill-input {{
       width: 210px;
       height: 34px;
       background: linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
@@ -326,35 +309,29 @@ html = r"""
       outline: none;
       cursor: default;
       box-shadow: 0 15px 18px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.55);
-    }
+    }}
 
-    .grid-2{
+    .grid-2{{
       display:grid;
       grid-template-columns: 1fr 0.95fr;
       gap:18px var(--colGap);
       align-items:start;
-    }
+    }}
 
-    .stack{
+    .stack, .stack-right{{
       display:flex;
       flex-direction:column;
       gap:var(--rowGap);
-    }
+    }}
 
-    .stack-right{
-      display:flex;
-      flex-direction:column;
-      gap:var(--rowGap);
-    }
-
-    .qrow{
+    .qrow{{
       display:grid;
       grid-template-columns: auto 1fr;
       column-gap:0;
       align-items:stretch;
-    }
+    }}
 
-    .label{
+    .label{{
       height:var(--inputHDesk);
       min-width:var(--labelMin);
       padding:0 12px;
@@ -371,11 +348,11 @@ html = r"""
       text-shadow: 0 6px 14px rgba(0,0,0,.30);
       border-right:none;
       border-radius: 8px 0 0 8px;
-    }
+    }}
 
-    .label.small{ min-width:var(--labelMinSmall); }
+    .label.small{{ min-width:var(--labelMinSmall); }}
 
-    .input{
+    .input{{
       height:var(--inputHDesk);
       border:1px solid rgba(255,255,255,.15);
       background:rgba(0,0,0,.2);
@@ -388,23 +365,23 @@ html = r"""
       color:var(--ink);
       transition:border 0.2s;
       border-radius: 0 8px 8px 0;
-    }
+    }}
 
-    .input:focus{
+    .input:focus{{
       border-color:rgba(255,255,255,.4);
       box-shadow:0 0 10px rgba(255,255,255,.1);
-    }
+    }}
 
-    .pink-block{
+    .pink-block{{
       border:1px solid rgba(255,255,255,.15);
       background:rgba(255,255,255,.04);
       padding:10px 12px 12px 12px;
       box-sizing:border-box;
       border-radius:18px;
       backdrop-filter:blur(calc(var(--blur) - 10px));
-    }
+    }}
 
-    .pink-title{
+    .pink-title{{
       font-weight:800;
       text-align:center;
       margin:0 0 10px 0;
@@ -412,9 +389,9 @@ html = r"""
       letter-spacing:0.5px;
       color:var(--ink);
       text-shadow:0 0 8px rgba(255,255,255,.2);
-    }
+    }}
 
-    .pink-input{
+    .pink-input{{
       width:100%;
       height:40px;
       border:1px solid rgba(255,255,255,.15);
@@ -425,22 +402,22 @@ html = r"""
       outline:none;
       border-radius:8px;
       color:var(--ink);
-    }
+    }}
 
-    .pink-input:focus{
+    .pink-input:focus{{
       border-color:rgba(255,255,255,.4);
       box-shadow:0 0 10px rgba(255,255,255,.1);
-    }
+    }}
 
-    .date-row{
+    .date-row{{
       display:flex;
       gap:8px;
       align-items:center;
-    }
+    }}
 
-    .date-input{ flex:1; }
+    .date-input{{ flex:1; }}
 
-    .cal-ico{
+    .cal-ico{{
       width:44px;
       height:40px;
       border:1px solid rgba(255,255,255,.15);
@@ -453,9 +430,9 @@ html = r"""
       font-size:18px;
       user-select:none;
       color:var(--muted);
-    }
+    }}
 
-    .terms-inside{
+    .terms-inside{{
       margin-top:16px;
       padding-top:12px;
       border-top:1px solid rgba(255,255,255,.1);
@@ -467,24 +444,21 @@ html = r"""
       background: rgba(0,0,0,0.2);
       border-radius: 8px;
       padding: 8px 12px;
-    }
+    }}
 
-    .chk{
+    .terms-inside input[type="checkbox"]{{
       width:18px; height:18px;
-      border:2px solid rgba(255,255,255,.3);
-      border-radius:4px;
-      display:inline-block;
-      box-sizing:border-box;
-      background:rgba(0,0,0,.3);
-    }
+      accent-color: #2f7de1;
+      cursor:pointer;
+    }}
 
-    .desktop-register {
+    .desktop-register {{
       margin-top: 24px;
       display: flex;
       justify-content: center;
-    }
+    }}
 
-    .register-btn {
+    .register-btn {{
       background: linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
       border: 1px solid rgba(255,255,255,.1);
       color: var(--ink);
@@ -497,127 +471,122 @@ html = r"""
       transition: transform .12s ease, filter .12s ease;
       text-transform: uppercase;
       letter-spacing: 1px;
-    }
+    }}
 
-    .register-btn:hover {
-      filter: brightness(1.05);
-    }
-    .register-btn:active {
-      transform: scale(.985);
-    }
+    .register-btn:hover {{ filter: brightness(1.05); }}
+    .register-btn:active {{ transform: scale(.985); }}
+    .register-btn[disabled] {{ opacity:.55; cursor:not-allowed; }}
 
-    .mobile-next{
-      display:none;
-    }
+    .mobile-next{{ display:none; }}
 
     /* ===== MOBILE LAYOUT ===== */
-    @media (max-width: 768px){
-      #wrap{ padding:0; }
-      #app{
+    @media (max-width: 768px){{
+      #wrap{{ padding:0; }}
+      #app{{
         max-width:none;
         gap:0;
         flex-direction:column;
-      }
+      }}
 
-      .col-left{ display:none; }
+      .col-left{{ display:none; }}
 
-      .mobile-logo {
+      .mobile-logo {{
         display: flex;
-      }
+      }}
 
-      .col-right{
+      .col-right{{
         width:100%;
         flex:1;
         gap:6px;
         min-width:0;
-      }
+      }}
 
-      .hdr{
+      .hdr{{
         margin:0 10px;
         height:var(--hdrHMob);
         font-size:20px;
         border:none;
-      }
+      }}
 
-      .hdr::after{
+      .hdr::after{{
         left:18px; right:18px;
         bottom:6px;
         height:2px;
-      }
+      }}
 
-      .form-shell{
+      .form-shell{{
         margin:0 10px;
         border-radius:var(--radiusMob);
         padding:8px;
-      }
+      }}
 
-      .form-scroll{
+      .form-scroll{{
         left:8px; right:8px; top:8px; bottom:8px;
-      }
+      }}
 
-      .row-top {
+      .row-top {{
         margin-bottom: 12px;
-      }
+      }}
 
-      .pill-input {
+      .pill-input {{
         width: 100%;
         max-width: 480px;
         height: 38px;
         font-size: 18px;
-      }
+      }}
 
-      .grid-2{ display:block; }
-      .stack-right{ display:none; }
+      .grid-2{{ display:block; }}
+      .stack-right{{ display:block; }}
 
-      .stack{ gap:4px; }
+      .stack{{ gap:4px; }}
+      .stack-right{{ gap:4px; margin-top:10px; }}
 
-      .qrow{
+      .qrow{{
         grid-template-columns: minmax(100px, 35%) 1fr;
-      }
+      }}
 
-      .label{
+      .label{{
         height:var(--inputHMob);
         min-width:0;
         font-size:15px;
         justify-content:flex-start;
         padding-left:8px;
         border-right:1px solid rgba(255,255,255,.15);
-      }
+      }}
 
-      .input{
+      .input{{
         height:var(--inputHMob);
         font-size:14px;
-      }
+      }}
 
-      @media (max-width: 520px){
-        .qrow{
-          grid-template-columns: 1fr;
-          row-gap:0;
-        }
-        .label{
+      @media (max-width: 520px){{
+        .qrow{{ grid-template-columns: 1fr; row-gap:0; }}
+        .label{{
           justify-content:flex-start;
           padding-left:8px;
           border-right:1px solid rgba(255,255,255,.15);
           border-bottom:none;
-        }
-        .input{
+          border-radius: 8px 8px 0 0;
+        }}
+        .input{{
           border-left:1px solid rgba(255,255,255,.15);
           border-top:none;
-        }
-      }
+          border-radius: 0 0 8px 8px;
+        }}
+      }}
 
-      .terms-inside{
+      .terms-inside{{
         margin-top:8px;
         padding-top:6px;
         font-size:14px;
         background: rgba(0,0,0,0.3);
-      }
+      }}
 
-      .chk{
+      .terms-inside input[type="checkbox"]{{
         width:14px; height:14px;
-      }
+      }}
 
-      .mobile-next{
+      .mobile-next{{
         margin:6px 10px 8px 10px;
         height:42px;
         border:1px solid rgba(255,255,255,.15);
@@ -632,18 +601,15 @@ html = r"""
         backdrop-filter:blur(calc(var(--blur) - 6px));
         color: var(--ink);
         text-transform: uppercase;
-      }
+        cursor:pointer;
+      }}
 
-      .desktop-register {
-        display: none;
-      }
-    }
+      .desktop-register {{ display: none; }}
+    }}
 
-    @media (min-width: 769px) {
-      .mobile-next {
-        display: none;
-      }
-    }
+    @media (min-width: 769px) {{
+      .mobile-next {{ display: none; }}
+    }}
   </style>
 </head>
 
@@ -682,67 +648,66 @@ html = r"""
               <div class="form-scroll">
 
                 <div class="row-top">
-                  <!-- Campo FOMUL con fecha actual -->
-                  <input type="text" id="fechaActual" class="pill-input" readonly>
+                  <!-- FOMUL -->
+                  <input type="text" id="fomul" class="pill-input" readonly>
                 </div>
 
                 <div class="grid-2">
 
-                  <!-- COLUMNA IZQUIERDA (DESKTOP) - 8 elementos -->
+                  <!-- IZQUIERDA -->
                   <div class="stack">
-                    <div class="qrow"><div class="label">NOMBRE:</div><input class="input" type="text" /></div>
-                    <div class="qrow"><div class="label">DNI:</div><input class="input" type="text" /></div>
-                    <div class="qrow"><div class="label">NACION:</div><input class="input" type="text" /></div>
-                    <div class="qrow"><div class="label">NAFF:</div><input class="input" type="text" /></div>
-                    <div class="qrow"><div class="label">CALLE:</div><input class="input" type="text" /></div>
-                    <div class="qrow"><div class="label">POBL:</div><input class="input" type="text" /></div>
-                    <div class="qrow"><div class="label">COMARCA:</div><input class="input" type="text" /></div>
-                    <div class="qrow"><div class="label">C.P:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">NOMBRE:</div><input id="nombre" class="input" type="text" autocomplete="name"/></div>
+                    <div class="qrow"><div class="label">DNI:</div><input id="dni" class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">NACION:</div><input id="nacion" class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">NAFF:</div><input id="naff" class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">CALLE:</div><input id="calle" class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">POBL:</div><input id="pobl" class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">COMARCA:</div><input id="comarca" class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">C.P:</div><input id="cp" class="input" type="text" /></div>
                   </div>
 
-                  <!-- COLUMNA DERECHA (DESKTOP) - 8 elementos (5 filas + 2 bloques + 1 fila HORAS) -->
+                  <!-- DERECHA -->
                   <div class="stack-right">
-                    <div class="qrow"><div class="label small">TLF:</div><input class="input" type="text" /></div>
-                    <div class="qrow"><div class="label small">CORREO:</div><input class="input" type="email" /></div>
-                    <div class="qrow"><div class="label">NACIMIENTO:</div><input class="input" type="text" /></div>
-                    <div class="qrow"><div class="label">ESTADO CIV:</div><input class="input" type="text" /></div>
-                    <div class="qrow"><div class="label small">IBAN:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label small">TLF:</div><input id="tlf" class="input" type="text" inputmode="tel" /></div>
+                    <div class="qrow"><div class="label small">CORREO:</div><input id="correo" class="input" type="email" autocomplete="email"/></div>
+                    <div class="qrow"><div class="label">NACIMIENTO:</div><input id="nacimiento" class="input" type="text" placeholder="dd/mm/aaaa"/></div>
+                    <div class="qrow"><div class="label">ESTADO CIV:</div><input id="estado_civ" class="input" type="text" /></div>
+                    <div class="qrow"><div class="label small">IBAN:</div><input id="iban" class="input" type="text" /></div>
 
                     <div class="pink-block">
                       <div class="pink-title">INSTALACION:</div>
-                      <input class="pink-input" type="text" />
+                      <input id="instalacion" class="pink-input" type="text" />
                     </div>
 
                     <div class="pink-block">
                       <div class="pink-title">FECHA FIN:</div>
                       <div class="date-row">
-                        <input class="pink-input date-input" type="text" />
+                        <input id="fecha_fin" class="pink-input date-input" type="text" placeholder="dd/mm/aaaa" />
                         <div class="cal-ico">🗓️</div>
                       </div>
                     </div>
 
-                    <!-- Nueva fila HORAS para igualar cantidad -->
-                    <div class="qrow"><div class="label">HORAS:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">HORAS:</div><input id="horas" class="input" type="text" /></div>
                   </div>
 
                 </div>
 
-                <!-- Términos (debajo de las columnas, visible en ambos) -->
+                <!-- Términos (obligatorio) -->
                 <div class="terms-inside" style="margin-top: 20px;">
-                  <span class="chk"></span>
+                  <input id="terms" type="checkbox" />
                   <span>Acepta términos y condiciones</span>
                 </div>
 
-                <!-- Botón de registro en escritorio -->
+                <!-- Botón escritorio -->
                 <div class="desktop-register">
-                  <button class="register-btn">Registro</button>
+                  <button id="btnDesktop" class="register-btn">Registro</button>
                 </div>
 
               </div>
             </div>
 
             <!-- Botón móvil -->
-            <div class="mobile-next">Registro</div>
+            <div id="btnMobile" class="mobile-next">Registro</div>
           </div>
 
         </div>
@@ -751,9 +716,9 @@ html = r"""
   </div>
 
   <script>
-    (function(){
+    (function() {{
       var fe = window.frameElement;
-      if (fe){
+      if (fe){{
         fe.style.position = "fixed";
         fe.style.inset = "0";
         fe.style.width = "100vw";
@@ -763,26 +728,145 @@ html = r"""
         fe.style.padding = "0";
         fe.style.zIndex = "999999";
         fe.style.background = "transparent";
-      }
+      }}
 
-      function actualizarFecha() {
+      function ddmmyyyy(d) {{
+        const dia = String(d.getDate()).padStart(2, '0');
+        const mes = String(d.getMonth() + 1).padStart(2, '0');
+        const ano = d.getFullYear();
+        return `${{dia}}/${{mes}}/${{ano}}`;
+      }}
+
+      function setFomulHoy() {{
         const hoy = new Date();
-        const dia = String(hoy.getDate()).padStart(2, '0');
-        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-        const año = hoy.getFullYear();
-        const fechaFormateada = `${dia}/${mes}/${año}`;
-        const campoFecha = document.getElementById('fechaActual');
-        if (campoFecha) {
-          campoFecha.value = fechaFormateada;
-        }
-      }
+        const v = ddmmyyyy(hoy);
+        const el = document.getElementById('fomul');
+        if (el) el.value = v;
+      }}
 
-      actualizarFecha();
-    })();
+      function getVal(id) {{
+        const el = document.getElementById(id);
+        return el ? (el.value || '').trim() : '';
+      }}
+
+      function setDisabled(disabled) {{
+        const bd = document.getElementById('btnDesktop');
+        if (bd) bd.disabled = disabled;
+
+        const bm = document.getElementById('btnMobile');
+        if (bm) {{
+          bm.style.pointerEvents = disabled ? 'none' : 'auto';
+          bm.style.opacity = disabled ? '0.55' : '1';
+        }}
+      }}
+
+      function validateAll() {{
+        const requiredIds = [
+          'fomul','nombre','dni','nacion','naff','calle','pobl','comarca','cp',
+          'tlf','correo','nacimiento','estado_civ','iban','instalacion','fecha_fin','horas'
+        ];
+
+        for (const id of requiredIds) {{
+          const v = getVal(id);
+          if (!v) {{
+            return {{ ok:false, msg:`Completa el campo: ${{id.toUpperCase()}}` }};
+          }}
+        }}
+
+        const terms = document.getElementById('terms');
+        if (!terms || !terms.checked) {{
+          return {{ ok:false, msg:'Debes aceptar términos y condiciones' }};
+        }}
+
+        return {{ ok:true }};
+      }}
+
+      async function enviarRegistro() {{
+        const v = validateAll();
+        if (!v.ok) {{
+          alert(v.msg);
+          return;
+        }}
+
+        setDisabled(true);
+
+        const payload = {{
+          "FOMUL": getVal('fomul'),
+          "NOMBRE": getVal('nombre'),
+          "DNI": getVal('dni'),
+          "NACION": getVal('nacion'),
+          "NAFF": getVal('naff'),
+          "CALLE": getVal('calle'),
+          "POBL": getVal('pobl'),
+          "COMARCA": getVal('comarca'),
+          "C.P": getVal('cp'),
+          "TLF": getVal('tlf'),
+          "CORREO": getVal('correo'),
+          "NACIMIENTO": getVal('nacimiento'),
+          "ESTADO CIV": getVal('estado_civ'),
+          "IBAN": getVal('iban'),
+          "INSTALACION": getVal('instalacion'),
+          "FECHA FIN": getVal('fecha_fin'),
+          "HORAS": getVal('horas')
+        }};
+
+        try {{
+          const resp = await fetch("{API_URL}", {{
+            method: "POST",
+            headers: {{
+              "Content-Type": "application/json"
+            }},
+            body: JSON.stringify(payload)
+          }});
+
+          const data = await resp.json().catch(() => ({{}}));
+
+          if (data && data.ok) {{
+            alert("Registro guardado");
+            // limpiar (mantiene FOMUL en hoy)
+            document.getElementById('nombre').value = '';
+            document.getElementById('dni').value = '';
+            document.getElementById('nacion').value = '';
+            document.getElementById('naff').value = '';
+            document.getElementById('calle').value = '';
+            document.getElementById('pobl').value = '';
+            document.getElementById('comarca').value = '';
+            document.getElementById('cp').value = '';
+            document.getElementById('tlf').value = '';
+            document.getElementById('correo').value = '';
+            document.getElementById('nacimiento').value = '';
+            document.getElementById('estado_civ').value = '';
+            document.getElementById('iban').value = '';
+            document.getElementById('instalacion').value = '';
+            document.getElementById('fecha_fin').value = '';
+            document.getElementById('horas').value = '';
+            document.getElementById('terms').checked = false;
+            setFomulHoy();
+          }} else {{
+            const err = (data && (data.error || data.detail)) ? (data.error || data.detail) : "Error al guardar";
+            alert(err);
+          }}
+        }} catch (e) {{
+          alert("Error de conexión");
+        }} finally {{
+          setDisabled(false);
+        }}
+      }}
+
+      function bind() {{
+        const bd = document.getElementById('btnDesktop');
+        if (bd) bd.addEventListener('click', enviarRegistro);
+
+        const bm = document.getElementById('btnMobile');
+        if (bm) bm.addEventListener('click', enviarRegistro);
+      }}
+
+      setFomulHoy();
+      bind();
+    }})();
   </script>
 </body>
 </html>
 """
 
 components.html(html, height=10, scrolling=False)
-
