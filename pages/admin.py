@@ -360,7 +360,8 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
       <div id="btnLogin" class="btn" style="top:67%;" onclick="doLogin()">Login</div>
 
       <div id="linkPol" class="link" style="top:78%; left:20%;">Politicas:</div>
-      <div id="linkReg" class="link" style="top:78%; left:68%;">Registrarse:</div>
+      <!-- Enlace a la página de registro (altas_registro.py) -->
+      <div id="linkReg" class="link" style="top:78%; left:68%;"><a href="/altas_registro" style="color:inherit; text-decoration:none;">Registrarse:</a></div>
     </div>
 
     <div id="hud"></div>
