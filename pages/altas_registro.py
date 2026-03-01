@@ -1,8 +1,21 @@
-# github_altas_registro.py
+# altas_registro.py
 import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
+
+# Redirect trigger (post-registro)
+try:
+    go = st.query_params.get("go", "")
+except Exception:
+    go = st.experimental_get_query_params().get("go", [""])[0]
+
+if str(go).lower() == "admin":
+    try:
+        st.query_params.clear()
+    except Exception:
+        st.experimental_set_query_params()
+    st.switch_page("pages/admin.py")
 
 st.markdown(
     """
@@ -479,54 +492,24 @@ html = rf"""
 
     .mobile-next{{ display:none; }}
 
-    /* ===== MOBILE LAYOUT ===== */
     @media (max-width: 768px){{
       #wrap{{ padding:0; }}
-      #app{{
-        max-width:none;
-        gap:0;
-        flex-direction:column;
-      }}
-
+      #app{{ max-width:none; gap:0; flex-direction:column; }}
       .col-left{{ display:none; }}
 
-      .mobile-logo {{
-        display: flex;
-      }}
+      .mobile-logo {{ display: flex; }}
 
-      .col-right{{
-        width:100%;
-        flex:1;
-        gap:6px;
-        min-width:0;
-      }}
+      .col-right{{ width:100%; flex:1; gap:6px; min-width:0; }}
 
-      .hdr{{
-        margin:0 10px;
-        height:var(--hdrHMob);
-        font-size:20px;
-        border:none;
-      }}
+      .hdr{{ margin:0 10px; height:var(--hdrHMob); font-size:20px; border:none; }}
 
-      .hdr::after{{
-        left:18px; right:18px;
-        bottom:6px;
-        height:2px;
-      }}
+      .hdr::after{{ left:18px; right:18px; bottom:6px; height:2px; }}
 
-      .form-shell{{
-        margin:0 10px;
-        border-radius:var(--radiusMob);
-        padding:8px;
-      }}
+      .form-shell{{ margin:0 10px; border-radius:var(--radiusMob); padding:8px; }}
 
-      .form-scroll{{
-        left:8px; right:8px; top:8px; bottom:8px;
-      }}
+      .form-scroll{{ left:8px; right:8px; top:8px; bottom:8px; }}
 
-      .row-top {{
-        margin-bottom: 12px;
-      }}
+      .row-top {{ margin-bottom: 12px; }}
 
       .pill-input {{
         width: 100%;
@@ -541,9 +524,7 @@ html = rf"""
       .stack{{ gap:4px; }}
       .stack-right{{ gap:4px; margin-top:10px; }}
 
-      .qrow{{
-        grid-template-columns: minmax(100px, 35%) 1fr;
-      }}
+      .qrow{{ grid-template-columns: minmax(100px, 35%) 1fr; }}
 
       .label{{
         height:var(--inputHMob);
@@ -554,10 +535,7 @@ html = rf"""
         border-right:1px solid rgba(255,255,255,.15);
       }}
 
-      .input{{
-        height:var(--inputHMob);
-        font-size:14px;
-      }}
+      .input{{ height:var(--inputHMob); font-size:14px; }}
 
       @media (max-width: 520px){{
         .qrow{{ grid-template-columns: 1fr; row-gap:0; }}
@@ -582,9 +560,7 @@ html = rf"""
         background: rgba(0,0,0,0.3);
       }}
 
-      .terms-inside input[type="checkbox"]{{
-        width:14px; height:14px;
-      }}
+      .terms-inside input[type="checkbox"]{{ width:14px; height:14px; }}
 
       .mobile-next{{
         margin:6px 10px 8px 10px;
@@ -622,7 +598,6 @@ html = rf"""
       <div id="wrap">
         <div id="app">
 
-          <!-- IZQUIERDA (DESKTOP) -->
           <div class="col-left">
             <div class="logo">
               <img src="https://files.catbox.moe/056m6v.jpg" alt="Logo">
@@ -635,9 +610,7 @@ html = rf"""
             </div>
           </div>
 
-          <!-- DERECHA -->
           <div class="col-right">
-            <!-- Logo para móvil -->
             <div class="mobile-logo">
               <img src="https://files.catbox.moe/056m6v.jpg" alt="Logo">
             </div>
@@ -648,13 +621,11 @@ html = rf"""
               <div class="form-scroll">
 
                 <div class="row-top">
-                  <!-- FOMUL -->
                   <input type="text" id="fomul" class="pill-input" readonly>
                 </div>
 
                 <div class="grid-2">
 
-                  <!-- IZQUIERDA -->
                   <div class="stack">
                     <div class="qrow"><div class="label">NOMBRE:</div><input id="nombre" class="input" type="text" autocomplete="name"/></div>
                     <div class="qrow"><div class="label">DNI:</div><input id="dni" class="input" type="text" /></div>
@@ -666,7 +637,6 @@ html = rf"""
                     <div class="qrow"><div class="label">C.P:</div><input id="cp" class="input" type="text" /></div>
                   </div>
 
-                  <!-- DERECHA -->
                   <div class="stack-right">
                     <div class="qrow"><div class="label small">TLF:</div><input id="tlf" class="input" type="text" inputmode="tel" /></div>
                     <div class="qrow"><div class="label small">CORREO:</div><input id="correo" class="input" type="email" autocomplete="email"/></div>
@@ -692,13 +662,11 @@ html = rf"""
 
                 </div>
 
-                <!-- Términos (obligatorio) -->
                 <div class="terms-inside" style="margin-top: 20px;">
                   <input id="terms" type="checkbox" />
                   <span>Acepta términos y condiciones</span>
                 </div>
 
-                <!-- Botón escritorio -->
                 <div class="desktop-register">
                   <button id="btnDesktop" class="register-btn">Registro</button>
                 </div>
@@ -706,7 +674,6 @@ html = rf"""
               </div>
             </div>
 
-            <!-- Botón móvil -->
             <div id="btnMobile" class="mobile-next">Registro</div>
           </div>
 
@@ -781,6 +748,17 @@ html = rf"""
         return {{ ok:true }};
       }}
 
+      function redirectToAdmin() {{
+        try {{
+          const u = new URL(window.top.location.href);
+          u.searchParams.set('go', 'admin');
+          window.top.location.href = u.toString();
+        }} catch (e) {{
+          // fallback
+          window.location.search = "go=admin";
+        }}
+      }}
+
       async function enviarRegistro() {{
         const v = validateAll();
         if (!v.ok) {{
@@ -822,26 +800,7 @@ html = rf"""
           const data = await resp.json().catch(() => ({{}}));
 
           if (data && data.ok) {{
-            alert("Registro guardado");
-            // limpiar (mantiene FOMUL en hoy)
-            document.getElementById('nombre').value = '';
-            document.getElementById('dni').value = '';
-            document.getElementById('nacion').value = '';
-            document.getElementById('naff').value = '';
-            document.getElementById('calle').value = '';
-            document.getElementById('pobl').value = '';
-            document.getElementById('comarca').value = '';
-            document.getElementById('cp').value = '';
-            document.getElementById('tlf').value = '';
-            document.getElementById('correo').value = '';
-            document.getElementById('nacimiento').value = '';
-            document.getElementById('estado_civ').value = '';
-            document.getElementById('iban').value = '';
-            document.getElementById('instalacion').value = '';
-            document.getElementById('fecha_fin').value = '';
-            document.getElementById('horas').value = '';
-            document.getElementById('terms').checked = false;
-            setFomulHoy();
+            redirectToAdmin();
           }} else {{
             const err = (data && (data.error || data.detail)) ? (data.error || data.detail) : "Error al guardar";
             alert(err);
