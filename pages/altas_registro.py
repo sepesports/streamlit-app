@@ -1,4 +1,4 @@
-# altas_registro.py
+# github_altas_registro.py
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -367,6 +367,11 @@ html = rf"""
       border-radius: 0 8px 8px 0;
     }}
 
+    .input:focus{{
+      border-color:rgba(255,255,255,.4);
+      box-shadow:0 0 10px rgba(255,255,255,.1);
+    }}
+
     .pink-block{{
       border:1px solid rgba(255,255,255,.15);
       background:rgba(255,255,255,.04);
@@ -397,6 +402,34 @@ html = rf"""
       outline:none;
       border-radius:8px;
       color:var(--ink);
+    }}
+
+    .pink-input:focus{{
+      border-color:rgba(255,255,255,.4);
+      box-shadow:0 0 10px rgba(255,255,255,.1);
+    }}
+
+    .date-row{{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }}
+
+    .date-input{{ flex:1; }}
+
+    .cal-ico{{
+      width:44px;
+      height:40px;
+      border:1px solid rgba(255,255,255,.15);
+      background:rgba(255,255,255,.04);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-sizing:border-box;
+      border-radius:8px;
+      font-size:18px;
+      user-select:none;
+      color:var(--muted);
     }}
 
     .terms-inside{{
@@ -440,22 +473,118 @@ html = rf"""
       letter-spacing: 1px;
     }}
 
+    .register-btn:hover {{ filter: brightness(1.05); }}
+    .register-btn:active {{ transform: scale(.985); }}
     .register-btn[disabled] {{ opacity:.55; cursor:not-allowed; }}
 
     .mobile-next{{ display:none; }}
 
+    /* ===== MOBILE LAYOUT ===== */
     @media (max-width: 768px){{
       #wrap{{ padding:0; }}
-      #app{{ max-width:none; gap:0; flex-direction:column; }}
+      #app{{
+        max-width:none;
+        gap:0;
+        flex-direction:column;
+      }}
+
       .col-left{{ display:none; }}
-      .mobile-logo {{ display: flex; }}
-      .col-right{{ width:100%; flex:1; gap:6px; min-width:0; }}
-      .hdr{{ margin:0 10px; height:var(--hdrHMob); font-size:20px; border:none; }}
-      .form-shell{{ margin:0 10px; border-radius:var(--radiusMob); padding:8px; }}
-      .form-scroll{{ left:8px; right:8px; top:8px; bottom:8px; }}
-      .pill-input {{ width: 100%; max-width: 480px; height: 38px; font-size: 18px; }}
+
+      .mobile-logo {{
+        display: flex;
+      }}
+
+      .col-right{{
+        width:100%;
+        flex:1;
+        gap:6px;
+        min-width:0;
+      }}
+
+      .hdr{{
+        margin:0 10px;
+        height:var(--hdrHMob);
+        font-size:20px;
+        border:none;
+      }}
+
+      .hdr::after{{
+        left:18px; right:18px;
+        bottom:6px;
+        height:2px;
+      }}
+
+      .form-shell{{
+        margin:0 10px;
+        border-radius:var(--radiusMob);
+        padding:8px;
+      }}
+
+      .form-scroll{{
+        left:8px; right:8px; top:8px; bottom:8px;
+      }}
+
+      .row-top {{
+        margin-bottom: 12px;
+      }}
+
+      .pill-input {{
+        width: 100%;
+        max-width: 480px;
+        height: 38px;
+        font-size: 18px;
+      }}
+
       .grid-2{{ display:block; }}
-      .desktop-register {{ display: none; }}
+      .stack-right{{ display:block; }}
+
+      .stack{{ gap:4px; }}
+      .stack-right{{ gap:4px; margin-top:10px; }}
+
+      .qrow{{
+        grid-template-columns: minmax(100px, 35%) 1fr;
+      }}
+
+      .label{{
+        height:var(--inputHMob);
+        min-width:0;
+        font-size:15px;
+        justify-content:flex-start;
+        padding-left:8px;
+        border-right:1px solid rgba(255,255,255,.15);
+      }}
+
+      .input{{
+        height:var(--inputHMob);
+        font-size:14px;
+      }}
+
+      @media (max-width: 520px){{
+        .qrow{{ grid-template-columns: 1fr; row-gap:0; }}
+        .label{{
+          justify-content:flex-start;
+          padding-left:8px;
+          border-right:1px solid rgba(255,255,255,.15);
+          border-bottom:none;
+          border-radius: 8px 8px 0 0;
+        }}
+        .input{{
+          border-left:1px solid rgba(255,255,255,.15);
+          border-top:none;
+          border-radius: 0 0 8px 8px;
+        }}
+      }}
+
+      .terms-inside{{
+        margin-top:8px;
+        padding-top:6px;
+        font-size:14px;
+        background: rgba(0,0,0,0.3);
+      }}
+
+      .terms-inside input[type="checkbox"]{{
+        width:14px; height:14px;
+      }}
 
       .mobile-next{{
         margin:6px 10px 8px 10px;
@@ -474,6 +603,8 @@ html = rf"""
         text-transform: uppercase;
         cursor:pointer;
       }}
+
+      .desktop-register {{ display: none; }}
     }}
 
     @media (min-width: 769px) {{
@@ -491,6 +622,7 @@ html = rf"""
       <div id="wrap">
         <div id="app">
 
+          <!-- IZQUIERDA (DESKTOP) -->
           <div class="col-left">
             <div class="logo">
               <img src="https://files.catbox.moe/056m6v.jpg" alt="Logo">
@@ -498,12 +630,14 @@ html = rf"""
             <div class="blk desc">
               <p>Bienvenido al portal oficial de registro de SYNTRA.</p>
               <p>Aquí los socorristas podrán completar su inscripción de forma segura y acceder posteriormente a sus horarios e instalaciones asignadas de manera organizada.</p>
-              <p>La información proporcionada será tratada con estricta confidencialidad y utilizada únicamente para fines administrativos y de coordinación interna relacionados con su participación en SYNTRA.</p>
-              <p>Sus datos no serán compartidos con terceros sin su autorización, salvo obligación legal.</p>
+              <p>La información proporcionada será tratada con estricta confidencialidad y utilizada únicamente para fines administrativos y de coordinación interna relacionados con su participación en SYNTRA. Sus datos no serán compartidos con terceros sin su autorización, salvo obligación legal.</p>
+              <p>Al registrarse, usted autoriza a SYNTRA a almacenar y procesar su información conforme a la normativa vigente de protección de datos, garantizando seguridad, privacidad y uso responsable.</p>
             </div>
           </div>
 
+          <!-- DERECHA -->
           <div class="col-right">
+            <!-- Logo para móvil -->
             <div class="mobile-logo">
               <img src="https://files.catbox.moe/056m6v.jpg" alt="Logo">
             </div>
@@ -514,11 +648,13 @@ html = rf"""
               <div class="form-scroll">
 
                 <div class="row-top">
+                  <!-- FOMUL -->
                   <input type="text" id="fomul" class="pill-input" readonly>
                 </div>
 
                 <div class="grid-2">
 
+                  <!-- IZQUIERDA -->
                   <div class="stack">
                     <div class="qrow"><div class="label">NOMBRE:</div><input id="nombre" class="input" type="text" autocomplete="name"/></div>
                     <div class="qrow"><div class="label">DNI:</div><input id="dni" class="input" type="text" /></div>
@@ -530,6 +666,7 @@ html = rf"""
                     <div class="qrow"><div class="label">C.P:</div><input id="cp" class="input" type="text" /></div>
                   </div>
 
+                  <!-- DERECHA -->
                   <div class="stack-right">
                     <div class="qrow"><div class="label small">TLF:</div><input id="tlf" class="input" type="text" inputmode="tel" /></div>
                     <div class="qrow"><div class="label small">CORREO:</div><input id="correo" class="input" type="email" autocomplete="email"/></div>
@@ -544,7 +681,10 @@ html = rf"""
 
                     <div class="pink-block">
                       <div class="pink-title">FECHA FIN:</div>
-                      <input id="fecha_fin" class="pink-input" type="text" placeholder="dd/mm/aaaa" />
+                      <div class="date-row">
+                        <input id="fecha_fin" class="pink-input date-input" type="text" placeholder="dd/mm/aaaa" />
+                        <div class="cal-ico">🗓️</div>
+                      </div>
                     </div>
 
                     <div class="qrow"><div class="label">HORAS:</div><input id="horas" class="input" type="text" /></div>
@@ -552,11 +692,13 @@ html = rf"""
 
                 </div>
 
+                <!-- Términos (obligatorio) -->
                 <div class="terms-inside" style="margin-top: 20px;">
                   <input id="terms" type="checkbox" />
                   <span>Acepta términos y condiciones</span>
                 </div>
 
+                <!-- Botón escritorio -->
                 <div class="desktop-register">
                   <button id="btnDesktop" class="register-btn">Registro</button>
                 </div>
@@ -564,6 +706,7 @@ html = rf"""
               </div>
             </div>
 
+            <!-- Botón móvil -->
             <div id="btnMobile" class="mobile-next">Registro</div>
           </div>
 
@@ -574,6 +717,19 @@ html = rf"""
 
   <script>
     (function() {{
+      var fe = window.frameElement;
+      if (fe){{
+        fe.style.position = "fixed";
+        fe.style.inset = "0";
+        fe.style.width = "100vw";
+        fe.style.height = "100vh";
+        fe.style.border = "0";
+        fe.style.margin = "0";
+        fe.style.padding = "0";
+        fe.style.zIndex = "999999";
+        fe.style.background = "transparent";
+      }}
+
       function ddmmyyyy(d) {{
         const dia = String(d.getDate()).padStart(2, '0');
         const mes = String(d.getMonth() + 1).padStart(2, '0');
@@ -583,8 +739,9 @@ html = rf"""
 
       function setFomulHoy() {{
         const hoy = new Date();
+        const v = ddmmyyyy(hoy);
         const el = document.getElementById('fomul');
-        if (el) el.value = ddmmyyyy(hoy);
+        if (el) el.value = v;
       }}
 
       function getVal(id) {{
@@ -611,37 +768,17 @@ html = rf"""
 
         for (const id of requiredIds) {{
           const v = getVal(id);
-          if (!v) return {{ ok:false, msg:`Completa el campo: ${{id.toUpperCase()}}` }};
+          if (!v) {{
+            return {{ ok:false, msg:`Completa el campo: ${{id.toUpperCase()}}` }};
+          }}
         }}
 
         const terms = document.getElementById('terms');
-        if (!terms || !terms.checked) return {{ ok:false, msg:'Debes aceptar términos y condiciones' }};
+        if (!terms || !terms.checked) {{
+          return {{ ok:false, msg:'Debes aceptar términos y condiciones' }};
+        }}
 
         return {{ ok:true }};
-      }}
-
-      function goAdminPageViaSidebarLink() {{
-        // Streamlit bloquea navegación "top" desde iframe sandbox.
-        // Solución: encontrar el link real de la navegación multipage (aunque esté oculto) y disparar click.
-        try {{
-          const pdoc = window.parent.document;
-          const links = Array.from(pdoc.querySelectorAll('a[href]'));
-
-          // 1) prioriza href que contenga "admin"
-          let target = links.find(a => (a.getAttribute('href') || '').toLowerCase().includes('admin'));
-
-          // 2) fallback: por texto visible
-          if (!target) {{
-            target = links.find(a => (a.textContent || '').trim().toLowerCase() === 'admin');
-          }}
-
-          if (target) {{
-            target.click();
-            return true;
-          }}
-        }} catch (e) {{}}
-
-        return false;
       }}
 
       async function enviarRegistro() {{
@@ -676,17 +813,35 @@ html = rf"""
         try {{
           const resp = await fetch("{API_URL}", {{
             method: "POST",
-            headers: {{ "Content-Type": "application/json" }},
+            headers: {{
+              "Content-Type": "application/json"
+            }},
             body: JSON.stringify(payload)
           }});
 
           const data = await resp.json().catch(() => ({{}}));
 
           if (data && data.ok) {{
-            const okNav = goAdminPageViaSidebarLink();
-            if (!okNav) {{
-              alert("Guardado, pero no se pudo redirigir automáticamente. Abre ADMIN desde el menú.");
-            }}
+            alert("Registro guardado");
+            // limpiar (mantiene FOMUL en hoy)
+            document.getElementById('nombre').value = '';
+            document.getElementById('dni').value = '';
+            document.getElementById('nacion').value = '';
+            document.getElementById('naff').value = '';
+            document.getElementById('calle').value = '';
+            document.getElementById('pobl').value = '';
+            document.getElementById('comarca').value = '';
+            document.getElementById('cp').value = '';
+            document.getElementById('tlf').value = '';
+            document.getElementById('correo').value = '';
+            document.getElementById('nacimiento').value = '';
+            document.getElementById('estado_civ').value = '';
+            document.getElementById('iban').value = '';
+            document.getElementById('instalacion').value = '';
+            document.getElementById('fecha_fin').value = '';
+            document.getElementById('horas').value = '';
+            document.getElementById('terms').checked = false;
+            setFomulHoy();
           }} else {{
             const err = (data && (data.error || data.detail)) ? (data.error || data.detail) : "Error al guardar";
             alert(err);
