@@ -234,13 +234,30 @@ html = r"""
       color:var(--ink);
     }
 
-    .desc{
+    /* Bloque de descripción con texto mejorado */
+    .desc {
       flex:1;
       min-height:260px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:var(--muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+      gap: 12px;
+    }
+
+    .desc p {
+      margin: 0;
+      max-width: 90%;
+    }
+
+    .desc p:first-child {
+      font-weight: 600;
+      color: var(--ink);
     }
 
     .hdr{
@@ -650,11 +667,12 @@ html = r"""
             <div class="logo">
               <img src="https://files.catbox.moe/056m6v.jpg" alt="Logo">
             </div>
-            <div class="blk desc">Bienvenido al portal oficial de registro de SYNTRA. Aquí los socorristas podrán completar su inscripción de forma segura y acceder posteriormente a sus horarios e instalaciones asignadas de manera organizada.
-
-La información proporcionada será tratada con estricta confidencialidad y utilizada únicamente para fines administrativos y de coordinación interna relacionados con su participación en SYNTRA. Sus datos no serán compartidos con terceros sin su autorización, salvo obligación legal.
-
-Al registrarse, usted autoriza a SYNTRA a almacenar y procesar su información conforme a la normativa vigente de protección de datos, garantizando seguridad, privacidad y uso responsable.</div>
+            <div class="blk desc">
+              <p>Bienvenido al portal oficial de registro de SYNTRA.</p>
+              <p>Aquí los socorristas podrán completar su inscripción de forma segura y acceder posteriormente a sus horarios e instalaciones asignadas de manera organizada.</p>
+              <p>La información proporcionada será tratada con estricta confidencialidad y utilizada únicamente para fines administrativos y de coordinación interna relacionados con su participación en SYNTRA. Sus datos no serán compartidos con terceros sin su autorización, salvo obligación legal.</p>
+              <p>Al registrarse, usted autoriza a SYNTRA a almacenar y procesar su información conforme a la normativa vigente de protección de datos, garantizando seguridad, privacidad y uso responsable.</p>
+            </div>
           </div>
 
           <!-- DERECHA -->
