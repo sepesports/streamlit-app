@@ -461,7 +461,7 @@ user-select:none;
       var cells = [
         {w: 6,  t:"",        white:false, kind:"blank"},
         {w: 22, t:"",        white:true,  kind:"logo"},
-        {w: 44, t:"Fondo 1", white:false, kind:"text"},
+        {w: 44, t:"SYNTRA", white:false, kind:"text"},
         {w: 22, t:"",        white:true,  kind:"user"},
         {w: 6,  t:"",        white:false, kind:"blank"},
       ];
