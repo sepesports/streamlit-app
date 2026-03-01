@@ -204,7 +204,7 @@ html = r"""
     }
 
     .logo {
-      height: 180px; /* DUPLICADO respecto a 90px anterior */
+      height: 180px;
     }
 
     .logo img, .mobile-logo img {
@@ -215,7 +215,6 @@ html = r"""
       border-radius: 10px;
     }
 
-    /* Logo móvil más grande (ya estaba) */
     .mobile-logo {
       display: none;
       height: 140px;
@@ -234,7 +233,6 @@ html = r"""
       color:var(--ink);
     }
 
-    /* Bloque de descripción con texto mejorado */
     .desc {
       flex:1;
       min-height:260px;
@@ -313,7 +311,6 @@ html = r"""
       margin-bottom:16px;
     }
 
-    /* Campo FOMUL - estilo pill */
     .pill-input {
       width: 210px;
       height: 34px;
@@ -350,7 +347,6 @@ html = r"""
       gap:var(--rowGap);
     }
 
-    /* row label + input */
     .qrow{
       display:grid;
       grid-template-columns: auto 1fr;
@@ -399,7 +395,6 @@ html = r"""
       box-shadow:0 0 10px rgba(255,255,255,.1);
     }
 
-    /* BLOQUES AZULES (antes rosas) */
     .pink-block{
       border:1px solid rgba(255,255,255,.15);
       background:rgba(255,255,255,.04);
@@ -483,7 +478,6 @@ html = r"""
       background:rgba(0,0,0,.3);
     }
 
-    /* Botón de registro en escritorio */
     .desktop-register {
       margin-top: 24px;
       display: flex;
@@ -694,123 +688,25 @@ html = r"""
 
                 <div class="grid-2">
 
-                  <!-- IZQUIERDA / MÓVIL (se muestran todos los campos en móvil) -->
+                  <!-- COLUMNA IZQUIERDA (DESKTOP) - 8 elementos -->
                   <div class="stack">
-
-                    <div class="qrow">
-                      <div class="label">NOMBRE:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label">DNI:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label">NACION:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label">NAFF:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label">CALLE:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label">POBL:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label">COMARCA:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label">C.P:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <!-- CAMPOS ADICIONALES PARA MÓVIL (antes solo en desktop) -->
-                    <div class="qrow">
-                      <div class="label small">TLF:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label small">CORREO:</div>
-                      <input class="input" type="email" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label">NACIMIENTO:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label">ESTADO CIV:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label small">IBAN:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label">INSTALACION:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label">FECHA FIN:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label">HORAS:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="terms-inside">
-                      <span class="chk"></span>
-                      <span>Acepta terminos y condiciones</span>
-                    </div>
+                    <div class="qrow"><div class="label">NOMBRE:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">DNI:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">NACION:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">NAFF:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">CALLE:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">POBL:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">COMARCA:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">C.P:</div><input class="input" type="text" /></div>
                   </div>
 
-                  <!-- DERECHA (SOLO DESKTOP) -->
+                  <!-- COLUMNA DERECHA (DESKTOP) - 8 elementos (5 filas + 2 bloques + 1 fila HORAS) -->
                   <div class="stack-right">
-
-                    <div class="qrow">
-                      <div class="label small">TLF:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label small">CORREO:</div>
-                      <input class="input" type="email" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label">NACIMIENTO:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label">ESTADO CIV:</div>
-                      <input class="input" type="text" />
-                    </div>
-
-                    <div class="qrow">
-                      <div class="label small">IBAN:</div>
-                      <input class="input" type="text" />
-                    </div>
+                    <div class="qrow"><div class="label small">TLF:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label small">CORREO:</div><input class="input" type="email" /></div>
+                    <div class="qrow"><div class="label">NACIMIENTO:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">ESTADO CIV:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label small">IBAN:</div><input class="input" type="text" /></div>
 
                     <div class="pink-block">
                       <div class="pink-title">INSTALACION:</div>
@@ -825,9 +721,16 @@ html = r"""
                       </div>
                     </div>
 
-                    <!-- HORAS ELIMINADO (se añade como fila normal en móvil) -->
+                    <!-- Nueva fila HORAS para igualar cantidad -->
+                    <div class="qrow"><div class="label">HORAS:</div><input class="input" type="text" /></div>
                   </div>
 
+                </div>
+
+                <!-- Términos (debajo de las columnas, visible en ambos) -->
+                <div class="terms-inside" style="margin-top: 20px;">
+                  <span class="chk"></span>
+                  <span>Acepta términos y condiciones</span>
                 </div>
 
                 <!-- Botón de registro en escritorio -->
