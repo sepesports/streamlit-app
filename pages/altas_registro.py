@@ -810,9 +810,6 @@ html = rf"""
           "HORAS": getVal('horas')
         }};
 
-        // Mostrar en consola la URL a la que se llama (para depuración)
-        console.log("Llamando a:", "{API_URL}");
-
         try {{
           const resp = await fetch("{API_URL}", {{
             method: "POST",
@@ -825,14 +822,33 @@ html = rf"""
           const data = await resp.json().catch(() => ({{}}));
 
           if (data && data.ok) {{
-            // Redirigir a la página admin
-            window.top.location.href = "/admin";
+            alert("Registro guardado");
+            // limpiar (mantiene FOMUL en hoy)
+            document.getElementById('nombre').value = '';
+            document.getElementById('dni').value = '';
+            document.getElementById('nacion').value = '';
+            document.getElementById('naff').value = '';
+            document.getElementById('calle').value = '';
+            document.getElementById('pobl').value = '';
+            document.getElementById('comarca').value = '';
+            document.getElementById('cp').value = '';
+            document.getElementById('tlf').value = '';
+            document.getElementById('correo').value = '';
+            document.getElementById('nacimiento').value = '';
+            document.getElementById('estado_civ').value = '';
+            document.getElementById('iban').value = '';
+            document.getElementById('instalacion').value = '';
+            document.getElementById('fecha_fin').value = '';
+            document.getElementById('horas').value = '';
+            document.getElementById('terms').checked = false;
+            setFomulHoy();
+            // Redirigir a la página admin después del registro exitoso
+            window.location.href = '/admin';
           }} else {{
             const err = (data && (data.error || data.detail)) ? (data.error || data.detail) : "Error al guardar";
             alert(err);
           }}
         }} catch (e) {{
-          console.error("Error en fetch:", e);
           alert("Error de conexión");
         }} finally {{
           setDisabled(false);
