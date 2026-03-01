@@ -822,26 +822,8 @@ html = rf"""
           const data = await resp.json().catch(() => ({{}}));
 
           if (data && data.ok) {{
-            alert("Registro guardado");
-            // limpiar (mantiene FOMUL en hoy)
-            document.getElementById('nombre').value = '';
-            document.getElementById('dni').value = '';
-            document.getElementById('nacion').value = '';
-            document.getElementById('naff').value = '';
-            document.getElementById('calle').value = '';
-            document.getElementById('pobl').value = '';
-            document.getElementById('comarca').value = '';
-            document.getElementById('cp').value = '';
-            document.getElementById('tlf').value = '';
-            document.getElementById('correo').value = '';
-            document.getElementById('nacimiento').value = '';
-            document.getElementById('estado_civ').value = '';
-            document.getElementById('iban').value = '';
-            document.getElementById('instalacion').value = '';
-            document.getElementById('fecha_fin').value = '';
-            document.getElementById('horas').value = '';
-            document.getElementById('terms').checked = false;
-            setFomulHoy();
+            // Redirigir a la página admin
+            window.top.location.href = "/admin";
           }} else {{
             const err = (data && (data.error || data.detail)) ? (data.error || data.detail) : "Error al guardar";
             alert(err);
