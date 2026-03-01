@@ -810,6 +810,9 @@ html = rf"""
           "HORAS": getVal('horas')
         }};
 
+        // Mostrar en consola la URL a la que se llama (para depuración)
+        console.log("Llamando a:", "{API_URL}");
+
         try {{
           const resp = await fetch("{API_URL}", {{
             method: "POST",
@@ -829,6 +832,7 @@ html = rf"""
             alert(err);
           }}
         }} catch (e) {{
+          console.error("Error en fetch:", e);
           alert("Error de conexión");
         }} finally {{
           setDisabled(false);
