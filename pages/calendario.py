@@ -3,7 +3,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # ==============================================================================
-# PLANTILLA "CALENDARIO" — TEMA HUD NARANJA
+# PLANTILLA "CALENDARIO" — CON DISEÑO AZUL OSCuro (heredado de altas_registro)
 # Versión final: con estados personalizados, checkboxes y modal.
 # ==============================================================================
 
@@ -61,24 +61,39 @@ html = r"""
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root {
-    --bg-0:#070b12;
-    --bg-1:#0b1320;
-    --bg-2:#0f1c2a;
-    --glass: rgba(255,255,255,.06);
-    --glass-2: rgba(255,255,255,.08);
-    --stroke: rgba(255,255,255,.10);
-    --stroke-2: rgba(255,255,255,.14);
-    --glow-blue: rgba(96, 196, 255, .45);
-    --glow-blue-2: rgba(96, 196, 255, .22);
+    /* =========================================================
+       PALETA HEREDADA DE ALTAS_REGISTRO (azul base #040e31)
+       ========================================================= */
+    --baseBlue: #040e31;
+    --bgTop:  #0a1a55;
+    --bgMid:  #061240;
+    --bgDeep: #02071c;
+
+    --overlay1: rgba(40, 120, 255, .16);
+    --overlay2: rgba(0,  10,  40, .62);
+
+    --ink: rgba(255,255,255,.92);
+    --muted: rgba(255,255,255,.62);
+
+    --pill: rgba(238, 245, 255, .92);
+    --pill2: rgba(255,255,255,.86);
+
+    --btn1:#2f7de1;
+    --btn2:#1e5fc4;
+
+    --shadow1: 0 22px 55px rgba(0,0,0,.55);
+    --shadow2: 0 10px 22px rgba(0,0,0,.40);
+    --blur: 14px;
+
     --glow-orange: rgba(255, 142, 64, .50);
     --glow-orange-2: rgba(255, 142, 64, .22);
-    --txt-0: rgba(255,255,255,.95);
-    --txt-1: rgba(255,255,255,.78);
-    --txt-2: rgba(255,255,255,.55);
-    --txt-3: rgba(255,255,255,.35);
+    --glow-blue: rgba(96, 196, 255, .45);
+    --glow-blue-2: rgba(96, 196, 255, .22);
+
     --free:#4fe38c;
     --busy:#ff4b4b;
     --other:#ff7c2c;
+
     --radius-outer: 26px;
     --radius-card: 18px;
     --radius-pill: 999px;
@@ -86,6 +101,7 @@ html = r"""
     --shadow-soft: 0 18px 40px rgba(0,0,0,.45);
     --shadow-inner: inset 0 1px 0 rgba(255,255,255,.08);
     --blur: 18px;
+
     --fs-top: 14px;
     --fs-title: 28px;
     --fs-sub: 12px;
@@ -102,17 +118,16 @@ html = r"""
   html,body{height:100%;margin:0;padding:0;}
   body{
     font-family: "Inter", system-ui, -apple-system, "SF Pro Display", Segoe UI, Roboto, Arial, sans-serif;
-    color:var(--txt-0);
+    color:var(--ink);
     background: none;
   }
   #stage{
     position:fixed;
     inset:0;
     background:
-      radial-gradient(1100px 700px at 10% 10%, rgba(255,124,44,.22), transparent 55%),
-      radial-gradient(900px 650px at 90% 18%, rgba(96,196,255,.22), transparent 55%),
-      radial-gradient(900px 750px at 50% 95%, rgba(96,196,255,.12), transparent 60%),
-      linear-gradient(180deg, var(--bg-2), var(--bg-0));
+      radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.14), transparent 60%),
+      radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
+      linear-gradient(180deg, #020614 0%, var(--baseBlue) 100%);
     display: flex;
     align-items: flex-start;
     justify-content: center;
@@ -127,7 +142,7 @@ html = r"""
     padding: var(--pad-outer);
     border-radius: var(--radius-outer);
     background: rgba(10, 16, 26, .58);
-    border:1px solid var(--stroke);
+    border:1px solid rgba(255,255,255,.10);
     box-shadow:var(--shadow-soft);
     backdrop-filter:blur(var(--blur));
     -webkit-backdrop-filter:blur(var(--blur));
@@ -143,8 +158,8 @@ html = r"""
     pointer-events:none;
     background:
       linear-gradient(180deg, rgba(255,255,255,.10), transparent 30%),
-      radial-gradient(800px 500px at 85% 20%, rgba(96,196,255,.18), transparent 60%),
-      radial-gradient(700px 500px at 20% 20%, rgba(255,124,44,.12), transparent 65%);
+      radial-gradient(800px 500px at 85% 20%, var(--glow-blue), transparent 60%),
+      radial-gradient(700px 500px at 20% 20%, var(--glow-orange), transparent 65%);
     mix-blend-mode: screen;
   }
 
@@ -173,17 +188,18 @@ html = r"""
     width:38px; height:38px;
     border-radius:14px;
     background:rgba(255,255,255,.05);
-    border:1px solid var(--stroke);
+    border:1px solid rgba(255,255,255,.10);
     box-shadow:0 0 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.08);
     display:grid;
     place-items:center;
+    color:var(--ink);
   }
   .monthNav__title{
     font-size:var(--fs-title);
     font-weight:800;
     letter-spacing:1px;
     text-transform:uppercase;
-    color:rgba(255,255,255,.92);
+    color:var(--ink);
     text-shadow:0 0 18px var(--glow-blue-2);
     line-height:1.05;
     text-align:center;
@@ -195,8 +211,8 @@ html = r"""
     margin-top:8px;
     padding:var(--pad-block);
     border-radius:var(--radius-card);
-    background:var(--glass-2);
-    border:1px solid var(--stroke);
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.10);
     box-shadow:0 0 34px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
     backdrop-filter:blur(calc(var(--blur) - 6px));
   }
@@ -210,7 +226,7 @@ html = r"""
     font-size:var(--fs-sub);
     font-weight:700;
     letter-spacing:.8px;
-    color:var(--txt-1);
+    color:var(--muted);
   }
   .weekdays{
     display:grid;
@@ -220,7 +236,7 @@ html = r"""
   }
   .weekdays span{
     font-size:var(--fs-day);
-    color:var(--txt-3);
+    color:var(--muted);
     text-align:center;
     letter-spacing:.6px;
   }
@@ -239,18 +255,18 @@ html = r"""
     place-items:center;
     font-size:var(--fs-cell);
     font-weight:700;
-    color:var(--txt-1);
+    color:var(--ink);
     position:relative;
   }
   .day.dim{
-    color:var(--txt-3);
+    color:var(--muted);
     background:rgba(255,255,255,.03);
     border-color:rgba(255,255,255,.07);
   }
   .day.sel{
     border:2px solid var(--glow-orange);
     box-shadow:0 0 0 2px rgba(255,124,44,.10), 0 0 18px var(--glow-orange-2), inset 0 1px 0 rgba(255,255,255,.08);
-    color:var(--txt-0);
+    color:var(--ink);
   }
   .day.past{
     opacity:.22;
@@ -280,7 +296,7 @@ html = r"""
     display:flex;
     align-items:center;
     gap:8px;
-    color:var(--txt-2);
+    color:var(--muted);
     font-size:11px;
     letter-spacing:.2px;
   }
@@ -307,9 +323,9 @@ html = r"""
     height:40px;
     border-radius:var(--radius-pill);
     padding:0 14px;
-    background:var(--glass);
-    border:1px solid var(--stroke);
-    color:var(--txt-1);
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.10);
+    color:var(--ink);
     font-size:13px;
     display:flex;
     align-items:center;
@@ -329,8 +345,8 @@ html = r"""
     cursor:pointer;
   }
   .selectPill select option {
-    background: var(--bg-1);
-    color: var(--txt-0);
+    background: var(--bgMid);
+    color: var(--ink);
   }
   .selectPill .caret{
     font-weight:900;
@@ -342,7 +358,7 @@ html = r"""
     border-radius:14px;
     padding:0 16px;
     background:rgba(255,124,44,.06);
-    border:1px solid rgba(255,124,44,.75);
+    border:1px solid var(--glow-orange);
     color:rgba(255,124,44,.95);
     font-weight:800;
     font-size:var(--fs-btn);
@@ -361,7 +377,7 @@ html = r"""
   .agendaTitle{
     font-size:var(--fs-h3);
     font-weight:800;
-    color:var(--txt-0);
+    color:var(--ink);
     margin:0 0 10px 0;
     text-shadow:0 0 18px var(--glow-blue-2);
   }
@@ -369,14 +385,14 @@ html = r"""
     display:flex;
     justify-content:space-between;
     gap:10px;
-    color:var(--txt-2);
+    color:var(--muted);
     font-size:12px;
     margin-bottom:10px;
   }
   .tableCard{
     border-radius:var(--radius-card);
-    background:var(--glass-2);
-    border:1px solid var(--stroke);
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.10);
     box-shadow:0 0 34px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
     overflow: hidden;
     flex:1;
@@ -396,7 +412,7 @@ html = r"""
     padding:12px 14px;
     font-size:12px;
     font-weight:700;
-    color:var(--txt-2);
+    color:var(--muted);
     background:rgba(255,255,255,.03);
     border-bottom:1px solid rgba(255,255,255,.08);
   }
@@ -407,7 +423,7 @@ html = r"""
   .trow.desktop:last-child{border-bottom:none;}
   .trow.desktop div:nth-child(1){
     font-size:var(--fs-table);
-    color:var(--txt-0);
+    color:var(--ink);
     font-weight:650;
     display:flex;
     align-items:center;
@@ -445,7 +461,7 @@ html = r"""
   .status.other{
     background:rgba(255,255,255,.1);
     border:1px solid rgba(255,255,255,.2);
-    color:var(--txt-1);
+    color:var(--ink);
   }
 
   /* Estilos para móvil (filas expandibles) */
@@ -455,7 +471,7 @@ html = r"""
     background: rgba(255,255,255,.03);
     border-bottom: 1px solid rgba(255,255,255,.08);
     font-weight: 700;
-    color: var(--txt-2);
+    color: var(--muted);
     font-size: 12px;
   }
   .mobile-header .horas {
@@ -501,11 +517,11 @@ html = r"""
     align-items: center;
     justify-content: center;
     border-radius: 12px;
-    background: var(--glass);
-    border: 1px solid var(--stroke);
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.10);
     font-size: 16px;
     font-weight: bold;
-    color: var(--txt-1);
+    color: var(--ink);
     transition: transform 0.2s;
   }
   .row-detail {
@@ -518,7 +534,7 @@ html = r"""
     gap: 8px;
   }
   .row-detail .instalacion {
-    color: var(--txt-0);
+    color: var(--ink);
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
@@ -549,9 +565,9 @@ html = r"""
   .btn{
     height:42px;
     border-radius:14px;
-    border:1px solid var(--stroke);
-    background:var(--glass);
-    color:var(--txt-1);
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.04);
+    color:var(--ink);
     font-weight:750;
     font-size:var(--fs-btn);
     letter-spacing:.2px;
@@ -567,7 +583,7 @@ html = r"""
     pointer-events: none;
   }
   .btn--primary, .btn.primary{
-    border-color:rgba(255,124,44,.75);
+    border-color:var(--glow-orange);
     background:rgba(255,124,44,.06);
     color:rgba(255,124,44,.95);
     box-shadow:0 0 18px var(--glow-orange-2), inset 0 1px 0 rgba(255,255,255,.10);
@@ -585,14 +601,14 @@ html = r"""
     z-index: 1000;
   }
   .modal {
-    background: var(--bg-1);
-    border: 1px solid var(--stroke);
+    background: var(--bgMid);
+    border: 1px solid rgba(255,255,255,.10);
     border-radius: var(--radius-card);
     padding: 24px;
     max-width: 400px;
     width: 90%;
     box-shadow: var(--shadow-soft);
-    color: var(--txt-0);
+    color: var(--ink);
   }
   .modal h3 {
     margin-top: 0;
@@ -611,9 +627,9 @@ html = r"""
     width: 100%;
     padding: 8px;
     border-radius: 8px;
-    border: 1px solid var(--stroke);
-    background: var(--glass);
-    color: var(--txt-0);
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.3);
+    color: var(--ink);
   }
   .modal-actions {
     display: flex;
