@@ -1,53 +1,17 @@
-# calendario.py
+# app.py
 import streamlit as st
 import streamlit.components.v1 as components
-
-# ==============================================================================
-# PLANTILLA "CALENDARIO" — CON DISEÑO AZUL OSCuro (heredado de altas_registro)
-# Versión final: con estados personalizados, checkboxes y modal.
-# ==============================================================================
-
-PAD_X_PX = 10
-PAD_TOP_PX = 10
-
-BORDER_PX = 2
-BORDER_COLOR = "rgba(255,255,255,.12)"
-BG_COLOR = "#081a3a"
-PANEL_BG = "rgba(255,255,255,.06)"
-CARD_BG = "rgba(255,255,255,.07)"
-TEXT_COLOR = "#eaf2ff"
-MUTED_TEXT = "rgba(234,242,255,.75)"
-
-FONT_BASE_PX = 14
-TITLE_PX = 18
-H2_PX = 16
-SMALL_PX = 12
-
-TOPBAR_H = 8
-MONTHBAR_H = 10
-CAL_GRID_H = 24
-FILTERS_H = 9
-AGENDA_H = 34
-BOTTOMBAR_H = 10
-
-INNER_L = 4
-INNER_R = 4
-INNER_TOP_GAP = 0.7
-
-CAL_COLS = 7
-CAL_ROWS = 6
-DAY_CELL_GAP_PX = 6
-
-AGENDA_ROWS = 5
 
 st.set_page_config(layout="wide")
 
 st.markdown(
     """
     <style>
-      .block-container{padding:0!important;margin:0!important;max-width:100%!important;}
-      section.main > div{padding:0!important;margin:0!important;}
-      header, footer{display:none!important;}
+      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
+      section.main > div{padding:0 !important;margin:0 !important;}
+      header, footer{display:none !important;}
+      iframe{display:block !important;}
+      [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
     </style>
     """,
     unsafe_allow_html=True,
@@ -57,1366 +21,767 @@ html = r"""
 <!doctype html>
 <html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<style>
-  :root {
-    /* =========================================================
-       PALETA HEREDADA DE ALTAS_REGISTRO (azul base #040e31)
-       ========================================================= */
-    --baseBlue: #040e31;
-    --bgTop:  #0a1a55;
-    --bgMid:  #061240;
-    --bgDeep: #02071c;
-
-    --overlay1: rgba(40, 120, 255, .16);
-    --overlay2: rgba(0,  10,  40, .62);
-
-    --ink: rgba(255,255,255,.92);
-    --muted: rgba(255,255,255,.62);
-
-    --pill: rgba(238, 245, 255, .92);
-    --pill2: rgba(255,255,255,.86);
-
-    --btn1:#2f7de1;
-    --btn2:#1e5fc4;
-
-    --shadow1: 0 22px 55px rgba(0,0,0,.55);
-    --shadow2: 0 10px 22px rgba(0,0,0,.40);
-    --blur: 14px;
-
-    --glow-orange: rgba(255, 142, 64, .50);
-    --glow-orange-2: rgba(255, 142, 64, .22);
-    --glow-blue: rgba(96, 196, 255, .45);
-    --glow-blue-2: rgba(96, 196, 255, .22);
-
-    --free:#4fe38c;
-    --busy:#ff4b4b;
-    --other:#ff7c2c;
-
-    --radius-outer: 26px;
-    --radius-card: 18px;
-    --radius-pill: 999px;
-    --radius-cell: 12px;
-    --shadow-soft: 0 18px 40px rgba(0,0,0,.45);
-    --shadow-inner: inset 0 1px 0 rgba(255,255,255,.08);
-    --blur: 18px;
-
-    --fs-top: 14px;
-    --fs-title: 28px;
-    --fs-sub: 12px;
-    --fs-day: 11px;
-    --fs-cell: 14px;
-    --fs-h3: 18px;
-    --fs-table: 13px;
-    --fs-btn: 14px;
-    --pad-outer: 16px;
-    --pad-block: 14px;
-  }
-
-  *{box-sizing:border-box;}
-  html,body{height:100%;margin:0;padding:0;}
-  body{
-    font-family: "Inter", system-ui, -apple-system, "SF Pro Display", Segoe UI, Roboto, Arial, sans-serif;
-    color:var(--ink);
-    background: none;
-  }
-  #stage{
-    position:fixed;
-    inset:0;
-    background:
-      radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.14), transparent 60%),
-      radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
-      linear-gradient(180deg, #020614 0%, var(--baseBlue) 100%);
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-  }
-
-  #frame{display:none;}
-
-  #wrap{
-    position: relative;
-    width: min(420px, 92vw);
-    margin: 0 auto;
-    padding: var(--pad-outer);
-    border-radius: var(--radius-outer);
-    background: rgba(10, 16, 26, .58);
-    border:1px solid rgba(255,255,255,.10);
-    box-shadow:var(--shadow-soft);
-    backdrop-filter:blur(var(--blur));
-    -webkit-backdrop-filter:blur(var(--blur));
-    overflow: hidden;
-    display:flex;
-    flex-direction:column;
-    max-height: 95vh;
-  }
-  #wrap::before{
-    content:"";
-    position:absolute; inset:0;
-    border-radius:inherit;
-    pointer-events:none;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.10), transparent 30%),
-      radial-gradient(800px 500px at 85% 20%, var(--glow-blue), transparent 60%),
-      radial-gradient(700px 500px at 20% 20%, var(--glow-orange), transparent 65%);
-    mix-blend-mode: screen;
-  }
-
-  @media (min-width: 1400px) {
-    #wrap {
-      width: min(1200px, 80vw);
-      max-width: 1400px;
-    }
-  }
-
-  /* Month block */
-  .monthBlock{
-    margin-top:0;
-    padding:12px 8px 6px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-  }
-  .monthBlock .nav{
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
-  .monthNav__btn{
-    width:38px; height:38px;
-    border-radius:14px;
-    background:rgba(255,255,255,.05);
-    border:1px solid rgba(255,255,255,.10);
-    box-shadow:0 0 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.08);
-    display:grid;
-    place-items:center;
-    color:var(--ink);
-  }
-  .monthNav__title{
-    font-size:var(--fs-title);
-    font-weight:800;
-    letter-spacing:1px;
-    text-transform:uppercase;
-    color:var(--ink);
-    text-shadow:0 0 18px var(--glow-blue-2);
-    line-height:1.05;
-    text-align:center;
-    flex:1;
-  }
-
-  /* Calendar card */
-  .calendarCard{
-    margin-top:8px;
-    padding:var(--pad-block);
-    border-radius:var(--radius-card);
-    background:rgba(255,255,255,.04);
-    border:1px solid rgba(255,255,255,.10);
-    box-shadow:0 0 34px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
-    backdrop-filter:blur(calc(var(--blur) - 6px));
-  }
-  .calendarCard__labelRow{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:10px;
-  }
-  .calendarCard__label{
-    font-size:var(--fs-sub);
-    font-weight:700;
-    letter-spacing:.8px;
-    color:var(--muted);
-  }
-  .weekdays{
-    display:grid;
-    grid-template-columns:repeat(7,1fr);
-    gap:8px;
-    margin:10px 0 10px;
-  }
-  .weekdays span{
-    font-size:var(--fs-day);
-    color:var(--muted);
-    text-align:center;
-    letter-spacing:.6px;
-  }
-  .calendarGrid{
-    display:grid;
-    grid-template-columns:repeat(7,1fr);
-    gap:10px;
-  }
-  .day{
-    height:38px;
-    border-radius:var(--radius-cell);
-    background:rgba(255,255,255,.04);
-    border:1px solid rgba(255,255,255,.09);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
-    display:grid;
-    place-items:center;
-    font-size:var(--fs-cell);
-    font-weight:700;
-    color:var(--ink);
-    position:relative;
-  }
-  .day.dim{
-    color:var(--muted);
-    background:rgba(255,255,255,.03);
-    border-color:rgba(255,255,255,.07);
-  }
-  .day.sel{
-    border:2px solid var(--glow-orange);
-    box-shadow:0 0 0 2px rgba(255,124,44,.10), 0 0 18px var(--glow-orange-2), inset 0 1px 0 rgba(255,255,255,.08);
-    color:var(--ink);
-  }
-  .day.past{
-    opacity:.22;
-    cursor:default;
-    pointer-events:none;
-    filter:grayscale(35%);
-  }
-  .day.hasdata::after{
-    content:"";
-    position:absolute;
-    width:7px; height:7px;
-    border-radius:50%;
-    right:7px; bottom:7px;
-    background:var(--free);
-    box-shadow:0 0 10px var(--free);
-  }
-
-  /* Legend */
-  .legend{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    margin-top:12px;
-    padding-top:8px;
-  }
-  .legend__item{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    color:var(--muted);
-    font-size:11px;
-    letter-spacing:.2px;
-  }
-  .legend__dot{
-    width:8px; height:8px;
-    border-radius:99px;
-    background:rgba(255,255,255,.30);
-    box-shadow:0 0 14px rgba(255,255,255,.10);
-  }
-  .legend__dot.on{
-    background:var(--free);
-    box-shadow:0 0 14px var(--free);
-  }
-
-  /* Controls row */
-  .controlsRow{
-    display:grid;
-    grid-template-columns:1fr 1fr auto;
-    gap:10px;
-    margin-top:14px;
-    align-items:center;
-  }
-  .selectPill{
-    height:40px;
-    border-radius:var(--radius-pill);
-    padding:0 14px;
-    background:rgba(255,255,255,.04);
-    border:1px solid rgba(255,255,255,.10);
-    color:var(--ink);
-    font-size:13px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
-    backdrop-filter:blur(calc(var(--blur) - 6px));
-  }
-  .selectPill select{
-    background:transparent;
-    border:none;
-    color:inherit;
-    font:inherit;
-    outline:none;
-    width:100%;
-    appearance:none;
-    -webkit-appearance:none;
-    cursor:pointer;
-  }
-  .selectPill select option {
-    background: var(--bgMid);
-    color: var(--ink);
-  }
-  .selectPill .caret{
-    font-weight:900;
-    pointer-events:none;
-  }
-  .applyBtn{
-    height:40px;
-    min-width:92px;
-    border-radius:14px;
-    padding:0 16px;
-    background:rgba(255,124,44,.06);
-    border:1px solid var(--glow-orange);
-    color:rgba(255,124,44,.95);
-    font-weight:800;
-    font-size:var(--fs-btn);
-    letter-spacing:.3px;
-    box-shadow:0 0 18px var(--glow-orange-2), inset 0 1px 0 rgba(255,255,255,.10);
-  }
-
-  /* Agenda block */
-  .agendaBlock{
-    margin-top:16px;
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    min-height:0;
-  }
-  .agendaTitle{
-    font-size:var(--fs-h3);
-    font-weight:800;
-    color:var(--ink);
-    margin:0 0 10px 0;
-    text-shadow:0 0 18px var(--glow-blue-2);
-  }
-  .agendaMeta{
-    display:flex;
-    justify-content:space-between;
-    gap:10px;
-    color:var(--muted);
-    font-size:12px;
-    margin-bottom:10px;
-  }
-  .tableCard{
-    border-radius:var(--radius-card);
-    background:rgba(255,255,255,.04);
-    border:1px solid rgba(255,255,255,.10);
-    box-shadow:0 0 34px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
-    overflow: hidden;
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    min-height:0;
-  }
-
-  /* Estilos para desktop (6 columnas) */
-  .tableHeader, .trow.desktop {
-    display: grid;
-    grid-template-columns: 26px 1fr 92px 92px 86px auto;
-    gap: 10px;
-    align-items: center;
-  }
-  .tableHeader{
-    padding:12px 14px;
-    font-size:12px;
-    font-weight:700;
-    color:var(--muted);
-    background:rgba(255,255,255,.03);
-    border-bottom:1px solid rgba(255,255,255,.08);
-  }
-  .trow.desktop{
-    padding:11px 14px;
-    border-bottom:1px solid rgba(255,255,255,.06);
-  }
-  .trow.desktop:last-child{border-bottom:none;}
-  .trow.desktop div:nth-child(1){
-    font-size:var(--fs-table);
-    color:var(--ink);
-    font-weight:650;
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  .chk{
-    width:16px; height:16px;
-    border-radius:4px;
-    border:1px solid rgba(255,255,255,.22);
-    background:rgba(255,255,255,.04);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
-    display:inline-block;
-  }
-  .status{
-    height:22px;
-    padding:0 10px;
-    border-radius:var(--radius-pill);
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    font-size:11px;
-    font-weight:800;
-    letter-spacing:.3px;
-    color:rgba(0,0,0,.78);
-  }
-  .status.free{
-    background:linear-gradient(180deg, rgba(79,227,140,1), rgba(46,196,118,1));
-    box-shadow:0 0 14px rgba(79,227,140,.22);
-  }
-  .status.busy{
-    background:linear-gradient(180deg, rgba(255,90,90,1), rgba(230,55,55,1));
-    box-shadow:0 0 14px rgba(255,75,75,.22);
-    color:rgba(255,255,255,.92);
-  }
-  .status.other{
-    background:rgba(255,255,255,.1);
-    border:1px solid rgba(255,255,255,.2);
-    color:var(--ink);
-  }
-
-  /* Estilos para móvil (filas expandibles) */
-  .mobile-header {
-    display: none;
-    padding: 10px 12px;
-    background: rgba(255,255,255,.03);
-    border-bottom: 1px solid rgba(255,255,255,.08);
-    font-weight: 700;
-    color: var(--muted);
-    font-size: 12px;
-  }
-  .mobile-header .horas {
-    display: flex;
-    gap: 8px;
-    flex: 1;
-  }
-  .mobile-header .horas span:first-child { width: 70px; }
-  .mobile-header .horas span:nth-child(2) { width: 70px; }
-  .mobile-header .horas span:last-child { width: 60px; text-align: right; }
-
-  .trow.mobile {
-    display: block;
-    border-bottom: 1px solid rgba(255,255,255,.06);
-    padding: 0;
-  }
-  .row-main {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 12px;
-    cursor: pointer;
-    background: rgba(255,255,255,.02);
-  }
-  .row-main .horas {
-    display: flex;
-    gap: 8px;
-    flex: 1;
-    font-size: 13px;
-  }
-  .row-main .horas span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .row-main .horas span:first-child { width: 70px; }
-  .row-main .horas span:nth-child(2) { width: 70px; }
-  .row-main .horas span:last-child { width: 60px; text-align: right; }
-  .expand-icon {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    background: rgba(255,255,255,.04);
-    border: 1px solid rgba(255,255,255,.10);
-    font-size: 16px;
-    font-weight: bold;
-    color: var(--ink);
-    transition: transform 0.2s;
-  }
-  .row-detail {
-    display: none;
-    padding: 8px 12px 12px;
-    background: rgba(0,0,0,.2);
-    border-top: 1px solid rgba(255,255,255,.05);
-    font-size: 13px;
-    grid-template-columns: 1fr auto;
-    gap: 8px;
-  }
-  .row-detail .instalacion {
-    color: var(--ink);
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .row-detail .estado {
-    justify-self: end;
-  }
-  .trow.mobile.expanded .row-detail {
-    display: grid;
-  }
-  .trow.mobile.expanded .expand-icon {
-    transform: rotate(45deg);
-  }
-
-  /* Footer block */
-  .footerBlock{
-    margin-top:14px;
-    padding-top:12px;
-    border-top:1px solid rgba(255,255,255,.08);
-  }
-  .footerActions{
-    margin-top:12px;
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    gap:10px;
-  }
-  .btn{
-    height:42px;
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,.10);
-    background:rgba(255,255,255,.04);
-    color:var(--ink);
-    font-weight:750;
-    font-size:var(--fs-btn);
-    letter-spacing:.2px;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    transition: opacity 0.2s;
-  }
-  .btn:disabled, .btn.disabled {
-    opacity: 0.4;
-    pointer-events: none;
-  }
-  .btn--primary, .btn.primary{
-    border-color:var(--glow-orange);
-    background:rgba(255,124,44,.06);
-    color:rgba(255,124,44,.95);
-    box-shadow:0 0 18px var(--glow-orange-2), inset 0 1px 0 rgba(255,255,255,.10);
-  }
-
-  /* Modal */
-  .modal-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(5px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  .modal {
-    background: var(--bgMid);
-    border: 1px solid rgba(255,255,255,.10);
-    border-radius: var(--radius-card);
-    padding: 24px;
-    max-width: 400px;
-    width: 90%;
-    box-shadow: var(--shadow-soft);
-    color: var(--ink);
-  }
-  .modal h3 {
-    margin-top: 0;
-  }
-  .modal-option {
-    margin: 12px 0;
-  }
-  .modal-option label {
-    margin-left: 8px;
-  }
-  .modal-input {
-    margin-top: 8px;
-    margin-left: 24px;
-  }
-  .modal-input input {
-    width: 100%;
-    padding: 8px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,.10);
-    background: rgba(0,0,0,.3);
-    color: var(--ink);
-  }
-  .modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 24px;
-  }
-  .modal-actions .btn {
-    width: auto;
-    padding: 0 20px;
-  }
-
-  /* Responsive */
-  @media (min-width: 1400px) {
-    .controlsRow {
-      grid-template-columns: repeat(4, 1fr) auto;
-    }
-    .tableHeader, .trow.desktop {
-      grid-template-columns: 26px 2fr 1fr 1fr 1fr 1fr;
-    }
-  }
-
-  /* Ajustes para móvil: scroll general */
-  @media (max-width:520px){
-    #wrap {
-      width: 98vw;
-      padding: 12px;
-      overflow-y: auto;
-      display: block;
-      max-height: 95vh;
-      height: 95vh;
-    }
-
-    .controlsRow{
-      grid-template-columns:1fr 1fr;
-      grid-auto-rows:min-content;
-    }
-    .controlsRow .applyBtn{
-      grid-column:1/-1;
-    }
-
-    .tableHeader {
-      display: none;
-    }
-
-    .mobile-header {
-      display: block;
-    }
-
-    .trow.desktop {
-      display: none;
-    }
-    .trow.mobile {
-      display: block;
-    }
-
-    .tableCard {
-      max-height: none;
-      height: auto;
-      min-height: 0;
-    }
-
-    .agendaBlock {
-      margin-top: 12px;
-    }
-    .agendaTitle {
-      margin-bottom: 5px;
-    }
-    .agendaMeta {
-      margin-bottom: 5px;
-    }
-  }
-
-  @media (max-width:380px){
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
     :root{
-      --fs-title:24px;
+      /* =========================================================
+         PALETA HEREDADA DEL ADMINISTRADOR (azul base #040e31)
+         ========================================================= */
+      --baseBlue: #040e31;
+      --bgTop:  #0a1a55;
+      --bgMid:  #061240;
+      --bgDeep: #02071c;
+
+      --overlay1: rgba(40, 120, 255, .16);
+      --overlay2: rgba(0,  10,  40, .62);
+
+      --ink: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.62);
+
+      --pill: rgba(238, 245, 255, .92);
+      --pill2: rgba(255,255,255,.86);
+
+      --btn1:#2f7de1;
+      --btn2:#1e5fc4;
+
+      --shadow1: 0 22px 55px rgba(0,0,0,.55);
+      --shadow2: 0 10px 22px rgba(0,0,0,.40);
+      --blur: 14px;
+
+      /* Variables originales de estructura (se mantienen) */
+      --border:2px;
+      --borderColor:#111;
+      --outerPad:10px;
+      --radiusDesk:52px;
+      --radiusMob:44px;
+      --hdrHDesk:54px;
+      --hdrHMob:42px;
+      --labelMin:140px;
+      --labelMinSmall:110px;
+      --rowGap:4px;
+      --colGap:26px;
+      --inputHDesk:40px;
+      --inputHMob:38px;
     }
-    .calendarGrid{gap:8px;}
-    .day{height:34px;}
-  }
-</style>
+
+    html, body{
+      margin:0; padding:0;
+      width:100%; height:100%;
+      background:var(--baseBlue);
+      overflow:hidden;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--ink);
+    }
+
+    #stage{
+      position:fixed; inset:0;
+      width:100vw; height:100vh;
+      background:
+        radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.14), transparent 60%),
+        radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
+        linear-gradient(180deg, #020614 0%, var(--baseBlue) 100%);
+    }
+
+    /* PANEL PRINCIPAL (similar al #plan del admin) */
+    #plan{
+      position:absolute;
+      left:10px; right:10px;
+      top:10px; bottom:0;
+      overflow:hidden;
+      border-radius: 34px;
+      box-shadow: var(--shadow1);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 22%),
+        linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #05164d 58%, var(--bgDeep) 100%);
+    }
+
+    /* CORTE DIAGONAL */
+    #plan::before{
+      content:"";
+      position:absolute;
+      inset:-10%;
+      background:
+        linear-gradient(135deg,
+          transparent 0%,
+          transparent 32%,
+          var(--overlay1) 32%,
+          var(--overlay2) 66%,
+          transparent 66%);
+      transform: rotate(-10deg);
+      opacity:.95;
+      pointer-events:none;
+    }
+
+    /* VIÑETA */
+    #plan::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(50% 60% at 50% 25%, rgba(255,255,255,.06), transparent 55%),
+        radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
+        linear-gradient(180deg, transparent 55%, rgba(0,0,0,.65) 100%);
+      pointer-events:none;
+    }
+
+    /* MARCO */
+    #frame{
+      position:absolute;
+      left:9px; right:9px;
+      top:10px; bottom:0;
+      border-left: 2px solid rgba(255,255,255,.14);
+      border-right:2px solid rgba(255,255,255,.14);
+      border-top:  2px solid rgba(255,255,255,.14);
+      box-sizing:border-box;
+      pointer-events:none;
+      border-radius: 34px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
+      z-index:5;
+    }
+
+    #outer{
+      position:absolute;
+      left:var(--outerPad); right:var(--outerPad);
+      top:var(--outerPad); bottom:var(--outerPad);
+      border:1px solid rgba(255,255,255,.10);
+      box-sizing:border-box;
+      background:transparent;
+      border-radius:34px;
+      backdrop-filter:blur(var(--blur));
+      -webkit-backdrop-filter:blur(var(--blur));
+      z-index:10;
+    }
+
+    #wrap{
+      position:absolute;
+      left:var(--outerPad); right:var(--outerPad);
+      top:var(--outerPad); bottom:var(--outerPad);
+      box-sizing:border-box;
+      padding:10px;
+      display:flex;
+      justify-content:center;
+      align-items:stretch;
+      z-index:20;
+    }
+
+    #app{
+      width:100%;
+      height:100%;
+      max-width:1280px;
+      display:flex;
+      gap:22px;
+      box-sizing:border-box;
+    }
+
+    /* ===== DESKTOP LAYOUT ===== */
+    .col-left{
+      flex:0 0 32%;
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      min-width:260px;
+    }
+
+    .col-right{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      min-width:420px;
+    }
+
+    /* Logo sin marco (ambas versiones) */
+    .logo, .mobile-logo {
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .logo {
+      height: 180px;
+    }
+
+    .logo img, .mobile-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
+      border-radius: 10px;
+    }
+
+    .mobile-logo {
+      display: none;
+      height: 140px;
+      margin: 5px 10px 0 10px;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+
+    .blk{
+      border:1px solid rgba(255,255,255,.10);
+      box-sizing:border-box;
+      background:rgba(255,255,255,.04);
+      backdrop-filter:blur(calc(var(--blur) - 6px));
+      border-radius:24px;
+      box-shadow:var(--shadow2), inset 0 1px 0 rgba(255,255,255,.08);
+      color:var(--ink);
+    }
+
+    .desc {
+      flex:1;
+      min-height:260px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+      gap: 12px;
+    }
+
+    .desc p {
+      margin: 0;
+      max-width: 90%;
+    }
+
+    .desc p:first-child {
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .hdr{
+      height:var(--hdrHDesk);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      font-size:18px;
+      position:relative;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:24px;
+      backdrop-filter:blur(calc(var(--blur) - 6px));
+      color:var(--ink);
+      text-shadow: 0 8px 18px rgba(0,0,0,.35);
+    }
+
+    .hdr::after{
+      content:"";
+      position:absolute;
+      left:14px; right:14px;
+      bottom:10px;
+      height:2px;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
+    }
+
+    .form-shell{
+      flex:1;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:var(--radiusDesk);
+      box-sizing:border-box;
+      padding:18px;
+      position:relative;
+      overflow:hidden;
+      background:rgba(255,255,255,.02);
+      backdrop-filter:blur(calc(var(--blur) - 6px));
+      box-shadow:var(--shadow2), inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .form-scroll{
+      position:absolute;
+      left:18px; right:18px; top:18px; bottom:18px;
+      overflow:auto;
+      padding-right:8px;
+      box-sizing:border-box;
+    }
+
+    .row-top{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      margin-bottom:16px;
+    }
+
+    .pill-input {
+      width: 210px;
+      height: 34px;
+      background: linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
+      border: 1px solid rgba(255,255,255,.55);
+      border-radius: 999px;
+      color: rgba(30,40,55,.92);
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      box-sizing: border-box;
+      text-align: center;
+      font-size: 16px;
+      outline: none;
+      cursor: default;
+      box-shadow: 0 15px 18px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.55);
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns: 1fr 0.95fr;
+      gap:18px var(--colGap);
+      align-items:start;
+    }
+
+    .stack{
+      display:flex;
+      flex-direction:column;
+      gap:var(--rowGap);
+    }
+
+    .stack-right{
+      display:flex;
+      flex-direction:column;
+      gap:var(--rowGap);
+    }
+
+    .qrow{
+      display:grid;
+      grid-template-columns: auto 1fr;
+      column-gap:0;
+      align-items:stretch;
+    }
+
+    .label{
+      height:var(--inputHDesk);
+      min-width:var(--labelMin);
+      padding:0 12px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.15);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      box-sizing:border-box;
+      font-size:16px;
+      white-space:nowrap;
+      color:var(--ink);
+      text-shadow: 0 6px 14px rgba(0,0,0,.30);
+      border-right:none;
+      border-radius: 8px 0 0 8px;
+    }
+
+    .label.small{ min-width:var(--labelMinSmall); }
+
+    .input{
+      height:var(--inputHDesk);
+      border:1px solid rgba(255,255,255,.15);
+      background:rgba(0,0,0,.2);
+      box-sizing:border-box;
+      border-left:none;
+      padding:0 10px;
+      font-size:15px;
+      outline:none;
+      width:100%;
+      color:var(--ink);
+      transition:border 0.2s;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .input:focus{
+      border-color:rgba(255,255,255,.4);
+      box-shadow:0 0 10px rgba(255,255,255,.1);
+    }
+
+    .pink-block{
+      border:1px solid rgba(255,255,255,.15);
+      background:rgba(255,255,255,.04);
+      padding:10px 12px 12px 12px;
+      box-sizing:border-box;
+      border-radius:18px;
+      backdrop-filter:blur(calc(var(--blur) - 10px));
+    }
+
+    .pink-title{
+      font-weight:800;
+      text-align:center;
+      margin:0 0 10px 0;
+      font-size:16px;
+      letter-spacing:0.5px;
+      color:var(--ink);
+      text-shadow:0 0 8px rgba(255,255,255,.2);
+    }
+
+    .pink-input{
+      width:100%;
+      height:40px;
+      border:1px solid rgba(255,255,255,.15);
+      background:rgba(0,0,0,.3);
+      box-sizing:border-box;
+      padding:0 10px;
+      font-size:15px;
+      outline:none;
+      border-radius:8px;
+      color:var(--ink);
+    }
+
+    .pink-input:focus{
+      border-color:rgba(255,255,255,.4);
+      box-shadow:0 0 10px rgba(255,255,255,.1);
+    }
+
+    .date-row{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+
+    .date-input{ flex:1; }
+
+    .cal-ico{
+      width:44px;
+      height:40px;
+      border:1px solid rgba(255,255,255,.15);
+      background:rgba(255,255,255,.04);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-sizing:border-box;
+      border-radius:8px;
+      font-size:18px;
+      user-select:none;
+      color:var(--muted);
+    }
+
+    .terms-inside{
+      margin-top:16px;
+      padding-top:12px;
+      border-top:1px solid rgba(255,255,255,.1);
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:18px;
+      color:var(--muted);
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 8px 12px;
+    }
+
+    .chk{
+      width:18px; height:18px;
+      border:2px solid rgba(255,255,255,.3);
+      border-radius:4px;
+      display:inline-block;
+      box-sizing:border-box;
+      background:rgba(0,0,0,.3);
+    }
+
+    .desktop-register {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .register-btn {
+      background: linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
+      border: 1px solid rgba(255,255,255,.1);
+      color: var(--ink);
+      font-weight: 800;
+      font-size: 18px;
+      padding: 12px 40px;
+      border-radius: 999px;
+      box-shadow: 0 22px 26px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.22);
+      cursor: pointer;
+      transition: transform .12s ease, filter .12s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .register-btn:hover {
+      filter: brightness(1.05);
+    }
+    .register-btn:active {
+      transform: scale(.985);
+    }
+
+    .mobile-next{
+      display:none;
+    }
+
+    /* ===== MOBILE LAYOUT ===== */
+    @media (max-width: 768px){
+      #wrap{ padding:0; }
+      #app{
+        max-width:none;
+        gap:0;
+        flex-direction:column;
+      }
+
+      .col-left{ display:none; }
+
+      .mobile-logo {
+        display: flex;
+      }
+
+      .col-right{
+        width:100%;
+        flex:1;
+        gap:6px;
+        min-width:0;
+      }
+
+      .hdr{
+        margin:0 10px;
+        height:var(--hdrHMob);
+        font-size:20px;
+        border:none;
+      }
+
+      .hdr::after{
+        left:18px; right:18px;
+        bottom:6px;
+        height:2px;
+      }
+
+      .form-shell{
+        margin:0 10px;
+        border-radius:var(--radiusMob);
+        padding:8px;
+      }
+
+      .form-scroll{
+        left:8px; right:8px; top:8px; bottom:8px;
+      }
+
+      .row-top {
+        margin-bottom: 12px;
+      }
+
+      .pill-input {
+        width: 100%;
+        max-width: 480px;
+        height: 38px;
+        font-size: 18px;
+      }
+
+      .grid-2{ display:block; }
+      .stack-right{ display:none; }
+
+      .stack{ gap:4px; }
+
+      .qrow{
+        grid-template-columns: minmax(100px, 35%) 1fr;
+      }
+
+      .label{
+        height:var(--inputHMob);
+        min-width:0;
+        font-size:15px;
+        justify-content:flex-start;
+        padding-left:8px;
+        border-right:1px solid rgba(255,255,255,.15);
+      }
+
+      .input{
+        height:var(--inputHMob);
+        font-size:14px;
+      }
+
+      @media (max-width: 520px){
+        .qrow{
+          grid-template-columns: 1fr;
+          row-gap:0;
+        }
+        .label{
+          justify-content:flex-start;
+          padding-left:8px;
+          border-right:1px solid rgba(255,255,255,.15);
+          border-bottom:none;
+        }
+        .input{
+          border-left:1px solid rgba(255,255,255,.15);
+          border-top:none;
+        }
+      }
+
+      .terms-inside{
+        margin-top:8px;
+        padding-top:6px;
+        font-size:14px;
+        background: rgba(0,0,0,0.3);
+      }
+
+      .chk{
+        width:14px; height:14px;
+      }
+
+      .mobile-next{
+        margin:6px 10px 8px 10px;
+        height:42px;
+        border:1px solid rgba(255,255,255,.15);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-weight:800;
+        background:rgba(255,255,255,.04);
+        box-sizing:border-box;
+        font-size:18px;
+        border-radius:999px;
+        backdrop-filter:blur(calc(var(--blur) - 6px));
+        color: var(--ink);
+        text-transform: uppercase;
+      }
+
+      .desktop-register {
+        display: none;
+      }
+    }
+
+    @media (min-width: 769px) {
+      .mobile-next {
+        display: none;
+      }
+    }
+  </style>
 </head>
+
 <body>
   <div id="stage">
     <div id="frame"></div>
     <div id="plan">
+      <div id="outer"></div>
+
       <div id="wrap">
-        <!-- Topbar eliminado -->
-        <div id="monthbar" class="panel monthBlock">
-          <div class="nav"><div class="iconbtn monthNav__btn" id="prevMonth">‹</div></div>
-          <div class="month monthNav__title" id="monthDisplay">—</div>
-          <div class="nav"><div class="iconbtn monthNav__btn" id="nextMonth">›</div></div>
-        </div>
+        <div id="app">
 
-        <div id="calgrid" class="panel calendarCard">
-          <div class="head calendarCard__labelRow">
-            <div class="label calendarCard__label">
-              <span>CALENDARIO</span>
-              <span id="syncBadge">SYNC…</span>
+          <!-- IZQUIERDA (DESKTOP) -->
+          <div class="col-left">
+            <div class="logo">
+              <img src="https://files.catbox.moe/056m6v.jpg" alt="Logo">
+            </div>
+            <div class="blk desc">
+              <p>Bienvenido al portal oficial de registro de SYNTRA.</p>
+              <p>Aquí los socorristas podrán completar su inscripción de forma segura y acceder posteriormente a sus horarios e instalaciones asignadas de manera organizada.</p>
+              <p>La información proporcionada será tratada con estricta confidencialidad y utilizada únicamente para fines administrativos y de coordinación interna relacionados con su participación en SYNTRA. Sus datos no serán compartidos con terceros sin su autorización, salvo obligación legal.</p>
+              <p>Al registrarse, usted autoriza a SYNTRA a almacenar y procesar su información conforme a la normativa vigente de protección de datos, garantizando seguridad, privacidad y uso responsable.</p>
             </div>
           </div>
-          <div class="weekheads weekdays" aria-hidden="true">
-            <div class="w">L</div><div class="w">M</div><div class="w">X</div><div class="w">J</div><div class="w">V</div><div class="w">S</div><div class="w">D</div>
-          </div>
-          <div class="days calendarGrid" id="days"></div>
-          <div id="legend" class="legend">
-            <span class="legend__item"><i class="dot on legend__dot"></i>HAY DATOS</span>
-            <span class="legend__item"><i class="dot legend__dot"></i>SIN DATOS</span>
-          </div>
-        </div>
 
-        <div id="filters" class="panel controlsRow">
-          <div class="select selectPill">
-            <select id="monthSelect">
-              <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
-            </select>
-            <span class="caret">▾</span>
-          </div>
-          <div class="select selectPill">
-            <select id="yearSelect"></select>
-            <span class="caret">▾</span>
-          </div>
-          <div class="select selectPill">
-            <select id="socorristaSelect">
-              <option value="">Todos los socorristas</option>
-            </select>
-            <span class="caret">▾</span>
-          </div>
-          <div class="select selectPill">
-            <select id="modeSelect">
-              <option value="dia">Por día</option>
-              <option value="todo">Ver todo (desde hoy)</option>
-            </select>
-            <span class="caret">▾</span>
-          </div>
-          <div class="btn primary applyBtn" id="applyFilters">Aplicar</div>
-        </div>
+          <!-- DERECHA -->
+          <div class="col-right">
+            <!-- Logo para móvil -->
+            <div class="mobile-logo">
+              <img src="https://files.catbox.moe/056m6v.jpg" alt="Logo">
+            </div>
 
-        <div id="agenda" class="panel agendaBlock">
-          <h3 class="agendaTitle">Agenda del día</h3>
-          <div class="meta agendaMeta" id="agendaMeta">
-            <div><b>Fecha:</b> <span id="fechaDisplay">—</span></div>
-          </div>
-          <div id="table" class="tableCard">
-            <!-- Cabecera para móvil -->
-            <div class="mobile-header">
-              <div style="width:26px;"></div> <!-- checkbox placeholder -->
-              <div class="horas">
-                <span>Inicio</span>
-                <span>Finaliza</span>
-                <span>Horas</span>
+            <div class="blk hdr">Formulario</div>
+
+            <div class="form-shell">
+              <div class="form-scroll">
+
+                <div class="row-top">
+                  <!-- Campo FOMUL con fecha actual -->
+                  <input type="text" id="fechaActual" class="pill-input" readonly>
+                </div>
+
+                <div class="grid-2">
+
+                  <!-- COLUMNA IZQUIERDA (DESKTOP) - 8 elementos -->
+                  <div class="stack">
+                    <div class="qrow"><div class="label">NOMBRE:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">DNI:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">NACION:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">NAFF:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">CALLE:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">POBL:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">COMARCA:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">C.P:</div><input class="input" type="text" /></div>
+                  </div>
+
+                  <!-- COLUMNA DERECHA (DESKTOP) - 8 elementos (5 filas + 2 bloques + 1 fila HORAS) -->
+                  <div class="stack-right">
+                    <div class="qrow"><div class="label small">TLF:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label small">CORREO:</div><input class="input" type="email" /></div>
+                    <div class="qrow"><div class="label">NACIMIENTO:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label">ESTADO CIV:</div><input class="input" type="text" /></div>
+                    <div class="qrow"><div class="label small">IBAN:</div><input class="input" type="text" /></div>
+
+                    <div class="pink-block">
+                      <div class="pink-title">INSTALACION:</div>
+                      <input class="pink-input" type="text" />
+                    </div>
+
+                    <div class="pink-block">
+                      <div class="pink-title">FECHA FIN:</div>
+                      <div class="date-row">
+                        <input class="pink-input date-input" type="text" />
+                        <div class="cal-ico">🗓️</div>
+                      </div>
+                    </div>
+
+                    <!-- Nueva fila HORAS para igualar cantidad -->
+                    <div class="qrow"><div class="label">HORAS:</div><input class="input" type="text" /></div>
+                  </div>
+
+                </div>
+
+                <!-- Términos (debajo de las columnas, visible en ambos) -->
+                <div class="terms-inside" style="margin-top: 20px;">
+                  <span class="chk"></span>
+                  <span>Acepta términos y condiciones</span>
+                </div>
+
+                <!-- Botón de registro en escritorio -->
+                <div class="desktop-register">
+                  <button class="register-btn">Registro</button>
+                </div>
+
               </div>
-              <div style="width:24px;"></div>
             </div>
-            <!-- Cabecera para desktop -->
-            <div id="thead" class="tableHeader">
-              <div></div><div>Instalación</div><div>Inicio</div><div>Finaliza</div><div>Horas</div><div>Estado</div>
-            </div>
-            <div id="tbody"></div>
-          </div>
-        </div>
 
-        <div id="bottom" class="panel footerBlock">
-          <div class="actions footerActions">
-            <button class="btn" id="btnAplicar">Aplicar</button>
-            <button class="btn" id="btnModificar">Modificar</button>
-            <button class="btn primary btn--primary" id="btnEnviar">Enviar</button>
+            <!-- Botón móvil -->
+            <div class="mobile-next">Registro</div>
           </div>
+
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal para Modificar -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal" id="modal">
-      <h3>Modificar turno</h3>
-      <div class="modal-option">
-        <input type="radio" name="modalOption" id="optLiberar" value="liberar" checked>
-        <label for="optLiberar">Liberar Turno</label>
-      </div>
-      <div class="modal-option">
-        <input type="radio" name="modalOption" id="optNovedad" value="novedad">
-        <label for="optNovedad">Novedad</label>
-        <div class="modal-input" id="novedadInput" style="display:none;">
-          <input type="text" placeholder="Escriba la novedad...">
-        </div>
-      </div>
-      <div class="modal-option">
-        <input type="radio" name="modalOption" id="optCalamidad" value="calamidad">
-        <label for="optCalamidad">Calamidad</label>
-      </div>
-      <div class="modal-actions">
-        <button class="btn" id="modalCancel">Cancelar</button>
-        <button class="btn primary" id="modalSend">Enviar</button>
-      </div>
-    </div>
-  </div>
-
-<script>
-(function(){
-  const API_BASE = "https://camilo27.pythonanywhere.com";
-  const ENDPOINT_MALLAS = API_BASE + "/api/mallas";
-
-  // Usuario conectado (hardcodeado para demo)
-  const CURRENT_USER = "Bilal";
-
-  let currentDate = new Date();
-  currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-
-  let selectedDate = new Date(currentDate);
-  let currentMonth = selectedDate.getMonth();
-  let currentYear = selectedDate.getFullYear();
-
-  let ALL_ROWS = [];
-  let AVAILABLE_DATES = new Set();
-  let SOCORRISTAS = [];
-
-  let FILTER_SOCORRISTA = "";
-  let FILTER_MODE = "dia";
-
-  // Para manejo de selección
-  let selectedRows = new Set(); // almacena índices de filas seleccionadas (frente al array filtrado actual)
-  let currentFilteredRows = [];  // se actualiza en cada updateAgenda
-
-  function pad2(n){ return String(n).padStart(2,'0'); }
-
-  function toKeyYMD(y,m,d){
-    return `${y}-${pad2(m)}-${pad2(d)}`;
-  }
-
-  function formatDateKey(date) {
-    return toKeyYMD(date.getFullYear(), date.getMonth()+1, date.getDate());
-  }
-
-  function formatDisplayDate(date) {
-    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
-  }
-
-  function parseSheetDateToKey(fechaStr){
-    const s = (fechaStr || "").trim();
-    if(!s) return "";
-    if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){
-      const [dd,mm,yyyy] = s.split("/");
-      return `${yyyy}-${mm}-${dd}`;
-    }
-    if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
-      return s;
-    }
-    return "";
-  }
-
-  function getField(row, keys){
-    for(const k of keys){
-      if(row && Object.prototype.hasOwnProperty.call(row, k)) return row[k];
-    }
-    return "";
-  }
-
-  // Normalizador original (para fallback)
-  function normalizeEstado(s){
-    const v = String(s || "").trim().toLowerCase();
-    if(!v) return {label:"OTRO", cls:"other"};
-    if(v.includes("libre")) return {label:"LIBRE", cls:"free"};
-    if(v.includes("ocup")) return {label:"OCUPADO", cls:"busy"};
-    return {label:String(s).toUpperCase(), cls:"other"};
-  }
-
-  // Nuevo: devuelve estado visible según reglas
-  function getDisplayStatus(row) {
-    const rawEstado = getField(row, ["estado","Estado","estado "]).toLowerCase().trim();
-    const socorrista = getField(row, ["Socorrista","socorrista"]).trim();
-    if (rawEstado.includes("disponible")) {
-      return { label: "Disponible", cls: "free" };
-    } else if (rawEstado.includes("programado")) {
-      if (socorrista.toLowerCase() === CURRENT_USER.toLowerCase()) {
-        return { label: "Programado", cls: "free" };
-      } else {
-        return { label: "Cerrado", cls: "busy" };
+  <script>
+    (function(){
+      var fe = window.frameElement;
+      if (fe){
+        fe.style.position = "fixed";
+        fe.style.inset = "0";
+        fe.style.width = "100vw";
+        fe.style.height = "100vh";
+        fe.style.border = "0";
+        fe.style.margin = "0";
+        fe.style.padding = "0";
+        fe.style.zIndex = "999999";
+        fe.style.background = "transparent";
       }
-    } else {
-      return normalizeEstado(rawEstado);
-    }
-  }
 
-  function formatTime(t) {
-    if (!t) return '-';
-    const str = String(t);
-    return str.replace(/(\d{1,2}:\d{2}):\d{2}$/, '$1');
-  }
-
-  function setSyncBadge(ok, text){
-    const el = document.getElementById("syncBadge");
-    el.textContent = text;
-    el.className = ok ? "ok" : "err";
-  }
-
-  function daysInMonth(year, month) {
-    return new Date(year, month + 1, 0).getDate();
-  }
-
-  function getFirstDayOfMonth(year, month) {
-    let day = new Date(year, month, 1).getDay();
-    return day === 0 ? 7 : day;
-  }
-
-  function getMonthDays(year, month) {
-    const firstDay = getFirstDayOfMonth(year, month);
-    const totalDays = daysInMonth(year, month);
-    const days = [];
-    const prevMonthDays = firstDay - 1;
-    if (prevMonthDays > 0) {
-      const prevMonth = month === 0 ? 11 : month - 1;
-      const prevYear = month === 0 ? year - 1 : year;
-      const daysPrev = daysInMonth(prevYear, prevMonth);
-      for (let i = prevMonthDays; i > 0; i--) {
-        days.push({ date: new Date(prevYear, prevMonth, daysPrev - i + 1), currentMonth: false });
-      }
-    }
-    for (let d = 1; d <= totalDays; d++) {
-      days.push({ date: new Date(year, month, d), currentMonth: true });
-    }
-    const remaining = 7 - (days.length % 7);
-    if (remaining < 7) {
-      const nextMonth = month === 11 ? 0 : month + 1;
-      const nextYear = month === 11 ? year + 1 : year;
-      for (let i = 1; i <= remaining; i++) {
-        days.push({ date: new Date(nextYear, nextMonth, i), currentMonth: false });
-      }
-    }
-    while (days.length < 42) {
-      const last = days[days.length - 1].date;
-      const nd = new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1);
-      days.push({ date: nd, currentMonth: false });
-    }
-    if (days.length > 42) days.length = 42;
-    return days;
-  }
-
-  function updateMonthYearDisplay(year, month) {
-    document.getElementById('monthSelect').value = month;
-    document.getElementById('yearSelect').value = year;
-  }
-
-  function renderCalendar(year, month) {
-    const daysEl = document.getElementById('days');
-    daysEl.innerHTML = '';
-    const days = getMonthDays(year, month);
-    days.forEach(dayInfo => {
-      const date = dayInfo.date;
-      const cell = document.createElement('div');
-      cell.className = 'day';
-      cell.textContent = date.getDate();
-      if (!dayInfo.currentMonth) cell.classList.add('dim');
-      const isPast = date < currentDate;
-      if(isPast) cell.classList.add('past');
-      const key = formatDateKey(date);
-      if(AVAILABLE_DATES.has(key)) cell.classList.add('hasdata');
-      if (date.getFullYear() === selectedDate.getFullYear() &&
-          date.getMonth() === selectedDate.getMonth() &&
-          date.getDate() === selectedDate.getDate()) {
-        cell.classList.add('sel');
-      }
-      cell.addEventListener('click', function() {
-        if(date < currentDate) return;
-        selectedDate = new Date(date);
-        if (date.getMonth() !== month || date.getFullYear() !== year) {
-          currentMonth = date.getMonth();
-          currentYear = date.getFullYear();
-          renderCalendar(currentYear, currentMonth);
-          updateMonthYearDisplay(currentYear, currentMonth);
-        } else {
-          renderCalendar(year, month);
+      function actualizarFecha() {
+        const hoy = new Date();
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const año = hoy.getFullYear();
+        const fechaFormateada = `${dia}/${mes}/${año}`;
+        const campoFecha = document.getElementById('fechaActual');
+        if (campoFecha) {
+          campoFecha.value = fechaFormateada;
         }
-        updateAgenda();
-        updateBottomBar();
-      });
-      daysEl.appendChild(cell);
-    });
-    document.getElementById('monthDisplay').textContent =
-      new Date(year, month, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
-  }
-
-  function getFilteredRows(){
-    const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
-    const keySel = formatDateKey(selectedDate);
-    return ALL_ROWS.filter(r => {
-      const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
-      if(!fechaKey) return false;
-      if(fechaKey < formatDateKey(currentDate)) return false;
-      if(soc){
-        const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
-        if(rs !== soc) return false;
       }
-      if(FILTER_MODE === "dia"){
-        return fechaKey === keySel;
-      }
-      return true;
-    });
-  }
 
-  function isMobile() {
-    return window.innerWidth <= 520;
-  }
-
-  // Actualiza estado de botones según selección
-  function updateButtons() {
-    const aplicarBtn = document.getElementById('btnAplicar');
-    const modificarBtn = document.getElementById('btnModificar');
-    if (!aplicarBtn || !modificarBtn) return;
-
-    const selectedIndices = Array.from(selectedRows);
-    if (selectedIndices.length === 0) {
-      aplicarBtn.disabled = true;
-      modificarBtn.disabled = true;
-      return;
-    }
-
-    let allDisponible = true;
-    let allProgramado = true;
-
-    for (let idx of selectedIndices) {
-      const row = currentFilteredRows[idx];
-      if (!row) continue;
-      const status = getDisplayStatus(row).label;
-      if (status !== 'Disponible') allDisponible = false;
-      if (status !== 'Programado') allProgramado = false;
-    }
-
-    aplicarBtn.disabled = !allDisponible;
-    modificarBtn.disabled = !allProgramado;
-  }
-
-  // Crear fila para desktop (6 columnas) con checkbox
-  function buildDesktopRow(r, idx) {
-    const inst = getField(r, ["Instalacion","Instalación","instalacion"]);
-    const ini  = formatTime(getField(r, ["Ingreso","Inicio","ingreso","inicio"]));
-    const fin  = formatTime(getField(r, ["Salida","Finaliza","finaliza","salida"]));
-    const hrs  = formatTime(getField(r, ["Intensidad_horaria","Intensidad_ho","Horas","horas"]));
-    const est = getDisplayStatus(r);
-
-    const row = document.createElement('div');
-    row.className = 'trow desktop';
-    row.dataset.index = idx;
-
-    const col0 = document.createElement('div');
-    const chk = document.createElement('input');
-    chk.type = 'checkbox';
-    chk.className = 'row-checkbox';
-    chk.dataset.index = idx;
-    chk.checked = selectedRows.has(idx);
-    chk.addEventListener('click', (e) => e.stopPropagation());
-    chk.addEventListener('change', (e) => {
-      if (e.target.checked) {
-        selectedRows.add(idx);
-      } else {
-        selectedRows.delete(idx);
-      }
-      updateButtons();
-    });
-    col0.appendChild(chk);
-
-    const col1 = document.createElement('div'); col1.textContent = inst || '-';
-    const col2 = document.createElement('div'); col2.textContent = ini;
-    const col3 = document.createElement('div'); col3.textContent = fin;
-    const col4 = document.createElement('div'); col4.textContent = hrs;
-    const col5 = document.createElement('div');
-    const statusSpan = document.createElement('span');
-    statusSpan.className = 'status ' + est.cls;
-    statusSpan.textContent = est.label;
-    col5.appendChild(statusSpan);
-
-    row.appendChild(col0);
-    row.appendChild(col1);
-    row.appendChild(col2);
-    row.appendChild(col3);
-    row.appendChild(col4);
-    row.appendChild(col5);
-
-    return row;
-  }
-
-  // Crear fila para móvil (expandible) con checkbox
-  function buildMobileRow(r, idx) {
-    const inst = getField(r, ["Instalacion","Instalación","instalacion"]) || '-';
-    const ini  = formatTime(getField(r, ["Ingreso","Inicio","ingreso","inicio"]));
-    const fin  = formatTime(getField(r, ["Salida","Finaliza","finaliza","salida"]));
-    const hrs  = formatTime(getField(r, ["Intensidad_horaria","Intensidad_ho","Horas","horas"]));
-    const est = getDisplayStatus(r);
-
-    const row = document.createElement('div');
-    row.className = 'trow mobile';
-    row.dataset.index = idx;
-
-    const main = document.createElement('div');
-    main.className = 'row-main';
-
-    // Checkbox
-    const chk = document.createElement('input');
-    chk.type = 'checkbox';
-    chk.className = 'row-checkbox';
-    chk.dataset.index = idx;
-    chk.checked = selectedRows.has(idx);
-    chk.addEventListener('click', (e) => e.stopPropagation());
-    chk.addEventListener('change', (e) => {
-      if (e.target.checked) {
-        selectedRows.add(idx);
-      } else {
-        selectedRows.delete(idx);
-      }
-      updateButtons();
-    });
-    main.appendChild(chk);
-
-    const horasDiv = document.createElement('div');
-    horasDiv.className = 'horas';
-    const spanIni = document.createElement('span'); spanIni.textContent = ini;
-    const spanFin = document.createElement('span'); spanFin.textContent = fin;
-    const spanHrs = document.createElement('span'); spanHrs.textContent = hrs;
-    horasDiv.appendChild(spanIni);
-    horasDiv.appendChild(spanFin);
-    horasDiv.appendChild(spanHrs);
-
-    const expandIcon = document.createElement('div');
-    expandIcon.className = 'expand-icon';
-    expandIcon.textContent = '+';
-
-    main.appendChild(horasDiv);
-    main.appendChild(expandIcon);
-
-    const detail = document.createElement('div');
-    detail.className = 'row-detail';
-
-    const instDiv = document.createElement('div');
-    instDiv.className = 'instalacion';
-    instDiv.textContent = inst;
-
-    const estadoDiv = document.createElement('div');
-    estadoDiv.className = 'estado';
-    const statusSpan = document.createElement('span');
-    statusSpan.className = 'status ' + est.cls;
-    statusSpan.textContent = est.label;
-    estadoDiv.appendChild(statusSpan);
-
-    detail.appendChild(instDiv);
-    detail.appendChild(estadoDiv);
-
-    row.appendChild(main);
-    row.appendChild(detail);
-
-    main.addEventListener('click', function(e) {
-      // Si el clic fue en el checkbox, no expandimos
-      if (e.target.type === 'checkbox') return;
-      e.stopPropagation();
-      row.classList.toggle('expanded');
-      expandIcon.textContent = row.classList.contains('expanded') ? '−' : '+';
-    });
-
-    return row;
-  }
-
-  function updateAgenda(){
-    const tbody = document.getElementById('tbody');
-    tbody.innerHTML = '';
-
-    if(FILTER_MODE === "dia"){
-      document.getElementById('fechaDisplay').textContent = formatDisplayDate(selectedDate);
-    }else{
-      document.getElementById('fechaDisplay').textContent = "Desde hoy";
-    }
-
-    const rows = getFilteredRows();
-    currentFilteredRows = rows; // guardar para referencias en botones
-    selectedRows.clear(); // al cambiar filtros, se pierde selección
-
-    if(rows.length === 0){
-      const empty = document.createElement('div');
-      empty.className = isMobile() ? 'trow mobile' : 'trow desktop';
-      empty.style.textAlign = 'center';
-      empty.style.padding = '20px';
-      empty.innerHTML = '<div class="muted">Sin registros para el filtro actual</div>';
-      tbody.appendChild(empty);
-      updateButtons();
-      return;
-    }
-
-    const mobile = isMobile();
-    rows.forEach((r, idx) => {
-      const row = mobile ? buildMobileRow(r, idx) : buildDesktopRow(r, idx);
-      tbody.appendChild(row);
-    });
-
-    updateButtons();
-  }
-
-  function updateBottomBar(){
-    // No se usa, pero se deja por compatibilidad
-  }
-
-  function changeMonth(delta) {
-    let newMonth = currentMonth + delta;
-    let newYear = currentYear;
-    if (newMonth < 0) { newMonth = 11; newYear--; }
-    else if (newMonth > 11) { newMonth = 0; newYear++; }
-    currentMonth = newMonth;
-    currentYear = newYear;
-    let newSelectedDay = selectedDate.getDate();
-    const dim = daysInMonth(newYear, newMonth);
-    if (newSelectedDay > dim) newSelectedDay = dim;
-    selectedDate = new Date(newYear, newMonth, newSelectedDay);
-    renderCalendar(currentYear, currentMonth);
-    updateAgenda();
-    updateMonthYearDisplay(currentYear, currentMonth);
-  }
-
-  function fillSocorristaSelect(){
-    const sel = document.getElementById("socorristaSelect");
-    sel.innerHTML = '<option value="">Todos los socorristas</option>';
-    SOCORRISTAS.forEach(name => {
-      const opt = document.createElement("option");
-      opt.value = name;
-      opt.textContent = name;
-      sel.appendChild(opt);
-    });
-    sel.value = FILTER_SOCORRISTA || "";
-  }
-
-  function rebuildAvailability(){
-    AVAILABLE_DATES = new Set();
-    const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
-    ALL_ROWS.forEach(r => {
-      const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
-      if(!fechaKey) return;
-      if(fechaKey < formatDateKey(currentDate)) return;
-      if(soc){
-        const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
-        if(rs !== soc) return;
-      }
-      AVAILABLE_DATES.add(fechaKey);
-    });
-  }
-
-  async function loadMallas(){
-    setSyncBadge(false, "SYNC…");
-    try{
-      const res = await fetch(ENDPOINT_MALLAS, {method:"GET"});
-      if(!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
-      if(!data || data.ok !== true || !Array.isArray(data.rows)) throw new Error("JSON inválido");
-      ALL_ROWS = data.rows;
-      const setS = new Set();
-      ALL_ROWS.forEach(r => {
-        const s = String(getField(r, ["Socorrista","socorrista"])).trim();
-        if(s) setS.add(s);
-      });
-      SOCORRISTAS = Array.from(setS).sort((a,b)=>a.localeCompare(b, 'es', {sensitivity:'base'}));
-      fillSocorristaSelect();
-      rebuildAvailability();
-      setSyncBadge(true, "SYNC OK");
-      renderCalendar(currentYear, currentMonth);
-      updateAgenda();
-    }catch(e){
-      ALL_ROWS = [];
-      SOCORRISTAS = [];
-      AVAILABLE_DATES = new Set();
-      setSyncBadge(false, "SYNC ERROR");
-      renderCalendar(currentYear, currentMonth);
-      updateAgenda();
-    }
-  }
-
-  // Modal logic
-  const modalOverlay = document.getElementById('modalOverlay');
-  const modal = document.getElementById('modal');
-  const modalCancel = document.getElementById('modalCancel');
-  const modalSend = document.getElementById('modalSend');
-  const optNovedad = document.getElementById('optNovedad');
-  const novedadInput = document.getElementById('novedadInput');
-
-  function showModal() {
-    modalOverlay.style.display = 'flex';
-  }
-
-  function hideModal() {
-    modalOverlay.style.display = 'none';
-  }
-
-  optNovedad.addEventListener('change', function(e) {
-    novedadInput.style.display = e.target.checked ? 'block' : 'none';
-  });
-
-  modalCancel.addEventListener('click', hideModal);
-  modalSend.addEventListener('click', function() {
-    hideModal();
-    // Por ahora solo cierra
-  });
-
-  // Cerrar modal si se hace clic fuera del contenido
-  modalOverlay.addEventListener('click', function(e) {
-    if (e.target === modalOverlay) hideModal();
-  });
-
-  function init() {
-    const yearSelect = document.getElementById('yearSelect');
-    const y0 = new Date().getFullYear();
-    for (let y = y0 - 5; y <= y0 + 5; y++) {
-      const opt = document.createElement('option');
-      opt.value = y;
-      opt.textContent = y;
-      yearSelect.appendChild(opt);
-    }
-    updateMonthYearDisplay(currentYear, currentMonth);
-
-    document.getElementById('prevMonth').addEventListener('click', () => changeMonth(-1));
-    document.getElementById('nextMonth').addEventListener('click', () => changeMonth(1));
-
-    document.getElementById('applyFilters').addEventListener('click', () => {
-      const newMonth = parseInt(document.getElementById('monthSelect').value);
-      const newYear = parseInt(document.getElementById('yearSelect').value);
-      FILTER_SOCORRISTA = document.getElementById('socorristaSelect').value || "";
-      FILTER_MODE = document.getElementById('modeSelect').value || "dia";
-      currentMonth = newMonth;
-      currentYear = newYear;
-      let newSelectedDay = selectedDate.getDate();
-      const dim = daysInMonth(newYear, newMonth);
-      if (newSelectedDay > dim) newSelectedDay = dim;
-      selectedDate = new Date(newYear, newMonth, newSelectedDay);
-      rebuildAvailability();
-      renderCalendar(currentYear, currentMonth);
-      updateAgenda();
-      updateMonthYearDisplay(currentYear, currentMonth);
-    });
-
-    window.addEventListener('resize', function() {
-      updateAgenda();
-    });
-
-    // Botones inferiores
-    document.getElementById('btnModificar').addEventListener('click', function() {
-      if (!this.disabled) {
-        showModal();
-      }
-    });
-
-    // Inicialmente deshabilitados
-    document.getElementById('btnAplicar').disabled = true;
-    document.getElementById('btnModificar').disabled = true;
-
-    renderCalendar(currentYear, currentMonth);
-    updateAgenda();
-    loadMallas();
-  }
-
-  init();
-})();
-</script>
-
+      actualizarFecha();
+    })();
+  </script>
 </body>
 </html>
 """
 
-html = (html.replace("__PADX__", str(PAD_X_PX))
-        .replace("__PADTOP__", str(PAD_TOP_PX))
-        .replace("__B__", str(BORDER_PX))
-        .replace("__BC__", BORDER_COLOR)
-        .replace("__BG__", BG_COLOR)
-        .replace("__PANEL__", PANEL_BG)
-        .replace("__CARD__", CARD_BG)
-        .replace("__TXT__", TEXT_COLOR)
-        .replace("__MUTED__", MUTED_TEXT)
-        .replace("__FBASE__", str(FONT_BASE_PX))
-        .replace("__TITLE__", str(TITLE_PX))
-        .replace("__H2__", str(H2_PX))
-        .replace("__SMALL__", str(SMALL_PX))
-        .replace("__INNERL__", str(INNER_L))
-        .replace("__INNERR__", str(INNER_R))
-        .replace("__GAPY__", str(INNER_TOP_GAP))
-        .replace("__TOPBARH__", str(TOPBAR_H))
-        .replace("__MONTHBARH__", str(MONTHBAR_H))
-        .replace("__CALGRIDH__", str(CAL_GRID_H))
-        .replace("__FILTERSH__", str(FILTERS_H))
-        .replace("__AGENDAH__", str(AGENDA_H))
-        .replace("__BOTTOMH__", str(BOTTOMBAR_H))
-        .replace("__CELLGAP__", str(DAY_CELL_GAP_PX))
-        .replace("__CALCOLS__", str(CAL_COLS))
-        .replace("__CALROWS__", str(CAL_ROWS))
-        .replace("__AGENDAROWS__", str(AGENDA_ROWS))
-)
-
-components.html(html, height=1100, scrolling=False)
+components.html(html, height=10, scrolling=False)
