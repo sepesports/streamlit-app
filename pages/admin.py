@@ -1,410 +1,1389 @@
-# pages/admin.py
+# calendario.py
 import streamlit as st
 import streamlit.components.v1 as components
+
+# ==============================================================================
+# PLANTILLA "CALENDARIO" — CON DISEÑO AZUL OSCuro (heredado de altas_registro)
+# Versión final: con estados personalizados, checkboxes y modal.
+# ==============================================================================
+
+PAD_X_PX = 10
+PAD_TOP_PX = 10
+
+BORDER_PX = 2
+BORDER_COLOR = "rgba(255,255,255,.12)"
+BG_COLOR = "#081a3a"
+PANEL_BG = "rgba(255,255,255,.06)"
+CARD_BG = "rgba(255,255,255,.07)"
+TEXT_COLOR = "#eaf2ff"
+MUTED_TEXT = "rgba(234,242,255,.75)"
+
+FONT_BASE_PX = 14
+TITLE_PX = 18
+H2_PX = 16
+SMALL_PX = 12
+
+TOPBAR_H = 8
+MONTHBAR_H = 10
+CAL_GRID_H = 24
+FILTERS_H = 9
+AGENDA_H = 34
+BOTTOMBAR_H = 10
+
+INNER_L = 4
+INNER_R = 4
+INNER_TOP_GAP = 0.7
+
+CAL_COLS = 7
+CAL_ROWS = 6
+DAY_CELL_GAP_PX = 6
+
+AGENDA_ROWS = 5
 
 st.set_page_config(layout="wide")
 
 st.markdown(
     """
     <style>
-      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
-      section.main > div{padding:0 !important;margin:0 !important;}
-      header, footer{display:none !important;}
-      [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
+      .block-container{padding:0!important;margin:0!important;max-width:100%!important;}
+      section.main > div{padding:0!important;margin:0!important;}
+      header, footer{display:none!important;}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-html = """
+html = r"""
 <!doctype html>
 <html>
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-:root{
-  /* =========================================================
-     PALETA (AZUL base #040e31) -> ajusta tonos globales aquí
-     ========================================================= */
-  --baseBlue: #040e31;            /* BASE requerida */
-  --bgTop:  #0a1a55;              /* superior (más claro) */
-  --bgMid:  #061240;              /* medio */
-  --bgDeep: #02071c;              /* inferior (más oscuro) */
+  :root {
+    /* =========================================================
+       PALETA HEREDADA DE ALTAS_REGISTRO (azul base #040e31)
+       ========================================================= */
+    --baseBlue: #040e31;
+    --bgTop:  #0a1a55;
+    --bgMid:  #061240;
+    --bgDeep: #02071c;
 
-  --overlay1: rgba(40, 120, 255, .16); /* corte diagonal claro */
-  --overlay2: rgba(0,  10,  40, .62);  /* corte diagonal oscuro */
+    --overlay1: rgba(40, 120, 255, .16);
+    --overlay2: rgba(0,  10,  40, .62);
 
-  --ink: rgba(255,255,255,.92);
-  --muted: rgba(255,255,255,.62);
+    --ink: rgba(255,255,255,.92);
+    --muted: rgba(255,255,255,.62);
 
-  --pill: rgba(238, 245, 255, .92);
-  --pill2: rgba(255,255,255,.86);
+    --pill: rgba(238, 245, 255, .92);
+    --pill2: rgba(255,255,255,.86);
 
-  --btn1:#2f7de1;
-  --btn2:#1e5fc4;
+    --btn1:#2f7de1;
+    --btn2:#1e5fc4;
 
-  --shadow1: 0 22px 55px rgba(0,0,0,.55);
-  --shadow2: 0 10px 22px rgba(0,0,0,.40);
-  --blur: 14px;
+    --shadow1: 0 22px 55px rgba(0,0,0,.55);
+    --shadow2: 0 10px 22px rgba(0,0,0,.40);
+    --blur: 14px;
 
-  /* =========================================================
-     CONTROLES DESKTOP (pantalla completa)
-     Cambia AQUÍ posición/tamaño para desktop
-     ========================================================= */
-  --logoWDesktop: 310px;     /* tamaño logo desktop */
-  --logoTopDesktop: 0.0%;    /* subir/bajar logo desktop */
-  --logoXDesktop: 0px;       /* mover logo izq/der desktop (px) */
+    --glow-orange: rgba(255, 142, 64, .50);
+    --glow-orange-2: rgba(255, 142, 64, .22);
+    --glow-blue: rgba(96, 196, 255, .45);
+    --glow-blue-2: rgba(96, 196, 255, .22);
 
-  --titleTopDesktop: 20%;    /* subir/bajar título desktop */
-  --titleSizeDesktop: 22px;  /* tamaño título desktop */ 
-  --titleXDesktop: 0px;      /* mover título izq/der desktop (px) */
+    --free:#4fe38c;
+    --busy:#ff4b4b;
+    --other:#ff7c2c;
 
-  --lblUserTopDesktop: 22%;
-  --inUserTopDesktop: 28%;
-  --lblPassTopDesktop: 42%;
-  --inPassTopDesktop: 48%;
-  --btnTopDesktop: 67%;
+    --radius-outer: 26px;
+    --radius-card: 18px;
+    --radius-pill: 999px;
+    --radius-cell: 12px;
+    --shadow-soft: 0 18px 40px rgba(0,0,0,.45);
+    --shadow-inner: inset 0 1px 0 rgba(255,255,255,.08);
+    --blur: 18px;
 
-  --linkPolTopDesktop: 78%;
-  --linkPolLeftDesktop: 20%;
-  --linkRegTopDesktop: 78%;
-  --linkRegLeftDesktop: 68%;
-
-  --labelSizeDesktop: 22px; /* 14px */
-  --inputSizeDesktop: 22px; /* 14px */
-  --btnTextSizeDesktop: 22px; /* 14px */
-  --linkSizeDesktop: 22px; /* 13px estoy aqui */
-
-  /* =========================================================
-     CONTROLES MÓVIL
-     Cambia AQUÍ posición/tamaño para móvil
-     ========================================================= */
-  --logoWMobile: 150px;      /* tamaño logo móvil */
-  --logoTopMobile: 6%;       /* subir/bajar logo móvil */
-  --logoXMobile: 0px;        /* mover logo izq/der móvil (px) *
-
-  --titleTopMobile: 20%;     /* subir/bajar título móvil */
-  --titleSizeMobile: 18px;   /* tamaño título móvil */
-  --titleXMobile: 0px;       /* mover título izq/der móvil (px) */
-
-  --lblUserTopMobile: 22%;
-  --inUserTopMobile: 28%;     /* 28 */
-  --lblPassTopMobile: 42%;  /* 42 */
-  --inPassTopMobile: 48%;    /* 48 */
-  --btnTopMobile: 65%;     /* 67%*/
-
-  --linkPolTopMobile: 78%; /* 78 */
-  --linkPolLeftMobile: 20%; /* 20 */
-  --linkRegTopMobile: 78%;
-  --linkRegLeftMobile: 68%; /* 68 */
-
-  --labelSizeMobile: 16px;    /* 16 */
-  --inputSizeMobile: 16px;    /* 16 */
-  --btnTextSizeMobile: 18px; /* 14 */
-  --linkSizeMobile: 15px;  /* 13*/
-}
-
-/* RESET */
-*{box-sizing:border-box}
-html, body{
-  margin:0;
-  padding:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background: var(--baseBlue);
-}
-
-/* FONDO EXTERIOR */
-#stage{
-  position:fixed;
-  inset:0;
-  width:100vw;
-  height:100vh;
-  background:
-    radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.14), transparent 60%),
-    radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
-    linear-gradient(180deg, #020614 0%, var(--baseBlue) 100%);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-}
-
-/* PANEL PRINCIPAL */
-#plan{
-  position:absolute;
-  left:10px; right:10px;
-  top:10px; bottom:0;
-  overflow:hidden;
-  border-radius: 34px;
-  box-shadow: var(--shadow1);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 22%),
-    linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #05164d 58%, var(--bgDeep) 100%);
-}
-
-/* CORTE DIAGONAL */
-#plan::before{
-  content:"";
-  position:absolute;
-  inset:-10%;
-  background:
-    linear-gradient(135deg,
-      transparent 0%,
-      transparent 32%,
-      var(--overlay1) 32%,
-      var(--overlay2) 66%,
-      transparent 66%);
-  transform: rotate(-10deg);
-  opacity:.95;
-  pointer-events:none;
-}
-
-/* VIÑETA */
-#plan::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(50% 60% at 50% 25%, rgba(255,255,255,.06), transparent 55%),
-    radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
-    linear-gradient(180deg, transparent 55%, rgba(0,0,0,.65) 100%);
-  pointer-events:none;
-}
-
-/* MARCO */
-#frame{
-  position:absolute;
-  left:9px; right:9px;
-  top:10px; bottom:0;
-  border-left: 2px solid rgba(255,255,255,.14);
-  border-right:2px solid rgba(255,255,255,.14);
-  border-top:  2px solid rgba(255,255,255,.14);
-  box-sizing:border-box;
-  pointer-events:none;
-  border-radius: 34px;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
-}
-
-/* CONTENEDOR */
-#card{
-  position:absolute;
-  left:6%;
-  right:6%;
-  top:6%;
-  bottom:6%;
-}
-
-/* =========================================================
-   LOGO (DESKTOP por defecto)
-   ========================================================= */
-.logo{
-  position:absolute;
-  left:50%;
-  top: var(--logoTopDesktop) !important;
-  transform: translateX(-50%) translateX(var(--logoXDesktop)) !important;
-  width: var(--logoWDesktop) !important;
-  height:auto;
-  display:block;
-  border-radius: 10px;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
-}
-
-/* =========================================================
-   TÍTULO (DESKTOP por defecto)
-   ========================================================= */
-.title{
-  position:absolute;
-  left:0; right:0;
-  top: var(--titleTopDesktop) !important;
-  text-align:center;
-  font:800 var(--titleSizeDesktop) Arial, sans-serif !important;
-  color: var(--ink);
-  text-shadow: 0 8px 18px rgba(0,0,0,.35);
-  letter-spacing: .2px;
-  transform: translateX(var(--titleXDesktop)) !important;
-}
-
-/* LABELS */
-.label{
-  position:absolute;
-  left:18%;
-  right:18%;
-  font:700 var(--labelSizeDesktop) Arial, sans-serif !important;
-  color: rgba(255,255,255,.82);
-  text-shadow: 0 6px 14px rgba(0,0,0,.30);
-}
-
-/* INPUTS */
-input.field{
-  position:absolute;
-  left:22%; /* 16 */
-  right:22%; /* 16 */
-  height:10%; /* 16 */
-  border: 1px solid rgba(255,255,255,.55);
-  border-radius: 999px;
-  box-sizing:border-box;
-  background: linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
-  padding: 0 16px; /* 14 */
-  font:700 var(--inputSizeDesktop) Arial, sans-serif !important;
-  color: rgba(30,40,55,.92);
-  outline:none;
-  box-shadow:
-    0 15px 18px rgba(0,0,0,.22), /*0 10px */
-    inset 0 1px 0 rgba(255,255,255,.55);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
-}
-input.field::placeholder{ color: rgba(60,70,85,.55); }
-
-/* BOTÓN */
-.btn{
-  position:absolute;
-  left:32%;
-  right:32%;
-  height:10%;  
-  border: 1px solid rgba(255,255,255,.10);/* Estoy aqui 10*/
-  border-radius: 999px;
-  box-sizing:border-box;
-  background:
-    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%), /* Estoy aqui transparent 80%*/
-    linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
-  box-shadow:
-    0 22px 26px rgba(0,0,0,.28),/* Estoy aqui 0 18px */
-    inset 0 1px 0 rgba(255,255,255,.22);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font:700 var(--btnTextSizeDesktop) Arial, sans-serif !important;
-  color: rgba(255,255,255,.92);
-  cursor:pointer;
-  user-select:none;
-  transition: transform .12s ease, filter .12s ease;
-}
-.btn:active{ transform: scale(.985); filter: brightness(.98); }
-
-/* LINKS */
-.link{
-  position:absolute;
-  font:700 var(--linkSizeDesktop) Arial, sans-serif !important;
-  color: rgba(255,255,255,.70);
-  white-space:nowrap;
-  text-shadow: 0 6px 14px rgba(0,0,0,.30);
-}
-.link:hover{ color: rgba(255,255,255,.85); }
-
-/* HUD oculto */
-#hud{ display:none !important; }
-
-/* =========================================================
-   POSICIONES DESKTOP
-   ========================================================= */
-#lblUser{ top: var(--lblUserTopDesktop) !important; }
-#inUser{  top: var(--inUserTopDesktop) !important; }
-#lblPass{ top: var(--lblPassTopDesktop) !important; }
-#inPass{  top: var(--inPassTopDesktop) !important; }
-#btnLogin{ top: var(--btnTopDesktop) !important; }
-
-#linkPol{ top: var(--linkPolTopDesktop) !important; left: var(--linkPolLeftDesktop) !important; }
-#linkReg{ top: var(--linkRegTopDesktop) !important; left: var(--linkRegLeftDesktop) !important; }
-
-/* =========================================================
-   MODO MÓVIL
-   ========================================================= */
-@media (max-width: 640px){
-  .logo{
-    top: var(--logoTopMobile) !important;
-    width: var(--logoWMobile) !important;
-    transform: translateX(-50%) translateX(var(--logoXMobile)) !important;
+    --fs-top: 14px;
+    --fs-title: 28px;
+    --fs-sub: 12px;
+    --fs-day: 11px;
+    --fs-cell: 14px;
+    --fs-h3: 18px;
+    --fs-table: 13px;
+    --fs-btn: 14px;
+    --pad-outer: 16px;
+    --pad-block: 14px;
   }
-  .title{
-    top: var(--titleTopMobile) !important;
-    font:800 var(--titleSizeMobile) Arial, sans-serif !important;
-    transform: translateX(var(--titleXMobile)) !important;
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;padding:0;}
+  body{
+    font-family: "Inter", system-ui, -apple-system, "SF Pro Display", Segoe UI, Roboto, Arial, sans-serif;
+    color:var(--ink);
+    background: none;
   }
-  .label{ font:700 var(--labelSizeMobile) Arial, sans-serif !important; }
-  input.field{ font:700 var(--inputSizeMobile) Arial, sans-serif !important; }
-  .btn{ font:700 var(--btnTextSizeMobile) Arial, sans-serif !important; }
-  .link{ font:700 var(--linkSizeMobile) Arial, sans-serif !important; }
+  #stage{
+    position:fixed;
+    inset:0;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.14), transparent 60%),
+      radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
+      linear-gradient(180deg, #020614 0%, var(--baseBlue) 100%);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
 
-  #lblUser{ top: var(--lblUserTopMobile) !important; }
-  #inUser{  top: var(--inUserTopMobile) !important; }
-  #lblPass{ top: var(--lblPassTopMobile) !important; }
-  #inPass{  top: var(--inPassTopMobile) !important; }
-  #btnLogin{ top: var(--btnTopMobile) !important; }
+  #frame{display:none;}
 
-  #linkPol{ top: var(--linkPolTopMobile) !important; left: var(--linkPolLeftMobile) !important; }
-  #linkReg{ top: var(--linkRegTopMobile) !important; left: var(--linkRegLeftMobile) !important; }
-}
+  #wrap{
+    position: relative;
+    width: min(420px, 92vw);
+    margin: 0 auto;
+    padding: var(--pad-outer);
+    border-radius: var(--radius-outer);
+    background: rgba(10, 16, 26, .58);
+    border:1px solid rgba(255,255,255,.10);
+    box-shadow:var(--shadow-soft);
+    backdrop-filter:blur(var(--blur));
+    -webkit-backdrop-filter:blur(var(--blur));
+    overflow: hidden;
+    display:flex;
+    flex-direction:column;
+    max-height: 95vh;
+  }
+  #wrap::before{
+    content:"";
+    position:absolute; inset:0;
+    border-radius:inherit;
+    pointer-events:none;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.10), transparent 30%),
+      radial-gradient(800px 500px at 85% 20%, var(--glow-blue), transparent 60%),
+      radial-gradient(700px 500px at 20% 20%, var(--glow-orange), transparent 65%);
+    mix-blend-mode: screen;
+  }
+
+  @media (min-width: 1400px) {
+    #wrap {
+      width: min(1200px, 80vw);
+      max-width: 1400px;
+    }
+  }
+
+  /* Month block */
+  .monthBlock{
+    margin-top:0;
+    padding:12px 8px 6px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .monthBlock .nav{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .monthNav__btn{
+    width:38px; height:38px;
+    border-radius:14px;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.10);
+    box-shadow:0 0 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.08);
+    display:grid;
+    place-items:center;
+    color:var(--ink);
+  }
+  .monthNav__title{
+    font-size:var(--fs-title);
+    font-weight:800;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--ink);
+    text-shadow:0 0 18px var(--glow-blue-2);
+    line-height:1.05;
+    text-align:center;
+    flex:1;
+  }
+
+  /* Calendar card */
+  .calendarCard{
+    margin-top:8px;
+    padding:var(--pad-block);
+    border-radius:var(--radius-card);
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.10);
+    box-shadow:0 0 34px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
+    backdrop-filter:blur(calc(var(--blur) - 6px));
+  }
+  .calendarCard__labelRow{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .calendarCard__label{
+    font-size:var(--fs-sub);
+    font-weight:700;
+    letter-spacing:.8px;
+    color:var(--muted);
+  }
+  .weekdays{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:8px;
+    margin:10px 0 10px;
+  }
+  .weekdays span{
+    font-size:var(--fs-day);
+    color:var(--muted);
+    text-align:center;
+    letter-spacing:.6px;
+  }
+  .calendarGrid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:10px;
+  }
+  .day{
+    height:38px;
+    border-radius:var(--radius-cell);
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.09);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+    display:grid;
+    place-items:center;
+    font-size:var(--fs-cell);
+    font-weight:700;
+    color:var(--ink);
+    position:relative;
+  }
+  .day.dim{
+    color:var(--muted);
+    background:rgba(255,255,255,.03);
+    border-color:rgba(255,255,255,.07);
+  }
+  .day.sel{
+    border:2px solid var(--glow-orange);
+    box-shadow:0 0 0 2px rgba(255,124,44,.10), 0 0 18px var(--glow-orange-2), inset 0 1px 0 rgba(255,255,255,.08);
+    color:var(--ink);
+  }
+  .day.past{
+    opacity:.22;
+    cursor:default;
+    pointer-events:none;
+    filter:grayscale(35%);
+  }
+  .day.hasdata::after{
+    content:"";
+    position:absolute;
+    width:7px; height:7px;
+    border-radius:50%;
+    right:7px; bottom:7px;
+    background:var(--free);
+    box-shadow:0 0 10px var(--free);
+  }
+
+  /* Legend */
+  .legend{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-top:12px;
+    padding-top:8px;
+  }
+  .legend__item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:var(--muted);
+    font-size:11px;
+    letter-spacing:.2px;
+  }
+  .legend__dot{
+    width:8px; height:8px;
+    border-radius:99px;
+    background:rgba(255,255,255,.30);
+    box-shadow:0 0 14px rgba(255,255,255,.10);
+  }
+  .legend__dot.on{
+    background:var(--free);
+    box-shadow:0 0 14px var(--free);
+  }
+
+  /* Controls row */
+  .controlsRow{
+    display:grid;
+    grid-template-columns:1fr 1fr auto;
+    gap:10px;
+    margin-top:14px;
+    align-items:center;
+  }
+  .selectPill{
+    height:40px;
+    border-radius:var(--radius-pill);
+    padding:0 14px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.10);
+    color:var(--ink);
+    font-size:13px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+    backdrop-filter:blur(calc(var(--blur) - 6px));
+  }
+  .selectPill select{
+    background:transparent;
+    border:none;
+    color:inherit;
+    font:inherit;
+    outline:none;
+    width:100%;
+    appearance:none;
+    -webkit-appearance:none;
+    cursor:pointer;
+  }
+  .selectPill select option {
+    background: var(--bgMid);
+    color: var(--ink);
+  }
+  .selectPill .caret{
+    font-weight:900;
+    pointer-events:none;
+  }
+  .applyBtn{
+    height:40px;
+    min-width:92px;
+    border-radius:14px;
+    padding:0 16px;
+    background:rgba(255,124,44,.06);
+    border:1px solid var(--glow-orange);
+    color:rgba(255,124,44,.95);
+    font-weight:800;
+    font-size:var(--fs-btn);
+    letter-spacing:.3px;
+    box-shadow:0 0 18px var(--glow-orange-2), inset 0 1px 0 rgba(255,255,255,.10);
+  }
+
+  /* Agenda block */
+  .agendaBlock{
+    margin-top:16px;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+  }
+  .agendaTitle{
+    font-size:var(--fs-h3);
+    font-weight:800;
+    color:var(--ink);
+    margin:0 0 10px 0;
+    text-shadow:0 0 18px var(--glow-blue-2);
+  }
+  .agendaMeta{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    color:var(--muted);
+    font-size:12px;
+    margin-bottom:10px;
+  }
+  .tableCard{
+    border-radius:var(--radius-card);
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.10);
+    box-shadow:0 0 34px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
+    overflow: hidden;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+  }
+
+  /* Estilos para desktop (6 columnas) */
+  .tableHeader, .trow.desktop {
+    display: grid;
+    grid-template-columns: 26px 1fr 92px 92px 86px auto;
+    gap: 10px;
+    align-items: center;
+  }
+  .tableHeader{
+    padding:12px 14px;
+    font-size:12px;
+    font-weight:700;
+    color:var(--muted);
+    background:rgba(255,255,255,.03);
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .trow.desktop{
+    padding:11px 14px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .trow.desktop:last-child{border-bottom:none;}
+  .trow.desktop div:nth-child(1){
+    font-size:var(--fs-table);
+    color:var(--ink);
+    font-weight:650;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .chk{
+    width:16px; height:16px;
+    border-radius:4px;
+    border:1px solid rgba(255,255,255,.22);
+    background:rgba(255,255,255,.04);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+    display:inline-block;
+  }
+  .status{
+    height:22px;
+    padding:0 10px;
+    border-radius:var(--radius-pill);
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.3px;
+    color:rgba(0,0,0,.78);
+  }
+  .status.free{
+    background:linear-gradient(180deg, rgba(79,227,140,1), rgba(46,196,118,1));
+    box-shadow:0 0 14px rgba(79,227,140,.22);
+  }
+  .status.busy{
+    background:linear-gradient(180deg, rgba(255,90,90,1), rgba(230,55,55,1));
+    box-shadow:0 0 14px rgba(255,75,75,.22);
+    color:rgba(255,255,255,.92);
+  }
+  .status.other{
+    background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.2);
+    color:var(--ink);
+  }
+
+  /* Estilos para móvil (filas expandibles) */
+  .mobile-header {
+    display: none;
+    padding: 10px 12px;
+    background: rgba(255,255,255,.03);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    font-weight: 700;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .mobile-header .horas {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+  }
+  .mobile-header .horas span:first-child { width: 70px; }
+  .mobile-header .horas span:nth-child(2) { width: 70px; }
+  .mobile-header .horas span:last-child { width: 60px; text-align: right; }
+
+  .trow.mobile {
+    display: block;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    padding: 0;
+  }
+  .row-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    cursor: pointer;
+    background: rgba(255,255,255,.02);
+  }
+  .row-main .horas {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    font-size: 13px;
+  }
+  .row-main .horas span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .row-main .horas span:first-child { width: 70px; }
+  .row-main .horas span:nth-child(2) { width: 70px; }
+  .row-main .horas span:last-child { width: 60px; text-align: right; }
+  .expand-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.10);
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--ink);
+    transition: transform 0.2s;
+  }
+  .row-detail {
+    display: none;
+    padding: 8px 12px 12px;
+    background: rgba(0,0,0,.2);
+    border-top: 1px solid rgba(255,255,255,.05);
+    font-size: 13px;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+  .row-detail .instalacion {
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .row-detail .estado {
+    justify-self: end;
+  }
+  .trow.mobile.expanded .row-detail {
+    display: grid;
+  }
+  .trow.mobile.expanded .expand-icon {
+    transform: rotate(45deg);
+  }
+
+  /* Footer block */
+  .footerBlock{
+    margin-top:14px;
+    padding-top:12px;
+    border-top:1px solid rgba(255,255,255,.08);
+  }
+  .footerActions{
+    margin-top:12px;
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:10px;
+  }
+  .btn{
+    height:42px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.04);
+    color:var(--ink);
+    font-weight:750;
+    font-size:var(--fs-btn);
+    letter-spacing:.2px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition: opacity 0.2s;
+  }
+  .btn:disabled, .btn.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .btn--primary, .btn.primary{
+    border-color:var(--glow-orange);
+    background:rgba(255,124,44,.06);
+    color:rgba(255,124,44,.95);
+    box-shadow:0 0 18px var(--glow-orange-2), inset 0 1px 0 rgba(255,255,255,.10);
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .modal {
+    background: var(--bgMid);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: var(--radius-card);
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: var(--shadow-soft);
+    color: var(--ink);
+  }
+  .modal h3 {
+    margin-top: 0;
+  }
+  .modal-option {
+    margin: 12px 0;
+  }
+  .modal-option label {
+    margin-left: 8px;
+  }
+  .modal-input {
+    margin-top: 8px;
+    margin-left: 24px;
+  }
+  .modal-input input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.3);
+    color: var(--ink);
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .modal-actions .btn {
+    width: auto;
+    padding: 0 20px;
+  }
+
+  /* Responsive */
+  @media (min-width: 1400px) {
+    .controlsRow {
+      grid-template-columns: repeat(4, 1fr) auto;
+    }
+    .tableHeader, .trow.desktop {
+      grid-template-columns: 26px 2fr 1fr 1fr 1fr 1fr;
+    }
+  }
+
+  /* Ajustes para móvil: scroll general */
+  @media (max-width:520px){
+    #wrap {
+      width: 98vw;
+      padding: 12px;
+      overflow-y: auto;
+      display: block;
+      max-height: 95vh;
+      height: 95vh;
+    }
+
+    .controlsRow{
+      grid-template-columns:1fr 1fr;
+      grid-auto-rows:min-content;
+    }
+    .controlsRow .applyBtn{
+      grid-column:1/-1;
+    }
+
+    .tableHeader {
+      display: none;
+    }
+
+    .mobile-header {
+      display: block;
+    }
+
+    .trow.desktop {
+      display: none;
+    }
+    .trow.mobile {
+      display: block;
+    }
+
+    .tableCard {
+      max-height: none;
+      height: auto;
+      min-height: 0;
+    }
+
+    .agendaBlock {
+      margin-top: 12px;
+    }
+    .agendaTitle {
+      margin-bottom: 5px;
+    }
+    .agendaMeta {
+      margin-bottom: 5px;
+    }
+  }
+
+  @media (max-width:380px){
+    :root{
+      --fs-title:24px;
+    }
+    .calendarGrid{gap:8px;}
+    .day{height:34px;}
+  }
 </style>
 </head>
-
 <body>
-<div id="stage">
-  <div id="frame"></div>
+  <div id="stage">
+    <div id="frame"></div>
+    <div id="plan">
+      <div id="wrap">
+        <!-- Topbar eliminado -->
+        <div id="monthbar" class="panel monthBlock">
+          <div class="nav"><div class="iconbtn monthNav__btn" id="prevMonth">‹</div></div>
+          <div class="month monthNav__title" id="monthDisplay">—</div>
+          <div class="nav"><div class="iconbtn monthNav__btn" id="nextMonth">›</div></div>
+        </div>
 
-  <div id="plan">
-    <div id="card">
-      <!-- LOGO -->
-      <img class="logo" src="https://files.catbox.moe/056m6v.jpg" alt="Logo"/>
+        <div id="calgrid" class="panel calendarCard">
+          <div class="head calendarCard__labelRow">
+            <div class="label calendarCard__label">
+              <span>CALENDARIO</span>
+              <span id="syncBadge">SYNC…</span>
+            </div>
+          </div>
+          <div class="weekheads weekdays" aria-hidden="true">
+            <div class="w">L</div><div class="w">M</div><div class="w">X</div><div class="w">J</div><div class="w">V</div><div class="w">S</div><div class="w">D</div>
+          </div>
+          <div class="days calendarGrid" id="days"></div>
+          <div id="legend" class="legend">
+            <span class="legend__item"><i class="dot on legend__dot"></i>HAY DATOS</span>
+            <span class="legend__item"><i class="dot legend__dot"></i>SIN DATOS</span>
+          </div>
+        </div>
 
-      <!-- TÍTULO -->
-      <div class="title">¡BIENVENIDO!</div>
+        <div id="filters" class="panel controlsRow">
+          <div class="select selectPill">
+            <select id="monthSelect">
+              <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
+            </select>
+            <span class="caret">▾</span>
+          </div>
+          <div class="select selectPill">
+            <select id="yearSelect"></select>
+            <span class="caret">▾</span>
+          </div>
+          <div class="select selectPill">
+            <select id="socorristaSelect">
+              <option value="">Todos los socorristas</option>
+            </select>
+            <span class="caret">▾</span>
+          </div>
+          <div class="select selectPill">
+            <select id="modeSelect">
+              <option value="dia">Por día</option>
+              <option value="todo">Ver todo (desde hoy)</option>
+            </select>
+            <span class="caret">▾</span>
+          </div>
+          <div class="btn primary applyBtn" id="applyFilters">Aplicar</div>
+        </div>
 
-      <div id="lblUser" class="label" style="top:22%;">Usuario:</div>
-      <input id="inUser" class="field" style="top:28%;" autocomplete="username"/>
+        <div id="agenda" class="panel agendaBlock">
+          <h3 class="agendaTitle">Agenda del día</h3>
+          <div class="meta agendaMeta" id="agendaMeta">
+            <div><b>Fecha:</b> <span id="fechaDisplay">—</span></div>
+          </div>
+          <div id="table" class="tableCard">
+            <!-- Cabecera para móvil -->
+            <div class="mobile-header">
+              <div style="width:26px;"></div> <!-- checkbox placeholder -->
+              <div class="horas">
+                <span>Inicio</span>
+                <span>Finaliza</span>
+                <span>Horas</span>
+              </div>
+              <div style="width:24px;"></div>
+            </div>
+            <!-- Cabecera para desktop -->
+            <div id="thead" class="tableHeader">
+              <div></div><div>Instalación</div><div>Inicio</div><div>Finaliza</div><div>Horas</div><div>Estado</div>
+            </div>
+            <div id="tbody"></div>
+          </div>
+        </div>
 
-      <div id="lblPass" class="label" style="top:42%;">Contraseña:</div>
-      <input id="inPass" class="field" style="top:48%;" type="password" autocomplete="current-password"/>
-
-      <div id="btnLogin" class="btn" style="top:67%;" onclick="doLogin()">Login</div>
-
-      <div id="linkPol" class="link" style="top:78%; left:20%;">Politicas:</div>
-      <div id="linkReg" class="link" style="top:78%; left:68%;">Registrarse:</div>
+        <div id="bottom" class="panel footerBlock">
+          <div class="actions footerActions">
+            <button class="btn" id="btnAplicar">Aplicar</button>
+            <button class="btn" id="btnModificar">Modificar</button>
+            <button class="btn primary btn--primary" id="btnEnviar">Enviar</button>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <div id="hud"></div>
   </div>
-</div>
+
+  <!-- Modal para Modificar -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <h3>Modificar turno</h3>
+      <div class="modal-option">
+        <input type="radio" name="modalOption" id="optLiberar" value="liberar" checked>
+        <label for="optLiberar">Liberar Turno</label>
+      </div>
+      <div class="modal-option">
+        <input type="radio" name="modalOption" id="optNovedad" value="novedad">
+        <label for="optNovedad">Novedad</label>
+        <div class="modal-input" id="novedadInput" style="display:none;">
+          <input type="text" placeholder="Escriba la novedad...">
+        </div>
+      </div>
+      <div class="modal-option">
+        <input type="radio" name="modalOption" id="optCalamidad" value="calamidad">
+        <label for="optCalamidad">Calamidad</label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="modalCancel">Cancelar</button>
+        <button class="btn primary" id="modalSend">Enviar</button>
+      </div>
+    </div>
+  </div>
 
 <script>
-async function doLogin(){
-  const u = (document.getElementById("inUser").value || "").trim();
-  const p = (document.getElementById("inPass").value || "").trim();
+(function(){
+  const API_BASE = "https://camilo27.pythonanywhere.com";
+  const ENDPOINT_MALLAS = API_BASE + "/api/mallas";
 
-  try{
-    const r = await fetch("https://camilo27.pythonanywhere.com/api/auth", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({usuario:u, password:p})
+  // Usuario conectado (hardcodeado para demo)
+  const CURRENT_USER = "Bilal";
+
+  let currentDate = new Date();
+  currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+
+  let selectedDate = new Date(currentDate);
+  let currentMonth = selectedDate.getMonth();
+  let currentYear = selectedDate.getFullYear();
+
+  let ALL_ROWS = [];
+  let AVAILABLE_DATES = new Set();
+  let SOCORRISTAS = [];
+
+  let FILTER_SOCORRISTA = "";
+  let FILTER_MODE = "dia";
+
+  // Para manejo de selección
+  let selectedRows = new Set(); // almacena índices de filas seleccionadas (frente al array filtrado actual)
+  let currentFilteredRows = [];  // se actualiza en cada updateAgenda
+
+  function pad2(n){ return String(n).padStart(2,'0'); }
+
+  function toKeyYMD(y,m,d){
+    return `${y}-${pad2(m)}-${pad2(d)}`;
+  }
+
+  function formatDateKey(date) {
+    return toKeyYMD(date.getFullYear(), date.getMonth()+1, date.getDate());
+  }
+
+  function formatDisplayDate(date) {
+    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  function parseSheetDateToKey(fechaStr){
+    const s = (fechaStr || "").trim();
+    if(!s) return "";
+    if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){
+      const [dd,mm,yyyy] = s.split("/");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+      return s;
+    }
+    return "";
+  }
+
+  function getField(row, keys){
+    for(const k of keys){
+      if(row && Object.prototype.hasOwnProperty.call(row, k)) return row[k];
+    }
+    return "";
+  }
+
+  // Normalizador original (para fallback)
+  function normalizeEstado(s){
+    const v = String(s || "").trim().toLowerCase();
+    if(!v) return {label:"OTRO", cls:"other"};
+    if(v.includes("libre")) return {label:"LIBRE", cls:"free"};
+    if(v.includes("ocup")) return {label:"OCUPADO", cls:"busy"};
+    return {label:String(s).toUpperCase(), cls:"other"};
+  }
+
+  // Nuevo: devuelve estado visible según reglas
+  function getDisplayStatus(row) {
+    const rawEstado = getField(row, ["estado","Estado","estado "]).toLowerCase().trim();
+    const socorrista = getField(row, ["Socorrista","socorrista"]).trim();
+    if (rawEstado.includes("disponible")) {
+      return { label: "Disponible", cls: "free" };
+    } else if (rawEstado.includes("programado")) {
+      if (socorrista.toLowerCase() === CURRENT_USER.toLowerCase()) {
+        return { label: "Programado", cls: "free" };
+      } else {
+        return { label: "Cerrado", cls: "busy" };
+      }
+    } else {
+      return normalizeEstado(rawEstado);
+    }
+  }
+
+  function formatTime(t) {
+    if (!t) return '-';
+    const str = String(t);
+    return str.replace(/(\d{1,2}:\d{2}):\d{2}$/, '$1');
+  }
+
+  function setSyncBadge(ok, text){
+    const el = document.getElementById("syncBadge");
+    el.textContent = text;
+    el.className = ok ? "ok" : "err";
+  }
+
+  function daysInMonth(year, month) {
+    return new Date(year, month + 1, 0).getDate();
+  }
+
+  function getFirstDayOfMonth(year, month) {
+    let day = new Date(year, month, 1).getDay();
+    return day === 0 ? 7 : day;
+  }
+
+  function getMonthDays(year, month) {
+    const firstDay = getFirstDayOfMonth(year, month);
+    const totalDays = daysInMonth(year, month);
+    const days = [];
+    const prevMonthDays = firstDay - 1;
+    if (prevMonthDays > 0) {
+      const prevMonth = month === 0 ? 11 : month - 1;
+      const prevYear = month === 0 ? year - 1 : year;
+      const daysPrev = daysInMonth(prevYear, prevMonth);
+      for (let i = prevMonthDays; i > 0; i--) {
+        days.push({ date: new Date(prevYear, prevMonth, daysPrev - i + 1), currentMonth: false });
+      }
+    }
+    for (let d = 1; d <= totalDays; d++) {
+      days.push({ date: new Date(year, month, d), currentMonth: true });
+    }
+    const remaining = 7 - (days.length % 7);
+    if (remaining < 7) {
+      const nextMonth = month === 11 ? 0 : month + 1;
+      const nextYear = month === 11 ? year + 1 : year;
+      for (let i = 1; i <= remaining; i++) {
+        days.push({ date: new Date(nextYear, nextMonth, i), currentMonth: false });
+      }
+    }
+    while (days.length < 42) {
+      const last = days[days.length - 1].date;
+      const nd = new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1);
+      days.push({ date: nd, currentMonth: false });
+    }
+    if (days.length > 42) days.length = 42;
+    return days;
+  }
+
+  function updateMonthYearDisplay(year, month) {
+    document.getElementById('monthSelect').value = month;
+    document.getElementById('yearSelect').value = year;
+  }
+
+  function renderCalendar(year, month) {
+    const daysEl = document.getElementById('days');
+    daysEl.innerHTML = '';
+    const days = getMonthDays(year, month);
+    days.forEach(dayInfo => {
+      const date = dayInfo.date;
+      const cell = document.createElement('div');
+      cell.className = 'day';
+      cell.textContent = date.getDate();
+      if (!dayInfo.currentMonth) cell.classList.add('dim');
+      const isPast = date < currentDate;
+      if(isPast) cell.classList.add('past');
+      const key = formatDateKey(date);
+      if(AVAILABLE_DATES.has(key)) cell.classList.add('hasdata');
+      if (date.getFullYear() === selectedDate.getFullYear() &&
+          date.getMonth() === selectedDate.getMonth() &&
+          date.getDate() === selectedDate.getDate()) {
+        cell.classList.add('sel');
+      }
+      cell.addEventListener('click', function() {
+        if(date < currentDate) return;
+        selectedDate = new Date(date);
+        if (date.getMonth() !== month || date.getFullYear() !== year) {
+          currentMonth = date.getMonth();
+          currentYear = date.getFullYear();
+          renderCalendar(currentYear, currentMonth);
+          updateMonthYearDisplay(currentYear, currentMonth);
+        } else {
+          renderCalendar(year, month);
+        }
+        updateAgenda();
+        updateBottomBar();
+      });
+      daysEl.appendChild(cell);
+    });
+    document.getElementById('monthDisplay').textContent =
+      new Date(year, month, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
+  }
+
+  function getFilteredRows(){
+    const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
+    const keySel = formatDateKey(selectedDate);
+    return ALL_ROWS.filter(r => {
+      const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
+      if(!fechaKey) return false;
+      if(fechaKey < formatDateKey(currentDate)) return false;
+      if(soc){
+        const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
+        if(rs !== soc) return false;
+      }
+      if(FILTER_MODE === "dia"){
+        return fechaKey === keySel;
+      }
+      return true;
+    });
+  }
+
+  function isMobile() {
+    return window.innerWidth <= 520;
+  }
+
+  // Actualiza estado de botones según selección
+  function updateButtons() {
+    const aplicarBtn = document.getElementById('btnAplicar');
+    const modificarBtn = document.getElementById('btnModificar');
+    if (!aplicarBtn || !modificarBtn) return;
+
+    const selectedIndices = Array.from(selectedRows);
+    if (selectedIndices.length === 0) {
+      aplicarBtn.disabled = true;
+      modificarBtn.disabled = true;
+      return;
+    }
+
+    let allDisponible = true;
+    let allProgramado = true;
+
+    for (let idx of selectedIndices) {
+      const row = currentFilteredRows[idx];
+      if (!row) continue;
+      const status = getDisplayStatus(row).label;
+      if (status !== 'Disponible') allDisponible = false;
+      if (status !== 'Programado') allProgramado = false;
+    }
+
+    aplicarBtn.disabled = !allDisponible;
+    modificarBtn.disabled = !allProgramado;
+  }
+
+  // Crear fila para desktop (6 columnas) con checkbox
+  function buildDesktopRow(r, idx) {
+    const inst = getField(r, ["Instalacion","Instalación","instalacion"]);
+    const ini  = formatTime(getField(r, ["Ingreso","Inicio","ingreso","inicio"]));
+    const fin  = formatTime(getField(r, ["Salida","Finaliza","finaliza","salida"]));
+    const hrs  = formatTime(getField(r, ["Intensidad_horaria","Intensidad_ho","Horas","horas"]));
+    const est = getDisplayStatus(r);
+
+    const row = document.createElement('div');
+    row.className = 'trow desktop';
+    row.dataset.index = idx;
+
+    const col0 = document.createElement('div');
+    const chk = document.createElement('input');
+    chk.type = 'checkbox';
+    chk.className = 'row-checkbox';
+    chk.dataset.index = idx;
+    chk.checked = selectedRows.has(idx);
+    chk.addEventListener('click', (e) => e.stopPropagation());
+    chk.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        selectedRows.add(idx);
+      } else {
+        selectedRows.delete(idx);
+      }
+      updateButtons();
+    });
+    col0.appendChild(chk);
+
+    const col1 = document.createElement('div'); col1.textContent = inst || '-';
+    const col2 = document.createElement('div'); col2.textContent = ini;
+    const col3 = document.createElement('div'); col3.textContent = fin;
+    const col4 = document.createElement('div'); col4.textContent = hrs;
+    const col5 = document.createElement('div');
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'status ' + est.cls;
+    statusSpan.textContent = est.label;
+    col5.appendChild(statusSpan);
+
+    row.appendChild(col0);
+    row.appendChild(col1);
+    row.appendChild(col2);
+    row.appendChild(col3);
+    row.appendChild(col4);
+    row.appendChild(col5);
+
+    return row;
+  }
+
+  // Crear fila para móvil (expandible) con checkbox
+  function buildMobileRow(r, idx) {
+    const inst = getField(r, ["Instalacion","Instalación","instalacion"]) || '-';
+    const ini  = formatTime(getField(r, ["Ingreso","Inicio","ingreso","inicio"]));
+    const fin  = formatTime(getField(r, ["Salida","Finaliza","finaliza","salida"]));
+    const hrs  = formatTime(getField(r, ["Intensidad_horaria","Intensidad_ho","Horas","horas"]));
+    const est = getDisplayStatus(r);
+
+    const row = document.createElement('div');
+    row.className = 'trow mobile';
+    row.dataset.index = idx;
+
+    const main = document.createElement('div');
+    main.className = 'row-main';
+
+    // Checkbox
+    const chk = document.createElement('input');
+    chk.type = 'checkbox';
+    chk.className = 'row-checkbox';
+    chk.dataset.index = idx;
+    chk.checked = selectedRows.has(idx);
+    chk.addEventListener('click', (e) => e.stopPropagation());
+    chk.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        selectedRows.add(idx);
+      } else {
+        selectedRows.delete(idx);
+      }
+      updateButtons();
+    });
+    main.appendChild(chk);
+
+    const horasDiv = document.createElement('div');
+    horasDiv.className = 'horas';
+    const spanIni = document.createElement('span'); spanIni.textContent = ini;
+    const spanFin = document.createElement('span'); spanFin.textContent = fin;
+    const spanHrs = document.createElement('span'); spanHrs.textContent = hrs;
+    horasDiv.appendChild(spanIni);
+    horasDiv.appendChild(spanFin);
+    horasDiv.appendChild(spanHrs);
+
+    const expandIcon = document.createElement('div');
+    expandIcon.className = 'expand-icon';
+    expandIcon.textContent = '+';
+
+    main.appendChild(horasDiv);
+    main.appendChild(expandIcon);
+
+    const detail = document.createElement('div');
+    detail.className = 'row-detail';
+
+    const instDiv = document.createElement('div');
+    instDiv.className = 'instalacion';
+    instDiv.textContent = inst;
+
+    const estadoDiv = document.createElement('div');
+    estadoDiv.className = 'estado';
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'status ' + est.cls;
+    statusSpan.textContent = est.label;
+    estadoDiv.appendChild(statusSpan);
+
+    detail.appendChild(instDiv);
+    detail.appendChild(estadoDiv);
+
+    row.appendChild(main);
+    row.appendChild(detail);
+
+    main.addEventListener('click', function(e) {
+      // Si el clic fue en el checkbox, no expandimos
+      if (e.target.type === 'checkbox') return;
+      e.stopPropagation();
+      row.classList.toggle('expanded');
+      expandIcon.textContent = row.classList.contains('expanded') ? '−' : '+';
     });
 
-    const j = await r.json();
+    return row;
+  }
 
-    if (j && j.ok === true){
-      // ✅ Pasamos el nombre de usuario en la URL
-      window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u);
-    } else {
-      alert("Credenciales inválidas");
+  function updateAgenda(){
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = '';
+
+    if(FILTER_MODE === "dia"){
+      document.getElementById('fechaDisplay').textContent = formatDisplayDate(selectedDate);
+    }else{
+      document.getElementById('fechaDisplay').textContent = "Desde hoy";
     }
-  }catch(e){
-    alert("Error de conexión");
-  }
-}
 
-(function(){
-  var fe = window.frameElement;
-  if (fe){
-    fe.style.position="fixed";
-    fe.style.inset="0";
-    fe.style.width="100vw";
-    fe.style.height="100vh";
-    fe.style.border="0";
-    fe.style.margin="0";
-    fe.style.padding="0";
-    fe.style.zIndex="999999";
-    fe.style.background="transparent";
+    const rows = getFilteredRows();
+    currentFilteredRows = rows; // guardar para referencias en botones
+    selectedRows.clear(); // al cambiar filtros, se pierde selección
+
+    if(rows.length === 0){
+      const empty = document.createElement('div');
+      empty.className = isMobile() ? 'trow mobile' : 'trow desktop';
+      empty.style.textAlign = 'center';
+      empty.style.padding = '20px';
+      empty.innerHTML = '<div class="muted">Sin registros para el filtro actual</div>';
+      tbody.appendChild(empty);
+      updateButtons();
+      return;
+    }
+
+    const mobile = isMobile();
+    rows.forEach((r, idx) => {
+      const row = mobile ? buildMobileRow(r, idx) : buildDesktopRow(r, idx);
+      tbody.appendChild(row);
+    });
+
+    updateButtons();
   }
+
+  function updateBottomBar(){
+    // No se usa, pero se deja por compatibilidad
+  }
+
+  function changeMonth(delta) {
+    let newMonth = currentMonth + delta;
+    let newYear = currentYear;
+    if (newMonth < 0) { newMonth = 11; newYear--; }
+    else if (newMonth > 11) { newMonth = 0; newYear++; }
+    currentMonth = newMonth;
+    currentYear = newYear;
+    let newSelectedDay = selectedDate.getDate();
+    const dim = daysInMonth(newYear, newMonth);
+    if (newSelectedDay > dim) newSelectedDay = dim;
+    selectedDate = new Date(newYear, newMonth, newSelectedDay);
+    renderCalendar(currentYear, currentMonth);
+    updateAgenda();
+    updateMonthYearDisplay(currentYear, currentMonth);
+  }
+
+  function fillSocorristaSelect(){
+    const sel = document.getElementById("socorristaSelect");
+    sel.innerHTML = '<option value="">Todos los socorristas</option>';
+    SOCORRISTAS.forEach(name => {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      sel.appendChild(opt);
+    });
+    sel.value = FILTER_SOCORRISTA || "";
+  }
+
+  function rebuildAvailability(){
+    AVAILABLE_DATES = new Set();
+    const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
+    ALL_ROWS.forEach(r => {
+      const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
+      if(!fechaKey) return;
+      if(fechaKey < formatDateKey(currentDate)) return;
+      if(soc){
+        const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
+        if(rs !== soc) return;
+      }
+      AVAILABLE_DATES.add(fechaKey);
+    });
+  }
+
+  async function loadMallas(){
+    setSyncBadge(false, "SYNC…");
+    try{
+      const res = await fetch(ENDPOINT_MALLAS, {method:"GET"});
+      if(!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      if(!data || data.ok !== true || !Array.isArray(data.rows)) throw new Error("JSON inválido");
+      ALL_ROWS = data.rows;
+      const setS = new Set();
+      ALL_ROWS.forEach(r => {
+        const s = String(getField(r, ["Socorrista","socorrista"])).trim();
+        if(s) setS.add(s);
+      });
+      SOCORRISTAS = Array.from(setS).sort((a,b)=>a.localeCompare(b, 'es', {sensitivity:'base'}));
+      fillSocorristaSelect();
+      rebuildAvailability();
+      setSyncBadge(true, "SYNC OK");
+      renderCalendar(currentYear, currentMonth);
+      updateAgenda();
+    }catch(e){
+      ALL_ROWS = [];
+      SOCORRISTAS = [];
+      AVAILABLE_DATES = new Set();
+      setSyncBadge(false, "SYNC ERROR");
+      renderCalendar(currentYear, currentMonth);
+      updateAgenda();
+    }
+  }
+
+  // Modal logic
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modal = document.getElementById('modal');
+  const modalCancel = document.getElementById('modalCancel');
+  const modalSend = document.getElementById('modalSend');
+  const optNovedad = document.getElementById('optNovedad');
+  const novedadInput = document.getElementById('novedadInput');
+
+  function showModal() {
+    modalOverlay.style.display = 'flex';
+  }
+
+  function hideModal() {
+    modalOverlay.style.display = 'none';
+  }
+
+  optNovedad.addEventListener('change', function(e) {
+    novedadInput.style.display = e.target.checked ? 'block' : 'none';
+  });
+
+  modalCancel.addEventListener('click', hideModal);
+  modalSend.addEventListener('click', function() {
+    hideModal();
+    // Por ahora solo cierra
+  });
+
+  // Cerrar modal si se hace clic fuera del contenido
+  modalOverlay.addEventListener('click', function(e) {
+    if (e.target === modalOverlay) hideModal();
+  });
+
+  function init() {
+    const yearSelect = document.getElementById('yearSelect');
+    const y0 = new Date().getFullYear();
+    for (let y = y0 - 5; y <= y0 + 5; y++) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      yearSelect.appendChild(opt);
+    }
+    updateMonthYearDisplay(currentYear, currentMonth);
+
+    document.getElementById('prevMonth').addEventListener('click', () => changeMonth(-1));
+    document.getElementById('nextMonth').addEventListener('click', () => changeMonth(1));
+
+    document.getElementById('applyFilters').addEventListener('click', () => {
+      const newMonth = parseInt(document.getElementById('monthSelect').value);
+      const newYear = parseInt(document.getElementById('yearSelect').value);
+      FILTER_SOCORRISTA = document.getElementById('socorristaSelect').value || "";
+      FILTER_MODE = document.getElementById('modeSelect').value || "dia";
+      currentMonth = newMonth;
+      currentYear = newYear;
+      let newSelectedDay = selectedDate.getDate();
+      const dim = daysInMonth(newYear, newMonth);
+      if (newSelectedDay > dim) newSelectedDay = dim;
+      selectedDate = new Date(newYear, newMonth, newSelectedDay);
+      rebuildAvailability();
+      renderCalendar(currentYear, currentMonth);
+      updateAgenda();
+      updateMonthYearDisplay(currentYear, currentMonth);
+    });
+
+    window.addEventListener('resize', function() {
+      updateAgenda();
+    });
+
+    // Botones inferiores
+    document.getElementById('btnModificar').addEventListener('click', function() {
+      if (!this.disabled) {
+        showModal();
+      }
+    });
+
+    // Inicialmente deshabilitados
+    document.getElementById('btnAplicar').disabled = true;
+    document.getElementById('btnModificar').disabled = true;
+
+    renderCalendar(currentYear, currentMonth);
+    updateAgenda();
+    loadMallas();
+  }
+
+  init();
 })();
 </script>
 
@@ -412,4 +1391,32 @@ async function doLogin(){
 </html>
 """
 
-components.html(html, height=10, scrolling=False)
+html = (html.replace("__PADX__", str(PAD_X_PX))
+        .replace("__PADTOP__", str(PAD_TOP_PX))
+        .replace("__B__", str(BORDER_PX))
+        .replace("__BC__", BORDER_COLOR)
+        .replace("__BG__", BG_COLOR)
+        .replace("__PANEL__", PANEL_BG)
+        .replace("__CARD__", CARD_BG)
+        .replace("__TXT__", TEXT_COLOR)
+        .replace("__MUTED__", MUTED_TEXT)
+        .replace("__FBASE__", str(FONT_BASE_PX))
+        .replace("__TITLE__", str(TITLE_PX))
+        .replace("__H2__", str(H2_PX))
+        .replace("__SMALL__", str(SMALL_PX))
+        .replace("__INNERL__", str(INNER_L))
+        .replace("__INNERR__", str(INNER_R))
+        .replace("__GAPY__", str(INNER_TOP_GAP))
+        .replace("__TOPBARH__", str(TOPBAR_H))
+        .replace("__MONTHBARH__", str(MONTHBAR_H))
+        .replace("__CALGRIDH__", str(CAL_GRID_H))
+        .replace("__FILTERSH__", str(FILTERS_H))
+        .replace("__AGENDAH__", str(AGENDA_H))
+        .replace("__BOTTOMH__", str(BOTTOMBAR_H))
+        .replace("__CELLGAP__", str(DAY_CELL_GAP_PX))
+        .replace("__CALCOLS__", str(CAL_COLS))
+        .replace("__CALROWS__", str(CAL_ROWS))
+        .replace("__AGENDAROWS__", str(AGENDA_ROWS))
+)
+
+components.html(html, height=1100, scrolling=False)
