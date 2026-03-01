@@ -650,7 +650,11 @@ html = r"""
             <div class="logo">
               <img src="https://files.catbox.moe/056m6v.jpg" alt="Logo">
             </div>
-            <div class="blk desc">Descripcion</div>
+            <div class="blk desc">Bienvenido al portal oficial de registro de SYNTRA. Aquí los socorristas podrán completar su inscripción de forma segura y acceder posteriormente a sus horarios e instalaciones asignadas de manera organizada.
+
+La información proporcionada será tratada con estricta confidencialidad y utilizada únicamente para fines administrativos y de coordinación interna relacionados con su participación en SYNTRA. Sus datos no serán compartidos con terceros sin su autorización, salvo obligación legal.
+
+Al registrarse, usted autoriza a SYNTRA a almacenar y procesar su información conforme a la normativa vigente de protección de datos, garantizando seguridad, privacidad y uso responsable.</div>
           </div>
 
           <!-- DERECHA -->
