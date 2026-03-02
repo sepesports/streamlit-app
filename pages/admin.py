@@ -1,4 +1,4 @@
-# app.py
+# pages/admin.py
 import json
 from datetime import datetime, timedelta
 
@@ -41,27 +41,27 @@ def build_demo_data():
 
 df = build_demo_data()
 
-# Opciones de filtros (DEMO)
 inst_options = ["Todas"] + sorted(df["Instalacion"].unique().tolist())
 soc_options = ["Todos"] + sorted(df["Socorrista"].unique().tolist())
 
-# =========================
-# HTML UI (RESPONSIVE) - desktop vs mobile
-# =========================
 payload = {
     "data": df.to_dict(orient="records"),
     "instalaciones": inst_options,
     "socorristas": soc_options,
 }
+payload_json = json.dumps(payload, ensure_ascii=False)
 
-html = f"""
+# =========================
+# HTML UI (RESPONSIVE)
+# =========================
+html = """
 <!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root {{
+    :root {
       --bg: #ffffff;
       --text: #111111;
       --muted: #6b7280;
@@ -72,37 +72,32 @@ html = f"""
       --btn-red: #c62828;
       --btn-green-h: #256528;
       --btn-red-h: #a81f1f;
-      --radius: 14px;
-      --radius2: 10px;
       --shadow: 0 8px 22px rgba(0,0,0,.08);
       --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
-    }}
+    }
 
-    html, body {{
+    html, body {
       margin:0; padding:0; width:100%; height:100%;
       background: var(--bg);
       color: var(--text);
       font-family: var(--font);
-    }}
+    }
 
-    /* Contenedor principal */
-    .wrap {{
+    .wrap {
       max-width: 1100px;
       margin: 0 auto;
       padding: 18px 14px 24px;
       box-sizing: border-box;
-    }}
+    }
 
-    /* Caja principal con borde como en plano */
-    .frame {{
+    .frame {
       border: 2px solid var(--line);
       border-radius: 0;
       padding: 14px 12px 16px;
       box-sizing: border-box;
-    }}
+    }
 
-    /* Título */
-    .title {{
+    .title {
       border: 2px solid var(--line);
       padding: 8px 10px;
       text-align: center;
@@ -110,18 +105,17 @@ html = f"""
       letter-spacing: .2px;
       font-size: 16px;
       margin-bottom: 14px;
-    }}
+    }
 
-    /* Botones superiores */
-    .top-actions {{
+    .top-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
       align-items: center;
       margin-bottom: 16px;
-    }}
+    }
 
-    .btn {{
+    .btn {
       border: 0;
       border-radius: 8px;
       padding: 12px 14px;
@@ -134,37 +128,35 @@ html = f"""
       gap: 10px;
       box-shadow: var(--shadow);
       user-select:none;
-    }}
-    .btn .ico {{
+    }
+    .btn .ico {
       width: 18px; height: 18px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
       filter: drop-shadow(0 2px 2px rgba(0,0,0,.15));
-    }}
-    .btn.green {{ background: var(--btn-green); }}
-    .btn.red {{ background: var(--btn-red); }}
-    .btn.green:hover {{ background: var(--btn-green-h); }}
-    .btn.red:hover {{ background: var(--btn-red-h); }}
+    }
+    .btn.green { background: var(--btn-green); }
+    .btn.red { background: var(--btn-red); }
+    .btn.green:hover { background: var(--btn-green-h); }
+    .btn.red:hover { background: var(--btn-red-h); }
 
-    /* Bloque subtítulo + filtros */
-    .section {{
-      margin-top: 6px;
-    }}
-    .section-head {{
+    .section { margin-top: 6px; }
+
+    .section-head {
       display:flex;
       align-items:center;
       justify-content: space-between;
       gap: 10px;
       margin-bottom: 10px;
-    }}
-    .subtitle {{
+    }
+    .subtitle {
       font-weight: 800;
       font-size: 18px;
       color: #1f3b6f;
-    }}
+    }
 
-    .weekbox {{
+    .weekbox {
       display:flex;
       align-items:center;
       gap: 8px;
@@ -173,13 +165,13 @@ html = f"""
       border-radius: 10px;
       padding: 6px 8px;
       box-shadow: 0 6px 18px rgba(0,0,0,.06);
-    }}
-    .weekbox .label {{
+    }
+    .weekbox .label {
       font-size: 12px;
       color: var(--muted);
       font-weight: 700;
-    }}
-    .weekbox .nav {{
+    }
+    .weekbox .nav {
       border: 1px solid var(--soft);
       background: #fff;
       border-radius: 8px;
@@ -187,36 +179,33 @@ html = f"""
       height: 30px;
       cursor: pointer;
       font-weight: 800;
-    }}
-    .weekbox .nav:hover {{
-      background: var(--soft2);
-    }}
-    .weekbox .range {{
+    }
+    .weekbox .nav:hover { background: var(--soft2); }
+    .weekbox .range {
       font-size: 13px;
       font-weight: 800;
       padding: 0 6px;
       white-space: nowrap;
-    }}
+    }
 
-    /* Filtros (desktop) */
-    .filters {{
+    .filters {
       display:grid;
       grid-template-columns: 260px 1fr 1fr 160px;
       gap: 10px;
       align-items: end;
       margin-top: 10px;
       margin-bottom: 10px;
-    }}
+    }
 
-    .field label {{
+    .field label {
       display:block;
       font-size: 12px;
       font-weight: 800;
       color: var(--text);
       margin: 0 0 6px;
-    }}
+    }
 
-    .input, select {{
+    .input, select {
       width: 100%;
       box-sizing: border-box;
       border: 2px solid var(--line);
@@ -226,10 +215,9 @@ html = f"""
       font-weight: 700;
       font-size: 13px;
       outline: none;
-    }}
+    }
 
-    /* Botón Buscar */
-    .searchbtn {{
+    .searchbtn {
       width: 100%;
       border: 2px solid var(--line);
       border-radius: 0;
@@ -237,50 +225,46 @@ html = f"""
       background: #fff;
       font-weight: 900;
       cursor: pointer;
-    }}
-    .searchbtn:hover {{
-      background: var(--soft2);
-    }}
+    }
+    .searchbtn:hover { background: var(--soft2); }
 
-    /* Tabla */
-    .tablewrap {{
+    .tablewrap {
       border: 2px solid var(--line);
       padding: 10px;
       box-sizing:border-box;
       margin-top: 10px;
-    }}
+    }
 
-    .table-title {{
+    .table-title {
       font-weight: 900;
       margin-bottom: 8px;
-    }}
+    }
 
-    table {{
+    table {
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
-    }}
-    thead th {{
+    }
+    thead th {
       text-align: left;
       padding: 8px 6px;
       border-bottom: 1px solid var(--soft);
       font-weight: 900;
-    }}
-    tbody td {{
+    }
+    tbody td {
       padding: 10px 6px;
       border-bottom: 1px solid rgba(0,0,0,.06);
       vertical-align: middle;
       font-weight: 600;
-    }}
+    }
 
-    /* Iconos editar / eliminar */
-    .actions {{
+    .actions {
       display:flex;
       gap: 10px;
       align-items:center;
       justify-content:flex-start;
-    }}
-    .iconbtn {{
+    }
+    .iconbtn {
       width: 28px;
       height: 28px;
       border: 1px solid var(--soft);
@@ -290,18 +274,11 @@ html = f"""
       display:inline-flex;
       align-items:center;
       justify-content:center;
-    }}
-    .iconbtn:hover {{
-      background: var(--soft2);
-    }}
-    .icon {{
-      width: 16px;
-      height: 16px;
-      display:block;
-    }}
+    }
+    .iconbtn:hover { background: var(--soft2); }
+    .icon { width: 16px; height: 16px; display:block; }
 
-    /* Pie tabla */
-    .tfoot {{
+    .tfoot {
       display:flex;
       align-items:center;
       justify-content:flex-end;
@@ -310,13 +287,13 @@ html = f"""
       font-size: 12px;
       color: var(--muted);
       font-weight: 800;
-    }}
-    .pager {{
+    }
+    .pager {
       display:inline-flex;
       align-items:center;
       gap: 6px;
-    }}
-    .pgbtn {{
+    }
+    .pgbtn {
       width: 30px;
       height: 28px;
       border: 1px solid var(--soft);
@@ -324,11 +301,9 @@ html = f"""
       border-radius: 8px;
       cursor:pointer;
       font-weight: 900;
-    }}
-    .pgbtn:hover {{
-      background: var(--soft2);
-    }}
-    .pgcur {{
+    }
+    .pgbtn:hover { background: var(--soft2); }
+    .pgcur {
       width: 28px;
       height: 28px;
       border-radius: 6px;
@@ -339,46 +314,23 @@ html = f"""
       justify-content:center;
       font-weight: 900;
       font-size: 12px;
-    }}
+    }
 
-    /* -------- MOBILE (primera imagen) -------- */
-    @media (max-width: 768px) {{
-      .wrap {{
-        padding: 10px 10px 18px;
-      }}
-      .top-actions {{
-        grid-template-columns: 1fr;
-      }}
-      .subtitle {{
-        font-size: 16px;
-      }}
-      .section-head {{
-        flex-direction: column;
-        align-items: flex-start;
-      }}
-      .weekbox {{
-        width: 100%;
-        justify-content: space-between;
-      }}
+    @media (max-width: 768px) {
+      .wrap { padding: 10px 10px 18px; }
+      .top-actions { grid-template-columns: 1fr; }
+      .subtitle { font-size: 16px; }
+      .section-head { flex-direction: column; align-items: flex-start; }
+      .weekbox { width: 100%; justify-content: space-between; }
+      .filters { grid-template-columns: 1fr; }
 
-      .filters {{
-        grid-template-columns: 1fr;
-      }}
-
-      /* Tabla móvil: ocultar columnas desktop */
-      .col-instalacion, .col-socorrista, .col-horas {{
-        display: none;
-      }}
+      .col-instalacion, .col-socorrista, .col-horas { display: none; }
       thead th.col-instalacion,
       thead th.col-socorrista,
-      thead th.col-horas {{
-        display: none;
-      }}
+      thead th.col-horas { display: none; }
 
-      .table-title {{
-        display:none; /* en móvil como en tu plano, solo tabla */
-      }}
-    }}
+      .table-title { display:none; }
+    }
   </style>
 </head>
 <body>
@@ -468,19 +420,23 @@ html = f"""
   </div>
 
   <script>
-    const PAYLOAD = {json.dumps(payload, ensure_ascii=False)};
+    const PAYLOAD = """ + payload_json + """;
 
-    // Estado
-    let allRows = PAYLOAD.data || [];
+    let payloadObj = null;
+    try {
+      payloadObj = JSON.parse(PAYLOAD);
+    } catch(e) {
+      payloadObj = { data: [], instalaciones: ["Todas"], socorristas: ["Todos"] };
+    }
+
+    let allRows = payloadObj.data || [];
     let filtered = [...allRows];
 
     let page = 1;
     const pageSize = 14;
 
-    // UI refs
     const instSel = document.getElementById("instSel");
     const socSel  = document.getElementById("socSel");
-    const modeSel = document.getElementById("modeSel");
     const tbody   = document.getElementById("tbody");
 
     const showingTxt = document.getElementById("showingTxt");
@@ -488,16 +444,15 @@ html = f"""
     const pgPrev = document.getElementById("pgPrev");
     const pgNext = document.getElementById("pgNext");
 
-    // Helpers
-    function svgEdit() {{
+    function svgEdit() {
       return `
         <svg class="icon" viewBox="0 0 24 24" fill="none">
           <path d="M12 20h9" stroke="#111" stroke-width="2" stroke-linecap="round"/>
           <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5Z"
                 stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>`;
-    }}
-    function svgTrash() {{
+    }
+    function svgTrash() {
       return `
         <svg class="icon" viewBox="0 0 24 24" fill="none">
           <path d="M3 6h18" stroke="#111" stroke-width="2" stroke-linecap="round"/>
@@ -506,33 +461,33 @@ html = f"""
           <path d="M10 11v6" stroke="#111" stroke-width="2" stroke-linecap="round"/>
           <path d="M14 11v6" stroke="#111" stroke-width="2" stroke-linecap="round"/>
         </svg>`;
-    }}
+    }
 
-    function fillSelect(sel, items) {{
+    function fillSelect(sel, items) {
       sel.innerHTML = "";
-      items.forEach(v => {{
+      items.forEach(v => {
         const opt = document.createElement("option");
         opt.value = v;
         opt.textContent = v;
         sel.appendChild(opt);
-      }});
-    }}
+      });
+    }
 
-    function applyFilters() {{
+    function applyFilters() {
       const inst = instSel.value || "Todas";
       const soc  = socSel.value || "Todos";
 
-      filtered = allRows.filter(r => {{
+      filtered = allRows.filter(r => {
         const okInst = (inst === "Todas") || (r.Instalacion === inst);
         const okSoc  = (soc === "Todos") || (r.Socorrista === soc);
         return okInst && okSoc;
-      }});
+      });
 
       page = 1;
       render();
-    }}
+    }
 
-    function render() {{
+    function render() {
       const total = filtered.length;
       const pages = Math.max(1, Math.ceil(total / pageSize));
       page = Math.min(page, pages);
@@ -540,50 +495,46 @@ html = f"""
       const startIdx = (page - 1) * pageSize;
       const endIdx = Math.min(startIdx + pageSize, total);
 
-      // Tbody
       tbody.innerHTML = "";
       const slice = filtered.slice(startIdx, endIdx);
 
-      slice.forEach((r, idx) => {{
+      slice.forEach((r, idx) => {
         const tr = document.createElement("tr");
 
-        // Desktop columns (se ocultan por CSS en móvil)
         const tdInst = document.createElement("td");
         tdInst.className = "col-instalacion";
-        tdInst.textContent = r.Instalacion;
+        tdInst.textContent = r.Instalacion || "";
 
         const tdSoc = document.createElement("td");
         tdSoc.className = "col-socorrista";
-        tdSoc.textContent = r.Socorrista;
+        tdSoc.textContent = r.Socorrista || "";
 
-        // Mobile/desktop shared columns
         const tdTurno = document.createElement("td");
-        tdTurno.textContent = r.Turno;
+        tdTurno.textContent = r.Turno || "";
 
         const tdInicio = document.createElement("td");
-        tdInicio.textContent = r.Inicio;
+        tdInicio.textContent = r.Inicio || "";
 
         const tdHoras = document.createElement("td");
         tdHoras.className = "col-horas";
-        tdHoras.textContent = r.Horas;
+        tdHoras.textContent = (r.Horas ?? "");
 
         const tdEstado = document.createElement("td");
         const wrap = document.createElement("div");
         wrap.className = "actions";
+
         const b1 = document.createElement("button");
         b1.className = "iconbtn";
         b1.type = "button";
         b1.innerHTML = svgEdit();
-        b1.addEventListener("click", () => {{
-          alert("Editar: " + (startIdx + idx + 1));
-        }});
+        b1.addEventListener("click", () => { alert("Editar: " + (startIdx + idx + 1)); });
+
         const b2 = document.createElement("button");
         b2.className = "iconbtn";
         b2.type = "button";
         b2.innerHTML = svgTrash();
-        b2.addEventListener("click", () => {{
-          alert("Eliminar: " + (startIdx + idx + 1));
-        }});
+        b2.addEventListener("click", () => { alert("Eliminar: " + (startIdx + idx + 1)); });
+
         wrap.appendChild(b1);
         wrap.appendChild(b2);
         tdEstado.appendChild(wrap);
@@ -596,49 +547,44 @@ html = f"""
         tr.appendChild(tdEstado);
 
         tbody.appendChild(tr);
-      }});
+      });
 
-      // Footer
       const showingA = total === 0 ? 0 : (startIdx + 1);
       const showingB = endIdx;
+
       showingTxt.textContent = `Mostrando ${showingA} a ${showingB} de ${total}`;
       pgCur.textContent = String(page);
 
-      // Pager buttons
       pgPrev.disabled = page <= 1;
       pgNext.disabled = page >= pages;
-    }}
+    }
 
-    // Init selects
-    fillSelect(instSel, PAYLOAD.instalaciones || ["Todas"]);
-    fillSelect(socSel, PAYLOAD.socorristas || ["Todos"]);
+    fillSelect(instSel, payloadObj.instalaciones || ["Todas"]);
+    fillSelect(socSel, payloadObj.socorristas || ["Todos"]);
 
-    // Events
     document.getElementById("btnBuscar").addEventListener("click", applyFilters);
 
-    pgPrev.addEventListener("click", () => {{
-      if (page > 1) {{ page--; render(); }}
-    }});
-    pgNext.addEventListener("click", () => {{
+    pgPrev.addEventListener("click", () => {
+      if (page > 1) { page--; render(); }
+    });
+    pgNext.addEventListener("click", () => {
       page++; render();
-    }});
+    });
 
-    document.getElementById("btnPlantillas").addEventListener("click", () => {{
+    document.getElementById("btnPlantillas").addEventListener("click", () => {
       alert("Descargar Plantilla (pendiente integrar)");
-    }});
-    document.getElementById("btnSubir").addEventListener("click", () => {{
+    });
+    document.getElementById("btnSubir").addEventListener("click", () => {
       alert("Subir Horarios Masivos (pendiente integrar)");
-    }});
+    });
 
-    // Semana (solo visual como en plano)
-    document.getElementById("prevWeek").addEventListener("click", () => {{
+    document.getElementById("prevWeek").addEventListener("click", () => {
       alert("Semana anterior (pendiente integrar)");
-    }});
-    document.getElementById("nextWeek").addEventListener("click", () => {{
+    });
+    document.getElementById("nextWeek").addEventListener("click", () => {
       alert("Semana siguiente (pendiente integrar)");
-    }});
+    });
 
-    // Render inicial
     render();
   </script>
 </body>
