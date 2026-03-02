@@ -1,678 +1,416 @@
 # pages/admin.py
-import json
-from datetime import datetime, timedelta
-
-import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
 
-# =========================
-# CONFIG
-# =========================
-st.set_page_config(page_title="Asignacion Horarios Socorristas", layout="wide")
+st.set_page_config(layout="wide")
 
-# =========================
-# DATA (DEMO) - reemplaza por tu fuente real (API/DB)
-# =========================
-def build_demo_data():
-    base = datetime(2022, 1, 17, 8, 0, 0)
-    rows = []
-    instalaciones = ["Piscina Norte", "Piscina Sur", "Gimnasio", "Club"]
-    socorristas = ["Ana", "Juan", "Carlos", "Sofia", "Pedro", "Luisa"]
-    turnos = ["Mañana", "Tarde", "Noche"]
-    for i in range(1, 15):  # 1..14
-        inst = instalaciones[(i - 1) % len(instalaciones)]
-        soc = socorristas[(i - 1) % len(socorristas)]
-        turno = turnos[(i - 1) % len(turnos)]
-        inicio = base + timedelta(hours=((i - 1) % 6) * 2, days=((i - 1) % 7))
-        horas = 6 if turno != "Noche" else 8
-        finaliza = inicio + timedelta(hours=horas)
-        rows.append(
-            {
-                "Instalacion": inst,
-                "Socorrista": soc,
-                "Turno": turno,
-                "Inicio": inicio.strftime("%Y-%m-%d %H:%M"),
-                "Finaliza": finaliza.strftime("%Y-%m-%d %H:%M"),
-                "Horas": horas,
-            }
-        )
-    return pd.DataFrame(rows)
-
-df = build_demo_data()
-
-inst_options = ["Todas"] + sorted(df["Instalacion"].unique().tolist())
-soc_options = ["Todos"] + sorted(df["Socorrista"].unique().tolist())
-
-payload = {
-    "data": df.to_dict(orient="records"),
-    "instalaciones": inst_options,
-    "socorristas": soc_options,
-}
-payload_json = json.dumps(payload, ensure_ascii=False)
-
-# =========================
-# HTML UI (RESPONSIVE)
-# =========================
-html = """
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root {
-      --bg: #ffffff;
-      --text: #111111;
-      --muted: #6b7280;
-      --line: #111111;
-      --soft: rgba(17,17,17,.10);
-      --soft2: rgba(17,17,17,.06);
-      --btn-green: #2f7d32;
-      --btn-red: #c62828;
-      --btn-green-h: #256528;
-      --btn-red-h: #a81f1f;
-      --shadow: 0 8px 22px rgba(0,0,0,.08);
-      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
-    }
-
-    html, body {
-      margin:0; padding:0; width:100%; height:100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font);
-      overflow-x: hidden; /* evita desbordes */
-    }
-
-    * { box-sizing: border-box; }
-
-    .wrap {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 18px 14px 24px;
-      overflow: hidden; /* nada se sale del contenedor */
-    }
-
-    .frame {
-      width: 100%;
-      border: 2px solid var(--line);
-      border-radius: 0;
-      padding: 14px 12px 16px;
-      overflow: hidden; /* nada se sale del borde */
-    }
-
-    .title {
-      border: 2px solid var(--line);
-      padding: 8px 10px;
-      text-align: center;
-      font-weight: 700;
-      letter-spacing: .2px;
-      font-size: 16px;
-      margin-bottom: 14px;
-      width: 100%;
-    }
-
-    .top-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 16px;
-      width: 100%;
-    }
-
-    .btn {
-      border: 0;
-      border-radius: 8px;
-      padding: 12px 14px;
-      color: #fff;
-      font-weight: 700;
-      cursor: pointer;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap: 10px;
-      box-shadow: var(--shadow);
-      user-select:none;
-      width: 100%;
-      min-width: 0;
-    }
-    .btn .ico {
-      width: 18px; height: 18px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      filter: drop-shadow(0 2px 2px rgba(0,0,0,.15));
-    }
-    .btn.green { background: var(--btn-green); }
-    .btn.red { background: var(--btn-red); }
-    .btn.green:hover { background: var(--btn-green-h); }
-    .btn.red:hover { background: var(--btn-red-h); }
-
-    .section { margin-top: 6px; width: 100%; }
-
-    .section-head {
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 10px;
-      width: 100%;
-      min-width: 0;
-    }
-    .subtitle {
-      font-weight: 800;
-      font-size: 18px;
-      color: #1f3b6f;
-      min-width: 0;
-    }
-
-    .weekbox {
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      border: 1px solid var(--soft);
-      background: #fff;
-      border-radius: 10px;
-      padding: 6px 8px;
-      box-shadow: 0 6px 18px rgba(0,0,0,.06);
-      min-width: 0;
-      max-width: 100%;
-    }
-    .weekbox .label {
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 700;
-      white-space: nowrap;
-    }
-    .weekbox .nav {
-      border: 1px solid var(--soft);
-      background: #fff;
-      border-radius: 8px;
-      width: 32px;
-      height: 30px;
-      cursor: pointer;
-      font-weight: 800;
-      flex: 0 0 auto;
-    }
-    .weekbox .nav:hover { background: var(--soft2); }
-    .weekbox .range {
-      font-size: 13px;
-      font-weight: 800;
-      padding: 0 6px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 180px;
-    }
-
-    .filters {
-      display:grid;
-      grid-template-columns: 260px 1fr 1fr 160px;
-      gap: 10px;
-      align-items: end;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      width: 100%;
-      min-width: 0;
-    }
-
-    .field label {
-      display:block;
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--text);
-      margin: 0 0 6px;
-    }
-
-    select {
-      width: 100%;
-      border: 2px solid var(--line);
-      border-radius: 0;
-      padding: 10px 10px;
-      background: #fff;
-      font-weight: 700;
-      font-size: 13px;
-      outline: none;
-      min-width: 0;
-    }
-
-    .searchbtn {
-      width: 100%;
-      border: 2px solid var(--line);
-      border-radius: 0;
-      padding: 10px 10px;
-      background: #fff;
-      font-weight: 900;
-      cursor: pointer;
-      min-width: 0;
-    }
-    .searchbtn:hover { background: var(--soft2); }
-
-    /* Tabla SOLO la caja de tabla */
-    .tablewrap {
-      border: 2px solid var(--line);
-      padding: 10px;
-      margin-top: 10px;
-      width: 100%;
-      overflow-x: auto; /* si algo aprieta, no desborda */
-    }
-
-    .table-title {
-      font-weight: 900;
-      margin-bottom: 8px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      min-width: 640px; /* mantiene estructura desktop sin romper */
-    }
-    thead th {
-      text-align: left;
-      padding: 8px 6px;
-      border-bottom: 1px solid var(--soft);
-      font-weight: 900;
-      white-space: nowrap;
-    }
-    tbody td {
-      padding: 10px 6px;
-      border-bottom: 1px solid rgba(0,0,0,.06);
-      vertical-align: middle;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    .actions {
-      display:flex;
-      gap: 10px;
-      align-items:center;
-      justify-content:flex-start;
-    }
-    .iconbtn {
-      width: 28px;
-      height: 28px;
-      border: 1px solid var(--soft);
-      background: #fff;
-      border-radius: 8px;
-      cursor: pointer;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      flex: 0 0 auto;
-    }
-    .iconbtn:hover { background: var(--soft2); }
-    .icon { width: 16px; height: 16px; display:block; }
-
-    /* Paginación FUERA de la tabla, esquina inferior derecha */
-    .pagerbar {
-      width: 100%;
-      display:flex;
-      align-items:center;
-      justify-content:flex-end;
-      gap: 10px;
-      margin-top: 10px;
-      padding-right: 2px; /* asegura que no toque borde */
-      overflow: hidden; /* nada se sale */
-    }
-    .showing {
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 800;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 55%;
-    }
-    .pager {
-      display:inline-flex;
-      align-items:center;
-      gap: 6px;
-      flex: 0 0 auto;
-      max-width: 45%;
-    }
-    .pgbtn {
-      height: 28px;
-      border: 1px solid var(--soft);
-      background: #fff;
-      border-radius: 8px;
-      cursor:pointer;
-      font-weight: 900;
-      padding: 0 10px;
-      white-space: nowrap;
-      min-width: 34px;
-    }
-    .pgbtn:hover { background: var(--soft2); }
-    .pgbtn.prev { padding: 0; width: 30px; display:inline-flex; align-items:center; justify-content:center; }
-    .pgcur {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      background: #2563eb;
-      color: #fff;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      font-weight: 900;
-      font-size: 12px;
-      flex: 0 0 auto;
-    }
-
-    /* -------- MOBILE -------- */
-    @media (max-width: 768px) {
-      .wrap { padding: 10px 10px 18px; }
-      .top-actions { grid-template-columns: 1fr; }
-
-      .section-head { flex-direction: column; align-items: flex-start; }
-      .weekbox { width: 100%; justify-content: space-between; }
-      .weekbox .range { max-width: 220px; }
-
-      .filters { grid-template-columns: 1fr; }
-
-      /* Tabla móvil: 4 columnas -> Turno, Inicio, Finaliza, Estado */
-      table { min-width: 0; width: 100%; }
-      .col-instalacion, .col-socorrista, .col-horas { display: none; }
-      thead th.col-instalacion,
-      thead th.col-socorrista,
-      thead th.col-horas { display: none; }
-
-      /* en móvil, mostrar Finaliza (en desktop la ocultamos por no estar en tus 6 cols) */
-      .col-finaliza { display: table-cell; }
-      thead th.col-finaliza { display: table-cell; }
-
-      .table-title { display:none; }
-
-      /* pagerbar: que nunca se salga */
-      .pagerbar { gap: 8px; }
-      .showing { max-width: 60%; }
-      .pager { max-width: 40%; }
-      .pgbtn { padding: 0 8px; }
-      .pgbtn.prev { width: 30px; }
-    }
-
-    /* Desktop: Finaliza NO se muestra (porque en 6 columnas no va) */
-    .col-finaliza { display: none; }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="frame">
-
-      <div class="title">Asignacion Horarios Socorristas</div>
-
-      <div class="top-actions">
-        <button class="btn green" id="btnPlantillas" type="button">
-          <span class="ico">⬇️</span>
-          <span>Descargar Plantilla</span>
-        </button>
-
-        <button class="btn red" id="btnSubir" type="button">
-          <span class="ico">⬆️</span>
-          <span>Subir Horarios Masivos</span>
-        </button>
-      </div>
-
-      <div class="section">
-        <div class="section-head">
-          <div class="subtitle">Horarios de Socorristas</div>
-
-          <div class="weekbox" aria-label="Filtro de semana">
-            <span class="label">Ver Semana:</span>
-            <button class="nav" id="prevWeek" type="button">‹</button>
-            <span class="range" id="weekRange">17 - 23 Ene 2022</span>
-            <button class="nav" id="nextWeek" type="button">›</button>
-          </div>
-        </div>
-
-        <div class="filters">
-          <div class="field">
-            <label for="modeSel">Modo</label>
-            <select id="modeSel">
-              <option value="Individual">Individual</option>
-              <option value="Cargar Plantilla">Cargar Plantilla</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="instSel">Instalación</label>
-            <select id="instSel"></select>
-          </div>
-
-          <div class="field">
-            <label for="socSel">Socorrista</label>
-            <select id="socSel"></select>
-          </div>
-
-          <div class="field">
-            <label>&nbsp;</label>
-            <button class="searchbtn" id="btnBuscar" type="button">Buscar</button>
-          </div>
-        </div>
-
-        <div class="tablewrap">
-          <div class="table-title">Tabla Horarios</div>
-
-          <table>
-            <thead>
-              <tr>
-                <th class="col-instalacion">Instalacion</th>
-                <th class="col-socorrista">Socorrista</th>
-                <th>Turno</th>
-                <th>Inicio</th>
-                <th class="col-finaliza">Finaliza</th>
-                <th class="col-horas">Horas</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody id="tbody"></tbody>
-          </table>
-        </div>
-
-        <!-- FUERA de .tablewrap (requisito #2) -->
-        <div class="pagerbar">
-          <span class="showing" id="showingTxt">Mostrando 0 a 0 de 0</span>
-          <div class="pager">
-            <button class="pgbtn prev" id="pgPrev" type="button">‹</button>
-            <span class="pgcur" id="pgCur">1</span>
-            <button class="pgbtn" id="pgNext" type="button">Siguiente</button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const PAYLOAD = """ + payload_json + """;
-
-    let payloadObj = null;
-    try {
-      payloadObj = JSON.parse(PAYLOAD);
-    } catch(e) {
-      payloadObj = { data: [], instalaciones: ["Todas"], socorristas: ["Todos"] };
-    }
-
-    let allRows = payloadObj.data || [];
-    let filtered = [...allRows];
-
-    let page = 1;
-    const pageSize = 14;
-
-    const instSel = document.getElementById("instSel");
-    const socSel  = document.getElementById("socSel");
-    const tbody   = document.getElementById("tbody");
-
-    const showingTxt = document.getElementById("showingTxt");
-    const pgCur = document.getElementById("pgCur");
-    const pgPrev = document.getElementById("pgPrev");
-    const pgNext = document.getElementById("pgNext");
-
-    function svgEdit() {
-      return `
-        <svg class="icon" viewBox="0 0 24 24" fill="none">
-          <path d="M12 20h9" stroke="#111" stroke-width="2" stroke-linecap="round"/>
-          <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5Z"
-                stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>`;
-    }
-    function svgTrash() {
-      return `
-        <svg class="icon" viewBox="0 0 24 24" fill="none">
-          <path d="M3 6h18" stroke="#111" stroke-width="2" stroke-linecap="round"/>
-          <path d="M8 6V4h8v2" stroke="#111" stroke-width="2" stroke-linecap="round"/>
-          <path d="M19 6l-1 14H6L5 6" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M10 11v6" stroke="#111" stroke-width="2" stroke-linecap="round"/>
-          <path d="M14 11v6" stroke="#111" stroke-width="2" stroke-linecap="round"/>
-        </svg>`;
-    }
-
-    function fillSelect(sel, items) {
-      sel.innerHTML = "";
-      items.forEach(v => {
-        const opt = document.createElement("option");
-        opt.value = v;
-        opt.textContent = v;
-        sel.appendChild(opt);
-      });
-    }
-
-    function applyFilters() {
-      const inst = instSel.value || "Todas";
-      const soc  = socSel.value || "Todos";
-
-      filtered = allRows.filter(r => {
-        const okInst = (inst === "Todas") || (r.Instalacion === inst);
-        const okSoc  = (soc === "Todos") || (r.Socorrista === soc);
-        return okInst && okSoc;
-      });
-
-      page = 1;
-      render();
-    }
-
-    function render() {
-      const total = filtered.length;
-      const pages = Math.max(1, Math.ceil(total / pageSize));
-      page = Math.min(page, pages);
-
-      const startIdx = (page - 1) * pageSize;
-      const endIdx = Math.min(startIdx + pageSize, total);
-
-      tbody.innerHTML = "";
-      const slice = filtered.slice(startIdx, endIdx);
-
-      slice.forEach((r, idx) => {
-        const tr = document.createElement("tr");
-
-        const tdInst = document.createElement("td");
-        tdInst.className = "col-instalacion";
-        tdInst.textContent = r.Instalacion || "";
-
-        const tdSoc = document.createElement("td");
-        tdSoc.className = "col-socorrista";
-        tdSoc.textContent = r.Socorrista || "";
-
-        const tdTurno = document.createElement("td");
-        tdTurno.textContent = r.Turno || "";
-
-        const tdInicio = document.createElement("td");
-        tdInicio.textContent = r.Inicio || "";
-
-        const tdFinaliza = document.createElement("td");
-        tdFinaliza.className = "col-finaliza";
-        tdFinaliza.textContent = r.Finaliza || "";
-
-        const tdHoras = document.createElement("td");
-        tdHoras.className = "col-horas";
-        tdHoras.textContent = (r.Horas ?? "");
-
-        const tdEstado = document.createElement("td");
-        const wrap = document.createElement("div");
-        wrap.className = "actions";
-
-        const b1 = document.createElement("button");
-        b1.className = "iconbtn";
-        b1.type = "button";
-        b1.innerHTML = svgEdit();
-        b1.addEventListener("click", () => { alert("Editar: " + (startIdx + idx + 1)); });
-
-        const b2 = document.createElement("button");
-        b2.className = "iconbtn";
-        b2.type = "button";
-        b2.innerHTML = svgTrash();
-        b2.addEventListener("click", () => { alert("Eliminar: " + (startIdx + idx + 1)); });
-
-        wrap.appendChild(b1);
-        wrap.appendChild(b2);
-        tdEstado.appendChild(wrap);
-
-        tr.appendChild(tdInst);
-        tr.appendChild(tdSoc);
-        tr.appendChild(tdTurno);
-        tr.appendChild(tdInicio);
-        tr.appendChild(tdFinaliza);
-        tr.appendChild(tdHoras);
-        tr.appendChild(tdEstado);
-
-        tbody.appendChild(tr);
-      });
-
-      const showingA = total === 0 ? 0 : (startIdx + 1);
-      const showingB = endIdx;
-
-      showingTxt.textContent = `Mostrando ${showingA} a ${showingB} de ${total}`;
-      pgCur.textContent = String(page);
-
-      pgPrev.disabled = page <= 1;
-      pgNext.disabled = page >= pages;
-    }
-
-    fillSelect(instSel, payloadObj.instalaciones || ["Todas"]);
-    fillSelect(socSel, payloadObj.socorristas || ["Todos"]);
-
-    document.getElementById("btnBuscar").addEventListener("click", applyFilters);
-
-    pgPrev.addEventListener("click", () => {
-      if (page > 1) { page--; render(); }
-    });
-    pgNext.addEventListener("click", () => {
-      if (!pgNext.disabled) { page++; render(); }
-    });
-
-    document.getElementById("btnPlantillas").addEventListener("click", () => {
-      alert("Descargar Plantilla (pendiente integrar)");
-    });
-    document.getElementById("btnSubir").addEventListener("click", () => {
-      alert("Subir Horarios Masivos (pendiente integrar)");
-    });
-
-    document.getElementById("prevWeek").addEventListener("click", () => {
-      alert("Semana anterior (pendiente integrar)");
-    });
-    document.getElementById("nextWeek").addEventListener("click", () => {
-      alert("Semana siguiente (pendiente integrar)");
-    });
-
-    render();
-  </script>
-</body>
-</html>
-"""
-
-# =========================
-# STREAMLIT SHELL (sin padding)
-# =========================
 st.markdown(
     """
     <style>
       .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
       section.main > div{padding:0 !important;margin:0 !important;}
       header, footer{display:none !important;}
-      iframe{border:0 !important;}
+      [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-components.html(html, height=950, scrolling=True)
+html = """
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+<style>
+:root{
+  /* =========================================================
+     PALETA (AZUL base #040e31) -> ajusta tonos globales aquí
+     ========================================================= */
+  --baseBlue: #040e31;            /* BASE requerida */
+  --bgTop:  #0a1a55;              /* superior (más claro) */
+  --bgMid:  #061240;              /* medio */
+  --bgDeep: #02071c;              /* inferior (más oscuro) */
+
+  --overlay1: rgba(40, 120, 255, .16); /* corte diagonal claro */
+  --overlay2: rgba(0,  10,  40, .62);  /* corte diagonal oscuro */
+
+  --ink: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.62);
+
+  --pill: rgba(238, 245, 255, .92);
+  --pill2: rgba(255,255,255,.86);
+
+  --btn1:#2f7de1;
+  --btn2:#1e5fc4;
+
+  --shadow1: 0 22px 55px rgba(0,0,0,.55);
+  --shadow2: 0 10px 22px rgba(0,0,0,.40);
+  --blur: 14px;
+
+  /* =========================================================
+     CONTROLES DESKTOP (pantalla completa)
+     Cambia AQUÍ posición/tamaño para desktop
+     ========================================================= */
+  --logoWDesktop: 250px;     /* tamaño logo desktop */
+  --logoTopDesktop: 0.0%;    /* subir/bajar logo desktop */
+  --logoXDesktop: 0px;       /* mover logo izq/der desktop (px) */
+
+  --titleTopDesktop: 20%;    /* subir/bajar título desktop */
+  --titleSizeDesktop: 22px;  /* tamaño título desktop */ 
+  --titleXDesktop: 0px;      /* mover título izq/der desktop (px) */
+
+  --lblUserTopDesktop: 22%;
+  --inUserTopDesktop: 28%;
+  --lblPassTopDesktop: 42%;
+  --inPassTopDesktop: 48%;
+  --btnTopDesktop: 67%;
+
+  --linkPolTopDesktop: 78%;
+  --linkPolLeftDesktop: 20%;
+  --linkRegTopDesktop: 78%;
+  --linkRegLeftDesktop: 68%;
+
+  --labelSizeDesktop: 22px; /* 14px */
+  --inputSizeDesktop: 22px; /* 14px */
+  --btnTextSizeDesktop: 22px; /* 14px */
+  --linkSizeDesktop: 22px; /* 13px estoy aqui */
+
+  /* =========================================================
+     CONTROLES MÓVIL
+     Cambia AQUÍ posición/tamaño para móvil
+     ========================================================= */
+  --logoWMobile: 150px;      /* tamaño logo móvil */
+  --logoTopMobile: 6%;       /* subir/bajar logo móvil */
+  --logoXMobile: 0px;        /* mover logo izq/der móvil (px) *
+
+  --titleTopMobile: 20%;     /* subir/bajar título móvil */
+  --titleSizeMobile: 18px;   /* tamaño título móvil */
+  --titleXMobile: 0px;       /* mover título izq/der móvil (px) */
+
+  --lblUserTopMobile: 22%;
+  --inUserTopMobile: 28%;     /* 28 */
+  --lblPassTopMobile: 42%;  /* 42 */
+  --inPassTopMobile: 48%;    /* 48 */
+  --btnTopMobile: 65%;     /* 67%*/
+
+  --linkPolTopMobile: 78%; /* 78 */
+  --linkPolLeftMobile: 20%; /* 20 */
+  --linkRegTopMobile: 78%;
+  --linkRegLeftMobile: 68%; /* 68 */
+
+  --labelSizeMobile: 16px;    /* 16 */
+  --inputSizeMobile: 16px;    /* 16 */
+  --btnTextSizeMobile: 18px; /* 14 */
+  --linkSizeMobile: 15px;  /* 13*/
+}
+
+/* RESET */
+*{box-sizing:border-box}
+html, body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background: var(--baseBlue);
+}
+
+/* FONDO EXTERIOR */
+#stage{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.14), transparent 60%),
+    radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
+    linear-gradient(180deg, #020614 0%, var(--baseBlue) 100%);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+/* PANEL PRINCIPAL */
+#plan{
+  position:absolute;
+  left:10px; right:10px;
+  top:10px; bottom:0;
+  overflow:hidden;
+  border-radius: 34px;
+  box-shadow: var(--shadow1);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 22%),
+    linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #05164d 58%, var(--bgDeep) 100%);
+}
+
+/* CORTE DIAGONAL */
+#plan::before{
+  content:"";
+  position:absolute;
+  inset:-10%;
+  background:
+    linear-gradient(135deg,
+      transparent 0%,
+      transparent 32%,
+      var(--overlay1) 32%,
+      var(--overlay2) 66%,
+      transparent 66%);
+  transform: rotate(-10deg);
+  opacity:.95;
+  pointer-events:none;
+}
+
+/* VIÑETA */
+#plan::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(50% 60% at 50% 25%, rgba(255,255,255,.06), transparent 55%),
+    radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
+    linear-gradient(180deg, transparent 55%, rgba(0,0,0,.65) 100%);
+  pointer-events:none;
+}
+
+/* MARCO */
+#frame{
+  position:absolute;
+  left:9px; right:9px;
+  top:10px; bottom:0;
+  border-left: 2px solid rgba(255,255,255,.14);
+  border-right:2px solid rgba(255,255,255,.14);
+  border-top:  2px solid rgba(255,255,255,.14);
+  box-sizing:border-box;
+  pointer-events:none;
+  border-radius: 34px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
+}
+
+/* CONTENEDOR */
+#card{
+  position:absolute;
+  left:6%;
+  right:6%;
+  top:6%;
+  bottom:6%;
+}
+
+/* =========================================================
+   LOGO (DESKTOP por defecto)
+   ========================================================= */
+.logo{
+  position:absolute;
+  left:50%;
+  top: var(--logoTopDesktop) !important;
+  transform: translateX(-50%) translateX(var(--logoXDesktop)) !important;
+  width: var(--logoWDesktop) !important;
+  height:auto;
+  display:block;
+  border-radius: 10px;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
+}
+
+/* =========================================================
+   TÍTULO (DESKTOP por defecto)
+   ========================================================= */
+.title{
+  position:absolute;
+  left:0; right:0;
+  top: var(--titleTopDesktop) !important;
+  text-align:center;
+  font:800 var(--titleSizeDesktop) Arial, sans-serif !important;
+  color: var(--ink);
+  text-shadow: 0 8px 18px rgba(0,0,0,.35);
+  letter-spacing: .2px;
+  transform: translateX(var(--titleXDesktop)) !important;
+}
+
+/* LABELS */
+.label{
+  position:absolute;
+  left:18%;
+  right:18%;
+  font:700 var(--labelSizeDesktop) Arial, sans-serif !important;
+  color: rgba(255,255,255,.82);
+  text-shadow: 0 6px 14px rgba(0,0,0,.30);
+}
+
+/* INPUTS */
+input.field{
+  position:absolute;
+  left:22%; /* 16 */
+  right:22%; /* 16 */
+  height:10%; /* 16 */
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 999px;
+  box-sizing:border-box;
+  background: linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
+  padding: 0 16px; /* 14 */
+  font:700 var(--inputSizeDesktop) Arial, sans-serif !important;
+  color: rgba(30,40,55,.92);
+  outline:none;
+  box-shadow:
+    0 15px 18px rgba(0,0,0,.22), /*0 10px */
+    inset 0 1px 0 rgba(255,255,255,.55);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+}
+input.field::placeholder{ color: rgba(60,70,85,.55); }
+
+/* BOTÓN */
+.btn{
+  position:absolute;
+  left:32%;
+  right:32%;
+  height:10%;  
+  border: 1px solid rgba(255,255,255,.10);/* Estoy aqui 10*/
+  border-radius: 999px;
+  box-sizing:border-box;
+  background:
+    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%), /* Estoy aqui transparent 80%*/
+    linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
+  box-shadow:
+    0 22px 26px rgba(0,0,0,.28),/* Estoy aqui 0 18px */
+    inset 0 1px 0 rgba(255,255,255,.22);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font:700 var(--btnTextSizeDesktop) Arial, sans-serif !important;
+  color: rgba(255,255,255,.92);
+  cursor:pointer;
+  user-select:none;
+  transition: transform .12s ease, filter .12s ease;
+}
+.btn:active{ transform: scale(.985); filter: brightness(.98); }
+
+/* LINKS */
+.link{
+  position:absolute;
+  font:700 var(--linkSizeDesktop) Arial, sans-serif !important;
+  color: rgba(255,255,255,.70);
+  white-space:nowrap;
+  text-shadow: 0 6px 14px rgba(0,0,0,.30);
+}
+.link:hover{ color: rgba(255,255,255,.85); }
+
+/* HUD oculto */
+#hud{ display:none !important; }
+
+/* =========================================================
+   POSICIONES DESKTOP
+   ========================================================= */
+#lblUser{ top: var(--lblUserTopDesktop) !important; }
+#inUser{  top: var(--inUserTopDesktop) !important; }
+#lblPass{ top: var(--lblPassTopDesktop) !important; }
+#inPass{  top: var(--inPassTopDesktop) !important; }
+#btnLogin{ top: var(--btnTopDesktop) !important; }
+
+#linkPol{ top: var(--linkPolTopDesktop) !important; left: var(--linkPolLeftDesktop) !important; }
+#linkReg{ top: var(--linkRegTopDesktop) !important; left: var(--linkRegLeftDesktop) !important; }
+
+/* =========================================================
+   MODO MÓVIL
+   ========================================================= */
+@media (max-width: 640px){
+  .logo{
+    top: var(--logoTopMobile) !important;
+    width: var(--logoWMobile) !important;
+    transform: translateX(-50%) translateX(var(--logoXMobile)) !important;
+  }
+  .title{
+    top: var(--titleTopMobile) !important;
+    font:800 var(--titleSizeMobile) Arial, sans-serif !important;
+    transform: translateX(var(--titleXMobile)) !important;
+  }
+  .label{ font:700 var(--labelSizeMobile) Arial, sans-serif !important; }
+  input.field{ font:700 var(--inputSizeMobile) Arial, sans-serif !important; }
+  .btn{ font:700 var(--btnTextSizeMobile) Arial, sans-serif !important; }
+  .link{ font:700 var(--linkSizeMobile) Arial, sans-serif !important; }
+
+  #lblUser{ top: var(--lblUserTopMobile) !important; }
+  #inUser{  top: var(--inUserTopMobile) !important; }
+  #lblPass{ top: var(--lblPassTopMobile) !important; }
+  #inPass{  top: var(--inPassTopMobile) !important; }
+  #btnLogin{ top: var(--btnTopMobile) !important; }
+
+  #linkPol{ top: var(--linkPolTopMobile) !important; left: var(--linkPolLeftMobile) !important; }
+  #linkReg{ top: var(--linkRegTopMobile) !important; left: var(--linkRegLeftMobile) !important; }
+}
+</style>
+</head>
+
+<body>
+<div id="stage">
+  <div id="frame"></div>
+
+  <div id="plan">
+    <div id="card">
+      <!-- LOGO -->
+      <img class="logo" src="https://files.catbox.moe/056m6v.jpg" alt="Logo"/>
+
+      <!-- TÍTULO -->
+      <div class="title">¡BIENVENIDO!</div>
+
+      <div id="lblUser" class="label" style="top:22%;">Usuario:</div>
+      <input id="inUser" class="field" style="top:28%;" autocomplete="username"/>
+
+      <div id="lblPass" class="label" style="top:42%;">Contraseña:</div>
+      <input id="inPass" class="field" style="top:48%;" type="password" autocomplete="current-password"/>
+
+      <div id="btnLogin" class="btn" style="top:67%;" onclick="doLogin()">Login</div>
+
+      <div id="linkPol" class="link" style="top:78%; left:20%;">Politicas:</div>
+      <!-- Enlace a la página de registro (altas_registro.py) -->
+      <div id="linkReg" class="link" style="top:78%; left:68%;"><a href="/altas_registro" style="color:inherit; text-decoration:none;">Registrarse:</a></div>
+    </div>
+
+    <div id="hud"></div>
+  </div>
+</div>
+
+<script>
+async function doLogin(){
+  const u = (document.getElementById("inUser").value || "").trim();
+  const p = (document.getElementById("inPass").value || "").trim();
+
+  try{
+    const r = await fetch("https://camilo27.pythonanywhere.com/api/auth", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({usuario:u, password:p})
+    });
+
+    const j = await r.json();
+
+    if (j && j.ok === true){
+      // ✅ Pasamos el nombre de usuario en la URL
+      window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u);
+    } else {
+      alert("Credenciales inválidas");
+    }
+  }catch(e){
+    alert("Error de conexión");
+  }
+}
+
+(function(){
+  var fe = window.frameElement;
+  if (fe){
+    fe.style.position="fixed";
+    fe.style.inset="0";
+    fe.style.width="100vw";
+    fe.style.height="100vh";
+    fe.style.border="0";
+    fe.style.margin="0";
+    fe.style.padding="0";
+    fe.style.zIndex="999999";
+    fe.style.background="transparent";
+  }
+})();
+</script>
+
+</body>
+</html>
+"""
+
+components.html(html, height=10, scrolling=False)
