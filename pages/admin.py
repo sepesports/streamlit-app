@@ -81,20 +81,24 @@ html = """
       background: var(--bg);
       color: var(--text);
       font-family: var(--font);
+      overflow-x: hidden; /* evita desbordes */
     }
+
+    * { box-sizing: border-box; }
 
     .wrap {
       max-width: 1100px;
       margin: 0 auto;
       padding: 18px 14px 24px;
-      box-sizing: border-box;
+      overflow: hidden; /* nada se sale del contenedor */
     }
 
     .frame {
+      width: 100%;
       border: 2px solid var(--line);
       border-radius: 0;
       padding: 14px 12px 16px;
-      box-sizing: border-box;
+      overflow: hidden; /* nada se sale del borde */
     }
 
     .title {
@@ -105,6 +109,7 @@ html = """
       letter-spacing: .2px;
       font-size: 16px;
       margin-bottom: 14px;
+      width: 100%;
     }
 
     .top-actions {
@@ -113,6 +118,7 @@ html = """
       gap: 10px;
       align-items: center;
       margin-bottom: 16px;
+      width: 100%;
     }
 
     .btn {
@@ -128,6 +134,8 @@ html = """
       gap: 10px;
       box-shadow: var(--shadow);
       user-select:none;
+      width: 100%;
+      min-width: 0;
     }
     .btn .ico {
       width: 18px; height: 18px;
@@ -141,7 +149,7 @@ html = """
     .btn.green:hover { background: var(--btn-green-h); }
     .btn.red:hover { background: var(--btn-red-h); }
 
-    .section { margin-top: 6px; }
+    .section { margin-top: 6px; width: 100%; }
 
     .section-head {
       display:flex;
@@ -149,11 +157,14 @@ html = """
       justify-content: space-between;
       gap: 10px;
       margin-bottom: 10px;
+      width: 100%;
+      min-width: 0;
     }
     .subtitle {
       font-weight: 800;
       font-size: 18px;
       color: #1f3b6f;
+      min-width: 0;
     }
 
     .weekbox {
@@ -165,11 +176,14 @@ html = """
       border-radius: 10px;
       padding: 6px 8px;
       box-shadow: 0 6px 18px rgba(0,0,0,.06);
+      min-width: 0;
+      max-width: 100%;
     }
     .weekbox .label {
       font-size: 12px;
       color: var(--muted);
       font-weight: 700;
+      white-space: nowrap;
     }
     .weekbox .nav {
       border: 1px solid var(--soft);
@@ -179,6 +193,7 @@ html = """
       height: 30px;
       cursor: pointer;
       font-weight: 800;
+      flex: 0 0 auto;
     }
     .weekbox .nav:hover { background: var(--soft2); }
     .weekbox .range {
@@ -186,6 +201,9 @@ html = """
       font-weight: 800;
       padding: 0 6px;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
     }
 
     .filters {
@@ -195,6 +213,8 @@ html = """
       align-items: end;
       margin-top: 10px;
       margin-bottom: 10px;
+      width: 100%;
+      min-width: 0;
     }
 
     .field label {
@@ -205,9 +225,8 @@ html = """
       margin: 0 0 6px;
     }
 
-    .input, select {
+    select {
       width: 100%;
-      box-sizing: border-box;
       border: 2px solid var(--line);
       border-radius: 0;
       padding: 10px 10px;
@@ -215,6 +234,7 @@ html = """
       font-weight: 700;
       font-size: 13px;
       outline: none;
+      min-width: 0;
     }
 
     .searchbtn {
@@ -225,14 +245,17 @@ html = """
       background: #fff;
       font-weight: 900;
       cursor: pointer;
+      min-width: 0;
     }
     .searchbtn:hover { background: var(--soft2); }
 
+    /* Tabla SOLO la caja de tabla */
     .tablewrap {
       border: 2px solid var(--line);
       padding: 10px;
-      box-sizing:border-box;
       margin-top: 10px;
+      width: 100%;
+      overflow-x: auto; /* si algo aprieta, no desborda */
     }
 
     .table-title {
@@ -244,18 +267,21 @@ html = """
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
+      min-width: 640px; /* mantiene estructura desktop sin romper */
     }
     thead th {
       text-align: left;
       padding: 8px 6px;
       border-bottom: 1px solid var(--soft);
       font-weight: 900;
+      white-space: nowrap;
     }
     tbody td {
       padding: 10px 6px;
       border-bottom: 1px solid rgba(0,0,0,.06);
       vertical-align: middle;
       font-weight: 600;
+      white-space: nowrap;
     }
 
     .actions {
@@ -274,35 +300,51 @@ html = """
       display:inline-flex;
       align-items:center;
       justify-content:center;
+      flex: 0 0 auto;
     }
     .iconbtn:hover { background: var(--soft2); }
     .icon { width: 16px; height: 16px; display:block; }
 
-    .tfoot {
+    /* Paginación FUERA de la tabla, esquina inferior derecha */
+    .pagerbar {
+      width: 100%;
       display:flex;
       align-items:center;
       justify-content:flex-end;
-      gap: 8px;
+      gap: 10px;
       margin-top: 10px;
+      padding-right: 2px; /* asegura que no toque borde */
+      overflow: hidden; /* nada se sale */
+    }
+    .showing {
       font-size: 12px;
       color: var(--muted);
       font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 55%;
     }
     .pager {
       display:inline-flex;
       align-items:center;
       gap: 6px;
+      flex: 0 0 auto;
+      max-width: 45%;
     }
     .pgbtn {
-      width: 30px;
       height: 28px;
       border: 1px solid var(--soft);
       background: #fff;
       border-radius: 8px;
       cursor:pointer;
       font-weight: 900;
+      padding: 0 10px;
+      white-space: nowrap;
+      min-width: 34px;
     }
     .pgbtn:hover { background: var(--soft2); }
+    .pgbtn.prev { padding: 0; width: 30px; display:inline-flex; align-items:center; justify-content:center; }
     .pgcur {
       width: 28px;
       height: 28px;
@@ -314,23 +356,43 @@ html = """
       justify-content:center;
       font-weight: 900;
       font-size: 12px;
+      flex: 0 0 auto;
     }
 
+    /* -------- MOBILE -------- */
     @media (max-width: 768px) {
       .wrap { padding: 10px 10px 18px; }
       .top-actions { grid-template-columns: 1fr; }
-      .subtitle { font-size: 16px; }
+
       .section-head { flex-direction: column; align-items: flex-start; }
       .weekbox { width: 100%; justify-content: space-between; }
+      .weekbox .range { max-width: 220px; }
+
       .filters { grid-template-columns: 1fr; }
 
+      /* Tabla móvil: 4 columnas -> Turno, Inicio, Finaliza, Estado */
+      table { min-width: 0; width: 100%; }
       .col-instalacion, .col-socorrista, .col-horas { display: none; }
       thead th.col-instalacion,
       thead th.col-socorrista,
       thead th.col-horas { display: none; }
 
+      /* en móvil, mostrar Finaliza (en desktop la ocultamos por no estar en tus 6 cols) */
+      .col-finaliza { display: table-cell; }
+      thead th.col-finaliza { display: table-cell; }
+
       .table-title { display:none; }
+
+      /* pagerbar: que nunca se salga */
+      .pagerbar { gap: 8px; }
+      .showing { max-width: 60%; }
+      .pager { max-width: 40%; }
+      .pgbtn { padding: 0 8px; }
+      .pgbtn.prev { width: 30px; }
     }
+
+    /* Desktop: Finaliza NO se muestra (porque en 6 columnas no va) */
+    .col-finaliza { display: none; }
   </style>
 </head>
 <body>
@@ -398,20 +460,22 @@ html = """
                 <th class="col-socorrista">Socorrista</th>
                 <th>Turno</th>
                 <th>Inicio</th>
+                <th class="col-finaliza">Finaliza</th>
                 <th class="col-horas">Horas</th>
                 <th>Estado</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
           </table>
+        </div>
 
-          <div class="tfoot">
-            <span id="showingTxt">Mostrando 1 a 14 de 14</span>
-            <div class="pager">
-              <button class="pgbtn" id="pgPrev" type="button">‹</button>
-              <span class="pgcur" id="pgCur">1</span>
-              <button class="pgbtn" id="pgNext" type="button">Siguiente</button>
-            </div>
+        <!-- FUERA de .tablewrap (requisito #2) -->
+        <div class="pagerbar">
+          <span class="showing" id="showingTxt">Mostrando 0 a 0 de 0</span>
+          <div class="pager">
+            <button class="pgbtn prev" id="pgPrev" type="button">‹</button>
+            <span class="pgcur" id="pgCur">1</span>
+            <button class="pgbtn" id="pgNext" type="button">Siguiente</button>
           </div>
         </div>
 
@@ -515,6 +579,10 @@ html = """
         const tdInicio = document.createElement("td");
         tdInicio.textContent = r.Inicio || "";
 
+        const tdFinaliza = document.createElement("td");
+        tdFinaliza.className = "col-finaliza";
+        tdFinaliza.textContent = r.Finaliza || "";
+
         const tdHoras = document.createElement("td");
         tdHoras.className = "col-horas";
         tdHoras.textContent = (r.Horas ?? "");
@@ -543,6 +611,7 @@ html = """
         tr.appendChild(tdSoc);
         tr.appendChild(tdTurno);
         tr.appendChild(tdInicio);
+        tr.appendChild(tdFinaliza);
         tr.appendChild(tdHoras);
         tr.appendChild(tdEstado);
 
@@ -568,7 +637,7 @@ html = """
       if (page > 1) { page--; render(); }
     });
     pgNext.addEventListener("click", () => {
-      page++; render();
+      if (!pgNext.disabled) { page++; render(); }
     });
 
     document.getElementById("btnPlantillas").addEventListener("click", () => {
@@ -606,4 +675,4 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-components.html(html, height=920, scrolling=True)
+components.html(html, height=950, scrolling=True)
