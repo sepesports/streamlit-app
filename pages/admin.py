@@ -462,19 +462,19 @@ html = """
       .col-finaliza { display: table-cell; }
       thead th.col-finaliza { display: table-cell; }
 
-      /* Ajustes de ancho para móvil */
-      th:nth-child(3), td:nth-child(3) { min-width: 50px; } /* Día */
-      th:nth-child(4), td:nth-child(4) { min-width: 55px; } /* Inicio */
-      th:nth-child(5), td:nth-child(5) { min-width: 55px; } /* Finaliza */
-      th:nth-child(7), td:nth-child(7) { min-width: 70px; } /* Estado */
+      /* Ajustes de ancho para móvil - más espacio para los valores */
+      th:nth-child(3), td:nth-child(3) { min-width: 45px; } /* Día */
+      th:nth-child(4), td:nth-child(4) { min-width: 50px; } /* Inicio */
+      th:nth-child(5), td:nth-child(5) { min-width: 50px; } /* Finaliza */
+      th:nth-child(7), td:nth-child(7) { min-width: 60px; } /* Estado */
       
       td:nth-child(7) .actions {
         justify-content: flex-start;
-        gap: 4px;
+        gap: 2px;
       }
       .iconbtn {
-        width: 22px;
-        height: 22px;
+        width: 20px;
+        height: 20px;
       }
       .iconbtn .icon {
         width: 12px;
@@ -633,7 +633,7 @@ html = """
     const ENDPOINT_EDITAR = API_BASE + "/api/horarios/editar";
     const ENDPOINT_ELIMINAR = API_BASE + "/api/horarios/eliminar";
 
-    // Helper robusto para obtener campo de un objeto con múltiples posibles keys (como en github_calendario.py)
+    // Helper robusto para obtener campo de un objeto (como en github_calendario.py)
     function getField(row, keys) {
       if (!row) return "";
       for (const k of keys) {
@@ -643,6 +643,18 @@ html = """
         }
       }
       return "";
+    }
+
+    // Formatear hora a HH:MM (eliminar segundos si existen)
+    function formatTime(timeStr) {
+      if (!timeStr) return "";
+      const str = String(timeStr);
+      // Si tiene formato HH:MM:SS, tomar solo HH:MM
+      const parts = str.split(':');
+      if (parts.length >= 2) {
+        return parts[0] + ':' + parts[1];
+      }
+      return str;
     }
 
     let allRows = [];
@@ -777,24 +789,28 @@ html = """
       tbody.innerHTML = "";
       const slice = filtered.slice(startIdx, endIdx);
 
-      // Depuración: mostrar la primera fila en consola
+      // Depuración: mostrar primera fila en consola
       if (slice.length > 0) {
         console.log("Primera fila de datos:", slice[0]);
-        console.log("Valor de Salida (con getField):", getField(slice[0], ["Salida", "salida", "SALIDA", "Finaliza", "finaliza", "FINALIZA"]));
+        console.log("Valor de Salida (raw):", slice[0].Salida, slice[0].salida);
+        console.log("Valor de Salida (getField):", getField(slice[0], ["Salida", "salida", "SALIDA", "Finaliza", "finaliza", "FINALIZA"]));
       }
 
       slice.forEach((r, idx) => {
         const tr = document.createElement("tr");
         tr.dataset.llave = r.llave || "";
 
-        // Obtener valores usando getField (como en github_calendario.py)
+        // Obtener valores usando getField
         const instalacion = getField(r, ["Instalacion", "Instalación", "instalacion"]);
         const socorrista = getField(r, ["Socorrista", "socorrista"]);
         const dia = getField(r, ["Dia", "día", "dia"]);
-        const inicio = getField(r, ["Ingreso", "Inicio", "ingreso", "inicio"]);
-        // Para Finaliza, usar "Salida" (nombre exacto en la hoja) y variantes
-        const salida = getField(r, ["Salida", "salida", "SALIDA", "Finaliza", "finaliza", "FINALIZA"]);
+        const inicioRaw = getField(r, ["Ingreso", "Inicio", "ingreso", "inicio"]);
+        const salidaRaw = getField(r, ["Salida", "salida", "SALIDA", "Finaliza", "finaliza", "FINALIZA"]);
         const horas = getField(r, ["Intensidad_horaria", "Intensidad_ho", "Horas", "horas"]);
+
+        // Formatear horas a HH:MM
+        const inicio = formatTime(inicioRaw);
+        const salida = formatTime(salidaRaw);
 
         // Crear elementos td en el orden exacto del thead
         const tdInst = document.createElement("td");
