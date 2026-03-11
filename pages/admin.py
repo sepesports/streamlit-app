@@ -409,47 +409,51 @@ html = """
 
       /* Compactar sección de agregar al máximo */
       .agregar-section {
-        padding: 6px 6px 8px;
-        margin-bottom: 10px;
+        padding: 4px;
+        margin-bottom: 8px;
       }
       .agregar-title {
-        margin-bottom: 4px;
-        font-size: 15px;
+        margin: 0 0 2px 0;
+        font-size: 14px;
       }
       .agregar-row {
-        gap: 1px; /* mínimo espacio entre campos */
+        display: flex;
         flex-direction: column;
-        align-items: stretch;
+        gap: 2px;
       }
       .agregar-field {
-        min-width: 0;
         margin: 0;
         padding: 0;
       }
       .agregar-field label {
-        font-size: 11px;
+        display: block;
+        font-size: 10px;
         margin: 0;
-        line-height: 1; /* reduce altura del label */
+        line-height: 1.2;
         font-weight: 700;
       }
       .agregar-field input {
-        padding: 4px 6px; /* reducir padding vertical */
-        font-size: 13px;
-        margin: 2px 0 0 0; /* pequeño margen superior */
-        border-width: 1px; /* borde más fino para ahorrar espacio */
+        width: 100%;
+        padding: 2px 4px;
+        font-size: 12px;
+        margin: 0;
+        border-width: 1px;
+        box-sizing: border-box;
       }
       .agregar-btn {
-        padding: 6px 10px;
-        margin-top: 4px;
-        font-size: 14px;
+        padding: 4px 8px;
+        margin-top: 2px;
+        font-size: 13px;
+        width: 100%;
       }
       .rango-opciones {
-        gap: 4px;
-        margin-top: 6px;
+        display: flex;
+        gap: 2px;
+        margin-top: 4px;
       }
       .rango-btn {
-        padding: 4px 8px;
-        font-size: 11px;
+        padding: 2px 6px;
+        font-size: 10px;
       }
 
       /* Filtros en móvil */
@@ -468,7 +472,7 @@ html = """
 
       /* Asegurar que los iconos de acción estén en la columna Estado y bien alineados */
       td:last-child {
-        width: 80px; /* ancho fijo para la columna Estado */
+        width: 80px;
         min-width: 80px;
         text-align: left;
       }
@@ -795,11 +799,11 @@ html = """
         const tdInicio = document.createElement("td");
         tdInicio.textContent = getField(r, ["Ingreso", "Inicio", "ingreso", "inicio"]) || "";
 
-        // Finaliza (Salida) - incluir todas las variantes posibles
+        // Finaliza (Salida) - priorizar "Salida" que es el nombre real en la hoja
         const tdFinaliza = document.createElement("td");
         tdFinaliza.className = "col-finaliza";
         const salida = getField(r, ["Salida", "salida", "SALIDA", "Finaliza", "finaliza", "FINALIZA"]);
-        tdFinaliza.textContent = salida || "—"; // Si no hay valor, mostrar guión para depurar
+        tdFinaliza.textContent = salida || ""; // Si no hay valor, dejar vacío
 
         // Horas (Intensidad_horaria)
         const tdHoras = document.createElement("td");
