@@ -1,16 +1,3 @@
-# pages/admin.py
-import streamlit as st
-import streamlit.components.v1 as components
-
-# =========================
-# CONFIG
-# =========================
-st.set_page_config(page_title="Asignacion Horarios Socorristas", layout="wide")
-
-# =========================
-# HTML UI (RESPONSIVE) con integración real a Mallas
-# =========================
-html = """
 <!doctype html>
 <html>
 <head>
@@ -255,7 +242,6 @@ html = """
       border-collapse: collapse;
       font-size: 13px;
       min-width: 700px;
-      table-layout: fixed; /* Control preciso de anchos */
     }
     thead th {
       text-align: left;
@@ -270,8 +256,6 @@ html = """
       vertical-align: middle;
       font-weight: 600;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     .actions {
@@ -407,23 +391,29 @@ html = """
 
     /* ===== AJUSTES MÓVIL ===== */
     @media (max-width: 768px) {
-      .wrap { padding: 5px; }
-      .top-actions { grid-template-columns: 1fr; }
+      .wrap { padding: 2px; }
+      .frame { padding: 6px; }
+      .title { margin-bottom: 6px; }
+      .top-actions {
+        grid-template-columns: 1fr;
+        gap: 5px;
+        margin-bottom: 8px;
+      }
 
-      /* Compactar sección de agregar con tamaño legible */
+      /* Compactar sección de agregar */
       .agregar-section {
-        padding: 8px;
-        margin-bottom: 10px;
+        padding: 4px;
+        margin-bottom: 5px;
       }
       .agregar-title {
         font-size: 16px;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
       }
       .agregar-row {
         display: block;
       }
       .agregar-field {
-        margin-bottom: 4px;
+        margin-bottom: 2px;
       }
       .agregar-field label {
         font-size: 12px;
@@ -432,19 +422,19 @@ html = """
       }
       .agregar-field input {
         width: 100%;
-        padding: 6px 8px;
+        padding: 4px 6px;
         font-size: 14px;
         border-width: 1px;
       }
       .agregar-btn {
-        padding: 8px 12px;
+        padding: 6px 10px;
         font-size: 14px;
-        margin-top: 4px;
+        margin-top: 2px;
         width: 100%;
       }
       .rango-opciones {
-        gap: 4px;
-        margin-top: 6px;
+        gap: 2px;
+        margin-top: 4px;
       }
       .rango-btn {
         padding: 4px 8px;
@@ -452,44 +442,62 @@ html = """
       }
 
       /* Filtros en móvil */
-      .filters { grid-template-columns: 1fr; }
+      .filters {
+        grid-template-columns: 1fr;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        gap: 6px;
+      }
 
-      /* Tabla móvil: ocultar columnas no deseadas */
+      /* Tabla móvil: mostrar columnas adecuadas y compactar */
+      table {
+        min-width: 0;
+        width: 100%;
+        font-size: 12px;
+      }
       .col-instalacion, .col-socorrista, .col-horas { display: none; }
       thead th.col-instalacion,
       thead th.col-socorrista,
       thead th.col-horas { display: none; }
 
-      /* Mostrar Finaliza en móvil */
+      /* Mostrar Finaliza en móvil (columna Salida) */
       .col-finaliza { display: table-cell; }
       thead th.col-finaliza { display: table-cell; }
 
-      /* Ajustes de ancho para móvil usando índices reales (3,4,5,7) */
-      table { min-width: 0; width: 100%; font-size: 12px; }
-      /* Columna Día (3) */
-      th:nth-child(3), td:nth-child(3) { width: 15%; }
-      /* Columna Inicio (4) */
-      th:nth-child(4), td:nth-child(4) { width: 20%; }
-      /* Columna Finaliza (5) */
-      th:nth-child(5), td:nth-child(5) { width: 20%; }
-      /* Columna Estado (7) */
-      th:nth-child(7), td:nth-child(7) { width: 25%; }
-      
+      /* Ajustes de ancho para columnas visibles */
+      th:nth-child(3), td:nth-child(3) { width: 25%; } /* Día */
+      th:nth-child(4), td:nth-child(4) { width: 25%; } /* Inicio */
+      th:nth-child(5), td:nth-child(5) { width: 25%; } /* Finaliza */
+      th:nth-child(7), td:nth-child(7) { width: 25%; } /* Estado */
+
+      /* Compactar celdas */
+      th, td {
+        padding: 6px 4px !important;
+      }
+
+      /* Estado: alinear iconos correctamente */
       td:nth-child(7) .actions {
         justify-content: flex-start;
-        gap: 2px;
+        gap: 4px;
+        align-items: center;
+        white-space: nowrap;
       }
       .iconbtn {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
       }
       .iconbtn .icon {
-        width: 12px;
-        height: 12px;
+        width: 14px;
+        height: 14px;
       }
 
       .table-title { display:none; }
-      .pagerbar { gap: 8px; }
+
+      /* Paginador compacto */
+      .pagerbar {
+        gap: 5px;
+        margin-top: 5px;
+      }
       .showing { max-width: 60%; }
       .pager { max-width: 40%; }
     }
@@ -576,7 +584,7 @@ html = """
         <div class="tablewrap">
           <div class="table-title">Tabla Horarios</div>
 
-          <table id="data-table">
+          <table>
             <thead>
               <tr>
                 <th class="col-instalacion">Instalacion</th>
@@ -640,7 +648,7 @@ html = """
     const ENDPOINT_EDITAR = API_BASE + "/api/horarios/editar";
     const ENDPOINT_ELIMINAR = API_BASE + "/api/horarios/eliminar";
 
-    // Helper robusto para obtener campo de un objeto (como en github_calendario.py)
+    // Helper robusto para obtener campo de un objeto con múltiples posibles keys
     function getField(row, keys) {
       if (!row) return "";
       for (const k of keys) {
@@ -650,18 +658,6 @@ html = """
         }
       }
       return "";
-    }
-
-    // Formatear hora a HH:MM (eliminar segundos si existen)
-    function formatTime(timeStr) {
-      if (!timeStr) return "";
-      const str = String(timeStr);
-      // Si tiene formato HH:MM:SS, tomar solo HH:MM
-      const parts = str.split(':');
-      if (parts.length >= 2) {
-        return parts[0] + ':' + parts[1];
-      }
-      return str;
     }
 
     let allRows = [];
@@ -796,70 +792,40 @@ html = """
       tbody.innerHTML = "";
       const slice = filtered.slice(startIdx, endIdx);
 
-      // Depuración: mostrar la primera fila en consola
-      if (slice.length > 0) {
-        console.log("===== PRIMERA FILA DE DATOS =====");
-        console.log("Fila completa:", slice[0]);
-        console.log("Valor de Salida (raw):", slice[0].Salida, slice[0].salida);
-        console.log("Valor de Salida (getField):", getField(slice[0], ["Salida", "salida", "SALIDA", "Finaliza", "finaliza", "FINALIZA"]));
-        console.log("Valor de Ingreso:", slice[0].Ingreso);
-      }
-
-      // Construir cada fila
       slice.forEach((r, idx) => {
         const tr = document.createElement("tr");
         tr.dataset.llave = r.llave || "";
 
-        // Obtener valores usando getField
-        const instalacion = getField(r, ["Instalacion", "Instalación", "instalacion"]);
-        const socorrista = getField(r, ["Socorrista", "socorrista"]);
-        const dia = getField(r, ["Dia", "día", "dia"]);
-        const inicioRaw = getField(r, ["Ingreso", "Inicio", "ingreso", "inicio"]);
-        const salidaRaw = getField(r, ["Salida", "salida", "SALIDA", "Finaliza", "finaliza", "FINALIZA"]);
-        const horas = getField(r, ["Intensidad_horaria", "Intensidad_ho", "Horas", "horas"]);
-
-        // Formatear horas a HH:MM
-        const inicio = formatTime(inicioRaw);
-        const salida = formatTime(salidaRaw);
-
-        // Crear array de celdas en el orden exacto del thead (8 columnas)
-        const cells = [];
-
-        // Columna 0: Instalacion (oculta en móvil)
+        // Instalacion
         const tdInst = document.createElement("td");
         tdInst.className = "col-instalacion";
-        tdInst.textContent = instalacion;
-        cells.push(tdInst);
+        tdInst.textContent = getField(r, ["Instalacion", "Instalación", "instalacion"]) || "";
 
-        // Columna 1: Socorrista (oculta en móvil)
+        // Socorrista
         const tdSoc = document.createElement("td");
         tdSoc.className = "col-socorrista";
-        tdSoc.textContent = socorrista;
-        cells.push(tdSoc);
+        tdSoc.textContent = getField(r, ["Socorrista", "socorrista"]) || "";
 
-        // Columna 2: Día
+        // Día
         const tdDia = document.createElement("td");
-        tdDia.textContent = dia;
-        cells.push(tdDia);
+        tdDia.textContent = getField(r, ["Dia", "día", "dia"]) || "";
 
-        // Columna 3: Inicio
+        // Inicio (Ingreso)
         const tdInicio = document.createElement("td");
-        tdInicio.textContent = inicio;
-        cells.push(tdInicio);
+        tdInicio.textContent = getField(r, ["Ingreso", "Inicio", "ingreso", "inicio"]) || "";
 
-        // Columna 4: Finaliza
+        // Finaliza (Salida) - AHORA SOLO USA "Salida" (y variantes) PARA EVITAR CAMPOS INCORRECTOS
         const tdFinaliza = document.createElement("td");
         tdFinaliza.className = "col-finaliza";
-        tdFinaliza.textContent = salida;  // Aquí debe ir el valor de Salida
-        cells.push(tdFinaliza);
+        const salida = getField(r, ["Salida", "salida", "SALIDA"]);
+        tdFinaliza.textContent = salida || "";
 
-        // Columna 5: Horas (oculta en móvil)
+        // Horas (Intensidad_horaria)
         const tdHoras = document.createElement("td");
         tdHoras.className = "col-horas";
-        tdHoras.textContent = horas;
-        cells.push(tdHoras);
+        tdHoras.textContent = getField(r, ["Intensidad_horaria", "Intensidad_ho", "Horas", "horas"]) || "";
 
-        // Columna 6: Estado (con botones)
+        // Estado (con iconos)
         const tdEstado = document.createElement("td");
         const wrap = document.createElement("div");
         wrap.className = "actions";
@@ -895,16 +861,20 @@ html = """
         wrap.appendChild(b1);
         wrap.appendChild(b2);
         tdEstado.appendChild(wrap);
-        cells.push(tdEstado);
 
-        // Columna 7: llave (oculta)
+        // Columna oculta para llave
         const tdLlave = document.createElement("td");
         tdLlave.style.display = "none";
         tdLlave.textContent = r.llave || "";
-        cells.push(tdLlave);
 
-        // Añadir todas las celdas a la fila en orden
-        cells.forEach(cell => tr.appendChild(cell));
+        tr.appendChild(tdInst);
+        tr.appendChild(tdSoc);
+        tr.appendChild(tdDia);
+        tr.appendChild(tdInicio);
+        tr.appendChild(tdFinaliza);
+        tr.appendChild(tdHoras);
+        tr.appendChild(tdEstado);
+        tr.appendChild(tdLlave);
 
         tbody.appendChild(tr);
       });
@@ -920,10 +890,11 @@ html = """
     // Abrir modal de edición con datos actuales
     function openEditModal(row) {
       currentEditLlave = row.llave;
-      editSocorrista.value = getField(row, ["Socorrista", "socorrista"]);
-      editInstalacion.value = getField(row, ["Instalacion", "Instalación", "instalacion"]);
-      editIngreso.value = getField(row, ["Ingreso", "Inicio", "ingreso", "inicio"]);
-      editSalida.value = getField(row, ["Salida", "salida", "Finaliza", "finaliza"]);
+      editSocorrista.value = getField(row, ["Socorrista", "socorrista"]) || "";
+      editInstalacion.value = getField(row, ["Instalacion", "Instalación", "instalacion"]) || "";
+      editIngreso.value = getField(row, ["Ingreso", "Inicio", "ingreso", "inicio"]) || "";
+      // SALIDA: solo usar "Salida" y variantes
+      editSalida.value = getField(row, ["Salida", "salida", "SALIDA"]) || "";
       editModal.style.display = "flex";
     }
 
@@ -1098,21 +1069,3 @@ html = """
   </script>
 </body>
 </html>
-"""
-
-# =========================
-# STREAMLIT SHELL (sin padding)
-# =========================
-st.markdown(
-    """
-    <style>
-      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
-      section.main > div{padding:0 !important;margin:0 !important;}
-      header, footer{display:none !important;}
-      iframe{border:0 !important;}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-components.html(html, height=1200, scrolling=True)
