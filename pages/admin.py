@@ -451,7 +451,7 @@ html = """
       /* Filtros en móvil */
       .filters { grid-template-columns: 1fr; }
 
-      /* Tabla móvil: mostrar columnas adecuadas */
+      /* Tabla móvil: mostrar solo columnas necesarias */
       table { min-width: 0; width: 100%; font-size: 12px; }
       .col-instalacion, .col-socorrista, .col-horas { display: none; }
       thead th.col-instalacion,
@@ -462,37 +462,23 @@ html = """
       .col-finaliza { display: table-cell; }
       thead th.col-finaliza { display: table-cell; }
 
-      /* Ajustes finos para columnas */
-      th:nth-child(3), td:nth-child(3) { /* Día */
-        min-width: 60px;
-      }
-      th:nth-child(4), td:nth-child(4) { /* Inicio */
-        min-width: 60px;
-      }
-      th:nth-child(5), td:nth-child(5) { /* Finaliza */
-        min-width: 60px;
-        text-align: left;
-        padding-left: 4px;
-        padding-right: 4px;
-      }
-      th:nth-child(7), td:nth-child(7) { /* Estado */
-        min-width: 80px;
-        text-align: left;
-        padding-left: 8px;
-        vertical-align: middle;
-      }
+      /* Ajustes de ancho para móvil */
+      th:nth-child(3), td:nth-child(3) { min-width: 50px; } /* Día */
+      th:nth-child(4), td:nth-child(4) { min-width: 55px; } /* Inicio */
+      th:nth-child(5), td:nth-child(5) { min-width: 55px; } /* Finaliza */
+      th:nth-child(7), td:nth-child(7) { min-width: 70px; } /* Estado */
+      
       td:nth-child(7) .actions {
         justify-content: flex-start;
-        gap: 6px;
-        align-items: center;
+        gap: 4px;
       }
       .iconbtn {
-        width: 24px;
-        height: 24px;
+        width: 22px;
+        height: 22px;
       }
       .iconbtn .icon {
-        width: 14px;
-        height: 14px;
+        width: 12px;
+        height: 12px;
       }
 
       .table-title { display:none; }
@@ -777,29 +763,26 @@ html = """
       tbody.innerHTML = "";
       const slice = filtered.slice(startIdx, endIdx);
 
-      // Depuración: mostrar la primera fila en consola
+      // Depuración: ver primera fila
       if (slice.length > 0) {
-        console.log("Primera fila de datos:", slice[0]);
-        console.log("Valor de Salida:", slice[0].Salida);
-        console.log("Valor de estado:", slice[0].estado);
+        console.log("Primera fila:", slice[0]);
+        console.log("Salida:", slice[0].Salida);
       }
 
       slice.forEach((r, idx) => {
         const tr = document.createElement("tr");
         tr.dataset.llave = r.llave || "";
 
-        // Obtener valores con múltiples variantes, priorizando mayúsculas como en la hoja
-        const instalacion = r.Instalacion || r.instalacion || "";
-        const socorrista = r.Socorrista || r.socorrista || "";
-        const dia = r.Dia || r.dia || "";
-        const inicio = r.Ingreso || r.ingreso || r.Inicio || r.inicio || "";
+        // Obtener valores (priorizar mayúsculas como en la hoja)
+        const instalacion = r.Instalacion !== undefined ? r.Instalacion : (r.instalacion || "");
+        const socorrista = r.Socorrista !== undefined ? r.Socorrista : (r.socorrista || "");
+        const dia = r.Dia !== undefined ? r.Dia : (r.dia || "");
+        const inicio = r.Ingreso !== undefined ? r.Ingreso : (r.ingreso || r.Inicio || r.inicio || "");
         // Para Finaliza, usar Salida (nombre exacto en la hoja)
-        const salida = r.Salida || r.salida || "";
-        const horas = r.Intensidad_horaria || r.intensidad_horaria || r.Horas || r.horas || "";
-        // El valor de estado (si se quisiera mostrar, pero no se usa)
-        // const estadoValor = r.estado || "";
+        const salida = r.Salida !== undefined ? r.Salida : (r.salida || "");
+        const horas = r.Intensidad_horaria !== undefined ? r.Intensidad_horaria : (r.intensidad_horaria || r.Horas || r.horas || "");
 
-        // Crear elementos td en el orden exacto del thead
+        // Crear elementos td en orden estricto
         const tdInst = document.createElement("td");
         tdInst.className = "col-instalacion";
         tdInst.textContent = instalacion;
@@ -816,7 +799,7 @@ html = """
 
         const tdFinaliza = document.createElement("td");
         tdFinaliza.className = "col-finaliza";
-        tdFinaliza.textContent = salida;  // Esto debe ser el valor de Salida
+        tdFinaliza.textContent = salida; // Aquí debe ir el valor de Salida
 
         const tdHoras = document.createElement("td");
         tdHoras.className = "col-horas";
@@ -863,6 +846,7 @@ html = """
         tdLlave.style.display = "none";
         tdLlave.textContent = r.llave || "";
 
+        // Añadir en el orden exacto del thead
         tr.appendChild(tdInst);
         tr.appendChild(tdSoc);
         tr.appendChild(tdDia);
