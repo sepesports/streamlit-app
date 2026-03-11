@@ -641,18 +641,6 @@ html = """
     const ENDPOINT_EDITAR = API_BASE + "/api/horarios/editar";
     const ENDPOINT_ELIMINAR = API_BASE + "/api/horarios/eliminar";
 
-    // Helper robusto para obtener campo de un objeto con múltiples posibles keys
-    function getField(row, keys) {
-      if (!row) return "";
-      for (const k of keys) {
-        if (Object.prototype.hasOwnProperty.call(row, k)) {
-          const val = row[k];
-          if (val !== undefined && val !== null) return val;
-        }
-      }
-      return "";
-    }
-
     let allRows = [];
     let filtered = [];
     let page = 1;
@@ -733,10 +721,8 @@ html = """
         const instalacionesSet = new Set();
         const socorristasSet = new Set();
         allRows.forEach(r => {
-          const inst = getField(r, ["Instalacion", "Instalación", "instalacion"]);
-          if (inst) instalacionesSet.add(inst);
-          const soc = getField(r, ["Socorrista", "socorrista"]);
-          if (soc) socorristasSet.add(soc);
+          if (r.Instalacion) instalacionesSet.add(r.Instalacion);
+          if (r.Socorrista) socorristasSet.add(r.Socorrista);
         });
         const instalaciones = Array.from(instalacionesSet).sort();
         const socorristas = Array.from(socorristasSet).sort();
@@ -766,8 +752,8 @@ html = """
       const inst = instSel.value || "Todas";
       const soc = socSel.value || "Todos";
       filtered = allRows.filter(r => {
-        const okInst = (inst === "Todas") || (getField(r, ["Instalacion", "Instalación", "instalacion"]) === inst);
-        const okSoc = (soc === "Todos") || (getField(r, ["Socorrista", "socorrista"]) === soc);
+        const okInst = (inst === "Todas") || (r.Instalacion === inst);
+        const okSoc = (soc === "Todos") || (r.Socorrista === soc);
         return okInst && okSoc;
       });
       page = 1;
@@ -789,16 +775,16 @@ html = """
         const tr = document.createElement("tr");
         tr.dataset.llave = r.llave || "";
 
-        // Obtener valores
-        const instalacion = getField(r, ["Instalacion", "Instalación", "instalacion"]) || "";
-        const socorrista = getField(r, ["Socorrista", "socorrista"]) || "";
-        const dia = getField(r, ["Dia", "día", "dia"]) || "";
-        const inicio = getField(r, ["Ingreso", "Inicio", "ingreso", "inicio"]) || "";
-        // Priorizar "Salida" que es el nombre exacto en la hoja Mallas
-        const salida = getField(r, ["Salida", "salida", "SALIDA", "Finaliza", "finaliza", "FINALIZA"]) || "";
-        const horas = getField(r, ["Intensidad_horaria", "Intensidad_ho", "Horas", "horas"]) || "";
+        // Obtener valores directamente de las claves conocidas (sin getField para evitar confusiones)
+        const instalacion = r.Instalacion || r.instalacion || "";
+        const socorrista = r.Socorrista || r.socorrista || "";
+        const dia = r.Dia || r.dia || "";
+        const inicio = r.Ingreso || r.ingreso || r.Inicio || r.inicio || "";
+        // Para Finaliza, usar exactamente "Salida" (nombre de la columna en la hoja)
+        const salida = r.Salida || r.salida || "";
+        const horas = r.Intensidad_horaria || r.intensidad_horaria || r.Horas || r.horas || "";
 
-        // Crear elementos td en el orden correcto
+        // Crear elementos td en el orden correcto (coincidiendo con el thead)
         const tdInst = document.createElement("td");
         tdInst.className = "col-instalacion";
         tdInst.textContent = instalacion;
@@ -815,7 +801,7 @@ html = """
 
         const tdFinaliza = document.createElement("td");
         tdFinaliza.className = "col-finaliza";
-        tdFinaliza.textContent = salida; // aquí debe ir el valor de Salida
+        tdFinaliza.textContent = salida;  // Aquí va el valor de Salida
 
         const tdHoras = document.createElement("td");
         tdHoras.className = "col-horas";
@@ -862,7 +848,7 @@ html = """
         tdLlave.style.display = "none";
         tdLlave.textContent = r.llave || "";
 
-        // Añadir en orden exacto de las columnas del thead
+        // Añadir en el orden exacto de las columnas del thead
         tr.appendChild(tdInst);
         tr.appendChild(tdSoc);
         tr.appendChild(tdDia);
@@ -886,10 +872,10 @@ html = """
     // Abrir modal de edición con datos actuales
     function openEditModal(row) {
       currentEditLlave = row.llave;
-      editSocorrista.value = getField(row, ["Socorrista", "socorrista"]) || "";
-      editInstalacion.value = getField(row, ["Instalacion", "Instalación", "instalacion"]) || "";
-      editIngreso.value = getField(row, ["Ingreso", "Inicio", "ingreso", "inicio"]) || "";
-      editSalida.value = getField(row, ["Salida", "salida", "Finaliza", "finaliza"]) || "";
+      editSocorrista.value = row.Socorrista || row.socorrista || "";
+      editInstalacion.value = row.Instalacion || row.instalacion || "";
+      editIngreso.value = row.Ingreso || row.ingreso || row.Inicio || row.inicio || "";
+      editSalida.value = row.Salida || row.salida || "";
       editModal.style.display = "flex";
     }
 
