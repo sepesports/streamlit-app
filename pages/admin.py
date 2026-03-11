@@ -10,7 +10,7 @@ st.set_page_config(page_title="Asignacion Horarios Socorristas", layout="wide")
 # =========================
 # HTML UI (RESPONSIVE) con integración real a Mallas
 # =========================
-html = """
+html = r"""
 <!doctype html>
 <html>
 <head>
@@ -107,7 +107,7 @@ html = """
     .btn.green:hover { background: var(--btn-green-h); }
     .btn.red:hover { background: var(--btn-red-h); }
 
-    /* Sección para agregar desde bloque (con rango de fechas) */
+    /* Nueva sección para agregar desde bloque (con rango de fechas) */
     .agregar-section {
       border: 2px solid var(--line);
       padding: 12px;
@@ -192,7 +192,7 @@ html = """
       min-width: 0;
     }
 
-    /* ELIMINADO: .weekbox (ya no existe) */
+    /* EL BLOQUE VER SEMANA HA SIDO ELIMINADO */
 
     .filters {
       display:grid;
@@ -402,94 +402,63 @@ html = """
       color: white;
     }
 
-    /* ===== AJUSTES MÓVIL ===== */
     @media (max-width: 768px) {
-      .wrap { padding: 5px; }
+      .wrap { padding: 10px 10px 18px; }
       .top-actions { grid-template-columns: 1fr; }
-
-      /* Compactar sección de agregar con tamaño legible */
+      /* Compactar sección Agregar desde bloque */
       .agregar-section {
         padding: 8px;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
       }
       .agregar-title {
-        font-size: 16px;
         margin-bottom: 6px;
+        font-size: 15px;
       }
       .agregar-row {
-        display: block;
+        gap: 4px;
+        flex-direction: column;
+        align-items: stretch;
       }
       .agregar-field {
-        margin-bottom: 4px;
-      }
-      .agregar-field label {
-        font-size: 12px;
-        margin-bottom: 2px;
-        font-weight: 700;
+        min-width: 100%;
       }
       .agregar-field input {
-        width: 100%;
-        padding: 6px 8px;
-        font-size: 14px;
-        border-width: 1px;
+        padding: 6px;
+        font-size: 13px;
       }
       .agregar-btn {
-        padding: 8px 12px;
-        font-size: 14px;
-        margin-top: 4px;
-        width: 100%;
+        padding: 8px;
+        margin-top: 2px;
       }
       .rango-opciones {
-        gap: 4px;
+        gap: 6px;
         margin-top: 6px;
       }
-      .rango-btn {
-        padding: 4px 8px;
-        font-size: 12px;
-      }
-
-      /* Filtros en móvil */
+      /* Fin compactación */
+      .section-head { flex-direction: column; align-items: flex-start; }
       .filters { grid-template-columns: 1fr; }
-
-      /* Tabla móvil: mostrar columnas adecuadas */
-      table { min-width: 0; width: 100%; font-size: 11px; }
+      table { min-width: 0; width: 100%; }
       .col-instalacion, .col-socorrista, .col-horas { display: none; }
       thead th.col-instalacion,
       thead th.col-socorrista,
       thead th.col-horas { display: none; }
-
-      /* Mostrar Finaliza en móvil (columna Salida) */
       .col-finaliza { display: table-cell; }
       thead th.col-finaliza { display: table-cell; }
-
-      /* Ajustar anchos de columnas para móvil */
-      th:nth-child(3), td:nth-child(3) { /* Día */
-        width: auto;
-      }
-      th:nth-child(4), td:nth-child(4) { /* Inicio */
-        width: auto;
-      }
-      th:nth-child(5), td:nth-child(5) { /* Finaliza */
-        width: 50px;
-        min-width: 50px;
-      }
-      th:nth-child(7), td:nth-child(7) { /* Estado */
-        width: 70px;
-        min-width: 70px;
-        text-align: left;
-      }
-      td:nth-child(7) .actions {
-        justify-content: flex-start;
-        gap: 6px;
-      }
-
       .table-title { display:none; }
       .pagerbar { gap: 8px; }
       .showing { max-width: 60%; }
       .pager { max-width: 40%; }
+      /* Ajustes para la columna Estado en móvil */
+      th.estado-col, td.estado-col {
+        min-width: 70px;
+        text-align: left;
+      }
+      td.estado-col .actions {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        gap: 8px;
+      }
     }
-
-    /* En desktop, Finaliza se oculta */
     .col-finaliza { display: none; }
   </style>
 </head>
@@ -540,7 +509,9 @@ html = """
       <div class="section">
         <div class="section-head">
           <div class="subtitle">Horarios de Socorristas</div>
-          <!-- ELIMINADO: weekbox -->
+
+          <!-- EL BLOQUE VER SEMANA HA SIDO ELIMINADO -->
+
         </div>
 
         <div class="filters">
@@ -580,8 +551,8 @@ html = """
                 <th>Inicio</th>
                 <th class="col-finaliza">Finaliza</th>
                 <th class="col-horas">Horas</th>
-                <th>Estado</th>
-                <th style="display:none;">llave</th>
+                <th class="estado-col">Estado</th>
+                <th style="display:none;">llave</th> <!-- oculto para almacenar -->
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -635,18 +606,6 @@ html = """
     const ENDPOINT_EDITAR = API_BASE + "/api/horarios/editar";
     const ENDPOINT_ELIMINAR = API_BASE + "/api/horarios/eliminar";
 
-    // Helper robusto para obtener campo de un objeto con múltiples posibles keys
-    function getField(row, keys) {
-      if (!row) return "";
-      for (const k of keys) {
-        if (Object.prototype.hasOwnProperty.call(row, k)) {
-          const val = row[k];
-          if (val !== undefined && val !== null) return val;
-        }
-      }
-      return "";
-    }
-
     let allRows = [];
     let filtered = [];
     let page = 1;
@@ -690,7 +649,7 @@ html = """
 
     // Funciones de utilidad para fechas
     function parseFechaDDMMYYYY(fechaStr) {
-      if (!/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(fechaStr)) return null;
+      if (!/^\d{2}\/\d{2}\/\d{4}$/.test(fechaStr)) return null;
       const [dd, mm, yyyy] = fechaStr.split('/').map(Number);
       return new Date(yyyy, mm-1, dd);
     }
@@ -727,10 +686,8 @@ html = """
         const instalacionesSet = new Set();
         const socorristasSet = new Set();
         allRows.forEach(r => {
-          const inst = getField(r, ["Instalacion", "Instalación", "instalacion"]);
-          if (inst) instalacionesSet.add(inst);
-          const soc = getField(r, ["Socorrista", "socorrista"]);
-          if (soc) socorristasSet.add(soc);
+          if (r.Instalacion) instalacionesSet.add(r.Instalacion);
+          if (r.Socorrista) socorristasSet.add(r.Socorrista);
         });
         const instalaciones = Array.from(instalacionesSet).sort();
         const socorristas = Array.from(socorristasSet).sort();
@@ -760,8 +717,8 @@ html = """
       const inst = instSel.value || "Todas";
       const soc = socSel.value || "Todos";
       filtered = allRows.filter(r => {
-        const okInst = (inst === "Todas") || (getField(r, ["Instalacion", "Instalación", "instalacion"]) === inst);
-        const okSoc = (soc === "Todos") || (getField(r, ["Socorrista", "socorrista"]) === soc);
+        const okInst = (inst === "Todas") || (r.Instalacion === inst);
+        const okSoc = (soc === "Todos") || (r.Socorrista === soc);
         return okInst && okSoc;
       });
       page = 1;
@@ -781,40 +738,40 @@ html = """
 
       slice.forEach((r, idx) => {
         const tr = document.createElement("tr");
+        // Guardar llave como data-attribute (si existe)
         tr.dataset.llave = r.llave || "";
 
         // Instalacion
         const tdInst = document.createElement("td");
         tdInst.className = "col-instalacion";
-        tdInst.textContent = getField(r, ["Instalacion", "Instalación", "instalacion"]) || "";
+        tdInst.textContent = r.Instalacion || "";
 
         // Socorrista
         const tdSoc = document.createElement("td");
         tdSoc.className = "col-socorrista";
-        tdSoc.textContent = getField(r, ["Socorrista", "socorrista"]) || "";
+        tdSoc.textContent = r.Socorrista || "";
 
         // Día
         const tdDia = document.createElement("td");
-        tdDia.textContent = getField(r, ["Dia", "día", "dia"]) || "";
+        tdDia.textContent = r.Dia || "";
 
         // Inicio (Ingreso)
         const tdInicio = document.createElement("td");
-        tdInicio.textContent = getField(r, ["Ingreso", "Inicio", "ingreso", "inicio"]) || "";
+        tdInicio.textContent = r.Ingreso || "";
 
-        // Finaliza (Salida) - priorizar "Salida" que es el nombre real en la hoja
+        // Finaliza (Salida)
         const tdFinaliza = document.createElement("td");
         tdFinaliza.className = "col-finaliza";
-        // Intentar obtener Salida con varias claves, pero la hoja usa "Salida"
-        const salida = getField(r, ["Salida", "salida", "SALIDA", "Finaliza", "finaliza", "FINALIZA"]);
-        tdFinaliza.textContent = salida || "";
+        tdFinaliza.textContent = r.Salida || "";
 
         // Horas (Intensidad_horaria)
         const tdHoras = document.createElement("td");
         tdHoras.className = "col-horas";
-        tdHoras.textContent = getField(r, ["Intensidad_horaria", "Intensidad_ho", "Horas", "horas"]) || "";
+        tdHoras.textContent = r.Intensidad_horaria || "";
 
-        // Estado (con iconos)
+        // Estado
         const tdEstado = document.createElement("td");
+        tdEstado.className = "estado-col"; // Añadida clase para móvil
         const wrap = document.createElement("div");
         wrap.className = "actions";
 
@@ -878,10 +835,10 @@ html = """
     // Abrir modal de edición con datos actuales
     function openEditModal(row) {
       currentEditLlave = row.llave;
-      editSocorrista.value = getField(row, ["Socorrista", "socorrista"]) || "";
-      editInstalacion.value = getField(row, ["Instalacion", "Instalación", "instalacion"]) || "";
-      editIngreso.value = getField(row, ["Ingreso", "Inicio", "ingreso", "inicio"]) || "";
-      editSalida.value = getField(row, ["Salida", "salida", "Finaliza", "finaliza"]) || "";
+      editSocorrista.value = row.Socorrista || "";
+      editInstalacion.value = row.Instalacion || "";
+      editIngreso.value = row.Ingreso || "";
+      editSalida.value = row.Salida || "";
       editModal.style.display = "flex";
     }
 
@@ -947,7 +904,7 @@ html = """
         alert("Debe ingresar fecha inicio, fecha fin y bloque");
         return;
       }
-      if (!/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(inicio) || !/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(fin)) {
+      if (!/^\d{2}\/\d{2}\/\d{4}$/.test(inicio) || !/^\d{2}\/\d{2}\/\d{4}$/.test(fin)) {
         alert("Las fechas deben tener formato dd/mm/aaaa");
         return;
       }
@@ -1043,7 +1000,7 @@ html = """
       if (e.target === editModal) closeModal();
     });
 
-    // Placeholders de botones existentes
+    // Placeholders de botones existentes (se mantienen, pero se eliminan los de semana)
     document.getElementById("btnPlantillas").addEventListener("click", () => {
       alert("Descargar Plantilla (pendiente integrar)");
     });
