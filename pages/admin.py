@@ -404,63 +404,61 @@ html = """
 
     /* ===== AJUSTES MÓVIL ===== */
     @media (max-width: 768px) {
-      .wrap { padding: 10px 10px 18px; }
+      .wrap { padding: 5px; }
       .top-actions { grid-template-columns: 1fr; }
 
-      /* Compactar sección de agregar al máximo */
+      /* Compactar sección de agregar al máximo - eliminar todo espacio vertical */
       .agregar-section {
-        padding: 4px;
-        margin-bottom: 8px;
+        padding: 2px;
+        margin-bottom: 5px;
       }
       .agregar-title {
         margin: 0 0 2px 0;
-        font-size: 14px;
+        font-size: 13px;
       }
       .agregar-row {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
+        display: block; /* eliminamos flex gap, usamos bloque simple */
       }
       .agregar-field {
-        margin: 0;
+        margin: 0 0 1px 0; /* apenas un pixel entre campos */
         padding: 0;
       }
       .agregar-field label {
         display: block;
-        font-size: 10px;
+        font-size: 9px;
         margin: 0;
-        line-height: 1.2;
+        line-height: 1;
         font-weight: 700;
       }
       .agregar-field input {
         width: 100%;
-        padding: 2px 4px;
-        font-size: 12px;
+        padding: 2px;
+        font-size: 11px;
         margin: 0;
         border-width: 1px;
         box-sizing: border-box;
       }
       .agregar-btn {
-        padding: 4px 8px;
+        padding: 3px;
         margin-top: 2px;
-        font-size: 13px;
+        font-size: 12px;
         width: 100%;
       }
       .rango-opciones {
         display: flex;
         gap: 2px;
-        margin-top: 4px;
+        margin-top: 2px;
       }
       .rango-btn {
-        padding: 2px 6px;
-        font-size: 10px;
+        padding: 2px 4px;
+        font-size: 9px;
       }
 
       /* Filtros en móvil */
       .filters { grid-template-columns: 1fr; }
 
       /* Tabla móvil: mostrar columnas adecuadas */
-      table { min-width: 0; width: 100%; }
+      table { min-width: 0; width: 100%; font-size: 11px; }
       .col-instalacion, .col-socorrista, .col-horas { display: none; }
       thead th.col-instalacion,
       thead th.col-socorrista,
@@ -470,15 +468,25 @@ html = """
       .col-finaliza { display: table-cell; }
       thead th.col-finaliza { display: table-cell; }
 
-      /* Asegurar que los iconos de acción estén en la columna Estado y bien alineados */
-      td:last-child {
-        width: 80px;
-        min-width: 80px;
+      /* Ajustar anchos de columnas para móvil */
+      th:nth-child(3), td:nth-child(3) { /* Día */
+        width: auto;
+      }
+      th:nth-child(4), td:nth-child(4) { /* Inicio */
+        width: auto;
+      }
+      th:nth-child(5), td:nth-child(5) { /* Finaliza */
+        width: 50px;
+        min-width: 50px;
+      }
+      th:nth-child(7), td:nth-child(7) { /* Estado */
+        width: 70px;
+        min-width: 70px;
         text-align: left;
       }
-      td:last-child .actions {
+      td:nth-child(7) .actions {
         justify-content: flex-start;
-        gap: 8px;
+        gap: 6px;
       }
 
       .table-title { display:none; }
@@ -802,8 +810,9 @@ html = """
         // Finaliza (Salida) - priorizar "Salida" que es el nombre real en la hoja
         const tdFinaliza = document.createElement("td");
         tdFinaliza.className = "col-finaliza";
+        // Intentar obtener Salida con varias claves, pero la hoja usa "Salida"
         const salida = getField(r, ["Salida", "salida", "SALIDA", "Finaliza", "finaliza", "FINALIZA"]);
-        tdFinaliza.textContent = salida || ""; // Si no hay valor, dejar vacío
+        tdFinaliza.textContent = salida || "";
 
         // Horas (Intensidad_horaria)
         const tdHoras = document.createElement("td");
