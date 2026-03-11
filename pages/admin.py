@@ -107,7 +107,7 @@ html = """
     .btn.green:hover { background: var(--btn-green-h); }
     .btn.red:hover { background: var(--btn-red-h); }
 
-    /* Nueva sección para agregar desde bloque */
+    /* Nueva sección para agregar desde bloque (con rango de fechas) */
     .agregar-section {
       border: 2px solid var(--line);
       padding: 12px;
@@ -126,8 +126,8 @@ html = """
       flex-wrap: wrap;
     }
     .agregar-field {
-      flex: 1 1 200px;
-      min-width: 150px;
+      flex: 1 1 150px;
+      min-width: 130px;
     }
     .agregar-field label {
       display: block;
@@ -153,6 +153,26 @@ html = """
       min-width: 120px;
     }
     .agregar-btn:hover { background: var(--btn-green-h); }
+
+    /* Selector de rango */
+    .rango-opciones {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .rango-btn {
+      background: #e0e0e0;
+      border: none;
+      padding: 8px 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .rango-btn.activo {
+      background: var(--btn-green);
+      color: white;
+    }
 
     .section { margin-top: 6px; width: 100%; }
 
@@ -271,7 +291,7 @@ html = """
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
-      min-width: 640px;
+      min-width: 700px;
     }
     thead th {
       text-align: left;
@@ -460,20 +480,30 @@ html = """
         </button>
       </div>
 
-      <!-- NUEVA SECCIÓN: AGREGAR DESDE BLOQUE -->
+      <!-- SECCIÓN MEJORADA: AGREGAR DESDE BLOQUE CON RANGO DE FECHAS -->
       <div class="agregar-section">
         <div class="agregar-title">➕ Agregar desde bloque</div>
         <div class="agregar-row">
           <div class="agregar-field">
-            <label for="fechaInput">Fecha (dd/mm/aaaa)</label>
-            <input type="text" id="fechaInput" placeholder="ej. 17/01/2025" value="">
+            <label for="fechaInicio">Fecha inicio (dd/mm/aaaa)</label>
+            <input type="text" id="fechaInicio" placeholder="ej. 17/01/2025" value="">
+          </div>
+          <div class="agregar-field">
+            <label for="fechaFin">Fecha fin (dd/mm/aaaa)</label>
+            <input type="text" id="fechaFin" placeholder="ej. 23/01/2025" value="">
           </div>
           <div class="agregar-field">
             <label for="bloqueInput">Número de bloque</label>
             <input type="number" id="bloqueInput" placeholder="ej. 1" min="1" value="">
           </div>
-          <button class="agregar-btn" id="btnAgregar">Agregar</button>
+          <button class="agregar-btn" id="btnAgregarRango">Agregar rango</button>
         </div>
+        <div class="rango-opciones">
+          <button class="rango-btn" data-rango="dia">Día</button>
+          <button class="rango-btn" data-rango="semana">Semana</button>
+          <button class="rango-btn" data-rango="mes">Mes</button>
+        </div>
+        <small style="color: #666;">Seleccione un rango o ingrese las fechas manualmente.</small>
       </div>
 
       <div class="section">
@@ -521,7 +551,7 @@ html = """
               <tr>
                 <th class="col-instalacion">Instalacion</th>
                 <th class="col-socorrista">Socorrista</th>
-                <th>Día</th>   <!-- Antes era Turno, ahora Día -->
+                <th>Día</th>
                 <th>Inicio</th>
                 <th class="col-finaliza">Finaliza</th>
                 <th class="col-horas">Horas</th>
@@ -594,9 +624,13 @@ html = """
     const pgPrev = document.getElementById("pgPrev");
     const pgNext = document.getElementById("pgNext");
     const btnBuscar = document.getElementById("btnBuscar");
-    const btnAgregar = document.getElementById("btnAgregar");
-    const fechaInput = document.getElementById("fechaInput");
+
+    // Elementos para agregar
+    const fechaInicio = document.getElementById("fechaInicio");
+    const fechaFin = document.getElementById("fechaFin");
     const bloqueInput = document.getElementById("bloqueInput");
+    const btnAgregarRango = document.getElementById("btnAgregarRango");
+    const rangoBtns = document.querySelectorAll(".rango-btn");
 
     // Modal de edición
     const editModal = document.getElementById("editModal");
@@ -607,7 +641,7 @@ html = """
     const modalCancel = document.getElementById("modalCancel");
     const modalSave = document.getElementById("modalSave");
 
-    let currentEditLlave = null; // guarda la llave del turno que se está editando
+    let currentEditLlave = null;
 
     // Iconos SVG
     function svgEdit() {
@@ -615,6 +649,33 @@ html = """
     }
     function svgTrash() {
       return `<svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M3 6h18" stroke="#111" stroke-width="2" stroke-linecap="round"/><path d="M8 6V4h8v2" stroke="#111" stroke-width="2" stroke-linecap="round"/><path d="M19 6l-1 14H6L5 6" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6" stroke="#111" stroke-width="2" stroke-linecap="round"/><path d="M14 11v6" stroke="#111" stroke-width="2" stroke-linecap="round"/></svg>`;
+    }
+
+    // Funciones de utilidad para fechas
+    function parseFechaDDMMYYYY(fechaStr) {
+      if (!/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(fechaStr)) return null;
+      const [dd, mm, yyyy] = fechaStr.split('/').map(Number);
+      return new Date(yyyy, mm-1, dd);
+    }
+
+    function formatDateToDDMMYYYY(date) {
+      const d = date.getDate().toString().padStart(2,'0');
+      const m = (date.getMonth()+1).toString().padStart(2,'0');
+      const y = date.getFullYear();
+      return `${d}/${m}/${y}`;
+    }
+
+    function getDatesInRange(startStr, endStr) {
+      const start = parseFechaDDMMYYYY(startStr);
+      const end = parseFechaDDMMYYYY(endStr);
+      if (!start || !end) return [];
+      const dates = [];
+      let current = new Date(start);
+      while (current <= end) {
+        dates.push(formatDateToDDMMYYYY(current));
+        current.setDate(current.getDate() + 1);
+      }
+      return dates;
     }
 
     // Cargar datos desde la API
@@ -681,7 +742,7 @@ html = """
 
       slice.forEach((r, idx) => {
         const tr = document.createElement("tr");
-        // Guardar llave como data-attribute
+        // Guardar llave como data-attribute (si existe)
         tr.dataset.llave = r.llave || "";
 
         // Instalacion
@@ -694,25 +755,25 @@ html = """
         tdSoc.className = "col-socorrista";
         tdSoc.textContent = r.Socorrista || "";
 
-        // Día (antes Turno) -> r.Dia
+        // Día
         const tdDia = document.createElement("td");
         tdDia.textContent = r.Dia || "";
 
-        // Inicio -> r.Ingreso
+        // Inicio (Ingreso)
         const tdInicio = document.createElement("td");
         tdInicio.textContent = r.Ingreso || "";
 
-        // Finaliza -> r.Salida
+        // Finaliza (Salida)
         const tdFinaliza = document.createElement("td");
         tdFinaliza.className = "col-finaliza";
         tdFinaliza.textContent = r.Salida || "";
 
-        // Horas -> r.Intensidad_horaria
+        // Horas (Intensidad_horaria)
         const tdHoras = document.createElement("td");
         tdHoras.className = "col-horas";
         tdHoras.textContent = r.Intensidad_horaria || "";
 
-        // Estado -> r.estado
+        // Estado
         const tdEstado = document.createElement("td");
         const wrap = document.createElement("div");
         wrap.className = "actions";
@@ -723,6 +784,10 @@ html = """
         b1.innerHTML = svgEdit();
         b1.addEventListener("click", (e) => {
           e.stopPropagation();
+          if (!r.llave) {
+            alert("Este turno no tiene una llave válida. No se puede editar.");
+            return;
+          }
           openEditModal(r);
         });
 
@@ -732,6 +797,10 @@ html = """
         b2.innerHTML = svgTrash();
         b2.addEventListener("click", (e) => {
           e.stopPropagation();
+          if (!r.llave) {
+            alert("Este turno no tiene una llave válida. No se puede eliminar.");
+            return;
+          }
           if (confirm("¿Está seguro de eliminar este turno?")) {
             eliminarTurno(r.llave);
           }
@@ -741,7 +810,7 @@ html = """
         wrap.appendChild(b2);
         tdEstado.appendChild(wrap);
 
-        // Columna oculta para llave (no se muestra)
+        // Columna oculta para llave
         const tdLlave = document.createElement("td");
         tdLlave.style.display = "none";
         tdLlave.textContent = r.llave || "";
@@ -829,40 +898,86 @@ html = """
       }
     }
 
-    // Agregar desde bloque
-    async function agregarDesdeBloque() {
-      const fecha = fechaInput.value.trim();
+    // Agregar desde bloque para un rango de fechas
+    async function agregarRango() {
+      const inicio = fechaInicio.value.trim();
+      const fin = fechaFin.value.trim();
       const bloque = bloqueInput.value.trim();
-      if (!fecha || !bloque) {
-        alert("Debe ingresar fecha y bloque");
+      if (!inicio || !fin || !bloque) {
+        alert("Debe ingresar fecha inicio, fecha fin y bloque");
         return;
       }
-      // Validar formato fecha dd/mm/yyyy
-      if (!/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(fecha)) {
-        alert("La fecha debe tener formato dd/mm/aaaa");
+      if (!/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(inicio) || !/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(fin)) {
+        alert("Las fechas deben tener formato dd/mm/aaaa");
         return;
       }
-      try {
-        const res = await fetch(ENDPOINT_AGREGAR, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fecha: fecha, bloque: bloque })
-        });
-        const data = await res.json();
-        if (data.ok) {
-          alert("Turnos agregados correctamente");
-          fechaInput.value = "";
-          bloqueInput.value = "";
-          loadMallas();
-        } else {
-          alert("Error al agregar: " + (data.error || "desconocido"));
+      const fechas = getDatesInRange(inicio, fin);
+      if (fechas.length === 0) {
+        alert("Rango de fechas inválido");
+        return;
+      }
+      // Mostrar progreso
+      const total = fechas.length;
+      let exitos = 0;
+      let errores = 0;
+      for (let i = 0; i < fechas.length; i++) {
+        const fecha = fechas[i];
+        try {
+          const res = await fetch(ENDPOINT_AGREGAR, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fecha: fecha, bloque: bloque })
+          });
+          const data = await res.json();
+          if (data.ok) {
+            exitos++;
+          } else {
+            errores++;
+            console.error("Error en fecha", fecha, data.error);
+          }
+        } catch (e) {
+          errores++;
+          console.error("Error de red en fecha", fecha, e);
         }
-      } catch (e) {
-        alert("Error de red al agregar");
+        // Pequeña pausa para no saturar
+        await new Promise(r => setTimeout(r, 200));
+      }
+      alert(`Proceso completado: ${exitos} exitosos, ${errores} errores.`);
+      if (exitos > 0) {
+        fechaInicio.value = "";
+        fechaFin.value = "";
+        bloqueInput.value = "";
+        loadMallas();
       }
     }
 
-    // Eventos
+    // Manejar botones de rango predefinido
+    function setRango(tipo) {
+      const hoy = new Date();
+      let inicio, fin;
+      if (tipo === 'dia') {
+        inicio = fin = formatDateToDDMMYYYY(hoy);
+      } else if (tipo === 'semana') {
+        // Semana actual (lunes a domingo)
+        const diaSem = hoy.getDay(); // 0 domingo, 1 lunes...
+        const diffLunes = (diaSem === 0 ? 6 : diaSem - 1);
+        const lunes = new Date(hoy);
+        lunes.setDate(hoy.getDate() - diffLunes);
+        const domingo = new Date(lunes);
+        domingo.setDate(lunes.getDate() + 6);
+        inicio = formatDateToDDMMYYYY(lunes);
+        fin = formatDateToDDMMYYYY(domingo);
+      } else if (tipo === 'mes') {
+        const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+        const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+        inicio = formatDateToDDMMYYYY(primerDia);
+        fin = formatDateToDDMMYYYY(ultimoDia);
+      }
+      fechaInicio.value = inicio;
+      fechaFin.value = fin;
+    }
+
+    // Event listeners
     btnBuscar.addEventListener("click", applyFilters);
 
     pgPrev.addEventListener("click", () => {
@@ -872,12 +987,18 @@ html = """
       if (!pgNext.disabled) { page++; render(); }
     });
 
-    btnAgregar.addEventListener("click", agregarDesdeBloque);
+    btnAgregarRango.addEventListener("click", agregarRango);
+
+    rangoBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const rango = btn.dataset.rango;
+        setRango(rango);
+      });
+    });
 
     modalCancel.addEventListener("click", closeModal);
     modalSave.addEventListener("click", guardarEdicion);
 
-    // Cerrar modal si se hace clic fuera del contenido
     editModal.addEventListener("click", (e) => {
       if (e.target === editModal) closeModal();
     });
@@ -918,4 +1039,4 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-components.html(html, height=1100, scrolling=True)
+components.html(html, height=1200, scrolling=True)
