@@ -462,7 +462,13 @@ html = """
       .col-finaliza { display: table-cell; }
       thead th.col-finaliza { display: table-cell; }
 
-      /* Ajustes finos para columnas Finaliza y Estado */
+      /* Ajustes finos para columnas */
+      th:nth-child(3), td:nth-child(3) { /* Día */
+        min-width: 60px;
+      }
+      th:nth-child(4), td:nth-child(4) { /* Inicio */
+        min-width: 60px;
+      }
       th:nth-child(5), td:nth-child(5) { /* Finaliza */
         min-width: 60px;
         text-align: left;
@@ -771,20 +777,29 @@ html = """
       tbody.innerHTML = "";
       const slice = filtered.slice(startIdx, endIdx);
 
+      // Depuración: mostrar la primera fila en consola
+      if (slice.length > 0) {
+        console.log("Primera fila de datos:", slice[0]);
+        console.log("Valor de Salida:", slice[0].Salida);
+        console.log("Valor de estado:", slice[0].estado);
+      }
+
       slice.forEach((r, idx) => {
         const tr = document.createElement("tr");
         tr.dataset.llave = r.llave || "";
 
-        // Obtener valores directamente de las claves conocidas (sin getField para evitar confusiones)
+        // Obtener valores con múltiples variantes, priorizando mayúsculas como en la hoja
         const instalacion = r.Instalacion || r.instalacion || "";
         const socorrista = r.Socorrista || r.socorrista || "";
         const dia = r.Dia || r.dia || "";
         const inicio = r.Ingreso || r.ingreso || r.Inicio || r.inicio || "";
-        // Para Finaliza, usar exactamente "Salida" (nombre de la columna en la hoja)
+        // Para Finaliza, usar Salida (nombre exacto en la hoja)
         const salida = r.Salida || r.salida || "";
         const horas = r.Intensidad_horaria || r.intensidad_horaria || r.Horas || r.horas || "";
+        // El valor de estado (si se quisiera mostrar, pero no se usa)
+        // const estadoValor = r.estado || "";
 
-        // Crear elementos td en el orden correcto (coincidiendo con el thead)
+        // Crear elementos td en el orden exacto del thead
         const tdInst = document.createElement("td");
         tdInst.className = "col-instalacion";
         tdInst.textContent = instalacion;
@@ -801,7 +816,7 @@ html = """
 
         const tdFinaliza = document.createElement("td");
         tdFinaliza.className = "col-finaliza";
-        tdFinaliza.textContent = salida;  // Aquí va el valor de Salida
+        tdFinaliza.textContent = salida;  // Esto debe ser el valor de Salida
 
         const tdHoras = document.createElement("td");
         tdHoras.className = "col-horas";
@@ -848,7 +863,6 @@ html = """
         tdLlave.style.display = "none";
         tdLlave.textContent = r.llave || "";
 
-        // Añadir en el orden exacto de las columnas del thead
         tr.appendChild(tdInst);
         tr.appendChild(tdSoc);
         tr.appendChild(tdDia);
