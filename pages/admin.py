@@ -1,3 +1,16 @@
+# pages/admin.py
+import streamlit as st
+import streamlit.components.v1 as components
+
+# =========================
+# CONFIG
+# =========================
+st.set_page_config(page_title="Asignacion Horarios Socorristas", layout="wide")
+
+# =========================
+# HTML UI (RESPONSIVE) con integración real a Mallas
+# =========================
+html = """
 <!doctype html>
 <html>
 <head>
@@ -179,7 +192,7 @@
       min-width: 0;
     }
 
-    /* ELIMINADO: .weekbox (ya no existe) */
+    /* ELIMINADO: .weekbox */
 
     .filters {
       display:grid;
@@ -391,29 +404,22 @@
 
     /* ===== AJUSTES MÓVIL ===== */
     @media (max-width: 768px) {
-      .wrap { padding: 2px; }
-      .frame { padding: 6px; }
-      .title { margin-bottom: 6px; }
-      .top-actions {
-        grid-template-columns: 1fr;
-        gap: 5px;
-        margin-bottom: 8px;
-      }
+      .wrap { padding: 5px; }
+      .top-actions { grid-template-columns: 1fr; }
 
-      /* Compactar sección de agregar */
       .agregar-section {
-        padding: 4px;
-        margin-bottom: 5px;
+        padding: 8px;
+        margin-bottom: 10px;
       }
       .agregar-title {
         font-size: 16px;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
       }
       .agregar-row {
         display: block;
       }
       .agregar-field {
-        margin-bottom: 2px;
+        margin-bottom: 4px;
       }
       .agregar-field label {
         font-size: 12px;
@@ -422,88 +428,59 @@
       }
       .agregar-field input {
         width: 100%;
-        padding: 4px 6px;
+        padding: 6px 8px;
         font-size: 14px;
         border-width: 1px;
       }
       .agregar-btn {
-        padding: 6px 10px;
+        padding: 8px 12px;
         font-size: 14px;
-        margin-top: 2px;
+        margin-top: 4px;
         width: 100%;
       }
       .rango-opciones {
-        gap: 2px;
-        margin-top: 4px;
+        gap: 4px;
+        margin-top: 6px;
       }
       .rango-btn {
         padding: 4px 8px;
         font-size: 12px;
       }
 
-      /* Filtros en móvil */
-      .filters {
-        grid-template-columns: 1fr;
-        margin-top: 5px;
-        margin-bottom: 5px;
-        gap: 6px;
+      .filters { grid-template-columns: 1fr; }
+
+      /* Tabla móvil: ocultar columnas por clase, no por índice */
+      .col-instalacion, .col-socorrista, .col-horas {
+        display: none;
       }
-
-      /* Tabla móvil: mostrar columnas adecuadas y compactar */
-      table {
-        min-width: 0;
-        width: 100%;
-        font-size: 12px;
+      /* Asegurar que las columnas visibles tengan un ancho razonable */
+      .col-dia, .col-inicio, .col-finaliza, .col-estado {
+        display: table-cell;
       }
-      .col-instalacion, .col-socorrista, .col-horas { display: none; }
-      thead th.col-instalacion,
-      thead th.col-socorrista,
-      thead th.col-horas { display: none; }
+      /* Ajustes de ancho */
+      .col-dia { width: 15%; }
+      .col-inicio { width: 20%; }
+      .col-finaliza { width: 20%; }
+      .col-estado { width: 25%; }
 
-      /* Mostrar Finaliza en móvil (columna Salida) */
-      .col-finaliza { display: table-cell; }
-      thead th.col-finaliza { display: table-cell; }
-
-      /* Ajustes de ancho para columnas visibles */
-      th:nth-child(3), td:nth-child(3) { width: 25%; } /* Día */
-      th:nth-child(4), td:nth-child(4) { width: 25%; } /* Inicio */
-      th:nth-child(5), td:nth-child(5) { width: 25%; } /* Finaliza */
-      th:nth-child(7), td:nth-child(7) { width: 25%; } /* Estado */
-
-      /* Compactar celdas */
-      th, td {
-        padding: 6px 4px !important;
-      }
-
-      /* Estado: alinear iconos correctamente */
-      td:nth-child(7) .actions {
+      td.col-estado .actions {
         justify-content: flex-start;
-        gap: 4px;
-        align-items: center;
-        white-space: nowrap;
+        gap: 2px;
       }
       .iconbtn {
-        width: 24px;
-        height: 24px;
+        width: 20px;
+        height: 20px;
       }
       .iconbtn .icon {
-        width: 14px;
-        height: 14px;
+        width: 12px;
+        height: 12px;
       }
 
       .table-title { display:none; }
-
-      /* Paginador compacto */
-      .pagerbar {
-        gap: 5px;
-        margin-top: 5px;
-      }
+      .pagerbar { gap: 8px; }
       .showing { max-width: 60%; }
       .pager { max-width: 40%; }
     }
-
-    /* En desktop, Finaliza se oculta */
-    .col-finaliza { display: none; }
   </style>
 </head>
 <body>
@@ -524,7 +501,6 @@
         </button>
       </div>
 
-      <!-- SECCIÓN MEJORADA: AGREGAR DESDE BLOQUE CON RANGO DE FECHAS -->
       <div class="agregar-section">
         <div class="agregar-title">➕ Agregar desde bloque</div>
         <div class="agregar-row">
@@ -553,7 +529,6 @@
       <div class="section">
         <div class="section-head">
           <div class="subtitle">Horarios de Socorristas</div>
-          <!-- ELIMINADO: weekbox -->
         </div>
 
         <div class="filters">
@@ -564,17 +539,14 @@
               <option value="Cargar Plantilla">Cargar Plantilla</option>
             </select>
           </div>
-
           <div class="field">
             <label for="instSel">Instalación</label>
             <select id="instSel"></select>
           </div>
-
           <div class="field">
             <label for="socSel">Socorrista</label>
             <select id="socSel"></select>
           </div>
-
           <div class="field">
             <label>&nbsp;</label>
             <button class="searchbtn" id="btnBuscar" type="button">Buscar</button>
@@ -584,16 +556,16 @@
         <div class="tablewrap">
           <div class="table-title">Tabla Horarios</div>
 
-          <table>
+          <table id="data-table">
             <thead>
               <tr>
                 <th class="col-instalacion">Instalacion</th>
                 <th class="col-socorrista">Socorrista</th>
-                <th>Día</th>
-                <th>Inicio</th>
+                <th class="col-dia">Día</th>
+                <th class="col-inicio">Inicio</th>
                 <th class="col-finaliza">Finaliza</th>
                 <th class="col-horas">Horas</th>
-                <th>Estado</th>
+                <th class="col-estado">Estado</th>
                 <th style="display:none;">llave</th>
               </tr>
             </thead>
@@ -614,7 +586,6 @@
     </div>
   </div>
 
-  <!-- Modal para editar turno -->
   <div class="modal-overlay" id="editModal">
     <div class="modal">
       <h3>Editar turno</h3>
@@ -648,16 +619,28 @@
     const ENDPOINT_EDITAR = API_BASE + "/api/horarios/editar";
     const ENDPOINT_ELIMINAR = API_BASE + "/api/horarios/eliminar";
 
-    // Helper robusto para obtener campo de un objeto con múltiples posibles keys
-    function getField(row, keys) {
+    // Helper robusto (como en github_calendario.py) pero aquí lo simplificamos
+    function getField(row, key) {
       if (!row) return "";
-      for (const k of keys) {
-        if (Object.prototype.hasOwnProperty.call(row, k)) {
-          const val = row[k];
-          if (val !== undefined && val !== null) return val;
-        }
+      // Intentar con mayúscula y minúscula
+      if (row[key] !== undefined && row[key] !== null) return row[key];
+      // Si no, buscar case-insensitive
+      const lowerKey = key.toLowerCase();
+      for (let k in row) {
+        if (k.toLowerCase() === lowerKey) return row[k];
       }
       return "";
+    }
+
+    // Formatear hora a HH:MM
+    function formatTime(timeStr) {
+      if (!timeStr) return "";
+      const str = String(timeStr);
+      const parts = str.split(':');
+      if (parts.length >= 2) {
+        return parts[0] + ':' + parts[1];
+      }
+      return str;
     }
 
     let allRows = [];
@@ -665,7 +648,6 @@
     let page = 1;
     const pageSize = 14;
 
-    // Elementos DOM
     const instSel = document.getElementById("instSel");
     const socSel = document.getElementById("socSel");
     const tbody = document.getElementById("tbody");
@@ -675,14 +657,12 @@
     const pgNext = document.getElementById("pgNext");
     const btnBuscar = document.getElementById("btnBuscar");
 
-    // Elementos para agregar
     const fechaInicio = document.getElementById("fechaInicio");
     const fechaFin = document.getElementById("fechaFin");
     const bloqueInput = document.getElementById("bloqueInput");
     const btnAgregarRango = document.getElementById("btnAgregarRango");
     const rangoBtns = document.querySelectorAll(".rango-btn");
 
-    // Modal de edición
     const editModal = document.getElementById("editModal");
     const editSocorrista = document.getElementById("editSocorrista");
     const editInstalacion = document.getElementById("editInstalacion");
@@ -693,7 +673,6 @@
 
     let currentEditLlave = null;
 
-    // Iconos SVG
     function svgEdit() {
       return `<svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="#111" stroke-width="2" stroke-linecap="round"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5Z" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     }
@@ -701,20 +680,18 @@
       return `<svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M3 6h18" stroke="#111" stroke-width="2" stroke-linecap="round"/><path d="M8 6V4h8v2" stroke="#111" stroke-width="2" stroke-linecap="round"/><path d="M19 6l-1 14H6L5 6" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6" stroke="#111" stroke-width="2" stroke-linecap="round"/><path d="M14 11v6" stroke="#111" stroke-width="2" stroke-linecap="round"/></svg>`;
     }
 
-    // Funciones de utilidad para fechas
+    // Funciones de fechas
     function parseFechaDDMMYYYY(fechaStr) {
       if (!/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(fechaStr)) return null;
       const [dd, mm, yyyy] = fechaStr.split('/').map(Number);
       return new Date(yyyy, mm-1, dd);
     }
-
     function formatDateToDDMMYYYY(date) {
       const d = date.getDate().toString().padStart(2,'0');
       const m = (date.getMonth()+1).toString().padStart(2,'0');
       const y = date.getFullYear();
       return `${d}/${m}/${y}`;
     }
-
     function getDatesInRange(startStr, endStr) {
       const start = parseFechaDDMMYYYY(startStr);
       const end = parseFechaDDMMYYYY(endStr);
@@ -728,7 +705,6 @@
       return dates;
     }
 
-    // Cargar datos desde la API
     async function loadMallas() {
       try {
         const res = await fetch(ENDPOINT_MALLAS);
@@ -740,9 +716,9 @@
         const instalacionesSet = new Set();
         const socorristasSet = new Set();
         allRows.forEach(r => {
-          const inst = getField(r, ["Instalacion", "Instalación", "instalacion"]);
+          const inst = getField(r, "Instalacion") || getField(r, "instalacion");
           if (inst) instalacionesSet.add(inst);
-          const soc = getField(r, ["Socorrista", "socorrista"]);
+          const soc = getField(r, "Socorrista") || getField(r, "socorrista");
           if (soc) socorristasSet.add(soc);
         });
         const instalaciones = Array.from(instalacionesSet).sort();
@@ -773,8 +749,10 @@
       const inst = instSel.value || "Todas";
       const soc = socSel.value || "Todos";
       filtered = allRows.filter(r => {
-        const okInst = (inst === "Todas") || (getField(r, ["Instalacion", "Instalación", "instalacion"]) === inst);
-        const okSoc = (soc === "Todos") || (getField(r, ["Socorrista", "socorrista"]) === soc);
+        const rInst = getField(r, "Instalacion") || getField(r, "instalacion");
+        const rSoc = getField(r, "Socorrista") || getField(r, "socorrista");
+        const okInst = (inst === "Todas") || (rInst === inst);
+        const okSoc = (soc === "Todos") || (rSoc === soc);
         return okInst && okSoc;
       });
       page = 1;
@@ -792,41 +770,55 @@
       tbody.innerHTML = "";
       const slice = filtered.slice(startIdx, endIdx);
 
+      // Depuración: mostrar primera fila en consola
+      if (slice.length > 0) {
+        console.log("===== PRIMERA FILA DE DATOS =====", slice[0]);
+        console.log("Ingreso:", slice[0].Ingreso, slice[0].ingreso);
+        console.log("Salida:", slice[0].Salida, slice[0].salida);
+      }
+
       slice.forEach((r, idx) => {
         const tr = document.createElement("tr");
         tr.dataset.llave = r.llave || "";
 
-        // Instalacion
+        // Obtener valores usando nombres exactos (priorizando mayúsculas como en la hoja)
+        const instalacion = r.Instalacion || r.instalacion || "";
+        const socorrista = r.Socorrista || r.socorrista || "";
+        const dia = r.Dia || r.dia || "";
+        const inicioRaw = r.Ingreso || r.ingreso || r.Inicio || r.inicio || "";
+        const salidaRaw = r.Salida || r.salida || r.Finaliza || r.finaliza || "";
+        const horas = r.Intensidad_horaria || r.intensidad_horaria || r.Horas || r.horas || "";
+
+        const inicio = formatTime(inicioRaw);
+        const salida = formatTime(salidaRaw);
+
+        // Crear celdas con clases específicas
         const tdInst = document.createElement("td");
         tdInst.className = "col-instalacion";
-        tdInst.textContent = getField(r, ["Instalacion", "Instalación", "instalacion"]) || "";
+        tdInst.textContent = instalacion;
 
-        // Socorrista
         const tdSoc = document.createElement("td");
         tdSoc.className = "col-socorrista";
-        tdSoc.textContent = getField(r, ["Socorrista", "socorrista"]) || "";
+        tdSoc.textContent = socorrista;
 
-        // Día
         const tdDia = document.createElement("td");
-        tdDia.textContent = getField(r, ["Dia", "día", "dia"]) || "";
+        tdDia.className = "col-dia";
+        tdDia.textContent = dia;
 
-        // Inicio (Ingreso)
         const tdInicio = document.createElement("td");
-        tdInicio.textContent = getField(r, ["Ingreso", "Inicio", "ingreso", "inicio"]) || "";
+        tdInicio.className = "col-inicio";
+        tdInicio.textContent = inicio;
 
-        // Finaliza (Salida) - AHORA SOLO USA "Salida" (y variantes) PARA EVITAR CAMPOS INCORRECTOS
         const tdFinaliza = document.createElement("td");
         tdFinaliza.className = "col-finaliza";
-        const salida = getField(r, ["Salida", "salida", "SALIDA"]);
-        tdFinaliza.textContent = salida || "";
+        tdFinaliza.textContent = salida;
 
-        // Horas (Intensidad_horaria)
         const tdHoras = document.createElement("td");
         tdHoras.className = "col-horas";
-        tdHoras.textContent = getField(r, ["Intensidad_horaria", "Intensidad_ho", "Horas", "horas"]) || "";
+        tdHoras.textContent = horas;
 
-        // Estado (con iconos)
         const tdEstado = document.createElement("td");
+        tdEstado.className = "col-estado";
         const wrap = document.createElement("div");
         wrap.className = "actions";
 
@@ -862,11 +854,11 @@
         wrap.appendChild(b2);
         tdEstado.appendChild(wrap);
 
-        // Columna oculta para llave
         const tdLlave = document.createElement("td");
         tdLlave.style.display = "none";
         tdLlave.textContent = r.llave || "";
 
+        // Añadir en orden
         tr.appendChild(tdInst);
         tr.appendChild(tdSoc);
         tr.appendChild(tdDia);
@@ -887,24 +879,20 @@
       pgNext.disabled = page >= pages;
     }
 
-    // Abrir modal de edición con datos actuales
     function openEditModal(row) {
       currentEditLlave = row.llave;
-      editSocorrista.value = getField(row, ["Socorrista", "socorrista"]) || "";
-      editInstalacion.value = getField(row, ["Instalacion", "Instalación", "instalacion"]) || "";
-      editIngreso.value = getField(row, ["Ingreso", "Inicio", "ingreso", "inicio"]) || "";
-      // SALIDA: solo usar "Salida" y variantes
-      editSalida.value = getField(row, ["Salida", "salida", "SALIDA"]) || "";
+      editSocorrista.value = row.Socorrista || row.socorrista || "";
+      editInstalacion.value = row.Instalacion || row.instalacion || "";
+      editIngreso.value = row.Ingreso || row.ingreso || row.Inicio || row.inicio || "";
+      editSalida.value = row.Salida || row.salida || row.Finaliza || row.finaliza || "";
       editModal.style.display = "flex";
     }
 
-    // Cerrar modal
     function closeModal() {
       editModal.style.display = "none";
       currentEditLlave = null;
     }
 
-    // Guardar cambios de edición
     async function guardarEdicion() {
       if (!currentEditLlave) return;
       const payload = {
@@ -923,7 +911,7 @@
         const data = await res.json();
         if (data.ok) {
           closeModal();
-          loadMallas(); // recargar datos
+          loadMallas();
         } else {
           alert("Error al editar: " + (data.error || "desconocido"));
         }
@@ -932,7 +920,6 @@
       }
     }
 
-    // Eliminar turno
     async function eliminarTurno(llave) {
       try {
         const res = await fetch(ENDPOINT_ELIMINAR, {
@@ -951,7 +938,6 @@
       }
     }
 
-    // Agregar desde bloque para un rango de fechas
     async function agregarRango() {
       const inicio = fechaInicio.value.trim();
       const fin = fechaFin.value.trim();
@@ -969,10 +955,8 @@
         alert("Rango de fechas inválido");
         return;
       }
-      // Mostrar progreso
       const total = fechas.length;
-      let exitos = 0;
-      let errores = 0;
+      let exitos = 0, errores = 0;
       for (let i = 0; i < fechas.length; i++) {
         const fecha = fechas[i];
         try {
@@ -982,17 +966,11 @@
             body: JSON.stringify({ fecha: fecha, bloque: bloque })
           });
           const data = await res.json();
-          if (data.ok) {
-            exitos++;
-          } else {
-            errores++;
-            console.error("Error en fecha", fecha, data.error);
-          }
+          if (data.ok) exitos++;
+          else errores++;
         } catch (e) {
           errores++;
-          console.error("Error de red en fecha", fecha, e);
         }
-        // Pequeña pausa para no saturar
         await new Promise(r => setTimeout(r, 200));
       }
       alert(`Proceso completado: ${exitos} exitosos, ${errores} errores.`);
@@ -1004,15 +982,13 @@
       }
     }
 
-    // Manejar botones de rango predefinido
     function setRango(tipo) {
       const hoy = new Date();
       let inicio, fin;
       if (tipo === 'dia') {
         inicio = fin = formatDateToDDMMYYYY(hoy);
       } else if (tipo === 'semana') {
-        // Semana actual (lunes a domingo)
-        const diaSem = hoy.getDay(); // 0 domingo, 1 lunes...
+        const diaSem = hoy.getDay();
         const diffLunes = (diaSem === 0 ? 6 : diaSem - 1);
         const lunes = new Date(hoy);
         lunes.setDate(hoy.getDate() - diffLunes);
@@ -1032,40 +1008,38 @@
 
     // Event listeners
     btnBuscar.addEventListener("click", applyFilters);
-
-    pgPrev.addEventListener("click", () => {
-      if (page > 1) { page--; render(); }
-    });
-    pgNext.addEventListener("click", () => {
-      if (!pgNext.disabled) { page++; render(); }
-    });
-
+    pgPrev.addEventListener("click", () => { if (page > 1) { page--; render(); } });
+    pgNext.addEventListener("click", () => { if (!pgNext.disabled) { page++; render(); } });
     btnAgregarRango.addEventListener("click", agregarRango);
-
     rangoBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const rango = btn.dataset.rango;
-        setRango(rango);
-      });
+      btn.addEventListener("click", () => setRango(btn.dataset.rango));
     });
-
     modalCancel.addEventListener("click", closeModal);
     modalSave.addEventListener("click", guardarEdicion);
+    editModal.addEventListener("click", (e) => { if (e.target === editModal) closeModal(); });
 
-    editModal.addEventListener("click", (e) => {
-      if (e.target === editModal) closeModal();
-    });
+    document.getElementById("btnPlantillas").addEventListener("click", () => alert("Descargar Plantilla (pendiente integrar)"));
+    document.getElementById("btnSubir").addEventListener("click", () => alert("Subir Horarios Masivos (pendiente integrar)"));
 
-    // Placeholders de botones existentes
-    document.getElementById("btnPlantillas").addEventListener("click", () => {
-      alert("Descargar Plantilla (pendiente integrar)");
-    });
-    document.getElementById("btnSubir").addEventListener("click", () => {
-      alert("Subir Horarios Masivos (pendiente integrar)");
-    });
-
-    // Inicializar
     loadMallas();
   </script>
 </body>
 </html>
+"""
+
+# =========================
+# STREAMLIT SHELL
+# =========================
+st.markdown(
+    """
+    <style>
+      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
+      section.main > div{padding:0 !important;margin:0 !important;}
+      header, footer{display:none !important;}
+      iframe{border:0 !important;}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+components.html(html, height=1200, scrolling=True)
