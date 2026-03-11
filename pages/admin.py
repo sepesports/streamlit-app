@@ -452,7 +452,7 @@ html = """
       .filters { grid-template-columns: 1fr; }
 
       /* Tabla móvil: mostrar columnas adecuadas */
-      table { min-width: 0; width: 100%; font-size: 11px; }
+      table { min-width: 0; width: 100%; font-size: 12px; }
       .col-instalacion, .col-socorrista, .col-horas { display: none; }
       thead th.col-instalacion,
       thead th.col-socorrista,
@@ -462,25 +462,31 @@ html = """
       .col-finaliza { display: table-cell; }
       thead th.col-finaliza { display: table-cell; }
 
-      /* Ajustar anchos de columnas para móvil */
-      th:nth-child(3), td:nth-child(3) { /* Día */
-        width: auto;
-      }
-      th:nth-child(4), td:nth-child(4) { /* Inicio */
-        width: auto;
-      }
+      /* Ajustes finos para columnas Finaliza y Estado */
       th:nth-child(5), td:nth-child(5) { /* Finaliza */
-        width: 50px;
-        min-width: 50px;
+        min-width: 60px;
+        text-align: left;
+        padding-left: 4px;
+        padding-right: 4px;
       }
       th:nth-child(7), td:nth-child(7) { /* Estado */
-        width: 70px;
-        min-width: 70px;
+        min-width: 80px;
         text-align: left;
+        padding-left: 8px;
+        vertical-align: middle;
       }
       td:nth-child(7) .actions {
         justify-content: flex-start;
         gap: 6px;
+        align-items: center;
+      }
+      .iconbtn {
+        width: 24px;
+        height: 24px;
+      }
+      .iconbtn .icon {
+        width: 14px;
+        height: 14px;
       }
 
       .table-title { display:none; }
