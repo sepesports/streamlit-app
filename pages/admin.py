@@ -407,35 +407,38 @@ html = """
       .wrap { padding: 10px 10px 18px; }
       .top-actions { grid-template-columns: 1fr; }
 
-      /* Compactar sección de agregar */
+      /* Compactar sección de agregar aún más */
       .agregar-section {
-        padding: 8px;
+        padding: 6px;
         margin-bottom: 10px;
       }
       .agregar-title {
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         font-size: 15px;
       }
       .agregar-row {
-        gap: 4px; /* reducir espacio entre filas */
+        gap: 2px;
         flex-direction: column;
         align-items: stretch;
       }
       .agregar-field {
         min-width: 0;
-        margin-bottom: 2px;
+        margin-bottom: 0;
       }
       .agregar-field label {
         font-size: 11px;
-        margin-bottom: 2px;
+        margin-bottom: 0;
+        line-height: 1.2;
       }
       .agregar-field input {
-        padding: 6px 8px;
+        padding: 4px 8px;
         font-size: 13px;
+        margin-top: 2px;
       }
       .agregar-btn {
         padding: 8px 12px;
         margin-top: 4px;
+        font-size: 14px;
       }
       .rango-opciones {
         gap: 6px;
@@ -460,9 +463,13 @@ html = """
       .col-finaliza { display: table-cell; }
       thead th.col-finaliza { display: table-cell; }
 
-      /* Asegurar que los iconos de acción estén en la columna Estado */
+      /* Asegurar que los iconos de acción estén en la columna Estado y tengan espacio */
+      td:last-child {
+        min-width: 80px; /* espacio suficiente para dos iconos */
+      }
       td:last-child .actions {
-        justify-content: flex-start; /* alinear a la izquierda dentro de la celda */
+        justify-content: flex-start;
+        gap: 8px;
       }
 
       .table-title { display:none; }
@@ -617,6 +624,16 @@ html = """
     const ENDPOINT_EDITAR = API_BASE + "/api/horarios/editar";
     const ENDPOINT_ELIMINAR = API_BASE + "/api/horarios/eliminar";
 
+    // Helper para obtener campo de un objeto con múltiples posibles keys
+    function getField(row, keys) {
+      for (const k of keys) {
+        if (row && Object.prototype.hasOwnProperty.call(row, k)) {
+          return row[k];
+        }
+      }
+      return "";
+    }
+
     let allRows = [];
     let filtered = [];
     let page = 1;
@@ -697,8 +714,10 @@ html = """
         const instalacionesSet = new Set();
         const socorristasSet = new Set();
         allRows.forEach(r => {
-          if (r.Instalacion) instalacionesSet.add(r.Instalacion);
-          if (r.Socorrista) socorristasSet.add(r.Socorrista);
+          const inst = getField(r, ["Instalacion", "Instalación", "instalacion"]);
+          if (inst) instalacionesSet.add(inst);
+          const soc = getField(r, ["Socorrista", "socorrista"]);
+          if (soc) socorristasSet.add(soc);
         });
         const instalaciones = Array.from(instalacionesSet).sort();
         const socorristas = Array.from(socorristasSet).sort();
@@ -728,8 +747,8 @@ html = """
       const inst = instSel.value || "Todas";
       const soc = socSel.value || "Todos";
       filtered = allRows.filter(r => {
-        const okInst = (inst === "Todas") || (r.Instalacion === inst);
-        const okSoc = (soc === "Todos") || (r.Socorrista === soc);
+        const okInst = (inst === "Todas") || (getField(r, ["Instalacion", "Instalación", "instalacion"]) === inst);
+        const okSoc = (soc === "Todos") || (getField(r, ["Socorrista", "socorrista"]) === soc);
         return okInst && okSoc;
       });
       page = 1;
@@ -754,30 +773,30 @@ html = """
         // Instalacion
         const tdInst = document.createElement("td");
         tdInst.className = "col-instalacion";
-        tdInst.textContent = r.Instalacion || "";
+        tdInst.textContent = getField(r, ["Instalacion", "Instalación", "instalacion"]) || "";
 
         // Socorrista
         const tdSoc = document.createElement("td");
         tdSoc.className = "col-socorrista";
-        tdSoc.textContent = r.Socorrista || "";
+        tdSoc.textContent = getField(r, ["Socorrista", "socorrista"]) || "";
 
         // Día
         const tdDia = document.createElement("td");
-        tdDia.textContent = r.Dia || "";
+        tdDia.textContent = getField(r, ["Dia", "día", "dia"]) || "";
 
         // Inicio (Ingreso)
         const tdInicio = document.createElement("td");
-        tdInicio.textContent = r.Ingreso || "";
+        tdInicio.textContent = getField(r, ["Ingreso", "Inicio", "ingreso", "inicio"]) || "";
 
-        // Finaliza (Salida) - asegurar que se muestre correctamente
+        // Finaliza (Salida) - usando getField para asegurar captura
         const tdFinaliza = document.createElement("td");
         tdFinaliza.className = "col-finaliza";
-        tdFinaliza.textContent = r.Salida || "";
+        tdFinaliza.textContent = getField(r, ["Salida", "Finaliza", "finaliza", "salida"]) || "";
 
         // Horas (Intensidad_horaria)
         const tdHoras = document.createElement("td");
         tdHoras.className = "col-horas";
-        tdHoras.textContent = r.Intensidad_horaria || "";
+        tdHoras.textContent = getField(r, ["Intensidad_horaria", "Intensidad_ho", "Horas", "horas"]) || "";
 
         // Estado (con iconos)
         const tdEstado = document.createElement("td");
@@ -844,10 +863,10 @@ html = """
     // Abrir modal de edición con datos actuales
     function openEditModal(row) {
       currentEditLlave = row.llave;
-      editSocorrista.value = row.Socorrista || "";
-      editInstalacion.value = row.Instalacion || "";
-      editIngreso.value = row.Ingreso || "";
-      editSalida.value = row.Salida || "";
+      editSocorrista.value = getField(row, ["Socorrista", "socorrista"]) || "";
+      editInstalacion.value = getField(row, ["Instalacion", "Instalación", "instalacion"]) || "";
+      editIngreso.value = getField(row, ["Ingreso", "Inicio", "ingreso", "inicio"]) || "";
+      editSalida.value = getField(row, ["Salida", "Finaliza", "finaliza", "salida"]) || "";
       editModal.style.display = "flex";
     }
 
