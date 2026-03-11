@@ -107,7 +107,7 @@ html = """
     .btn.green:hover { background: var(--btn-green-h); }
     .btn.red:hover { background: var(--btn-red-h); }
 
-    /* Nueva sección para agregar desde bloque (con rango de fechas) */
+    /* Sección para agregar desde bloque (con rango de fechas) */
     .agregar-section {
       border: 2px solid var(--line);
       padding: 12px;
@@ -192,44 +192,7 @@ html = """
       min-width: 0;
     }
 
-    .weekbox {
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      border: 1px solid var(--soft);
-      background: #fff;
-      border-radius: 10px;
-      padding: 6px 8px;
-      box-shadow: 0 6px 18px rgba(0,0,0,.06);
-      min-width: 0;
-      max-width: 100%;
-    }
-    .weekbox .label {
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 700;
-      white-space: nowrap;
-    }
-    .weekbox .nav {
-      border: 1px solid var(--soft);
-      background: #fff;
-      border-radius: 8px;
-      width: 32px;
-      height: 30px;
-      cursor: pointer;
-      font-weight: 800;
-      flex: 0 0 auto;
-    }
-    .weekbox .nav:hover { background: var(--soft2); }
-    .weekbox .range {
-      font-size: 13px;
-      font-weight: 800;
-      padding: 0 6px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 180px;
-    }
+    /* ELIMINADO: .weekbox ya no existe */
 
     .filters {
       display:grid;
@@ -439,26 +402,76 @@ html = """
       color: white;
     }
 
+    /* ===== AJUSTES MÓVIL ===== */
     @media (max-width: 768px) {
       .wrap { padding: 10px 10px 18px; }
       .top-actions { grid-template-columns: 1fr; }
-      .agregar-row { flex-direction: column; align-items: stretch; }
-      .section-head { flex-direction: column; align-items: flex-start; }
-      .weekbox { width: 100%; justify-content: space-between; }
-      .weekbox .range { max-width: 220px; }
+
+      /* Compactar sección de agregar */
+      .agregar-section {
+        padding: 8px;
+        margin-bottom: 10px;
+      }
+      .agregar-title {
+        margin-bottom: 6px;
+        font-size: 15px;
+      }
+      .agregar-row {
+        gap: 4px; /* reducir espacio entre filas */
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .agregar-field {
+        min-width: 0;
+        margin-bottom: 2px;
+      }
+      .agregar-field label {
+        font-size: 11px;
+        margin-bottom: 2px;
+      }
+      .agregar-field input {
+        padding: 6px 8px;
+        font-size: 13px;
+      }
+      .agregar-btn {
+        padding: 8px 12px;
+        margin-top: 4px;
+      }
+      .rango-opciones {
+        gap: 6px;
+        margin-top: 6px;
+      }
+      .rango-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+
+      /* Filtros en móvil */
       .filters { grid-template-columns: 1fr; }
+
+      /* Tabla móvil: mostrar columnas adecuadas */
       table { min-width: 0; width: 100%; }
       .col-instalacion, .col-socorrista, .col-horas { display: none; }
       thead th.col-instalacion,
       thead th.col-socorrista,
       thead th.col-horas { display: none; }
+
+      /* Mostrar Finaliza en móvil (columna Salida) */
       .col-finaliza { display: table-cell; }
       thead th.col-finaliza { display: table-cell; }
+
+      /* Asegurar que los iconos de acción estén en la columna Estado */
+      td:last-child .actions {
+        justify-content: flex-start; /* alinear a la izquierda dentro de la celda */
+      }
+
       .table-title { display:none; }
       .pagerbar { gap: 8px; }
       .showing { max-width: 60%; }
       .pager { max-width: 40%; }
     }
+
+    /* En desktop, Finaliza se oculta */
     .col-finaliza { display: none; }
   </style>
 </head>
@@ -509,13 +522,7 @@ html = """
       <div class="section">
         <div class="section-head">
           <div class="subtitle">Horarios de Socorristas</div>
-
-          <div class="weekbox" aria-label="Filtro de semana">
-            <span class="label">Ver Semana:</span>
-            <button class="nav" id="prevWeek" type="button">‹</button>
-            <span class="range" id="weekRange">17 - 23 Ene 2022</span>
-            <button class="nav" id="nextWeek" type="button">›</button>
-          </div>
+          <!-- ELIMINADO: weekbox -->
         </div>
 
         <div class="filters">
@@ -556,7 +563,7 @@ html = """
                 <th class="col-finaliza">Finaliza</th>
                 <th class="col-horas">Horas</th>
                 <th>Estado</th>
-                <th style="display:none;">llave</th> <!-- oculto para almacenar -->
+                <th style="display:none;">llave</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -742,7 +749,6 @@ html = """
 
       slice.forEach((r, idx) => {
         const tr = document.createElement("tr");
-        // Guardar llave como data-attribute (si existe)
         tr.dataset.llave = r.llave || "";
 
         // Instalacion
@@ -763,7 +769,7 @@ html = """
         const tdInicio = document.createElement("td");
         tdInicio.textContent = r.Ingreso || "";
 
-        // Finaliza (Salida)
+        // Finaliza (Salida) - asegurar que se muestre correctamente
         const tdFinaliza = document.createElement("td");
         tdFinaliza.className = "col-finaliza";
         tdFinaliza.textContent = r.Salida || "";
@@ -773,7 +779,7 @@ html = """
         tdHoras.className = "col-horas";
         tdHoras.textContent = r.Intensidad_horaria || "";
 
-        // Estado
+        // Estado (con iconos)
         const tdEstado = document.createElement("td");
         const wrap = document.createElement("div");
         wrap.className = "actions";
@@ -1009,12 +1015,6 @@ html = """
     });
     document.getElementById("btnSubir").addEventListener("click", () => {
       alert("Subir Horarios Masivos (pendiente integrar)");
-    });
-    document.getElementById("prevWeek").addEventListener("click", () => {
-      alert("Semana anterior (pendiente integrar)");
-    });
-    document.getElementById("nextWeek").addEventListener("click", () => {
-      alert("Semana siguiente (pendiente integrar)");
     });
 
     // Inicializar
