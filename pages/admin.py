@@ -451,7 +451,7 @@ html = """
       /* Filtros en móvil */
       .filters { grid-template-columns: 1fr; }
 
-      /* Tabla móvil: mostrar solo columnas necesarias */
+      /* Tabla móvil: mostrar solo las columnas necesarias */
       table { min-width: 0; width: 100%; font-size: 12px; }
       .col-instalacion, .col-socorrista, .col-horas { display: none; }
       thead th.col-instalacion,
@@ -633,6 +633,18 @@ html = """
     const ENDPOINT_EDITAR = API_BASE + "/api/horarios/editar";
     const ENDPOINT_ELIMINAR = API_BASE + "/api/horarios/eliminar";
 
+    // Helper robusto para obtener campo de un objeto con múltiples posibles keys (como en github_calendario.py)
+    function getField(row, keys) {
+      if (!row) return "";
+      for (const k of keys) {
+        if (Object.prototype.hasOwnProperty.call(row, k)) {
+          const val = row[k];
+          if (val !== undefined && val !== null) return val;
+        }
+      }
+      return "";
+    }
+
     let allRows = [];
     let filtered = [];
     let page = 1;
@@ -713,8 +725,10 @@ html = """
         const instalacionesSet = new Set();
         const socorristasSet = new Set();
         allRows.forEach(r => {
-          if (r.Instalacion) instalacionesSet.add(r.Instalacion);
-          if (r.Socorrista) socorristasSet.add(r.Socorrista);
+          const inst = getField(r, ["Instalacion", "Instalación", "instalacion"]);
+          if (inst) instalacionesSet.add(inst);
+          const soc = getField(r, ["Socorrista", "socorrista"]);
+          if (soc) socorristasSet.add(soc);
         });
         const instalaciones = Array.from(instalacionesSet).sort();
         const socorristas = Array.from(socorristasSet).sort();
@@ -744,8 +758,8 @@ html = """
       const inst = instSel.value || "Todas";
       const soc = socSel.value || "Todos";
       filtered = allRows.filter(r => {
-        const okInst = (inst === "Todas") || (r.Instalacion === inst);
-        const okSoc = (soc === "Todos") || (r.Socorrista === soc);
+        const okInst = (inst === "Todas") || (getField(r, ["Instalacion", "Instalación", "instalacion"]) === inst);
+        const okSoc = (soc === "Todos") || (getField(r, ["Socorrista", "socorrista"]) === soc);
         return okInst && okSoc;
       });
       page = 1;
@@ -763,26 +777,26 @@ html = """
       tbody.innerHTML = "";
       const slice = filtered.slice(startIdx, endIdx);
 
-      // Depuración: ver primera fila
+      // Depuración: mostrar la primera fila en consola
       if (slice.length > 0) {
-        console.log("Primera fila:", slice[0]);
-        console.log("Salida:", slice[0].Salida);
+        console.log("Primera fila de datos:", slice[0]);
+        console.log("Valor de Salida (con getField):", getField(slice[0], ["Salida", "salida", "SALIDA", "Finaliza", "finaliza", "FINALIZA"]));
       }
 
       slice.forEach((r, idx) => {
         const tr = document.createElement("tr");
         tr.dataset.llave = r.llave || "";
 
-        // Obtener valores (priorizar mayúsculas como en la hoja)
-        const instalacion = r.Instalacion !== undefined ? r.Instalacion : (r.instalacion || "");
-        const socorrista = r.Socorrista !== undefined ? r.Socorrista : (r.socorrista || "");
-        const dia = r.Dia !== undefined ? r.Dia : (r.dia || "");
-        const inicio = r.Ingreso !== undefined ? r.Ingreso : (r.ingreso || r.Inicio || r.inicio || "");
-        // Para Finaliza, usar Salida (nombre exacto en la hoja)
-        const salida = r.Salida !== undefined ? r.Salida : (r.salida || "");
-        const horas = r.Intensidad_horaria !== undefined ? r.Intensidad_horaria : (r.intensidad_horaria || r.Horas || r.horas || "");
+        // Obtener valores usando getField (como en github_calendario.py)
+        const instalacion = getField(r, ["Instalacion", "Instalación", "instalacion"]);
+        const socorrista = getField(r, ["Socorrista", "socorrista"]);
+        const dia = getField(r, ["Dia", "día", "dia"]);
+        const inicio = getField(r, ["Ingreso", "Inicio", "ingreso", "inicio"]);
+        // Para Finaliza, usar "Salida" (nombre exacto en la hoja) y variantes
+        const salida = getField(r, ["Salida", "salida", "SALIDA", "Finaliza", "finaliza", "FINALIZA"]);
+        const horas = getField(r, ["Intensidad_horaria", "Intensidad_ho", "Horas", "horas"]);
 
-        // Crear elementos td en orden estricto
+        // Crear elementos td en el orden exacto del thead
         const tdInst = document.createElement("td");
         tdInst.className = "col-instalacion";
         tdInst.textContent = instalacion;
@@ -799,7 +813,7 @@ html = """
 
         const tdFinaliza = document.createElement("td");
         tdFinaliza.className = "col-finaliza";
-        tdFinaliza.textContent = salida; // Aquí debe ir el valor de Salida
+        tdFinaliza.textContent = salida;  // Aquí debe ir el valor de Salida
 
         const tdHoras = document.createElement("td");
         tdHoras.className = "col-horas";
@@ -846,7 +860,6 @@ html = """
         tdLlave.style.display = "none";
         tdLlave.textContent = r.llave || "";
 
-        // Añadir en el orden exacto del thead
         tr.appendChild(tdInst);
         tr.appendChild(tdSoc);
         tr.appendChild(tdDia);
@@ -870,10 +883,10 @@ html = """
     // Abrir modal de edición con datos actuales
     function openEditModal(row) {
       currentEditLlave = row.llave;
-      editSocorrista.value = row.Socorrista || row.socorrista || "";
-      editInstalacion.value = row.Instalacion || row.instalacion || "";
-      editIngreso.value = row.Ingreso || row.ingreso || row.Inicio || row.inicio || "";
-      editSalida.value = row.Salida || row.salida || "";
+      editSocorrista.value = getField(row, ["Socorrista", "socorrista"]);
+      editInstalacion.value = getField(row, ["Instalacion", "Instalación", "instalacion"]);
+      editIngreso.value = getField(row, ["Ingreso", "Inicio", "ingreso", "inicio"]);
+      editSalida.value = getField(row, ["Salida", "salida", "Finaliza", "finaliza"]);
       editModal.style.display = "flex";
     }
 
