@@ -463,10 +463,10 @@ html = """
         min-width: 0; /* eliminar el min-width de escritorio */
       }
       /* Asignar anchos porcentuales ajustados: más espacio para Día */
-      .col-dia { width: 25%; }
+      .col-dia { width: 35%; }
       .col-inicio { width: 20%; }
       .col-finaliza { width: 20%; }
-      .col-estado { width: 35%; }
+      .col-estado { width: 25%; }
 
       td.col-estado .actions {
         justify-content: flex-start;
