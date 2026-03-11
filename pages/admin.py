@@ -192,7 +192,7 @@ html = """
       min-width: 0;
     }
 
-    /* ELIMINADO: .weekbox ya no existe */
+    /* ELIMINADO: .weekbox (ya no existe) */
 
     .filters {
       display:grid;
@@ -407,9 +407,9 @@ html = """
       .wrap { padding: 10px 10px 18px; }
       .top-actions { grid-template-columns: 1fr; }
 
-      /* Compactar sección de agregar aún más */
+      /* Compactar sección de agregar al máximo */
       .agregar-section {
-        padding: 6px;
+        padding: 6px 6px 8px;
         margin-bottom: 10px;
       }
       .agregar-title {
@@ -417,36 +417,39 @@ html = """
         font-size: 15px;
       }
       .agregar-row {
-        gap: 2px;
+        gap: 1px; /* mínimo espacio entre campos */
         flex-direction: column;
         align-items: stretch;
       }
       .agregar-field {
         min-width: 0;
-        margin-bottom: 0;
+        margin: 0;
+        padding: 0;
       }
       .agregar-field label {
         font-size: 11px;
-        margin-bottom: 0;
-        line-height: 1.2;
+        margin: 0;
+        line-height: 1; /* reduce altura del label */
+        font-weight: 700;
       }
       .agregar-field input {
-        padding: 4px 8px;
+        padding: 4px 6px; /* reducir padding vertical */
         font-size: 13px;
-        margin-top: 2px;
+        margin: 2px 0 0 0; /* pequeño margen superior */
+        border-width: 1px; /* borde más fino para ahorrar espacio */
       }
       .agregar-btn {
-        padding: 8px 12px;
+        padding: 6px 10px;
         margin-top: 4px;
         font-size: 14px;
       }
       .rango-opciones {
-        gap: 6px;
+        gap: 4px;
         margin-top: 6px;
       }
       .rango-btn {
-        padding: 6px 10px;
-        font-size: 12px;
+        padding: 4px 8px;
+        font-size: 11px;
       }
 
       /* Filtros en móvil */
@@ -463,9 +466,11 @@ html = """
       .col-finaliza { display: table-cell; }
       thead th.col-finaliza { display: table-cell; }
 
-      /* Asegurar que los iconos de acción estén en la columna Estado y tengan espacio */
+      /* Asegurar que los iconos de acción estén en la columna Estado y bien alineados */
       td:last-child {
-        min-width: 80px; /* espacio suficiente para dos iconos */
+        width: 80px; /* ancho fijo para la columna Estado */
+        min-width: 80px;
+        text-align: left;
       }
       td:last-child .actions {
         justify-content: flex-start;
@@ -624,11 +629,13 @@ html = """
     const ENDPOINT_EDITAR = API_BASE + "/api/horarios/editar";
     const ENDPOINT_ELIMINAR = API_BASE + "/api/horarios/eliminar";
 
-    // Helper para obtener campo de un objeto con múltiples posibles keys
+    // Helper robusto para obtener campo de un objeto con múltiples posibles keys
     function getField(row, keys) {
+      if (!row) return "";
       for (const k of keys) {
-        if (row && Object.prototype.hasOwnProperty.call(row, k)) {
-          return row[k];
+        if (Object.prototype.hasOwnProperty.call(row, k)) {
+          const val = row[k];
+          if (val !== undefined && val !== null) return val;
         }
       }
       return "";
@@ -788,10 +795,11 @@ html = """
         const tdInicio = document.createElement("td");
         tdInicio.textContent = getField(r, ["Ingreso", "Inicio", "ingreso", "inicio"]) || "";
 
-        // Finaliza (Salida) - usando getField para asegurar captura
+        // Finaliza (Salida) - incluir todas las variantes posibles
         const tdFinaliza = document.createElement("td");
         tdFinaliza.className = "col-finaliza";
-        tdFinaliza.textContent = getField(r, ["Salida", "Finaliza", "finaliza", "salida"]) || "";
+        const salida = getField(r, ["Salida", "salida", "SALIDA", "Finaliza", "finaliza", "FINALIZA"]);
+        tdFinaliza.textContent = salida || "—"; // Si no hay valor, mostrar guión para depurar
 
         // Horas (Intensidad_horaria)
         const tdHoras = document.createElement("td");
@@ -866,7 +874,7 @@ html = """
       editSocorrista.value = getField(row, ["Socorrista", "socorrista"]) || "";
       editInstalacion.value = getField(row, ["Instalacion", "Instalación", "instalacion"]) || "";
       editIngreso.value = getField(row, ["Ingreso", "Inicio", "ingreso", "inicio"]) || "";
-      editSalida.value = getField(row, ["Salida", "Finaliza", "finaliza", "salida"]) || "";
+      editSalida.value = getField(row, ["Salida", "salida", "Finaliza", "finaliza"]) || "";
       editModal.style.display = "flex";
     }
 
