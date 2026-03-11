@@ -789,37 +789,38 @@ html = """
         const tr = document.createElement("tr");
         tr.dataset.llave = r.llave || "";
 
-        // Instalacion
+        // Obtener valores
+        const instalacion = getField(r, ["Instalacion", "Instalación", "instalacion"]) || "";
+        const socorrista = getField(r, ["Socorrista", "socorrista"]) || "";
+        const dia = getField(r, ["Dia", "día", "dia"]) || "";
+        const inicio = getField(r, ["Ingreso", "Inicio", "ingreso", "inicio"]) || "";
+        // Priorizar "Salida" que es el nombre exacto en la hoja Mallas
+        const salida = getField(r, ["Salida", "salida", "SALIDA", "Finaliza", "finaliza", "FINALIZA"]) || "";
+        const horas = getField(r, ["Intensidad_horaria", "Intensidad_ho", "Horas", "horas"]) || "";
+
+        // Crear elementos td en el orden correcto
         const tdInst = document.createElement("td");
         tdInst.className = "col-instalacion";
-        tdInst.textContent = getField(r, ["Instalacion", "Instalación", "instalacion"]) || "";
+        tdInst.textContent = instalacion;
 
-        // Socorrista
         const tdSoc = document.createElement("td");
         tdSoc.className = "col-socorrista";
-        tdSoc.textContent = getField(r, ["Socorrista", "socorrista"]) || "";
+        tdSoc.textContent = socorrista;
 
-        // Día
         const tdDia = document.createElement("td");
-        tdDia.textContent = getField(r, ["Dia", "día", "dia"]) || "";
+        tdDia.textContent = dia;
 
-        // Inicio (Ingreso)
         const tdInicio = document.createElement("td");
-        tdInicio.textContent = getField(r, ["Ingreso", "Inicio", "ingreso", "inicio"]) || "";
+        tdInicio.textContent = inicio;
 
-        // Finaliza (Salida) - priorizar "Salida" que es el nombre real en la hoja
         const tdFinaliza = document.createElement("td");
         tdFinaliza.className = "col-finaliza";
-        // Intentar obtener Salida con varias claves, pero la hoja usa "Salida"
-        const salida = getField(r, ["Salida", "salida", "SALIDA", "Finaliza", "finaliza", "FINALIZA"]);
-        tdFinaliza.textContent = salida || "";
+        tdFinaliza.textContent = salida; // aquí debe ir el valor de Salida
 
-        // Horas (Intensidad_horaria)
         const tdHoras = document.createElement("td");
         tdHoras.className = "col-horas";
-        tdHoras.textContent = getField(r, ["Intensidad_horaria", "Intensidad_ho", "Horas", "horas"]) || "";
+        tdHoras.textContent = horas;
 
-        // Estado (con iconos)
         const tdEstado = document.createElement("td");
         const wrap = document.createElement("div");
         wrap.className = "actions";
@@ -861,6 +862,7 @@ html = """
         tdLlave.style.display = "none";
         tdLlave.textContent = r.llave || "";
 
+        // Añadir en orden exacto de las columnas del thead
         tr.appendChild(tdInst);
         tr.appendChild(tdSoc);
         tr.appendChild(tdDia);
