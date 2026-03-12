@@ -73,7 +73,10 @@ HERO_BG_IMAGE_POS = "center"
 
 USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or "Login"
 USER_ROLE = st.query_params.get("rol") or st.query_params.get("role") or ""
-CAN_MANAGE_SCHEDULES = USER_ROLE.strip().lower() == "administrador"
+NORMALIZED_ROLE = USER_ROLE.strip().lower()
+
+CAN_MANAGE_SCHEDULES = NORMALIZED_ROLE == "administrador"
+CAN_REGISTER_USERS = NORMALIZED_ROLE == "administrador"
 
 # ===================== AJUSTES EDITABLES =====================
 HERO_FONT_SIZE_DESKTOP_PX = 44
@@ -474,6 +477,7 @@ html = """
       var USER_NAME = "__USER_NAME__";
       var USER_ROLE = "__USER_ROLE__";
       var CAN_MANAGE_SCHEDULES = __CAN_MANAGE_SCHEDULES__;
+      var CAN_REGISTER_USERS = __CAN_REGISTER_USERS__;
 
       var BTN_OVR_D = __BTN_OVR_D__;
       var BTN_OVR_M = __BTN_OVR_M__;
@@ -513,8 +517,6 @@ html = """
 
       var grid = document.getElementById("btn-grid");
       var plan = document.getElementById("plan");
-
-      function ceilDiv(a,b){ return Math.floor((a + b - 1) / b); }
 
       function overrideFs(i){
         var vw = window.innerWidth;
@@ -581,6 +583,7 @@ html = """
 
           d.appendChild(sp);
 
+          // Horarios -> /calendario
           if (BTN_TEXTS[i] === "Horarios") {
             d.addEventListener("click", function(){
               try{
@@ -593,6 +596,29 @@ html = """
             });
           }
 
+          // Registro -> /altas_registro solo si rol = Administrador
+          if (BTN_TEXTS[i] === "Registro") {
+            if (CAN_REGISTER_USERS) {
+              d.addEventListener("click", function(){
+                try{
+                  var params = new URLSearchParams(window.location.search || "");
+                  params.set("auth", "ok");
+                  if (!params.get("rol") && USER_ROLE) {
+                    params.set("rol", USER_ROLE);
+                  }
+                  window.location.href = "/altas_registro?" + params.toString();
+                }catch(e){
+                  window.location.href = "/altas_registro?auth=ok";
+                }
+              });
+            } else {
+              d.classList.add("disabled");
+              d.setAttribute("aria-disabled", "true");
+              d.title = "Disponible solo para Administrador";
+            }
+          }
+
+          // Gestión de Horarios -> /editar_horarios solo si rol = Administrador
           if (BTN_TEXTS[i] === "Gestión de\\nHorarios") {
             if (CAN_MANAGE_SCHEDULES) {
               d.addEventListener("click", function(){
@@ -676,6 +702,7 @@ html = (
         .replace("__USER_NAME__", str(USER_NAME).replace('"', '\\"'))
         .replace("__USER_ROLE__", str(USER_ROLE).replace('"', '\\"'))
         .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
+        .replace("__CAN_REGISTER_USERS__", "true" if CAN_REGISTER_USERS else "false")
         .replace("__FOOTER_TEXT__", FOOTER_TEXT)
         .replace("__HERO_FS_D__", str(HERO_FONT_SIZE_DESKTOP_PX))
         .replace("__HERO_FS_M__", str(HERO_FONT_SIZE_MOBILE_PX))
