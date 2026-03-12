@@ -70,6 +70,8 @@ HERO_BG_IMAGE_FIT = "cover"
 HERO_BG_IMAGE_POS = "center"
 
 USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or "Login"
+USER_ROLE = st.query_params.get("rol") or st.query_params.get("role") or ""
+CAN_MANAGE_SCHEDULES = USER_ROLE.strip().lower() == "administrador"
 
 # ===================== AJUSTES EDITABLES =====================
 HERO_FONT_SIZE_DESKTOP_PX = 44
@@ -335,21 +337,16 @@ html = """
       border-radius: 12px;
       box-shadow: var(--shadow1);
 
-      
-background:
-  radial-gradient(220px 80px at 24% 50%, rgba(255,255,255,.25) 0%, rgba(255,255,255,0) 68%),
-
-  linear-gradient(180deg,
-    #ff9a52 0%,
-    #ff7c2c 55%,
-    #d95f12 100%
-  );
-transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, filter .12s ease;
-cursor:pointer;
-user-select:none;
-
-
-      
+      background:
+        radial-gradient(220px 80px at 24% 50%, rgba(255,255,255,.25) 0%, rgba(255,255,255,0) 68%),
+        linear-gradient(180deg,
+          #ff9a52 0%,
+          #ff7c2c 55%,
+          #d95f12 100%
+        );
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, filter .12s ease;
+      cursor:pointer;
+      user-select:none;
     }
 
     .btn::before{
@@ -372,6 +369,21 @@ user-select:none;
     .btn:active{
       transform: translateY(0px);
       box-shadow: var(--shadow1);
+    }
+
+    .btn.disabled{
+      opacity:.42;
+      cursor:not-allowed;
+      pointer-events:none;
+      filter: grayscale(.28) saturate(.72);
+      box-shadow: 0 8px 18px rgba(0,0,0,.42);
+    }
+
+    .btn.disabled:hover{
+      transform:none;
+      box-shadow: 0 8px 18px rgba(0,0,0,.42);
+      border-color: rgba(255,255,255,.12);
+      filter: grayscale(.28) saturate(.72);
     }
 
     .btn span{
@@ -401,12 +413,9 @@ user-select:none;
       box-shadow: var(--shadow2);
       background:
         linear-gradient(180deg, rgba(22,48,110,.60) 0%, rgba(7,22,62,.78) 58%, rgba(2,10,26,.88) 100%);
-      padding: 0 14px;
-      text-align:center;
     }
 
-    /* ==== EDITABLES (mobile) ==== */
-    @media (max-width: 520px){
+    @media (max-width: __MOBILE_MAX_W_PX__px){
       :root{
         --heroFs: __HERO_FS_M__px;
         --hdrFs: __HDR_FS_M__px;
@@ -414,6 +423,9 @@ user-select:none;
         --footFs: __FOOT_FS_M__px;
         --logoPad: __LOGO_PAD_M__px;
       }
+      #img{ border-radius: 10px; }
+      .btn{ border-radius: 10px; }
+      #footer{ border-radius: 10px; }
     }
   </style>
 </head>
@@ -422,101 +434,62 @@ user-select:none;
     <div id="frame"></div>
 
     <div id="plan">
-      <div id="hdr"></div>
+      <div id="hdr">
+        <div class="hdr-cell hdr-logo" style="flex:1 1 0;">
+          <img src="__LOGO_URL__" alt="logo">
+        </div>
+        <div class="hdr-cell" style="flex:2 1 0;">SYNTRA</div>
+        <div class="hdr-cell white" style="flex:1 1 0;">__USER_NAME__</div>
+      </div>
+
       <div id="img">¡BIENVENIDO!</div>
 
       <div id="btn-area">
         <div id="btn-grid"></div>
-        <div id="footer">__FOOTER_TEXT__</div>
       </div>
+
+      <div id="footer">__FOOTER_TEXT__</div>
     </div>
   </div>
 
   <script>
-    (function(){
-      var fe = window.frameElement;
-      if (fe){
-        fe.style.position = "fixed";
-        fe.style.inset = "0";
-        fe.style.width = "100vw";
-        fe.style.height = "100vh";
-        fe.style.border = "0";
-        fe.style.margin = "0";
-        fe.style.padding = "0";
-        fe.style.zIndex = "999999";
-        fe.style.background = "transparent";
-      }
-
+    (() => {
       var BTN_TEXTS = __BTN_TEXTS__;
       var MIN_BTN_W_PX = __MIN_BTN_W_PX__;
       var MOBILE_MAX_W_PX = __MOBILE_MAX_W_PX__;
-      var LOGO_URL = "__LOGO_URL__";
-      var USER_NAME = "__USER_NAME__";
+      var USER_ROLE = "__USER_ROLE__";
+      var CAN_MANAGE_SCHEDULES = __CAN_MANAGE_SCHEDULES__;
 
       var BTN_OVR_D = __BTN_OVR_D__;
       var BTN_OVR_M = __BTN_OVR_M__;
 
-      var hdr = document.getElementById("hdr");
-      hdr.innerHTML = "";
-      var cells = [
-        {w: 6,  t:"",        white:false, kind:"blank"},
-        {w: 22, t:"",        white:true,  kind:"logo"},
-        {w: 44, t:"SYNTRA", white:false, kind:"text"},
-        {w: 22, t:"",        white:true,  kind:"user"},
-        {w: 6,  t:"",        white:false, kind:"blank"},
-      ];
+      function $(id){ return document.getElementById(id); }
+      function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+      function ceilDiv(a,b){ return Math.ceil(a/b); }
 
-      cells.forEach(function(c){
-        var d = document.createElement("div");
-        d.className = "hdr-cell" + (c.white ? " white" : "");
-        d.style.width = c.w + "%";
-
-        if (c.kind === "logo"){
-          d.className += " hdr-logo";
-          var img = document.createElement("img");
-          img.src = LOGO_URL;
-          img.alt = "Logo";
-          img.loading = "eager";
-          img.decoding = "async";
-          d.appendChild(img);
-        } else if (c.kind === "user"){
-          d.textContent = USER_NAME || "";
-        } else {
-          d.textContent = c.t;
-        }
-
-        hdr.appendChild(d);
-      });
-
-      var grid = document.getElementById("btn-grid");
-      var plan = document.getElementById("plan");
-
-      function ceilDiv(a,b){ return Math.floor((a + b - 1) / b); }
-
-      function overrideFs(i){
-        var vw = window.innerWidth;
-        if (vw <= 520){
-          if (BTN_OVR_M && BTN_OVR_M[i] != null) return BTN_OVR_M[i];
-          return null;
-        } else {
-          if (BTN_OVR_D && BTN_OVR_D[i] != null) return BTN_OVR_D[i];
-          return null;
-        }
+      function overrideFs(idx){
+        var vw = window.innerWidth || 1200;
+        var map = (vw <= MOBILE_MAX_W_PX) ? BTN_OVR_M : BTN_OVR_D;
+        return Object.prototype.hasOwnProperty.call(map, idx) ? map[idx] : null;
       }
 
       function buildButtons(){
+        var grid = $("btn-grid");
+        var plan = $("plan");
+        if (!grid || !plan) return;
+
         grid.innerHTML = "";
 
-        var vw = window.innerWidth;
-        var r = plan.getBoundingClientRect();
-        var planW = r.width;
+        var rect = plan.getBoundingClientRect();
+        var planW = Math.max(1, rect.width);
 
         var left = __BTN_L__;
         var right = __BTN_R__;
+        var btnH = __BTN_H__;
         var gapX = __BTN_GAP_X__;
         var gapY = __BTN_GAP_Y__;
-        var btnH = __BTN_H__;
 
+        var vw = window.innerWidth || 1200;
         if (vw <= MOBILE_MAX_W_PX){
           if (gapX < 2) gapX = 2;
           if (gapY < 3) gapY = 3;
@@ -571,6 +544,28 @@ user-select:none;
                 window.location.href = "/calendario?auth=ok";
               }
             });
+          }
+
+          // ✅ Gestión de Horarios -> /editar_horarios solo si rol = Administrador
+          if (BTN_TEXTS[i] === "Gestión de\\nHorarios") {
+            if (CAN_MANAGE_SCHEDULES) {
+              d.addEventListener("click", function(){
+                try{
+                  var params = new URLSearchParams(window.location.search || "");
+                  params.set("auth","ok");
+                  if (!params.get("rol") && USER_ROLE) {
+                    params.set("rol", USER_ROLE);
+                  }
+                  window.location.href = "/editar_horarios?" + params.toString();
+                }catch(e){
+                  window.location.href = "/editar_horarios?auth=ok";
+                }
+              });
+            } else {
+              d.classList.add("disabled");
+              d.setAttribute("aria-disabled", "true");
+              d.title = "Disponible solo para Administrador";
+            }
           }
 
           grid.appendChild(d);
@@ -630,6 +625,8 @@ html = (
         .replace("__MOBILE_MAX_W_PX__", str(MOBILE_MAX_W_PX))
         .replace("__LOGO_URL__", LOGO_URL)
         .replace("__USER_NAME__", str(USER_NAME).replace('"', '\\"'))
+        .replace("__USER_ROLE__", str(USER_ROLE).replace('"', '\\"'))
+        .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
         .replace("__FOOTER_TEXT__", FOOTER_TEXT)
         .replace("__HERO_FS_D__", str(HERO_FONT_SIZE_DESKTOP_PX))
         .replace("__HERO_FS_M__", str(HERO_FONT_SIZE_MOBILE_PX))
