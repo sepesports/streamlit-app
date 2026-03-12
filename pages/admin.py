@@ -293,57 +293,75 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
 }
 .link:hover{ color: rgba(255,255,255,.85); }
 
-/* HUD oculto */
-#hud{ display:none !important; }
+/* Overlay sutil */
+#hud{
+  position:absolute; inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(60% 45% at 50% 18%, rgba(255,255,255,.12), transparent 60%),
+    linear-gradient(180deg, transparent 62%, rgba(0,0,0,.30) 100%);
+}
 
-/* =========================================================
-   POSICIONES DESKTOP
-   ========================================================= */
-#lblUser{ top: var(--lblUserTopDesktop) !important; }
-#inUser{  top: var(--inUserTopDesktop) !important; }
-#lblPass{ top: var(--lblPassTopDesktop) !important; }
-#inPass{  top: var(--inPassTopDesktop) !important; }
-#btnLogin{ top: var(--btnTopDesktop) !important; }
+/* MÓVIL */
+@media (max-width: 768px){
+  #card{ left:8%; right:8%; top:6%; bottom:8%; }
 
-#linkPol{ top: var(--linkPolTopDesktop) !important; left: var(--linkPolLeftDesktop) !important; }
-#linkReg{ top: var(--linkRegTopDesktop) !important; left: var(--linkRegLeftDesktop) !important; }
-
-/* =========================================================
-   MODO MÓVIL
-   ========================================================= */
-@media (max-width: 640px){
   .logo{
     top: var(--logoTopMobile) !important;
     width: var(--logoWMobile) !important;
     transform: translateX(-50%) translateX(var(--logoXMobile)) !important;
   }
+
   .title{
     top: var(--titleTopMobile) !important;
     font:800 var(--titleSizeMobile) Arial, sans-serif !important;
     transform: translateX(var(--titleXMobile)) !important;
   }
-  .label{ font:700 var(--labelSizeMobile) Arial, sans-serif !important; }
-  input.field{ font:700 var(--inputSizeMobile) Arial, sans-serif !important; }
-  .btn{ font:700 var(--btnTextSizeMobile) Arial, sans-serif !important; }
-  .link{ font:700 var(--linkSizeMobile) Arial, sans-serif !important; }
+
+  .label{
+    left:12%;
+    right:12%;
+    font:700 var(--labelSizeMobile) Arial, sans-serif !important;
+  }
+
+  input.field{
+    left:12%;
+    right:12%;
+    font:700 var(--inputSizeMobile) Arial, sans-serif !important;
+  }
+
+  .btn{
+    left:24%;
+    right:24%;
+    font:700 var(--btnTextSizeMobile) Arial, sans-serif !important;
+  }
+
+  .link{
+    font:700 var(--linkSizeMobile) Arial, sans-serif !important;
+  }
 
   #lblUser{ top: var(--lblUserTopMobile) !important; }
-  #inUser{  top: var(--inUserTopMobile) !important; }
+  #inUser { top: var(--inUserTopMobile) !important; }
   #lblPass{ top: var(--lblPassTopMobile) !important; }
-  #inPass{  top: var(--inPassTopMobile) !important; }
+  #inPass { top: var(--inPassTopMobile) !important; }
   #btnLogin{ top: var(--btnTopMobile) !important; }
 
-  #linkPol{ top: var(--linkPolTopMobile) !important; left: var(--linkPolLeftMobile) !important; }
-  #linkReg{ top: var(--linkRegTopMobile) !important; left: var(--linkRegLeftMobile) !important; }
+  #linkPol{
+    top: var(--linkPolTopMobile) !important;
+    left: var(--linkPolLeftMobile) !important;
+  }
+  #linkReg{
+    top: var(--linkRegTopMobile) !important;
+    left: var(--linkRegLeftMobile) !important;
+  }
 }
 </style>
 </head>
-
 <body>
 <div id="stage">
-  <div id="frame"></div>
-
   <div id="plan">
+    <div id="frame"></div>
+
     <div id="card">
       <!-- LOGO -->
       <img class="logo" src="https://files.catbox.moe/056m6v.jpg" alt="Logo"/>
@@ -383,8 +401,9 @@ async function doLogin(){
     const j = await r.json();
 
     if (j && j.ok === true){
-      // ✅ Pasamos el nombre de usuario en la URL
-      window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u);
+      // ✅ Pasamos usuario y rol a la interfaz principal
+      const rol = (j.rol || "").toString();
+      window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol);
     } else {
       alert("Credenciales inválidas");
     }
@@ -403,12 +422,10 @@ async function doLogin(){
     fe.style.border="0";
     fe.style.margin="0";
     fe.style.padding="0";
-    fe.style.zIndex="999999";
     fe.style.background="transparent";
   }
 })();
 </script>
-
 </body>
 </html>
 """
