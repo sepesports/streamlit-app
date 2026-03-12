@@ -49,7 +49,7 @@ BTN_TEXTS = [
     "Control de\nHoras",
     "Incidencias y Comunicados",
     "Registro",
-    "Comunicados",
+    "",
 ]
 
 FOOTER_H = 18
