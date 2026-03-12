@@ -1,6 +1,8 @@
 # app.py
 import streamlit as st
 import streamlit.components.v1 as components
+import gspread
+from google.oauth2.service_account import Credentials
 
 # 🔒 GATE: solo entra con ?auth=ok
 if st.query_params.get("auth") != "ok":
@@ -70,6 +72,50 @@ HERO_BG_IMAGE_FIT = "cover"
 HERO_BG_IMAGE_POS = "center"
 
 USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or "Login"
+
+# ===================== OBTENER ROL DEL USUARIO DESDE GOOGLE SHEET =====================
+# Se utiliza la misma hoja "ALTAS" que en admin.py
+# Archivo: ALTAS, Hoja: Altas
+# URL: https://docs.google.com/spreadsheets/d/1VPp4AsVSIdIYPolzvJAZmhN3QBPszEYS27s9KKquERM/edit#gid=3620940
+
+def get_user_role(username: str) -> str | None:
+    """
+    Consulta la hoja 'Altas' y devuelve el valor de la columna 'Tipo_rol'
+    para la fila donde 'Usuario' coincida con el username.
+    Retorna None si no se encuentra o hay error.
+    """
+    try:
+        # Cargar credenciales desde los secretos de Streamlit
+        # Asegúrate de tener configurado:
+        # st.secrets["gcp_service_account"] = { ... JSON de la cuenta de servicio ... }
+        creds = Credentials.from_service_account_info(
+            st.secrets["gcp_service_account"],
+            scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
+        )
+        client = gspread.authorize(creds)
+
+        # Abrir el libro y la hoja "Altas"
+        sheet = client.open_by_key("1VPp4AsVSIdIYPolzvJAZmhN3QBPszEYS27s9KKquERM").worksheet("Altas")
+
+        # Obtener todas las filas como lista de diccionarios (asumiendo primera fila como encabezados)
+        registros = sheet.get_all_records()
+
+        # Buscar el usuario (columna "Usuario") - ajusta el nombre si es diferente
+        for registro in registros:
+            if registro.get("Usuario") == username:
+                return registro.get("Tipo_rol")  # Puede ser "Administrador" u otro
+
+        # Si no se encuentra, retornar None
+        return None
+
+    except Exception as e:
+        # En caso de error, imprimimos en consola (visible en logs) y asumimos no admin
+        print(f"Error al obtener rol desde Google Sheets: {e}")
+        return None
+
+# Obtener el rol del usuario actual
+rol = get_user_role(USER_NAME)
+IS_ADMIN = (rol == "Administrador")  # True solo si el rol es exactamente "Administrador"
 
 # ===================== AJUSTES EDITABLES =====================
 HERO_FONT_SIZE_DESKTOP_PX = 44
@@ -374,6 +420,12 @@ user-select:none;
       box-shadow: var(--shadow1);
     }
 
+    /* Estilo para botón deshabilitado (no administrador) */
+    .btn.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
     .btn span{
       position:relative;
       display:block;
@@ -455,6 +507,9 @@ user-select:none;
 
       var BTN_OVR_D = __BTN_OVR_D__;
       var BTN_OVR_M = __BTN_OVR_M__;
+
+      // Variable que indica si el usuario es administrador (inyectada desde Python)
+      var IS_ADMIN = __IS_ADMIN__;
 
       var hdr = document.getElementById("hdr");
       hdr.innerHTML = "";
@@ -573,6 +628,23 @@ user-select:none;
             });
           }
 
+          // ✅ Gestión de Horarios (índice 5) solo si es administrador
+          if (i === 5) {  // "Gestión de\nHorarios"
+            if (IS_ADMIN) {
+              d.addEventListener("click", function(){
+                try{
+                  var params = new URLSearchParams(window.location.search || "");
+                  params.set("auth","ok");
+                  window.location.href = "/editar_horarios?" + params.toString();
+                }catch(e){
+                  window.location.href = "/editar_horarios?auth=ok";
+                }
+              });
+            } else {
+              d.classList.add("disabled");
+            }
+          }
+
           grid.appendChild(d);
         }
       }
@@ -649,6 +721,7 @@ html = (
         .replace("__HERO_BG_URL__", HERO_BG_IMAGE_URL)
         .replace("__HERO_BG_FIT__", HERO_BG_IMAGE_FIT)
         .replace("__HERO_BG_POS__", HERO_BG_IMAGE_POS)
+        .replace("__IS_ADMIN__", "true" if IS_ADMIN else "false")   # <-- NUEVO
 )
 
 components.html(html, height=10, scrolling=False)
