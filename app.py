@@ -615,7 +615,7 @@ user-select:none;
 
           d.appendChild(sp);
 
-          // Botón "Horarios" (índice 0) siempre redirige a /calendario
+          // ✅ Horarios -> /calendario (mantiene querystring)
           if (BTN_TEXTS[i] === "Horarios") {
             d.addEventListener("click", function(){
               try{
@@ -628,10 +628,9 @@ user-select:none;
             });
           }
 
-          // Botón "Gestión de Horarios" (índice 5) solo si es administrador
+          // ✅ Gestión de Horarios (índice 5) solo si es administrador
           if (i === 5) {  // "Gestión de\nHorarios"
             if (IS_ADMIN) {
-              // Administrador: habilitar click para ir a editar_horarios
               d.addEventListener("click", function(){
                 try{
                   var params = new URLSearchParams(window.location.search || "");
@@ -642,7 +641,6 @@ user-select:none;
                 }
               });
             } else {
-              // No administrador: agregar clase disabled (visualmente inactivo)
               d.classList.add("disabled");
             }
           }
