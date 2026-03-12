@@ -46,9 +46,9 @@ BTN_RIGHT = 5
 BTN_TEXTS = [
     "Horarios",
     "Control de\nAsistencia",
-    "Nomina y\nPagos",
-    "Incidencias",
-    "Formación",
+    "Control de\nHoras",
+    "Incidencias y Comunicados",
+    "Registro",
     "Comunicados",
 ]
 
