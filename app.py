@@ -2,6 +2,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
+st.set_page_config(layout="wide")
+
 # 🔒 GATE: solo entra con ?auth=ok
 if st.query_params.get("auth") != "ok":
     st.markdown(
@@ -95,8 +97,6 @@ LOGO_BORDER_RADIUS_PX = 0
 LOGO_OBJECT_FIT = "cover"
 LOGO_BORDER = "0px solid rgba(255,255,255,.0)"
 
-st.set_page_config(layout="wide")
-
 st.markdown(
     """
     <style>
@@ -135,7 +135,6 @@ html = """
       --shadow1: 0 12px 26px rgba(0,0,0,.55);
       --shadow2: 0 10px 18px rgba(0,0,0,.45);
 
-      /* EDITABLES (desktop) */
       --heroFs: __HERO_FS_D__px;
       --hdrFs: __HDR_FS_D__px;
       --btnFs: __BTN_FS_D__px;
@@ -146,7 +145,10 @@ html = """
     }
 
     html, body{
-      margin:0;padding:0;width:100%;height:100%;
+      margin:0;
+      padding:0;
+      width:100%;
+      height:100%;
       overflow:hidden;
       background: var(--bg);
       font-family: "Segoe UI", Arial, Helvetica, sans-serif;
@@ -155,7 +157,10 @@ html = """
     }
 
     #stage{
-      position:fixed;inset:0;width:100vw;height:100vh;
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
       background:
         radial-gradient(1200px 700px at 50% 18%, rgba(40,130,255,.22) 0%, rgba(8,35,95,.15) 35%, rgba(2,10,26,0) 70%),
         linear-gradient(280deg, #03102a 0%, #020a1a 70%, #010612 100%);
@@ -163,8 +168,10 @@ html = """
 
     #frame{
       position:absolute;
-      left:var(--padx); right:var(--padx);
-      top:var(--padtop); bottom:0;
+      left:var(--padx);
+      right:var(--padx);
+      top:var(--padtop);
+      bottom:0;
       border-left:var(--b) solid var(--bc);
       border-right:var(--b) solid var(--bc);
       border-top:var(--b) solid var(--bc);
@@ -176,15 +183,17 @@ html = """
 
     #plan{
       position:absolute;
-      left:var(--padx); right:var(--padx);
-      top:var(--padtop); bottom:0;
+      left:var(--padx);
+      right:var(--padx);
+      top:var(--padtop);
+      bottom:0;
       overflow:hidden;
     }
 
-    /* ================= HEADER ================= */
     #hdr{
       position:absolute;
-      left:0; right:0;
+      left:0;
+      right:0;
       top: __HDR_TOP__%;
       height: __HDR_H__%;
       border: var(--b) solid var(--bc);
@@ -214,6 +223,7 @@ html = """
       text-shadow: 0 2px 10px rgba(0,0,0,.55);
       padding: 0 10px;
     }
+
     .hdr-cell.white{
       background:
         linear-gradient(180deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.07) 55%, rgba(255,255,255,.05) 100%);
@@ -221,11 +231,15 @@ html = """
       border-left: 1px solid rgba(255,255,255,.06);
       border-right: 1px solid rgba(255,255,255,.06);
     }
-    .hdr-cell:last-child{ border-right: none; }
+
+    .hdr-cell:last-child{
+      border-right: none;
+    }
 
     .hdr-logo{
       padding: var(--logoPad) !important;
     }
+
     .hdr-logo img{
       width: 100%;
       height: 100%;
@@ -236,7 +250,6 @@ html = """
       background: rgba(0,0,0,.10);
     }
 
-    /* ================= HERO (img) ================= */
     #img{
       position:absolute;
       left: __IMG_L__%;
@@ -257,7 +270,6 @@ html = """
       border-radius: 14px;
       box-shadow: var(--shadow0);
       overflow:hidden;
-
       background-image:
         linear-gradient(180deg, rgba(0,0,0,.22) 0%, rgba(0,0,0,.12) 55%, rgba(0,0,0,.18) 100%),
         radial-gradient(900px 220px at 50% 35%, rgba(100,190,255,.22) 0%, rgba(35,120,255,.10) 32%, rgba(2,10,26,0) 68%),
@@ -303,10 +315,10 @@ html = """
       pointer-events:none;
     }
 
-    /* ================= BUTTON AREA ================= */
     #btn-area{
       position:absolute;
-      left:0; right:0;
+      left:0;
+      right:0;
       top: __BTN_AREA_TOP__%;
       bottom: 0;
       background: transparent;
@@ -336,14 +348,9 @@ html = """
       overflow:hidden;
       border-radius: 12px;
       box-shadow: var(--shadow1);
-
       background:
         radial-gradient(220px 80px at 24% 50%, rgba(255,255,255,.25) 0%, rgba(255,255,255,0) 68%),
-        linear-gradient(180deg,
-          #ff9a52 0%,
-          #ff7c2c 55%,
-          #d95f12 100%
-        );
+        linear-gradient(180deg, #ff9a52 0%, #ff7c2c 55%, #d95f12 100%);
       transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, filter .12s ease;
       cursor:pointer;
       user-select:none;
@@ -394,7 +401,6 @@ html = """
       text-shadow: 0 1px 0 rgba(0,0,0,.25);
     }
 
-    /* Footer */
     #footer{
       position:absolute;
       left: __FOOT_L__%;
@@ -413,6 +419,8 @@ html = """
       box-shadow: var(--shadow2);
       background:
         linear-gradient(180deg, rgba(22,48,110,.60) 0%, rgba(7,22,62,.78) 58%, rgba(2,10,26,.88) 100%);
+      padding: 0 14px;
+      text-align:center;
     }
 
     @media (max-width: __MOBILE_MAX_W_PX__px){
@@ -434,69 +442,110 @@ html = """
     <div id="frame"></div>
 
     <div id="plan">
-      <div id="hdr">
-        <div class="hdr-cell hdr-logo" style="flex:1 1 0;">
-          <img src="__LOGO_URL__" alt="logo">
-        </div>
-        <div class="hdr-cell" style="flex:2 1 0;">SYNTRA</div>
-        <div class="hdr-cell white" style="flex:1 1 0;">__USER_NAME__</div>
-      </div>
-
+      <div id="hdr"></div>
       <div id="img">¡BIENVENIDO!</div>
 
       <div id="btn-area">
         <div id="btn-grid"></div>
+        <div id="footer">__FOOTER_TEXT__</div>
       </div>
-
-      <div id="footer">__FOOTER_TEXT__</div>
     </div>
   </div>
 
   <script>
-    (() => {
+    (function(){
+      var fe = window.frameElement;
+      if (fe){
+        fe.style.position = "fixed";
+        fe.style.inset = "0";
+        fe.style.width = "100vw";
+        fe.style.height = "100vh";
+        fe.style.border = "0";
+        fe.style.margin = "0";
+        fe.style.padding = "0";
+        fe.style.zIndex = "999999";
+        fe.style.background = "transparent";
+      }
+
       var BTN_TEXTS = __BTN_TEXTS__;
       var MIN_BTN_W_PX = __MIN_BTN_W_PX__;
       var MOBILE_MAX_W_PX = __MOBILE_MAX_W_PX__;
+      var LOGO_URL = "__LOGO_URL__";
+      var USER_NAME = "__USER_NAME__";
       var USER_ROLE = "__USER_ROLE__";
       var CAN_MANAGE_SCHEDULES = __CAN_MANAGE_SCHEDULES__;
 
       var BTN_OVR_D = __BTN_OVR_D__;
       var BTN_OVR_M = __BTN_OVR_M__;
 
-      function $(id){ return document.getElementById(id); }
-      function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
-      function ceilDiv(a,b){ return Math.ceil(a/b); }
+      var hdr = document.getElementById("hdr");
+      hdr.innerHTML = "";
 
-      function overrideFs(idx){
-        var vw = window.innerWidth || 1200;
-        var map = (vw <= MOBILE_MAX_W_PX) ? BTN_OVR_M : BTN_OVR_D;
-        return Object.prototype.hasOwnProperty.call(map, idx) ? map[idx] : null;
+      var cells = [
+        {w: 6,  t:"",       white:false, kind:"blank"},
+        {w: 22, t:"",       white:true,  kind:"logo"},
+        {w: 44, t:"SYNTRA", white:false, kind:"text"},
+        {w: 22, t:"",       white:true,  kind:"user"},
+        {w: 6,  t:"",       white:false, kind:"blank"}
+      ];
+
+      cells.forEach(function(c){
+        var d = document.createElement("div");
+        d.className = "hdr-cell" + (c.white ? " white" : "");
+        d.style.width = c.w + "%";
+
+        if (c.kind === "logo"){
+          d.className += " hdr-logo";
+          var img = document.createElement("img");
+          img.src = LOGO_URL;
+          img.alt = "Logo";
+          img.loading = "eager";
+          img.decoding = "async";
+          d.appendChild(img);
+        } else if (c.kind === "user"){
+          d.textContent = USER_NAME || "";
+        } else {
+          d.textContent = c.t;
+        }
+
+        hdr.appendChild(d);
+      });
+
+      var grid = document.getElementById("btn-grid");
+      var plan = document.getElementById("plan");
+
+      function ceilDiv(a,b){ return Math.floor((a + b - 1) / b); }
+
+      function overrideFs(i){
+        var vw = window.innerWidth;
+        if (vw <= MOBILE_MAX_W_PX){
+          if (BTN_OVR_M && BTN_OVR_M[i] != null) return BTN_OVR_M[i];
+          return null;
+        } else {
+          if (BTN_OVR_D && BTN_OVR_D[i] != null) return BTN_OVR_D[i];
+          return null;
+        }
       }
 
       function buildButtons(){
-        var grid = $("btn-grid");
-        var plan = $("plan");
-        if (!grid || !plan) return;
-
         grid.innerHTML = "";
 
-        var rect = plan.getBoundingClientRect();
-        var planW = Math.max(1, rect.width);
+        var vw = window.innerWidth;
+        var r = plan.getBoundingClientRect();
+        var planW = r.width;
 
         var left = __BTN_L__;
         var right = __BTN_R__;
-        var btnH = __BTN_H__;
         var gapX = __BTN_GAP_X__;
         var gapY = __BTN_GAP_Y__;
+        var btnH = __BTN_H__;
 
-        var vw = window.innerWidth || 1200;
         if (vw <= MOBILE_MAX_W_PX){
           if (gapX < 2) gapX = 2;
           if (gapY < 3) gapY = 3;
         }
 
         var count = BTN_TEXTS.length;
-
         var cols = 3;
         var usable = 100 - left - right;
 
@@ -507,16 +556,15 @@ html = """
           cols -= 1;
         }
 
-        var rows = ceilDiv(count, cols);
         var w = (usable - (gapX * (cols - 1))) / cols;
         if (w < 0) w = 0;
 
-        for (var i=0;i<count;i++){
-          var row = Math.floor(i/cols);
-          var col = i%cols;
+        for (var i = 0; i < count; i++){
+          var row = Math.floor(i / cols);
+          var col = i % cols;
 
-          var x = left + col*(w + gapX);
-          var y = row*(btnH + gapY);
+          var x = left + col * (w + gapX);
+          var y = row * (btnH + gapY);
 
           var d = document.createElement("div");
           d.className = "btn";
@@ -533,12 +581,11 @@ html = """
 
           d.appendChild(sp);
 
-          // ✅ Horarios -> /calendario (mantiene querystring)
           if (BTN_TEXTS[i] === "Horarios") {
             d.addEventListener("click", function(){
               try{
                 var params = new URLSearchParams(window.location.search || "");
-                params.set("auth","ok");
+                params.set("auth", "ok");
                 window.location.href = "/calendario?" + params.toString();
               }catch(e){
                 window.location.href = "/calendario?auth=ok";
@@ -546,13 +593,12 @@ html = """
             });
           }
 
-          // ✅ Gestión de Horarios -> /editar_horarios solo si rol = Administrador
           if (BTN_TEXTS[i] === "Gestión de\\nHorarios") {
             if (CAN_MANAGE_SCHEDULES) {
               d.addEventListener("click", function(){
                 try{
                   var params = new URLSearchParams(window.location.search || "");
-                  params.set("auth","ok");
+                  params.set("auth", "ok");
                   if (!params.get("rol") && USER_ROLE) {
                     params.set("rol", USER_ROLE);
                   }
@@ -572,7 +618,10 @@ html = """
         }
       }
 
-      function update(){ buildButtons(); }
+      function update(){
+        buildButtons();
+      }
+
       window.addEventListener("resize", update);
       update();
     })();
