@@ -4,8 +4,31 @@ import streamlit.components.v1 as components
 
 # ==============================================================================
 # PLANTILLA "CALENDARIO" — TEMA HUD NARANJA
-# Versión final: con estados personalizados, checkboxes y modal.
+# Versión final: con filtro por DNI según Tipo_rol (Socorrista/Administrador/Directivo)
 # ==============================================================================
+
+# Obtener parámetros de autenticación
+query_params = st.query_params
+AUTH_USER = query_params.get("usuario") or query_params.get("user") or ""
+AUTH_ROLE = query_params.get("rol") or query_params.get("role") or ""
+AUTH_DNI = query_params.get("dni") or ""
+
+# Normalizar rol
+NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
+IS_SOCORRISTA = NORMALIZED_ROLE == "socorrista"
+IS_ADMIN_OR_DIRECTIVO = NORMALIZED_ROLE in ["administrador", "directivo"]
+
+# Si no hay autenticación, redirigir
+if not AUTH_USER or not AUTH_ROLE:
+    st.markdown(
+        """
+        <script>
+          window.location.href="/admin";
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.stop()
 
 PAD_X_PX = 10
 PAD_TOP_PX = 10
@@ -736,7 +759,7 @@ html = r"""
             <select id="yearSelect"></select>
             <span class="caret">▾</span>
           </div>
-          <div class="select selectPill">
+          <div class="select selectPill" id="socorristaSelectContainer">
             <select id="socorristaSelect">
               <option value="">Todos los socorristas</option>
             </select>
@@ -756,6 +779,7 @@ html = r"""
           <h3 class="agendaTitle">Agenda del día</h3>
           <div class="meta agendaMeta" id="agendaMeta">
             <div><b>Fecha:</b> <span id="fechaDisplay">—</span></div>
+            <div><b>Usuario:</b> <span id="userDisplay">""" + AUTH_USER + """</span> (<span id="roleDisplay">""" + AUTH_ROLE + """</span>)</div>
           </div>
           <div id="table" class="tableCard">
             <!-- Cabecera para móvil -->
@@ -818,8 +842,13 @@ html = r"""
   const API_BASE = "https://camilo27.pythonanywhere.com";
   const ENDPOINT_MALLAS = API_BASE + "/api/mallas";
 
-  // Usuario conectado (hardcodeado para demo)
-  const CURRENT_USER = "Bilal";
+  // Usuario autenticado (desde parámetros URL)
+  const CURRENT_USER = \"""" + AUTH_USER + """\";
+  const CURRENT_ROLE = \"""" + AUTH_ROLE + """\".toLowerCase();
+  const CURRENT_DNI = \"""" + AUTH_DNI + """\";
+  
+  const IS_SOCORRISTA = CURRENT_ROLE === "socorrista";
+  const IS_ADMIN_OR_DIRECTIVO = CURRENT_ROLE === "administrador" || CURRENT_ROLE === "directivo";
 
   let currentDate = new Date();
   currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
@@ -838,6 +867,14 @@ html = r"""
   // Para manejo de selección
   let selectedRows = new Set(); // almacena índices de filas seleccionadas (frente al array filtrado actual)
   let currentFilteredRows = [];  // se actualiza en cada updateAgenda
+
+  // Si es socorrista, ocultar el filtro de socorristas
+  if (IS_SOCORRISTA) {
+    document.addEventListener('DOMContentLoaded', function() {
+      const container = document.getElementById('socorristaSelectContainer');
+      if (container) container.style.display = 'none';
+    });
+  }
 
   function pad2(n){ return String(n).padStart(2,'0'); }
 
@@ -1000,14 +1037,24 @@ html = r"""
   function getFilteredRows(){
     const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
     const keySel = formatDateKey(selectedDate);
+    
     return ALL_ROWS.filter(r => {
       const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
       if(!fechaKey) return false;
       if(fechaKey < formatDateKey(currentDate)) return false;
-      if(soc){
+      
+      // 🔥 FILTRO CRÍTICO: Para SOCORRISTA, filtrar por DNI
+      if (IS_SOCORRISTA) {
+        const rowDNI = String(getField(r, ["DNI", "dni", "Cedula", "cedula"])).trim();
+        if (rowDNI !== CURRENT_DNI) return false;
+      }
+      
+      // Para ADMIN/DIRECTIVO, aplicar filtro por socorrista si está seleccionado
+      if (!IS_SOCORRISTA && soc) {
         const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
         if(rs !== soc) return false;
       }
+      
       if(FILTER_MODE === "dia"){
         return fechaKey === keySel;
       }
@@ -1244,14 +1291,21 @@ html = r"""
   function rebuildAvailability(){
     AVAILABLE_DATES = new Set();
     const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
+    
     ALL_ROWS.forEach(r => {
       const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
       if(!fechaKey) return;
       if(fechaKey < formatDateKey(currentDate)) return;
-      if(soc){
+      
+      // 🔥 FILTRO CRÍTICO para availability de fechas
+      if (IS_SOCORRISTA) {
+        const rowDNI = String(getField(r, ["DNI", "dni", "Cedula", "cedula"])).trim();
+        if (rowDNI !== CURRENT_DNI) return;
+      } else if (soc) {
         const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
         if(rs !== soc) return;
       }
+      
       AVAILABLE_DATES.add(fechaKey);
     });
   }
@@ -1263,19 +1317,38 @@ html = r"""
       if(!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
       if(!data || data.ok !== true || !Array.isArray(data.rows)) throw new Error("JSON inválido");
+      
+      // Cargar todas las filas
       ALL_ROWS = data.rows;
-      const setS = new Set();
-      ALL_ROWS.forEach(r => {
-        const s = String(getField(r, ["Socorrista","socorrista"])).trim();
-        if(s) setS.add(s);
-      });
-      SOCORRISTAS = Array.from(setS).sort((a,b)=>a.localeCompare(b, 'es', {sensitivity:'base'}));
+      
+      // Si es SOCORRISTA, construir lista de socorristas solo con su propio nombre
+      if (IS_SOCORRISTA) {
+        const setS = new Set();
+        ALL_ROWS.forEach(r => {
+          const rowDNI = String(getField(r, ["DNI", "dni", "Cedula", "cedula"])).trim();
+          if (rowDNI === CURRENT_DNI) {
+            const s = String(getField(r, ["Socorrista","socorrista"])).trim();
+            if (s) setS.add(s);
+          }
+        });
+        SOCORRISTAS = Array.from(setS).sort((a,b)=>a.localeCompare(b, 'es', {sensitivity:'base'}));
+      } else {
+        // Para ADMIN/DIRECTIVO, recopilar todos los socorristas
+        const setS = new Set();
+        ALL_ROWS.forEach(r => {
+          const s = String(getField(r, ["Socorrista","socorrista"])).trim();
+          if(s) setS.add(s);
+        });
+        SOCORRISTAS = Array.from(setS).sort((a,b)=>a.localeCompare(b, 'es', {sensitivity:'base'}));
+      }
+      
       fillSocorristaSelect();
       rebuildAvailability();
       setSyncBadge(true, "SYNC OK");
       renderCalendar(currentYear, currentMonth);
       updateAgenda();
     }catch(e){
+      console.error("Error loading mallas:", e);
       ALL_ROWS = [];
       SOCORRISTAS = [];
       AVAILABLE_DATES = new Set();
@@ -1301,20 +1374,26 @@ html = r"""
     modalOverlay.style.display = 'none';
   }
 
-  optNovedad.addEventListener('change', function(e) {
-    novedadInput.style.display = e.target.checked ? 'block' : 'none';
-  });
+  if (optNovedad) {
+    optNovedad.addEventListener('change', function(e) {
+      novedadInput.style.display = e.target.checked ? 'block' : 'none';
+    });
+  }
 
-  modalCancel.addEventListener('click', hideModal);
-  modalSend.addEventListener('click', function() {
-    hideModal();
-    // Por ahora solo cierra
-  });
+  if (modalCancel) modalCancel.addEventListener('click', hideModal);
+  if (modalSend) {
+    modalSend.addEventListener('click', function() {
+      hideModal();
+      // Por ahora solo cierra
+    });
+  }
 
   // Cerrar modal si se hace clic fuera del contenido
-  modalOverlay.addEventListener('click', function(e) {
-    if (e.target === modalOverlay) hideModal();
-  });
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', function(e) {
+      if (e.target === modalOverlay) hideModal();
+    });
+  }
 
   function init() {
     const yearSelect = document.getElementById('yearSelect');
@@ -1333,7 +1412,12 @@ html = r"""
     document.getElementById('applyFilters').addEventListener('click', () => {
       const newMonth = parseInt(document.getElementById('monthSelect').value);
       const newYear = parseInt(document.getElementById('yearSelect').value);
-      FILTER_SOCORRISTA = document.getElementById('socorristaSelect').value || "";
+      
+      // Para SOCORRISTA, ignorar el filtro de socorrista
+      if (!IS_SOCORRISTA) {
+        FILTER_SOCORRISTA = document.getElementById('socorristaSelect').value || "";
+      }
+      
       FILTER_MODE = document.getElementById('modeSelect').value || "dia";
       currentMonth = newMonth;
       currentYear = newYear;
@@ -1352,15 +1436,20 @@ html = r"""
     });
 
     // Botones inferiores
-    document.getElementById('btnModificar').addEventListener('click', function() {
-      if (!this.disabled) {
-        showModal();
-      }
-    });
+    const btnModificar = document.getElementById('btnModificar');
+    if (btnModificar) {
+      btnModificar.addEventListener('click', function() {
+        if (!this.disabled) {
+          showModal();
+        }
+      });
+    }
 
     // Inicialmente deshabilitados
-    document.getElementById('btnAplicar').disabled = true;
-    document.getElementById('btnModificar').disabled = true;
+    const btnAplicar = document.getElementById('btnAplicar');
+    const btnModificarEl = document.getElementById('btnModificar');
+    if (btnAplicar) btnAplicar.disabled = true;
+    if (btnModificarEl) btnModificarEl.disabled = true;
 
     renderCalendar(currentYear, currentMonth);
     updateAgenda();
