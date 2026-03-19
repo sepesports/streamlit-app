@@ -71,8 +71,11 @@ HERO_BG_IMAGE_URL = "https://files.catbox.moe/16109j.jpeg"
 HERO_BG_IMAGE_FIT = "cover"
 HERO_BG_IMAGE_POS = "center"
 
+# Obtener parámetros de autenticación
 USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or "Login"
 USER_ROLE = st.query_params.get("rol") or st.query_params.get("role") or ""
+USER_DNI = st.query_params.get("dni") or ""
+
 NORMALIZED_ROLE = USER_ROLE.strip().lower()
 
 CAN_MANAGE_SCHEDULES = NORMALIZED_ROLE == "administrador"
@@ -476,6 +479,7 @@ html = """
       var LOGO_URL = "__LOGO_URL__";
       var USER_NAME = "__USER_NAME__";
       var USER_ROLE = "__USER_ROLE__";
+      var USER_DNI = "__USER_DNI__";
       var CAN_MANAGE_SCHEDULES = __CAN_MANAGE_SCHEDULES__;
       var CAN_REGISTER_USERS = __CAN_REGISTER_USERS__;
 
@@ -583,15 +587,18 @@ html = """
 
           d.appendChild(sp);
 
-          // Horarios -> /calendario
+          // Horarios -> /calendario con todos los parámetros
           if (BTN_TEXTS[i] === "Horarios") {
             d.addEventListener("click", function(){
               try{
                 var params = new URLSearchParams(window.location.search || "");
                 params.set("auth", "ok");
+                params.set("usuario", USER_NAME);
+                params.set("rol", USER_ROLE);
+                params.set("dni", USER_DNI);
                 window.location.href = "/calendario?" + params.toString();
               }catch(e){
-                window.location.href = "/calendario?auth=ok";
+                window.location.href = "/calendario?auth=ok&usuario=" + encodeURIComponent(USER_NAME) + "&rol=" + encodeURIComponent(USER_ROLE) + "&dni=" + encodeURIComponent(USER_DNI);
               }
             });
           }
@@ -603,12 +610,12 @@ html = """
                 try{
                   var params = new URLSearchParams(window.location.search || "");
                   params.set("auth", "ok");
-                  if (!params.get("rol") && USER_ROLE) {
-                    params.set("rol", USER_ROLE);
-                  }
+                  params.set("usuario", USER_NAME);
+                  params.set("rol", USER_ROLE);
+                  params.set("dni", USER_DNI);
                   window.location.href = "/altas_registro?" + params.toString();
                 }catch(e){
-                  window.location.href = "/altas_registro?auth=ok";
+                  window.location.href = "/altas_registro?auth=ok&usuario=" + encodeURIComponent(USER_NAME) + "&rol=" + encodeURIComponent(USER_ROLE) + "&dni=" + encodeURIComponent(USER_DNI);
                 }
               });
             } else {
@@ -625,12 +632,12 @@ html = """
                 try{
                   var params = new URLSearchParams(window.location.search || "");
                   params.set("auth", "ok");
-                  if (!params.get("rol") && USER_ROLE) {
-                    params.set("rol", USER_ROLE);
-                  }
+                  params.set("usuario", USER_NAME);
+                  params.set("rol", USER_ROLE);
+                  params.set("dni", USER_DNI);
                   window.location.href = "/editar_horarios?" + params.toString();
                 }catch(e){
-                  window.location.href = "/editar_horarios?auth=ok";
+                  window.location.href = "/editar_horarios?auth=ok&usuario=" + encodeURIComponent(USER_NAME) + "&rol=" + encodeURIComponent(USER_ROLE) + "&dni=" + encodeURIComponent(USER_DNI);
                 }
               });
             } else {
@@ -701,6 +708,7 @@ html = (
         .replace("__LOGO_URL__", LOGO_URL)
         .replace("__USER_NAME__", str(USER_NAME).replace('"', '\\"'))
         .replace("__USER_ROLE__", str(USER_ROLE).replace('"', '\\"'))
+        .replace("__USER_DNI__", str(USER_DNI).replace('"', '\\"'))
         .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
         .replace("__CAN_REGISTER_USERS__", "true" if CAN_REGISTER_USERS else "false")
         .replace("__FOOTER_TEXT__", FOOTER_TEXT)
