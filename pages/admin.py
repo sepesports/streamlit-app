@@ -1,8 +1,20 @@
 # pages/admin.py
 import streamlit as st
 import streamlit.components.v1 as components
+import requests
 
 st.set_page_config(layout="wide")
+
+# Función para obtener datos del usuario desde la API
+def get_user_data(usuario):
+    try:
+        response = requests.get(f"https://camilo27.pythonanywhere.com/api/usuarios/{usuario}")
+        if response.status_code == 200:
+            data = response.json()
+            return data
+    except:
+        pass
+    return None
 
 st.markdown(
     """
@@ -401,9 +413,16 @@ async function doLogin(){
     const j = await r.json();
 
     if (j && j.ok === true){
-      // ✅ Pasamos usuario y rol a la interfaz principal
+      // ✅ Pasamos usuario, rol y DNI a la interfaz principal
       const rol = (j.rol || "").toString();
-      window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol);
+      const dni = (j.dni || "").toString();
+      
+      // Construir URL con todos los parámetros necesarios
+      let url = "/?auth=ok&usuario=" + encodeURIComponent(u) + 
+                "&rol=" + encodeURIComponent(rol) + 
+                "&dni=" + encodeURIComponent(dni);
+      
+      window.location.href = url;
     } else {
       alert("Credenciales inválidas");
     }
