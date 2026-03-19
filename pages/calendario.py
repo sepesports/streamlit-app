@@ -890,16 +890,35 @@ html = r"""
     return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
-  function parseSheetDateToKey(fechaStr){
+  // Función mejorada para parsear fechas en diversos formatos
+  function parseSheetDateToKey(fechaStr) {
     const s = (fechaStr || "").trim();
-    if(!s) return "";
-    if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){
-      const [dd,mm,yyyy] = s.split("/");
-      return `${yyyy}-${mm}-${dd}`;
+    if (!s) return "";
+    
+    // Intentar formato DD/MM/YYYY con o sin ceros iniciales
+    const parts = s.split('/');
+    if (parts.length === 3) {
+      let dd = parts[0].padStart(2, '0');
+      let mm = parts[1].padStart(2, '0');
+      let yyyy = parts[2];
+      if (yyyy.length === 4 && mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) {
+        return `${yyyy}-${mm}-${dd}`;
+      }
     }
-    if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+    
+    // Intentar formato YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
       return s;
     }
+    
+    // Fallback: usar Date.parse
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) {
+      return d.getFullYear() + '-' + 
+             pad2(d.getMonth() + 1) + '-' + 
+             pad2(d.getDate());
+    }
+    
     return "";
   }
 
@@ -1044,8 +1063,10 @@ html = r"""
       if(fechaKey < formatDateKey(currentDate)) return false;
       
       // 🔥 FILTRO CRÍTICO: Para SOCORRISTA, filtrar por DNI
-      if (IS_SOCORRISTA) {
-        const rowDNI = String(getField(r, ["DNI", "dni", "Cedula", "cedula"])).trim();
+      if (IS_SOCORRISTA && CURRENT_DNI) {
+        // Buscar el campo DNI en la fila (probar múltiples variantes)
+        const rowDNI = String(getField(r, ["DNI", "dni", "Cédula", "cedula", "Documento", "documento", "Cedula de ciudadania", "Numero documento"])).trim();
+        // Comparación exacta (alfanumérica)
         if (rowDNI !== CURRENT_DNI) return false;
       }
       
@@ -1298,10 +1319,10 @@ html = r"""
       if(fechaKey < formatDateKey(currentDate)) return;
       
       // 🔥 FILTRO CRÍTICO para availability de fechas
-      if (IS_SOCORRISTA) {
-        const rowDNI = String(getField(r, ["DNI", "dni", "Cedula", "cedula"])).trim();
+      if (IS_SOCORRISTA && CURRENT_DNI) {
+        const rowDNI = String(getField(r, ["DNI", "dni", "Cédula", "cedula", "Documento", "documento", "Cedula de ciudadania", "Numero documento"])).trim();
         if (rowDNI !== CURRENT_DNI) return;
-      } else if (soc) {
+      } else if (!IS_SOCORRISTA && soc) {
         const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
         if(rs !== soc) return;
       }
@@ -1321,11 +1342,17 @@ html = r"""
       // Cargar todas las filas
       ALL_ROWS = data.rows;
       
+      // Depuración: ver la primera fila para identificar columnas
+      if (ALL_ROWS.length > 0) {
+        console.log("Primera fila de datos:", ALL_ROWS[0]);
+        console.log("Columnas disponibles:", Object.keys(ALL_ROWS[0]));
+      }
+      
       // Si es SOCORRISTA, construir lista de socorristas solo con su propio nombre
       if (IS_SOCORRISTA) {
         const setS = new Set();
         ALL_ROWS.forEach(r => {
-          const rowDNI = String(getField(r, ["DNI", "dni", "Cedula", "cedula"])).trim();
+          const rowDNI = String(getField(r, ["DNI", "dni", "Cédula", "cedula", "Documento", "documento", "Cedula de ciudadania", "Numero documento"])).trim();
           if (rowDNI === CURRENT_DNI) {
             const s = String(getField(r, ["Socorrista","socorrista"])).trim();
             if (s) setS.add(s);
