@@ -17,11 +17,19 @@ if st.query_params.get("auth") != "ok":
     )
     st.stop()
 
-USER_EMAIL = (st.query_params.get("usuario") or "").strip()
-USER_ROLE = (st.query_params.get("rol") or "").strip()
-USER_DNI = (st.query_params.get("dni") or "").strip()
+USER_EMAIL = (st.query_params.get("usuario") or st.query_params.get("user") or st.query_params.get("correo") or st.query_params.get("email") or "").strip()
+USER_ROLE = (st.query_params.get("rol") or st.query_params.get("role") or "").strip()
+USER_DNI = (st.query_params.get("dni") or st.query_params.get("user_id") or "").strip()
 API_BASE = "https://camilo27.pythonanywhere.com"
 TIMEOUT = 25
+
+if not USER_EMAIL and not USER_DNI:
+    st.markdown(
+        '<div class="empty-box">Falta usuario autenticado en la URL. Debes entrar desde admin.py y luego desde app.py.</div>',
+        unsafe_allow_html=True,
+    )
+    st.stop()
+
 
 st.markdown(
     """
