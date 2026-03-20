@@ -387,32 +387,9 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
 </div>
 
 <script>
-function goToApp(url){
-  try{
-    if (window.top && window.top !== window){
-      window.top.location.href = url;
-      return;
-    }
-  }catch(e){}
-
-  try{
-    if (window.parent && window.parent !== window){
-      window.parent.location.href = url;
-      return;
-    }
-  }catch(e){}
-
-  window.location.href = url;
-}
-
 async function doLogin(){
   const u = (document.getElementById("inUser").value || "").trim();
   const p = (document.getElementById("inPass").value || "").trim();
-
-  if (!u || !p){
-    alert("Ingresa usuario y contraseña");
-    return;
-  }
 
   try{
     const r = await fetch("https://camilo27.pythonanywhere.com/api/auth", {
@@ -424,18 +401,14 @@ async function doLogin(){
     const j = await r.json();
 
     if (j && j.ok === true){
+      // ✅ Pasamos usuario, rol y dni a la interfaz principal sin romper el flujo original
       const rol = (j.rol || "").toString();
       const dni = (j.dni || "").toString();
-      const target = "/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol) + "&dni=" + encodeURIComponent(dni);
-
-      try{
-        localStorage.setItem("auth_ok", "1");
-        localStorage.setItem("usuario", u);
-        localStorage.setItem("rol", rol);
-        localStorage.setItem("dni", dni);
-      }catch(e){}
-
-      goToApp(target);
+      let target = "/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol);
+      if (dni) {
+        target += "&dni=" + encodeURIComponent(dni);
+      }
+      window.location.href = target;
     } else {
       alert("Credenciales inválidas");
     }
@@ -443,12 +416,6 @@ async function doLogin(){
     alert("Error de conexión");
   }
 }
-
-document.addEventListener("keydown", function(ev){
-  if (ev.key === "Enter"){
-    doLogin();
-  }
-});
 
 (function(){
   var fe = window.frameElement;
