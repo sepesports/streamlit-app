@@ -1,8 +1,7 @@
-import html
-from urllib.parse import urlencode
-
-import requests
+# pages/chat_interfaz.py
+import json
 import streamlit as st
+import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
 
@@ -17,457 +16,641 @@ if st.query_params.get("auth") != "ok":
     )
     st.stop()
 
-USER_EMAIL = (st.query_params.get("usuario") or st.query_params.get("user") or st.query_params.get("correo") or st.query_params.get("email") or "").strip()
-USER_ROLE = (st.query_params.get("rol") or st.query_params.get("role") or "").strip()
-USER_DNI = (st.query_params.get("dni") or st.query_params.get("user_id") or "").strip()
-API_BASE = "https://camilo27.pythonanywhere.com"
-TIMEOUT = 25
-
-if not USER_EMAIL and not USER_DNI:
-    st.markdown(
-        '<div class="empty-box">Falta usuario autenticado en la URL. Debes entrar desde admin.py y luego desde app.py.</div>',
-        unsafe_allow_html=True,
-    )
-    st.stop()
-
-
 st.markdown(
     """
     <style>
-      .block-container{padding-top:0.8rem !important;padding-bottom:0 !important;max-width:100% !important;}
+      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
+      section.main > div{padding:0 !important;margin:0 !important;}
       header, footer{display:none !important;}
-      [data-testid="stSidebar"]{display:none !important;}
-      .stApp{background:#ffffff;}
-      .chat-shell{border:2px solid #111111;border-radius:0;padding:12px;background:#ffffff;}
-      .chat-toolbar{border:2px solid #111111;padding:10px 12px;margin-bottom:12px;background:#ffffff;}
-      .list-card{border:2px solid #111111;padding:10px 12px;margin-bottom:8px;background:#ffffff;}
-      .list-card small{color:#444444;}
-      .bubble-wrap{border:2px solid #111111;padding:12px;background:#ffffff;height:58vh;overflow-y:auto;}
-      .bubble-row{display:flex;width:100%;margin:0 0 10px 0;}
-      .bubble-row.me{justify-content:flex-end;}
-      .bubble{max-width:80%;border:2px solid #111111;padding:10px 12px;background:#ffffff;word-break:break-word;}
-      .bubble-name{font-size:12px;color:#555555;margin-bottom:4px;}
-      .bubble-time{font-size:11px;color:#666666;margin-top:6px;}
-      .section-title{border:2px solid #111111;padding:10px 12px;margin-bottom:10px;background:#ffffff;font-weight:600;}
-      .empty-box{border:2px solid #111111;padding:16px;background:#ffffff;}
-      .notif-pill{display:inline-block;border:2px solid #111111;border-radius:999px;padding:2px 10px;font-size:12px;margin-left:8px;}
-      div[data-testid="stHorizontalBlock"] button[kind="secondary"],
-      div[data-testid="stHorizontalBlock"] button[kind="primary"]{min-height:58px;font-weight:500;}
-      .menu-link a{display:inline-block;text-decoration:none;border:2px solid #111111;padding:9px 14px;color:#111111;background:#ffffff;}
-      .menu-link a:hover{background:#f3f3f3;}
+      iframe{border:0 !important;}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
+USER_NAME = st.query_params.get("usuario") or ""
+USER_ROLE = st.query_params.get("rol") or ""
+USER_DNI = st.query_params.get("dni") or ""
+API_BASE = "https://camilo27.pythonanywhere.com/api/chat"
 
-def reset_chat_state():
-    keys = [
-        "chat_tab",
-        "chat_selected_thread_id",
-        "chat_selected_thread_title",
-        "chat_selected_thread_type",
-        "chat_soc_search",
-        "chat_inst_search",
-        "chat_draft",
-        "chat_user_signature",
-        "chat_last_error",
-    ]
-    for key in keys:
-        if key in st.session_state:
-            del st.session_state[key]
+BOOT = {
+    "usuario": USER_NAME,
+    "rol": USER_ROLE,
+    "dni": USER_DNI,
+    "api_base": API_BASE,
+}
 
+html = f"""
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <title>Chat</title>
+  <style>
+    :root{{
+      --bg: #ffffff;
+      --border: #111111;
+      --text: #111111;
+      --muted: #555555;
+      --soft: #f6f6f6;
+      --soft2: #efefef;
+      --frame-margin: clamp(6px, 1.4vw, 16px);
+      --border-size: 2px;
+      --top-row-h: clamp(58px, 8vh, 72px);
+      --panel-row-h: clamp(66px, 10vh, 88px);
+      --title-row-h: clamp(42px, 6vh, 52px);
+      --input-row-h: clamp(52px, 7vh, 62px);
+      --font-main: clamp(14px, 1.5vw, 20px);
+      --font-small: clamp(12px, 1.1vw, 15px);
+      --font-title: clamp(15px, 1.5vw, 20px);
+      --font-input: clamp(14px, 1.4vw, 18px);
+      --font-send: clamp(14px, 1.4vw, 18px);
+      --pad-x: clamp(8px, 1.2vw, 14px);
+      --pad-y: clamp(6px, 0.8vw, 10px);
+      --send-w: clamp(96px, 22vw, 130px);
+    }}
 
-def current_signature() -> str:
-    return f"{USER_EMAIL}|{USER_DNI}|{USER_ROLE}"
+    *{{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }}
+    html, body{{ margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:var(--bg); font-family:Arial, Helvetica, sans-serif; color:var(--text); }}
 
+    #app{{ position:fixed; inset:0; width:100vw; height:100vh; background:var(--bg); padding:var(--frame-margin); }}
+    .frame{{ width:100%; height:100%; border:var(--border-size) solid var(--border); display:flex; flex-direction:column; background:#fff; overflow:hidden; }}
+    .inner{{ display:flex; flex-direction:column; width:100%; height:100%; padding:clamp(12px, 2vw, 22px); gap:10px; }}
 
-if st.session_state.get("chat_user_signature") != current_signature():
-    reset_chat_state()
-    st.session_state["chat_user_signature"] = current_signature()
+    .top-buttons{{ display:grid; grid-template-columns:1fr 1fr 1.15fr; gap:0; width:100%; min-height:var(--top-row-h); }}
+    .top-btn{{
+      appearance:none; border:var(--border-size) solid var(--border); background:#fff; color:var(--text); margin:0;
+      padding:var(--pad-y) var(--pad-x); cursor:pointer; display:flex; align-items:flex-start; justify-content:flex-start;
+      text-align:left; line-height:1.1; min-height:var(--top-row-h); font-size:var(--font-main); font-weight:400;
+      transition:background .15s ease, color .15s ease;
+    }}
+    .top-btn + .top-btn{{ border-left:none; }}
+    .top-btn.active{{ background:var(--soft); }}
+    .btn-stack{{ display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:4px; }}
+    .btn-topline{{ font-size:var(--font-small); line-height:1; }}
+    .btn-mainline{{ font-size:var(--font-main); line-height:1.1; }}
+    .btn-center{{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-align:center; font-size:var(--font-main); line-height:1.1; }}
 
-st.session_state.setdefault("chat_tab", "socorristas")
-st.session_state.setdefault("chat_selected_thread_id", "")
-st.session_state.setdefault("chat_selected_thread_title", "")
-st.session_state.setdefault("chat_selected_thread_type", "")
-st.session_state.setdefault("chat_soc_search", "")
-st.session_state.setdefault("chat_inst_search", "")
-st.session_state.setdefault("chat_draft", "")
-st.session_state.setdefault("chat_last_error", "")
+    .tool-panel{{
+      min-height:var(--panel-row-h);
+      border:var(--border-size) solid var(--border);
+      background:#fff;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      padding:10px;
+      gap:8px;
+    }}
+    .panel-hidden{{ display:none !important; }}
+    .panel-row{{ display:grid; grid-template-columns: 1fr 1fr auto; gap:8px; align-items:center; }}
+    .panel-row.install{{ grid-template-columns: 1fr auto; }}
+    .panel-title{{ font-size:12px; color:var(--muted); }}
+    .ctrl-input, .ctrl-select{{
+      width:100%; height:42px; border:var(--border-size) solid var(--border); outline:none; padding:0 10px;
+      font-size:var(--font-input); color:var(--text); background:#fff;
+    }}
+    .ctrl-button{{
+      min-width:110px; height:42px; border:var(--border-size) solid var(--border); background:#fff; color:var(--text);
+      font-size:var(--font-input); cursor:pointer;
+    }}
+    .ctrl-button:disabled{{ opacity:.45; cursor:not-allowed; }}
+    .helper{{ font-size:12px; color:var(--muted); min-height:16px; }}
 
+    .notifications-list{{
+      display:flex; flex-direction:column; gap:6px; max-height:110px; overflow:auto; padding-right:4px;
+    }}
+    .notif-item{{
+      border:var(--border-size) solid var(--border); background:#fff; padding:8px 10px; cursor:pointer;
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+    }}
+    .notif-item:hover{{ background:var(--soft); }}
+    .notif-left{{ display:flex; flex-direction:column; gap:2px; min-width:0; }}
+    .notif-title{{ font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }}
+    .notif-sub{{ font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }}
+    .badge{{ min-width:24px; height:24px; border:var(--border-size) solid var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; background:var(--soft); padding:0 6px; }}
 
-def build_auth_params(extra=None):
-    params = {"auth": "ok"}
-    if USER_EMAIL:
-        params["usuario"] = USER_EMAIL
-    if USER_ROLE:
-        params["rol"] = USER_ROLE
-    if USER_DNI:
-        params["dni"] = USER_DNI
-    if extra:
-        params.update({k: v for k, v in extra.items() if v is not None and v != ""})
-    return params
+    .chat-shell{{ flex:1; min-height:0; display:flex; flex-direction:column; border:var(--border-size) solid var(--border); background:#fff; }}
+    .chat-title{{ height:var(--title-row-h); min-height:var(--title-row-h); border-bottom:var(--border-size) solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px; padding:0 var(--pad-x); font-size:var(--font-title); white-space:nowrap; overflow:hidden; }}
+    .chat-title-text{{ min-width:0; overflow:hidden; text-overflow:ellipsis; }}
+    .chat-title-meta{{ font-size:12px; color:var(--muted); }}
 
+    .chat-body{{ flex:1; min-height:160px; overflow:auto; background:#fff; padding:14px; display:flex; flex-direction:column; gap:10px; }}
+    .chat-empty{{ flex:1; min-height:100%; display:flex; align-items:center; justify-content:center; color:var(--muted); text-align:center; padding:14px; }}
+    .msg{{ max-width:min(80%, 620px); border:var(--border-size) solid var(--border); padding:10px 12px; font-size:var(--font-input); line-height:1.3; background:#fff; word-break:break-word; }}
+    .msg.out{{ margin-left:auto; background:var(--soft); }}
+    .msg-head{{ font-size:12px; color:var(--muted); margin-bottom:4px; display:flex; justify-content:space-between; gap:8px; }}
+    .msg-body{{ white-space:pre-wrap; }}
 
-def menu_url() -> str:
-    return "/?" + urlencode(build_auth_params())
+    .input-row{{ height:var(--input-row-h); min-height:var(--input-row-h); border-top:var(--border-size) solid var(--border); display:grid; grid-template-columns:1fr var(--send-w); gap:0; background:#fff; }}
+    .chat-input{{ width:100%; height:100%; border:none; outline:none; padding:0 var(--pad-x); font-size:var(--font-input); color:var(--text); background:#fff; }}
+    .chat-input::placeholder{{ color:#777; opacity:1; }}
+    .send-btn{{ height:100%; width:100%; border:none; border-left:var(--border-size) solid var(--border); background:#fff; color:var(--text); font-size:var(--font-send); cursor:pointer; }}
+    .send-btn:disabled{{ opacity:.45; cursor:not-allowed; }}
+    .status-bar{{ min-height:18px; font-size:12px; color:var(--muted); padding:0 2px; }}
+    .error{{ color:#9f1d1d; }}
 
+    @media (max-width: 768px){{
+      :root{{ --top-row-h:56px; --panel-row-h:92px; --title-row-h:42px; --input-row-h:52px; --send-w:92px; }}
+      .inner{{ padding:10px; }}
+      .panel-row{{ grid-template-columns:1fr; }}
+      .panel-row.install{{ grid-template-columns:1fr; }}
+      .ctrl-button{{ width:100%; }}
+      .chat-title{{ flex-direction:column; align-items:flex-start; justify-content:center; padding:6px 10px; height:auto; min-height:var(--title-row-h); }}
+    }}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="frame">
+      <div class="inner">
 
-def api_get(path: str, params=None):
-    final_params = build_auth_params(params or {})
-    response = requests.get(f"{API_BASE}{path}", params=final_params, timeout=TIMEOUT)
-    response.raise_for_status()
-    return response.json()
+        <div class="top-buttons">
+          <button class="top-btn active" id="btnSocorristas" type="button">
+            <div class="btn-stack">
+              <span class="btn-topline">seleccióna</span>
+              <span class="btn-mainline">Socorristas</span>
+            </div>
+          </button>
 
+          <button class="top-btn" id="btnInstalacion" type="button">
+            <div class="btn-stack">
+              <span class="btn-topline">seleccióna</span>
+              <span class="btn-mainline">Instalación</span>
+            </div>
+          </button>
 
-def api_post(path: str, payload=None):
-    final_payload = build_auth_params(payload or {})
-    response = requests.post(f"{API_BASE}{path}", json=final_payload, timeout=TIMEOUT)
-    response.raise_for_status()
-    return response.json()
+          <button class="top-btn" id="btnNotificaciones" type="button">
+            <div class="btn-center">Notificaciones</div>
+          </button>
+        </div>
 
+        <div class="tool-panel" id="panelSocorristas">
+          <div class="panel-title">Selecciona socorrista</div>
+          <div class="panel-row">
+            <input id="userSearch" class="ctrl-input" type="text" placeholder="Buscar socorrista" autocomplete="off"/>
+            <select id="userSelect" class="ctrl-select"></select>
+            <button id="openUserBtn" class="ctrl-button" type="button">Abrir chat</button>
+          </div>
+          <div class="helper" id="userHelper"></div>
+        </div>
 
-def show_error(message: str):
-    st.session_state["chat_last_error"] = str(message or "")
+        <div class="tool-panel panel-hidden" id="panelInstalacion">
+          <div class="panel-title">Selecciona instalación</div>
+          <div class="panel-row install">
+            <select id="installationSelect" class="ctrl-select"></select>
+            <button id="openInstallationBtn" class="ctrl-button" type="button">Abrir grupo</button>
+          </div>
+          <div class="helper" id="installationHelper"></div>
+        </div>
 
+        <div class="tool-panel panel-hidden" id="panelNotificaciones">
+          <div class="panel-title">Notificaciones</div>
+          <div class="notifications-list" id="notificationsList"></div>
+        </div>
 
-def clear_error():
-    st.session_state["chat_last_error"] = ""
+        <div class="chat-shell">
+          <div class="chat-title">
+            <div class="chat-title-text" id="chatTitle">Nombre del socorrista o Grupo de instalación</div>
+            <div class="chat-title-meta" id="chatMeta"></div>
+          </div>
 
+          <div class="chat-body" id="chatBody">
+            <div class="chat-empty">Selecciona un socorrista, una instalación o una notificación.</div>
+          </div>
 
-def get_me():
-    response = api_get("/api/chat/me")
-    if not response.get("ok"):
-        raise RuntimeError(response.get("error") or "No fue posible resolver el usuario actual")
-    return response["user"]
+          <div class="input-row">
+            <input id="chatInput" class="chat-input" type="text" placeholder="Dialogo para enviar Mensaje" autocomplete="off" disabled />
+            <button id="sendBtn" class="send-btn" type="button" disabled>SEND</button>
+          </div>
+        </div>
 
+        <div class="status-bar" id="statusBar"></div>
+      </div>
+    </div>
+  </div>
 
-def get_users():
-    response = api_get("/api/chat/users")
-    if not response.get("ok"):
-        raise RuntimeError(response.get("error") or "No fue posible cargar usuarios")
-    return response.get("items", [])
+  <script>
+    (function () {{
+      const BOOT = {json.dumps(BOOT, ensure_ascii=False)};
+      const API_BASE = BOOT.api_base;
+      const CURRENT_USER = {{
+        usuario: BOOT.usuario || "",
+        rol: BOOT.rol || "",
+        dni: BOOT.dni || ""
+      }};
 
+      const fe = window.frameElement;
+      if (fe) {{
+        fe.style.position = "fixed";
+        fe.style.inset = "0";
+        fe.style.width = "100vw";
+        fe.style.height = "100vh";
+        fe.style.border = "0";
+        fe.style.margin = "0";
+        fe.style.padding = "0";
+        fe.style.zIndex = "999999";
+        fe.style.background = "transparent";
+      }}
 
-def get_threads():
-    response = api_get("/api/chat/threads")
-    if not response.get("ok"):
-        raise RuntimeError(response.get("error") or "No fue posible cargar hilos")
-    return response.get("items", [])
+      const btnSocorristas = document.getElementById("btnSocorristas");
+      const btnInstalacion = document.getElementById("btnInstalacion");
+      const btnNotificaciones = document.getElementById("btnNotificaciones");
 
+      const panelSocorristas = document.getElementById("panelSocorristas");
+      const panelInstalacion = document.getElementById("panelInstalacion");
+      const panelNotificaciones = document.getElementById("panelNotificaciones");
 
-def get_installation_threads(installation_name=""):
-    payload = {}
-    if installation_name:
-        payload["installation"] = installation_name
-    response = api_get("/api/chat/installations", payload)
-    if not response.get("ok"):
-        raise RuntimeError(response.get("error") or "No fue posible cargar instalaciones")
-    return response.get("installation", ""), response.get("items", [])
+      const userSearch = document.getElementById("userSearch");
+      const userSelect = document.getElementById("userSelect");
+      const openUserBtn = document.getElementById("openUserBtn");
+      const userHelper = document.getElementById("userHelper");
 
+      const installationSelect = document.getElementById("installationSelect");
+      const openInstallationBtn = document.getElementById("openInstallationBtn");
+      const installationHelper = document.getElementById("installationHelper");
 
-def get_installation_names():
-    response = api_get("/api/chat/installations/list")
-    if not response.get("ok"):
-        raise RuntimeError(response.get("error") or "No fue posible cargar instalaciones")
-    return response.get("current_installation", ""), response.get("items", [])
+      const notificationsList = document.getElementById("notificationsList");
+      const chatTitle = document.getElementById("chatTitle");
+      const chatMeta = document.getElementById("chatMeta");
+      const chatBody = document.getElementById("chatBody");
+      const chatInput = document.getElementById("chatInput");
+      const sendBtn = document.getElementById("sendBtn");
+      const statusBar = document.getElementById("statusBar");
 
+      let users = [];
+      let filteredUsers = [];
+      let installations = [];
+      let threads = [];
+      let selectedThreadId = "";
+      let pollHandle = null;
+      let currentUserInfo = null;
 
-def open_private_thread(other_user_id: str):
-    response = api_post("/api/chat/threads/private", {"other_user_id": other_user_id})
-    if not response.get("ok"):
-        raise RuntimeError(response.get("error") or "No fue posible abrir el chat privado")
-    thread = response.get("thread") or {}
-    st.session_state["chat_selected_thread_id"] = thread.get("id", "")
-    st.session_state["chat_selected_thread_title"] = thread.get("title", "")
-    st.session_state["chat_selected_thread_type"] = thread.get("type", "")
+      function setStatus(text, isError) {{
+        statusBar.textContent = text || "";
+        statusBar.className = "status-bar" + (isError ? " error" : "");
+      }}
 
+      function setActive(button) {{
+        [btnSocorristas, btnInstalacion, btnNotificaciones].forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+        panelSocorristas.classList.add("panel-hidden");
+        panelInstalacion.classList.add("panel-hidden");
+        panelNotificaciones.classList.add("panel-hidden");
 
-def open_installation_thread(installation_name: str):
-    response = api_post("/api/chat/threads/installation", {"installation": installation_name})
-    if not response.get("ok"):
-        raise RuntimeError(response.get("error") or "No fue posible abrir el grupo de instalación")
-    thread = response.get("thread") or {}
-    st.session_state["chat_selected_thread_id"] = thread.get("id", "")
-    st.session_state["chat_selected_thread_title"] = thread.get("title", "")
-    st.session_state["chat_selected_thread_type"] = thread.get("type", "")
+        if (button === btnSocorristas) panelSocorristas.classList.remove("panel-hidden");
+        if (button === btnInstalacion) panelInstalacion.classList.remove("panel-hidden");
+        if (button === btnNotificaciones) panelNotificaciones.classList.remove("panel-hidden");
+      }}
 
+      function authParams(extra) {{
+        const p = new URLSearchParams();
+        if (CURRENT_USER.usuario) p.set("usuario", CURRENT_USER.usuario);
+        if (CURRENT_USER.dni) p.set("dni", CURRENT_USER.dni);
+        if (CURRENT_USER.rol) p.set("rol", CURRENT_USER.rol);
+        if (extra) {{
+          Object.keys(extra).forEach(key => {{
+            const val = extra[key];
+            if (val !== undefined && val !== null && String(val) !== "") p.set(key, String(val));
+          }});
+        }}
+        return p;
+      }}
 
-def get_thread_messages(thread_id: str):
-    response = api_get(f"/api/chat/threads/{thread_id}/messages")
-    if not response.get("ok"):
-        raise RuntimeError(response.get("error") or "No fue posible cargar mensajes")
-    thread = response.get("thread") or {}
-    messages = response.get("messages") or []
-    st.session_state["chat_selected_thread_title"] = thread.get("title", st.session_state.get("chat_selected_thread_title", ""))
-    st.session_state["chat_selected_thread_type"] = thread.get("type", st.session_state.get("chat_selected_thread_type", ""))
-    return thread, messages
+      async function apiGet(path, extra) {{
+        const qs = authParams(extra).toString();
+        const url = API_BASE + path + (qs ? ("?" + qs) : "");
+        const r = await fetch(url, {{ method: "GET" }});
+        const text = await r.text();
+        let data = null;
+        try {{ data = JSON.parse(text); }} catch (_) {{ data = {{ ok:false, error:text || ("HTTP " + r.status) }}; }}
+        if (!r.ok && !data.error) data.error = "HTTP " + r.status;
+        return data;
+      }}
 
+      async function apiPost(path, body) {{
+        const payload = Object.assign({{}}, body || {{}}, {{
+          usuario: CURRENT_USER.usuario || "",
+          dni: CURRENT_USER.dni || "",
+          rol: CURRENT_USER.rol || ""
+        }});
+        const r = await fetch(API_BASE + path, {{
+          method: "POST",
+          headers: {{ "Content-Type": "application/json" }},
+          body: JSON.stringify(payload)
+        }});
+        const text = await r.text();
+        let data = null;
+        try {{ data = JSON.parse(text); }} catch (_) {{ data = {{ ok:false, error:text || ("HTTP " + r.status) }}; }}
+        if (!r.ok && !data.error) data.error = "HTTP " + r.status;
+        return data;
+      }}
 
-def send_message(thread_id: str, body: str):
-    response = api_post(f"/api/chat/threads/{thread_id}/messages", {"body": body})
-    if not response.get("ok"):
-        raise RuntimeError(response.get("error") or "No fue posible enviar el mensaje")
-    return response.get("message") or {}
+      function escapeHtml(value) {{
+        return String(value || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }}
 
+      function formatDate(value) {{
+        if (!value) return "";
+        try {{
+          const d = new Date(value);
+          if (Number.isNaN(d.getTime())) return value;
+          return d.toLocaleString("es-ES", {{
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+          }});
+        }} catch (_) {{
+          return value;
+        }}
+      }}
 
-def format_timestamp(value: str) -> str:
-    if not value:
-        return ""
-    text = value.replace("Z", "+00:00")
-    try:
-        dt = st.session_state.get("_tmp_dt")
-        del dt
-    except Exception:
-        pass
-    try:
-        from datetime import datetime
-        dt = datetime.fromisoformat(text)
-        return dt.strftime("%Y-%m-%d %H:%M")
-    except Exception:
-        return value
+      function findThreadById(threadId) {{
+        return threads.find(t => String(t.id) === String(threadId)) || null;
+      }}
 
+      function renderUsers() {{
+        const term = (userSearch.value || "").trim().toLowerCase();
+        filteredUsers = users.filter(item => !term || String(item.display_name || "").toLowerCase().includes(term) || String(item.correo || "").toLowerCase().includes(term));
+        userSelect.innerHTML = "";
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = filteredUsers.length ? "Selecciona socorrista" : "No hay socorristas";
+        userSelect.appendChild(placeholder);
 
-def render_message_history(messages, my_user_id: str):
-    if not messages:
-        st.markdown('<div class="empty-box">No hay mensajes todavía en este chat.</div>', unsafe_allow_html=True)
-        return
+        filteredUsers.forEach(item => {{
+          const opt = document.createElement("option");
+          opt.value = item.user_id;
+          opt.textContent = item.display_name + (item.role ? (" · " + item.role) : "");
+          userSelect.appendChild(opt);
+        }});
 
-    blocks = ['<div class="bubble-wrap">']
-    for item in messages:
-        mine = str(item.get("sender_id") or "") == str(my_user_id or "") or bool(item.get("mine"))
-        row_class = "bubble-row me" if mine else "bubble-row"
-        sender = "Tú" if mine else html.escape(str(item.get("sender_name") or item.get("sender_id") or "Usuario"))
-        body = html.escape(str(item.get("body") or "")).replace("\n", "<br>")
-        created_at = html.escape(format_timestamp(str(item.get("created_at") or "")))
-        blocks.append(
-            f'<div class="{row_class}"><div class="bubble"><div class="bubble-name">{sender}</div><div>{body}</div><div class="bubble-time">{created_at}</div></div></div>'
-        )
-    blocks.append("</div>")
-    st.markdown("".join(blocks), unsafe_allow_html=True)
+        userHelper.textContent = filteredUsers.length ? (filteredUsers.length + " socorrista(s) disponible(s)") : "Sin resultados";
+        openUserBtn.disabled = !filteredUsers.length;
+      }}
 
+      function renderInstallations() {{
+        installationSelect.innerHTML = "";
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = installations.length ? "Selecciona instalación" : "No hay instalaciones";
+        installationSelect.appendChild(placeholder);
 
-try:
-    clear_error()
-    me = get_me()
-    all_threads = get_threads()
-except Exception as exc:
-    st.markdown(f'<div class="empty-box">{html.escape(str(exc))}</div>', unsafe_allow_html=True)
-    st.stop()
+        installations.forEach(item => {{
+          const opt = document.createElement("option");
+          opt.value = item;
+          opt.textContent = item;
+          installationSelect.appendChild(opt);
+        }});
+      }}
 
-unread_total = sum(int(item.get("unread_count") or 0) for item in all_threads)
+      function renderNotifications() {{
+        const unread = threads.filter(t => Number(t.unread_count || 0) > 0);
+        notificationsList.innerHTML = "";
+        if (!unread.length) {{
+          const div = document.createElement("div");
+          div.className = "helper";
+          div.textContent = "Sin notificaciones pendientes";
+          notificationsList.appendChild(div);
+          return;
+        }}
 
-col_top_1, col_top_2, col_top_3 = st.columns([1, 1, 1.15], gap="small")
-with col_top_1:
-    if st.button("seleccióna\nSocorristas", use_container_width=True, type="primary" if st.session_state["chat_tab"] == "socorristas" else "secondary"):
-        st.session_state["chat_tab"] = "socorristas"
-        st.rerun()
-with col_top_2:
-    if st.button("seleccióna\nInstalación", use_container_width=True, type="primary" if st.session_state["chat_tab"] == "instalacion" else "secondary"):
-        st.session_state["chat_tab"] = "instalacion"
-        st.rerun()
-with col_top_3:
-    notif_label = f"Notificaciones ({unread_total})" if unread_total else "Notificaciones"
-    if st.button(notif_label, use_container_width=True, type="primary" if st.session_state["chat_tab"] == "notificaciones" else "secondary"):
-        st.session_state["chat_tab"] = "notificaciones"
-        st.rerun()
+        unread.forEach(item => {{
+          const row = document.createElement("div");
+          row.className = "notif-item";
+          row.innerHTML = `
+            <div class="notif-left">
+              <div class="notif-title">${{escapeHtml(item.title || "Chat")}}</div>
+              <div class="notif-sub">${{escapeHtml(item.last_message_preview || "Nuevo mensaje")}}</div>
+            </div>
+            <div class="badge">${{escapeHtml(item.unread_count || 0)}}</div>
+          `;
+          row.addEventListener("click", function(){{
+            setActive(btnNotificaciones);
+            openThread(item.id);
+          }});
+          notificationsList.appendChild(row);
+        }});
+      }}
 
-col_toolbar_1, col_toolbar_2, col_toolbar_3 = st.columns([1, 5, 1], gap="small")
-with col_toolbar_1:
-    st.markdown(f'<div class="menu-link"><a href="{menu_url()}">Menú</a></div>', unsafe_allow_html=True)
-with col_toolbar_2:
-    toolbar_parts = [me.get("display_name") or me.get("correo") or "Usuario"]
-    if me.get("role"):
-        toolbar_parts.append(me["role"])
-    if me.get("installation"):
-        toolbar_parts.append(me["installation"])
-    st.markdown(f'<div class="chat-toolbar">{" · ".join(html.escape(str(x)) for x in toolbar_parts if x)}</div>', unsafe_allow_html=True)
-with col_toolbar_3:
-    if st.button("Actualizar", use_container_width=True):
-        st.rerun()
+      function setComposerState(enabled) {{
+        chatInput.disabled = !enabled;
+        sendBtn.disabled = !enabled;
+      }}
 
-left_col, right_col = st.columns([1.05, 1.45], gap="medium")
+      function renderMessages(thread, messages) {{
+        if (!thread) {{
+          chatTitle.textContent = "Nombre del socorrista o Grupo de instalación";
+          chatMeta.textContent = "";
+          chatBody.innerHTML = '<div class="chat-empty">Selecciona un socorrista, una instalación o una notificación.</div>';
+          setComposerState(false);
+          return;
+        }}
 
-selected_thread = None
-selected_messages = []
-selected_thread_id = st.session_state.get("chat_selected_thread_id", "")
-if selected_thread_id:
-    try:
-        selected_thread, selected_messages = get_thread_messages(selected_thread_id)
-    except Exception as exc:
-        show_error(str(exc))
-        st.session_state["chat_selected_thread_id"] = ""
-        st.session_state["chat_selected_thread_title"] = ""
-        st.session_state["chat_selected_thread_type"] = ""
-        selected_thread = None
-        selected_messages = []
+        chatTitle.textContent = thread.title || "Chat";
+        const unreadText = Number(thread.unread_count || 0) > 0 ? (" · " + thread.unread_count + " sin leer") : "";
+        chatMeta.textContent = (thread.type === "group" ? "Grupo" : "Privado") + unreadText;
 
-with left_col:
-    if st.session_state.get("chat_last_error"):
-        st.markdown(f'<div class="empty-box">{html.escape(st.session_state["chat_last_error"])}</div>', unsafe_allow_html=True)
+        if (!messages.length) {{
+          chatBody.innerHTML = '<div class="chat-empty">Sin mensajes todavía.</div>';
+        }} else {{
+          chatBody.innerHTML = messages.map(msg => `
+            <div class="msg ${{msg.mine ? 'out' : 'in'}}">
+              <div class="msg-head">
+                <span>${{escapeHtml(msg.sender_name || msg.sender_id || "Usuario")}}</span>
+                <span>${{escapeHtml(formatDate(msg.created_at))}}</span>
+              </div>
+              <div class="msg-body">${{escapeHtml(msg.body || "")}}</div>
+            </div>
+          `).join("");
+          chatBody.scrollTop = chatBody.scrollHeight;
+        }}
 
-    current_tab = st.session_state["chat_tab"]
+        setComposerState(true);
+      }}
 
-    if current_tab == "socorristas":
-        st.markdown('<div class="section-title">Socorristas</div>', unsafe_allow_html=True)
-        st.text_input("Filtrar socorristas", key="chat_soc_search", placeholder="Nombre, correo o rol")
-        try:
-            users = get_users()
-        except Exception as exc:
-            users = []
-            show_error(str(exc))
+      async function loadCurrentUser() {{
+        setStatus("Validando usuario…", false);
+        const data = await apiGet("/me");
+        if (!data.ok) {{
+          setStatus(data.error || "No se pudo validar el usuario", true);
+          return false;
+        }}
+        currentUserInfo = data.user || null;
+        if (!currentUserInfo) {{
+          setStatus("Usuario no encontrado", true);
+          return false;
+        }}
+        installationHelper.textContent = currentUserInfo.installation ? ("Instalación actual: " + currentUserInfo.installation) : "El usuario no tiene instalación asignada";
+        setStatus("", false);
+        return true;
+      }}
 
-        term = (st.session_state.get("chat_soc_search") or "").strip().lower()
-        filtered_users = []
-        for item in users:
-            text = " ".join([
-                str(item.get("display_name") or ""),
-                str(item.get("correo") or ""),
-                str(item.get("role") or ""),
-                str(item.get("installation") or ""),
-            ]).lower()
-            if not term or term in text:
-                filtered_users.append(item)
+      async function loadUsers() {{
+        const data = await apiGet("/users");
+        users = data.ok && Array.isArray(data.items) ? data.items : [];
+        renderUsers();
+      }}
 
-        if not filtered_users:
-            st.markdown('<div class="empty-box">No hay usuarios visibles para este filtro.</div>', unsafe_allow_html=True)
-        else:
-            for item in filtered_users:
-                label = item.get("display_name") or item.get("correo") or item.get("user_id") or "Usuario"
-                subtitle_parts = [item.get("role") or "", item.get("correo") or ""]
-                if item.get("installation"):
-                    subtitle_parts.append(item["installation"])
-                st.markdown(
-                    f'<div class="list-card"><strong>{html.escape(str(label))}</strong><br><small>{html.escape(" · ".join([str(x) for x in subtitle_parts if x]))}</small></div>',
-                    unsafe_allow_html=True,
-                )
-                if st.button(f"Abrir chat con {label}", key=f"open_user_{item.get('user_id')}", use_container_width=True):
-                    try:
-                        open_private_thread(str(item.get("user_id") or ""))
-                        clear_error()
-                        st.rerun()
-                    except Exception as exc:
-                        show_error(str(exc))
-                        st.rerun()
+      async function loadInstallations() {{
+        const data = await apiGet("/installations/list");
+        installations = data.ok && Array.isArray(data.items) ? data.items : [];
+        renderInstallations();
+        if (data.ok && data.current_installation) {{
+          installationSelect.value = data.current_installation;
+        }}
+      }}
 
-    elif current_tab == "instalacion":
-        st.markdown('<div class="section-title">Instalación</div>', unsafe_allow_html=True)
-        st.text_input("Buscar instalación", key="chat_inst_search", placeholder="Nombre de instalación")
-        try:
-            current_installation, installation_names = get_installation_names()
-            _, group_threads = get_installation_threads(current_installation or "")
-        except Exception as exc:
-            current_installation, installation_names, group_threads = "", [], []
-            show_error(str(exc))
+      async function loadThreads(preserveSelection) {{
+        const data = await apiGet("/threads");
+        if (!(data.ok && Array.isArray(data.items))) {{
+          threads = [];
+          renderNotifications();
+          return;
+        }}
+        threads = data.items;
+        renderNotifications();
 
-        search_term = (st.session_state.get("chat_inst_search") or "").strip().lower()
+        if (!preserveSelection && !selectedThreadId && threads.length) {{
+          return;
+        }}
 
-        if current_installation:
-            st.markdown(
-                f'<div class="list-card"><strong>Mi instalación</strong><br><small>{html.escape(current_installation)}</small></div>',
-                unsafe_allow_html=True,
-            )
-            if st.button("Abrir grupo de mi instalación", key="open_my_installation", use_container_width=True):
-                try:
-                    open_installation_thread(current_installation)
-                    clear_error()
-                    st.rerun()
-                except Exception as exc:
-                    show_error(str(exc))
-                    st.rerun()
-        else:
-            st.markdown('<div class="empty-box">El usuario actual no tiene instalación detectada.</div>', unsafe_allow_html=True)
+        if (selectedThreadId) {{
+          const selected = findThreadById(selectedThreadId);
+          if (!selected) {{
+            selectedThreadId = "";
+            renderMessages(null, []);
+            return;
+          }}
+        }}
+      }}
 
-        filtered_installations = [name for name in installation_names if not search_term or search_term in name.lower()]
-        if filtered_installations:
-            st.markdown('<div class="section-title">Abrir por instalación</div>', unsafe_allow_html=True)
-            for name in filtered_installations:
-                st.markdown(f'<div class="list-card"><strong>{html.escape(name)}</strong></div>', unsafe_allow_html=True)
-                if st.button(f"Abrir {name}", key=f"inst_name_{name}", use_container_width=True):
-                    try:
-                        open_installation_thread(name)
-                        clear_error()
-                        st.rerun()
-                    except Exception as exc:
-                        show_error(str(exc))
-                        st.rerun()
-        else:
-            st.markdown('<div class="empty-box">No hay instalaciones que coincidan.</div>', unsafe_allow_html=True)
+      async function openThread(threadId) {{
+        selectedThreadId = String(threadId || "");
+        if (!selectedThreadId) {{
+          renderMessages(null, []);
+          return;
+        }}
+        const data = await apiGet("/threads/" + encodeURIComponent(selectedThreadId) + "/messages");
+        if (!data.ok) {{
+          setStatus(data.error || "No se pudo abrir el chat", true);
+          return;
+        }}
+        const thread = data.thread || findThreadById(selectedThreadId) || {{ id: selectedThreadId, title: "Chat" }};
+        const messages = Array.isArray(data.messages) ? data.messages : [];
+        renderMessages(thread, messages);
+        await loadThreads(true);
+        setStatus("", false);
+      }}
 
-        st.markdown('<div class="section-title">Mis grupos de instalación</div>', unsafe_allow_html=True)
-        visible_groups = [g for g in group_threads if not search_term or search_term in str(g.get("title") or "").lower()]
-        if not visible_groups:
-            st.markdown('<div class="empty-box">No hay grupos visibles para este filtro.</div>', unsafe_allow_html=True)
-        else:
-            for item in visible_groups:
-                title = item.get("title") or "Grupo"
-                meta = []
-                if item.get("last_message_preview"):
-                    meta.append(str(item.get("last_message_preview")))
-                if item.get("last_message_at"):
-                    meta.append(format_timestamp(str(item.get("last_message_at"))))
-                if int(item.get("unread_count") or 0) > 0:
-                    meta.append(f"Pendientes: {int(item.get('unread_count') or 0)}")
-                st.markdown(
-                    f'<div class="list-card"><strong>{html.escape(title)}</strong><br><small>{html.escape(" · ".join(meta))}</small></div>',
-                    unsafe_allow_html=True,
-                )
-                if st.button(f"Abrir grupo {title}", key=f"group_{item.get('id')}", use_container_width=True):
-                    st.session_state["chat_selected_thread_id"] = item.get("id", "")
-                    st.session_state["chat_selected_thread_title"] = title
-                    st.session_state["chat_selected_thread_type"] = item.get("type", "group")
-                    clear_error()
-                    st.rerun()
+      async function createOrOpenPrivateThread() {{
+        const otherUserId = userSelect.value || "";
+        if (!otherUserId) {{
+          setStatus("Selecciona un socorrista", true);
+          return;
+        }}
+        setStatus("Abriendo chat…", false);
+        const data = await apiPost("/threads/private", {{ other_user_id: otherUserId }});
+        if (!data.ok || !data.thread) {{
+          setStatus(data.error || "No se pudo abrir el chat privado", true);
+          return;
+        }}
+        await loadThreads(true);
+        await openThread(data.thread.id);
+      }}
 
-    else:
-        st.markdown('<div class="section-title">Notificaciones</div>', unsafe_allow_html=True)
-        notifications = [item for item in all_threads if int(item.get("unread_count") or 0) > 0]
-        if not notifications:
-            st.markdown('<div class="empty-box">No hay notificaciones pendientes.</div>', unsafe_allow_html=True)
-        else:
-            for item in notifications:
-                title = item.get("title") or "Chat"
-                meta = []
-                if item.get("last_message_preview"):
-                    meta.append(str(item.get("last_message_preview")))
-                if item.get("last_message_at"):
-                    meta.append(format_timestamp(str(item.get("last_message_at"))))
-                badge = f' <span class="notif-pill">{int(item.get("unread_count") or 0)}</span>' if int(item.get("unread_count") or 0) > 0 else ""
-                st.markdown(
-                    f'<div class="list-card"><strong>{html.escape(title)}</strong>{badge}<br><small>{html.escape(" · ".join(meta))}</small></div>',
-                    unsafe_allow_html=True,
-                )
-                if st.button(f"Abrir notificación {title}", key=f"notif_{item.get('id')}", use_container_width=True):
-                    st.session_state["chat_selected_thread_id"] = item.get("id", "")
-                    st.session_state["chat_selected_thread_title"] = title
-                    st.session_state["chat_selected_thread_type"] = item.get("type", "")
-                    clear_error()
-                    st.rerun()
+      async function createOrOpenInstallationThread() {{
+        const installation = installationSelect.value || "";
+        if (!installation) {{
+          setStatus("Selecciona una instalación", true);
+          return;
+        }}
+        setStatus("Abriendo grupo…", false);
+        const data = await apiPost("/threads/installation", {{ installation }});
+        if (!data.ok || !data.thread) {{
+          setStatus(data.error || "No se pudo abrir el grupo", true);
+          return;
+        }}
+        await loadThreads(true);
+        await openThread(data.thread.id);
+      }}
 
-with right_col:
-    title = st.session_state.get("chat_selected_thread_title") or "Nombre del socorrista o Grupo de instalación"
-    type_label = st.session_state.get("chat_selected_thread_type") or ""
-    title_suffix = " · Grupo" if type_label == "group" else " · Privado" if type_label == "private" else ""
-    st.markdown(f'<div class="section-title">{html.escape(title + title_suffix)}</div>', unsafe_allow_html=True)
+      async function sendMessage() {{
+        const body = (chatInput.value || "").trim();
+        if (!selectedThreadId) {{
+          setStatus("Selecciona un chat antes de enviar", true);
+          return;
+        }}
+        if (!body) {{
+          return;
+        }}
+        sendBtn.disabled = true;
+        const data = await apiPost("/threads/" + encodeURIComponent(selectedThreadId) + "/messages", {{ body }});
+        sendBtn.disabled = false;
+        if (!data.ok) {{
+          setStatus(data.error || "No se pudo enviar el mensaje", true);
+          return;
+        }}
+        chatInput.value = "";
+        await openThread(selectedThreadId);
+      }}
 
-    if not st.session_state.get("chat_selected_thread_id"):
-        st.markdown('<div class="empty-box">Selecciona un socorrista, una instalación o una notificación para abrir el chat.</div>', unsafe_allow_html=True)
-        st.text_input("Dialogo para enviar Mensaje", value="", disabled=True)
-        st.button("SEND", disabled=True, use_container_width=True)
-    else:
-        render_message_history(selected_messages, me.get("user_id") or "")
-        with st.form("chat_send_form", clear_on_submit=True):
-            draft = st.text_input("Dialogo para enviar Mensaje", key="chat_draft_input")
-            submitted = st.form_submit_button("SEND", use_container_width=True)
-        if submitted:
-            clean = (draft or "").strip()
-            if not clean:
-                show_error("Mensaje vacío")
-                st.rerun()
-            try:
-                send_message(st.session_state["chat_selected_thread_id"], clean)
-                clear_error()
-                st.rerun()
-            except Exception as exc:
-                show_error(str(exc))
-                st.rerun()
+      async function refreshLoop() {{
+        await loadThreads(true);
+        if (selectedThreadId) {{
+          await openThread(selectedThreadId);
+        }}
+      }}
+
+      btnSocorristas.addEventListener("click", function () {{
+        setActive(btnSocorristas);
+      }});
+
+      btnInstalacion.addEventListener("click", function () {{
+        setActive(btnInstalacion);
+      }});
+
+      btnNotificaciones.addEventListener("click", function () {{
+        setActive(btnNotificaciones);
+      }});
+
+      userSearch.addEventListener("input", renderUsers);
+      openUserBtn.addEventListener("click", createOrOpenPrivateThread);
+      openInstallationBtn.addEventListener("click", createOrOpenInstallationThread);
+      sendBtn.addEventListener("click", sendMessage);
+
+      chatInput.addEventListener("keydown", function (e) {{
+        if (e.key === "Enter" && !e.shiftKey) {{
+          e.preventDefault();
+          sendMessage();
+        }}
+      }});
+
+      (async function init() {{
+        setActive(btnSocorristas);
+        setComposerState(false);
+
+        const ok = await loadCurrentUser();
+        if (!ok) return;
+
+        await loadUsers();
+        await loadInstallations();
+        await loadThreads(false);
+
+        if (pollHandle) clearInterval(pollHandle);
+        pollHandle = setInterval(refreshLoop, 6000);
+      }})();
+    }})();
+  </script>
+</body>
+</html>
+"""
+
+components.html(html, height=10, scrolling=False)
