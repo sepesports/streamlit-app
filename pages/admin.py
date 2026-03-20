@@ -25,13 +25,16 @@ html = """
 
 <style>
 :root{
-  --baseBlue: #040e31;
-  --bgTop:  #0a1a55;
-  --bgMid:  #061240;
-  --bgDeep: #02071c;
+  /* =========================================================
+     PALETA (AZUL base #040e31) -> ajusta tonos globales aquí
+     ========================================================= */
+  --baseBlue: #040e31;            /* BASE requerida */
+  --bgTop:  #0a1a55;              /* superior (más claro) */
+  --bgMid:  #061240;              /* medio */
+  --bgDeep: #02071c;              /* inferior (más oscuro) */
 
-  --overlay1: rgba(40, 120, 255, .16);
-  --overlay2: rgba(0,  10,  40, .62);
+  --overlay1: rgba(40, 120, 255, .16); /* corte diagonal claro */
+  --overlay2: rgba(0,  10,  40, .62);  /* corte diagonal oscuro */
 
   --ink: rgba(255,255,255,.92);
   --muted: rgba(255,255,255,.62);
@@ -46,13 +49,17 @@ html = """
   --shadow2: 0 10px 22px rgba(0,0,0,.40);
   --blur: 14px;
 
-  --logoWDesktop: 250px;
-  --logoTopDesktop: 0.0%;
-  --logoXDesktop: 0px;
+  /* =========================================================
+     CONTROLES DESKTOP (pantalla completa)
+     Cambia AQUÍ posición/tamaño para desktop
+     ========================================================= */
+  --logoWDesktop: 250px;     /* tamaño logo desktop */
+  --logoTopDesktop: 0.0%;    /* subir/bajar logo desktop */
+  --logoXDesktop: 0px;       /* mover logo izq/der desktop (px) */
 
-  --titleTopDesktop: 20%;
-  --titleSizeDesktop: 22px;
-  --titleXDesktop: 0px;
+  --titleTopDesktop: 20%;    /* subir/bajar título desktop */
+  --titleSizeDesktop: 22px;  /* tamaño título desktop */ 
+  --titleXDesktop: 0px;      /* mover título izq/der desktop (px) */
 
   --lblUserTopDesktop: 22%;
   --inUserTopDesktop: 28%;
@@ -65,36 +72,41 @@ html = """
   --linkRegTopDesktop: 78%;
   --linkRegLeftDesktop: 68%;
 
-  --labelSizeDesktop: 22px;
-  --inputSizeDesktop: 22px;
-  --btnTextSizeDesktop: 22px;
-  --linkSizeDesktop: 22px;
+  --labelSizeDesktop: 22px; /* 14px */
+  --inputSizeDesktop: 22px; /* 14px */
+  --btnTextSizeDesktop: 22px; /* 14px */
+  --linkSizeDesktop: 22px; /* 13px estoy aqui */
 
-  --logoWMobile: 150px;
-  --logoTopMobile: 6%;
-  --logoXMobile: 0px;
+  /* =========================================================
+     CONTROLES MÓVIL
+     Cambia AQUÍ posición/tamaño para móvil
+     ========================================================= */
+  --logoWMobile: 150px;      /* tamaño logo móvil */
+  --logoTopMobile: 6%;       /* subir/bajar logo móvil */
+  --logoXMobile: 0px;        /* mover logo izq/der móvil (px) *
 
-  --titleTopMobile: 20%;
-  --titleSizeMobile: 18px;
-  --titleXMobile: 0px;
+  --titleTopMobile: 20%;     /* subir/bajar título móvil */
+  --titleSizeMobile: 18px;   /* tamaño título móvil */
+  --titleXMobile: 0px;       /* mover título izq/der móvil (px) */
 
   --lblUserTopMobile: 22%;
-  --inUserTopMobile: 28%;
-  --lblPassTopMobile: 42%;
-  --inPassTopMobile: 48%;
-  --btnTopMobile: 65%;
+  --inUserTopMobile: 28%;     /* 28 */
+  --lblPassTopMobile: 42%;  /* 42 */
+  --inPassTopMobile: 48%;    /* 48 */
+  --btnTopMobile: 65%;     /* 67%*/
 
-  --linkPolTopMobile: 78%;
-  --linkPolLeftMobile: 20%;
+  --linkPolTopMobile: 78%; /* 78 */
+  --linkPolLeftMobile: 20%; /* 20 */
   --linkRegTopMobile: 78%;
-  --linkRegLeftMobile: 68%;
+  --linkRegLeftMobile: 68%; /* 68 */
 
-  --labelSizeMobile: 16px;
-  --inputSizeMobile: 16px;
-  --btnTextSizeMobile: 18px;
-  --linkSizeMobile: 15px;
+  --labelSizeMobile: 16px;    /* 16 */
+  --inputSizeMobile: 16px;    /* 16 */
+  --btnTextSizeMobile: 18px; /* 14 */
+  --linkSizeMobile: 15px;  /* 13*/
 }
 
+/* RESET */
 *{box-sizing:border-box}
 html, body{
   margin:0;
@@ -105,6 +117,7 @@ html, body{
   background: var(--baseBlue);
 }
 
+/* FONDO EXTERIOR */
 #stage{
   position:fixed;
   inset:0;
@@ -117,6 +130,7 @@ html, body{
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
+/* PANEL PRINCIPAL */
 #plan{
   position:absolute;
   left:10px; right:10px;
@@ -129,6 +143,7 @@ html, body{
     linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #05164d 58%, var(--bgDeep) 100%);
 }
 
+/* CORTE DIAGONAL */
 #plan::before{
   content:"";
   position:absolute;
@@ -145,6 +160,7 @@ html, body{
   pointer-events:none;
 }
 
+/* VIÑETA */
 #plan::after{
   content:"";
   position:absolute;
@@ -156,6 +172,7 @@ html, body{
   pointer-events:none;
 }
 
+/* MARCO */
 #frame{
   position:absolute;
   left:9px; right:9px;
@@ -169,6 +186,7 @@ html, body{
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
 }
 
+/* CONTENEDOR */
 #card{
   position:absolute;
   left:6%;
@@ -177,6 +195,9 @@ html, body{
   bottom:6%;
 }
 
+/* =========================================================
+   LOGO (DESKTOP por defecto)
+   ========================================================= */
 .logo{
   position:absolute;
   left:50%;
@@ -189,6 +210,9 @@ html, body{
   filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
 }
 
+/* =========================================================
+   TÍTULO (DESKTOP por defecto)
+   ========================================================= */
 .title{
   position:absolute;
   left:0; right:0;
@@ -201,6 +225,7 @@ html, body{
   transform: translateX(var(--titleXDesktop)) !important;
 }
 
+/* LABELS */
 .label{
   position:absolute;
   left:18%;
@@ -210,40 +235,42 @@ html, body{
   text-shadow: 0 6px 14px rgba(0,0,0,.30);
 }
 
+/* INPUTS */
 input.field{
   position:absolute;
-  left:22%;
-  right:22%;
-  height:10%;
+  left:22%; /* 16 */
+  right:22%; /* 16 */
+  height:10%; /* 16 */
   border: 1px solid rgba(255,255,255,.55);
   border-radius: 999px;
   box-sizing:border-box;
   background: linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
-  padding: 0 16px;
+  padding: 0 16px; /* 14 */
   font:700 var(--inputSizeDesktop) Arial, sans-serif !important;
   color: rgba(30,40,55,.92);
   outline:none;
   box-shadow:
-    0 15px 18px rgba(0,0,0,.22),
+    0 15px 18px rgba(0,0,0,.22), /*0 10px */
     inset 0 1px 0 rgba(255,255,255,.55);
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
 }
 input.field::placeholder{ color: rgba(60,70,85,.55); }
 
+/* BOTÓN */
 .btn{
   position:absolute;
   left:32%;
   right:32%;
-  height:10%;
-  border: 1px solid rgba(255,255,255,.10);
+  height:10%;  
+  border: 1px solid rgba(255,255,255,.10);/* Estoy aqui 10*/
   border-radius: 999px;
   box-sizing:border-box;
   background:
-    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%),
+    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%), /* Estoy aqui transparent 80%*/
     linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
   box-shadow:
-    0 22px 26px rgba(0,0,0,.28),
+    0 22px 26px rgba(0,0,0,.28),/* Estoy aqui 0 18px */
     inset 0 1px 0 rgba(255,255,255,.22);
   display:flex;
   align-items:center;
@@ -256,6 +283,7 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
 }
 .btn:active{ transform: scale(.985); filter: brightness(.98); }
 
+/* LINKS */
 .link{
   position:absolute;
   font:700 var(--linkSizeDesktop) Arial, sans-serif !important;
@@ -265,6 +293,7 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
 }
 .link:hover{ color: rgba(255,255,255,.85); }
 
+/* Overlay sutil */
 #hud{
   position:absolute; inset:0;
   pointer-events:none;
@@ -273,6 +302,7 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
     linear-gradient(180deg, transparent 62%, rgba(0,0,0,.30) 100%);
 }
 
+/* MÓVIL */
 @media (max-width: 768px){
   #card{ left:8%; right:8%; top:6%; bottom:8%; }
 
@@ -333,7 +363,10 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
     <div id="frame"></div>
 
     <div id="card">
+      <!-- LOGO -->
       <img class="logo" src="https://files.catbox.moe/056m6v.jpg" alt="Logo"/>
+
+      <!-- TÍTULO -->
       <div class="title">¡BIENVENIDO!</div>
 
       <div id="lblUser" class="label" style="top:22%;">Usuario:</div>
@@ -345,6 +378,7 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
       <div id="btnLogin" class="btn" style="top:67%;" onclick="doLogin()">Login</div>
 
       <div id="linkPol" class="link" style="top:78%; left:20%;">Politicas:</div>
+      <!-- Enlace a la página de registro (altas_registro.py) -->
       <div id="linkReg" class="link" style="top:78%; left:68%;"><a href="/altas_registro" style="color:inherit; text-decoration:none;">Registrarse:</a></div>
     </div>
 
@@ -353,9 +387,32 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
 </div>
 
 <script>
+function goToApp(url){
+  try{
+    if (window.top && window.top !== window){
+      window.top.location.href = url;
+      return;
+    }
+  }catch(e){}
+
+  try{
+    if (window.parent && window.parent !== window){
+      window.parent.location.href = url;
+      return;
+    }
+  }catch(e){}
+
+  window.location.href = url;
+}
+
 async function doLogin(){
   const u = (document.getElementById("inUser").value || "").trim();
   const p = (document.getElementById("inPass").value || "").trim();
+
+  if (!u || !p){
+    alert("Ingresa usuario y contraseña");
+    return;
+  }
 
   try{
     const r = await fetch("https://camilo27.pythonanywhere.com/api/auth", {
@@ -369,7 +426,16 @@ async function doLogin(){
     if (j && j.ok === true){
       const rol = (j.rol || "").toString();
       const dni = (j.dni || "").toString();
-      window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol) + "&dni=" + encodeURIComponent(dni);
+      const target = "/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol) + "&dni=" + encodeURIComponent(dni);
+
+      try{
+        localStorage.setItem("auth_ok", "1");
+        localStorage.setItem("usuario", u);
+        localStorage.setItem("rol", rol);
+        localStorage.setItem("dni", dni);
+      }catch(e){}
+
+      goToApp(target);
     } else {
       alert("Credenciales inválidas");
     }
@@ -377,6 +443,12 @@ async function doLogin(){
     alert("Error de conexión");
   }
 }
+
+document.addEventListener("keydown", function(ev){
+  if (ev.key === "Enter"){
+    doLogin();
+  }
+});
 
 (function(){
   var fe = window.frameElement;
