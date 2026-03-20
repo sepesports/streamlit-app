@@ -598,22 +598,6 @@ html = """
             });
           }
 
-          // Incidencias y Comunicados -> /chat_interfaz
-          if (BTN_TEXTS[i] === "Incidencias y Comunicados") {
-            d.addEventListener("click", function(){
-              try{
-                var params = new URLSearchParams();
-                params.set("auth", "ok");
-                if (USER_NAME) params.set("usuario", USER_NAME);
-                if (USER_ROLE) params.set("rol", USER_ROLE);
-                if (USER_DNI) params.set("dni", USER_DNI);
-                window.location.href = "/chat_interfaz?" + params.toString();
-              }catch(e){
-                window.location.href = "/chat_interfaz?auth=ok";
-              }
-            });
-          }
-
           // Registro -> /altas_registro solo si rol = Administrador
           if (BTN_TEXTS[i] === "Registro") {
             if (CAN_REGISTER_USERS) {
@@ -634,6 +618,27 @@ html = """
               d.setAttribute("aria-disabled", "true");
               d.title = "Disponible solo para Administrador";
             }
+          }
+
+          // Incidencias y Comunicados -> /chat_interfaz
+          if (BTN_TEXTS[i] === "Incidencias y Comunicados") {
+            d.addEventListener("click", function(){
+              try{
+                var params = new URLSearchParams(window.location.search || "");
+                params.set("auth", "ok");
+                if (!params.get("usuario") && USER_NAME) params.set("usuario", USER_NAME);
+                if (!params.get("rol") && USER_ROLE) params.set("rol", USER_ROLE);
+                if (!params.get("dni") && USER_DNI) params.set("dni", USER_DNI);
+                window.location.href = "/chat_interfaz?" + params.toString();
+              }catch(e){
+                var fallback = new URLSearchParams();
+                fallback.set("auth", "ok");
+                if (USER_NAME) fallback.set("usuario", USER_NAME);
+                if (USER_ROLE) fallback.set("rol", USER_ROLE);
+                if (USER_DNI) fallback.set("dni", USER_DNI);
+                window.location.href = "/chat_interfaz?" + fallback.toString();
+              }
+            });
           }
 
           // Gestión de Horarios -> /editar_horarios solo si rol = Administrador
