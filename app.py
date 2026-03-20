@@ -4,7 +4,6 @@ import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
 
-# 🔒 GATE: solo entra con ?auth=ok
 if st.query_params.get("auth") != "ok":
     st.markdown(
         """
@@ -15,8 +14,6 @@ if st.query_params.get("auth") != "ok":
         unsafe_allow_html=True,
     )
     st.stop()
-
-# ===================== BASE (NO CAMBIAR ESTRUCTURA) =====================
 
 PAD_X_PX = 8
 PAD_TOP_PX = 8
@@ -49,7 +46,7 @@ BTN_TEXTS = [
     "Horarios",
     "Control de\nAsistencia",
     "Control de\nHoras",
-    "Incidencias y Comunicados",
+    "Incidencias y\nComunicados",
     "Registro",
     "Gestión de\nHorarios",
 ]
@@ -62,8 +59,6 @@ FOOTER_RIGHT = 6
 MIN_BTN_W_PX = 130
 MOBILE_MAX_W_PX = 500
 
-# ===================== CONTENIDO =====================
-
 LOGO_URL = "https://files.catbox.moe/056m6v.jpg"
 FOOTER_TEXT = "2026 Socorrista ProVersión 1.0. Todos los derechos reservados"
 
@@ -71,17 +66,14 @@ HERO_BG_IMAGE_URL = "https://files.catbox.moe/16109j.jpeg"
 HERO_BG_IMAGE_FIT = "cover"
 HERO_BG_IMAGE_POS = "center"
 
-# Obtener parámetros de autenticación
 USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or "Login"
 USER_ROLE = st.query_params.get("rol") or st.query_params.get("role") or ""
 USER_DNI = st.query_params.get("dni") or ""
-
 NORMALIZED_ROLE = USER_ROLE.strip().lower()
 
 CAN_MANAGE_SCHEDULES = NORMALIZED_ROLE == "administrador"
 CAN_REGISTER_USERS = NORMALIZED_ROLE == "administrador"
 
-# ===================== AJUSTES EDITABLES =====================
 HERO_FONT_SIZE_DESKTOP_PX = 44
 HERO_FONT_SIZE_MOBILE_PX = 13
 
@@ -533,6 +525,19 @@ html = """
         }
       }
 
+      function withParams(basePath){
+        try{
+          var params = new URLSearchParams(window.location.search || "");
+          params.set("auth", "ok");
+          if (USER_ROLE && !params.get("rol")) params.set("rol", USER_ROLE);
+          if (USER_NAME && !params.get("usuario")) params.set("usuario", USER_NAME);
+          if (USER_DNI && !params.get("dni")) params.set("dni", USER_DNI);
+          return basePath + "?" + params.toString();
+        }catch(e){
+          return basePath + "?auth=ok";
+        }
+      }
+
       function buildButtons(){
         grid.innerHTML = "";
 
@@ -587,36 +592,22 @@ html = """
 
           d.appendChild(sp);
 
-          // Horarios -> /calendario con todos los parámetros
           if (BTN_TEXTS[i] === "Horarios") {
             d.addEventListener("click", function(){
-              try{
-                var params = new URLSearchParams(window.location.search || "");
-                params.set("auth", "ok");
-                params.set("usuario", USER_NAME);
-                params.set("rol", USER_ROLE);
-                params.set("dni", USER_DNI);
-                window.location.href = "/calendario?" + params.toString();
-              }catch(e){
-                window.location.href = "/calendario?auth=ok&usuario=" + encodeURIComponent(USER_NAME) + "&rol=" + encodeURIComponent(USER_ROLE) + "&dni=" + encodeURIComponent(USER_DNI);
-              }
+              window.location.href = withParams("/calendario");
             });
           }
 
-          // Registro -> /altas_registro solo si rol = Administrador
+          if (BTN_TEXTS[i] === "Incidencias y\nComunicados") {
+            d.addEventListener("click", function(){
+              window.location.href = withParams("/chat_interfaz");
+            });
+          }
+
           if (BTN_TEXTS[i] === "Registro") {
             if (CAN_REGISTER_USERS) {
               d.addEventListener("click", function(){
-                try{
-                  var params = new URLSearchParams(window.location.search || "");
-                  params.set("auth", "ok");
-                  params.set("usuario", USER_NAME);
-                  params.set("rol", USER_ROLE);
-                  params.set("dni", USER_DNI);
-                  window.location.href = "/altas_registro?" + params.toString();
-                }catch(e){
-                  window.location.href = "/altas_registro?auth=ok&usuario=" + encodeURIComponent(USER_NAME) + "&rol=" + encodeURIComponent(USER_ROLE) + "&dni=" + encodeURIComponent(USER_DNI);
-                }
+                window.location.href = withParams("/altas_registro");
               });
             } else {
               d.classList.add("disabled");
@@ -625,20 +616,10 @@ html = """
             }
           }
 
-          // Gestión de Horarios -> /editar_horarios solo si rol = Administrador
-          if (BTN_TEXTS[i] === "Gestión de\\nHorarios") {
+          if (BTN_TEXTS[i] === "Gestión de\nHorarios") {
             if (CAN_MANAGE_SCHEDULES) {
               d.addEventListener("click", function(){
-                try{
-                  var params = new URLSearchParams(window.location.search || "");
-                  params.set("auth", "ok");
-                  params.set("usuario", USER_NAME);
-                  params.set("rol", USER_ROLE);
-                  params.set("dni", USER_DNI);
-                  window.location.href = "/editar_horarios?" + params.toString();
-                }catch(e){
-                  window.location.href = "/editar_horarios?auth=ok&usuario=" + encodeURIComponent(USER_NAME) + "&rol=" + encodeURIComponent(USER_ROLE) + "&dni=" + encodeURIComponent(USER_DNI);
-                }
+                window.location.href = withParams("/editar_horarios");
               });
             } else {
               d.classList.add("disabled");
@@ -663,6 +644,7 @@ html = """
 </html>
 """
 
+
 def _dict_to_js_obj(d: dict) -> str:
     parts = []
     for k, v in d.items():
@@ -675,6 +657,7 @@ def _dict_to_js_obj(d: dict) -> str:
             continue
         parts.append(f'"{ik}":{fv}')
     return "{" + ",".join(parts) + "}"
+
 
 html = (
     html.replace("__PADX__", str(PAD_X_PX))
