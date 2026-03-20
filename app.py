@@ -596,6 +596,19 @@ html = """
             });
           }
 
+          // Incidencias y Comunicados -> /chat_interfaz
+          if (BTN_TEXTS[i] === "Incidencias y Comunicados") {
+            d.addEventListener("click", function(){
+              try{
+                var params = new URLSearchParams(window.location.search || "");
+                params.set("auth", "ok");
+                window.location.href = "/chat_interfaz?" + params.toString();
+              }catch(e){
+                window.location.href = "/chat_interfaz?auth=ok";
+              }
+            });
+          }
+
           // Registro -> /altas_registro solo si rol = Administrador
           if (BTN_TEXTS[i] === "Registro") {
             if (CAN_REGISTER_USERS) {
