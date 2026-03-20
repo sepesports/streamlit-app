@@ -401,14 +401,10 @@ async function doLogin(){
     const j = await r.json();
 
     if (j && j.ok === true){
-      // ✅ Pasamos usuario, rol y dni a la interfaz principal sin romper el flujo original
+      // ✅ Pasamos usuario y rol a la interfaz principal
       const rol = (j.rol || "").toString();
-      const dni = (j.dni || "").toString();
-      let target = "/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol);
-      if (dni) {
-        target += "&dni=" + encodeURIComponent(dni);
-      }
-      window.location.href = target;
+      const dni = (j.dni || p || "").toString();
+      window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol) + "&dni=" + encodeURIComponent(dni);
     } else {
       alert("Credenciales inválidas");
     }
