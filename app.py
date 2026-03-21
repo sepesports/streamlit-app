@@ -74,7 +74,7 @@ HERO_BG_IMAGE_POS = "center"
 
 USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or "Login"
 USER_ROLE = st.query_params.get("rol") or st.query_params.get("role") or ""
-USER_DNI = st.query_params.get("dni") or ""   # Nuevo
+USER_DNI = st.query_params.get("dni") or ""
 NORMALIZED_ROLE = USER_ROLE.strip().lower()
 
 CAN_MANAGE_SCHEDULES = NORMALIZED_ROLE == "administrador"
@@ -478,7 +478,7 @@ html = """
       var LOGO_URL = "__LOGO_URL__";
       var USER_NAME = "__USER_NAME__";
       var USER_ROLE = "__USER_ROLE__";
-      var USER_DNI = "__USER_DNI__";   // Nuevo
+      var USER_DNI = "__USER_DNI__";
       var CAN_MANAGE_SCHEDULES = __CAN_MANAGE_SCHEDULES__;
       var CAN_REGISTER_USERS = __CAN_REGISTER_USERS__;
 
@@ -649,7 +649,7 @@ html = """
             }
           }
 
-          // Chat -> /chat
+          // Chat -> /chat_interfaz
           if (BTN_TEXTS[i] === "Chat") {
             d.addEventListener("click", function(){
               try{
@@ -661,9 +661,9 @@ html = """
                 if (!params.get("dni") && USER_DNI) {
                   params.set("dni", USER_DNI);
                 }
-                window.location.href = "/chat?" + params.toString();
+                window.location.href = "/chat_interfaz?" + params.toString();
               }catch(e){
-                window.location.href = "/chat?auth=ok";
+                window.location.href = "/chat_interfaz?auth=ok";
               }
             });
           }
@@ -729,7 +729,7 @@ html = (
         .replace("__LOGO_URL__", LOGO_URL)
         .replace("__USER_NAME__", str(USER_NAME).replace('"', '\\"'))
         .replace("__USER_ROLE__", str(USER_ROLE).replace('"', '\\"'))
-        .replace("__USER_DNI__", str(USER_DNI).replace('"', '\\"'))   # Nuevo
+        .replace("__USER_DNI__", str(USER_DNI).replace('"', '\\"'))
         .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
         .replace("__CAN_REGISTER_USERS__", "true" if CAN_REGISTER_USERS else "false")
         .replace("__FOOTER_TEXT__", FOOTER_TEXT)
