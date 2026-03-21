@@ -21,6 +21,7 @@ if not USER_DNI:
     st.error("No se pudo identificar al usuario. Por favor, vuelve a iniciar sesión.")
     st.stop()
 
+# Eliminar márgenes de Streamlit
 st.markdown(
     """
     <style>
@@ -38,49 +39,46 @@ html = f"""
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Chat</title>
   <style>
-    :root{{
-      --bg: #020a1a;
-      --text: #eaf2ff;
-      --border: #2a3a5a;
-      --accent: #ff9a52;
-      --msg-bg: #0f1a2a;
-      --msg-out: #2a3a5a;
+    *{{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
     }}
-    *{{ box-sizing: border-box; }}
-    body, html {{
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
+    html, body {{
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      background: #020a1a;
       font-family: 'Segoe UI', Arial, sans-serif;
-      overflow: hidden;
     }}
     #app {{
-      display: flex;
-      height: 100%;
-      width: 100%;
+      width:100%;
+      height:100%;
+      display:flex;
+      flex-direction:row;
+      background:#020a1a;
     }}
     .threads-panel {{
       width: 280px;
-      border-right: 1px solid var(--border);
+      background: rgba(0,0,0,0.3);
+      border-right: 1px solid #2a3a5a;
       display: flex;
       flex-direction: column;
-      background: rgba(0,0,0,0.3);
+      flex-shrink:0;
     }}
     .threads-header {{
       padding: 12px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #2a3a5a;
       font-weight: bold;
       display: flex;
       justify-content: space-between;
+      color: #eaf2ff;
     }}
     .new-chat-btn {{
-      background: var(--accent);
+      background: #ff9a52;
       border: none;
       color: #000;
       padding: 4px 10px;
@@ -94,16 +92,17 @@ html = f"""
     }}
     .thread-item {{
       padding: 12px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #2a3a5a;
       cursor: pointer;
       transition: background 0.2s;
+      color: #eaf2ff;
     }}
     .thread-item:hover {{
       background: rgba(255,255,255,0.1);
     }}
     .thread-item.active {{
       background: rgba(255,255,255,0.2);
-      border-left: 3px solid var(--accent);
+      border-left: 3px solid #ff9a52;
     }}
     .thread-title {{
       font-weight: bold;
@@ -120,11 +119,13 @@ html = f"""
       flex: 1;
       display: flex;
       flex-direction: column;
+      background: #020a1a;
     }}
     .chat-header {{
       padding: 12px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #2a3a5a;
       font-weight: bold;
+      color: #eaf2ff;
     }}
     .messages-area {{
       flex: 1;
@@ -138,33 +139,35 @@ html = f"""
       max-width: 70%;
       padding: 8px 12px;
       border-radius: 12px;
-      background: var(--msg-bg);
+      background: #0f1a2a;
       align-self: flex-start;
+      color: #eaf2ff;
     }}
     .message.out {{
-      background: var(--msg-out);
+      background: #2a3a5a;
       align-self: flex-end;
     }}
     .message strong {{
-      color: var(--accent);
+      color: #ff9a52;
     }}
     .input-area {{
       display: flex;
       padding: 12px;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid #2a3a5a;
       gap: 8px;
+      background: #020a1a;
     }}
     #chatInput {{
       flex: 1;
       padding: 10px;
-      border: 1px solid var(--border);
+      border: 1px solid #2a3a5a;
       border-radius: 20px;
-      background: var(--msg-bg);
-      color: var(--text);
+      background: #0f1a2a;
+      color: #eaf2ff;
       outline: none;
     }}
     #sendBtn {{
-      background: var(--accent);
+      background: #ff9a52;
       border: none;
       padding: 0 20px;
       border-radius: 20px;
@@ -185,20 +188,21 @@ html = f"""
       z-index: 1000;
     }}
     .modal-content {{
-      background: var(--bg);
-      border: 1px solid var(--border);
+      background: #020a1a;
+      border: 1px solid #2a3a5a;
       border-radius: 12px;
       width: 300px;
       max-width: 90%;
       padding: 20px;
+      color: #eaf2ff;
     }}
     .modal-content input {{
       width: 100%;
       padding: 8px;
       margin-bottom: 12px;
-      border: 1px solid var(--border);
-      background: var(--msg-bg);
-      color: var(--text);
+      border: 1px solid #2a3a5a;
+      background: #0f1a2a;
+      color: #eaf2ff;
     }}
     .user-list {{
       max-height: 200px;
@@ -214,6 +218,17 @@ html = f"""
     .close-modal {{
       float: right;
       cursor: pointer;
+    }}
+    /* Scrollbars */
+    .thread-list::-webkit-scrollbar, .messages-area::-webkit-scrollbar {{
+      width: 6px;
+    }}
+    .thread-list::-webkit-scrollbar-track, .messages-area::-webkit-scrollbar-track {{
+      background: #0a1a2a;
+    }}
+    .thread-list::-webkit-scrollbar-thumb, .messages-area::-webkit-scrollbar-thumb {{
+      background: #ff9a52;
+      border-radius: 3px;
     }}
   </style>
 </head>
@@ -258,11 +273,16 @@ html = f"""
   }}
 
   async function loadThreads() {{
-    const data = await fetchJSON(`${{API_BASE}}/threads?user_id=${{currentUserId}}`);
-    threads = data.threads || [];
-    renderThreadList();
-    if (threads.length > 0 && !currentThreadId) {{
-      setActiveThread(threads[0].id);
+    try {{
+      const data = await fetchJSON(`${{API_BASE}}/threads?user_id=${{currentUserId}}`);
+      threads = data.threads || [];
+      renderThreadList();
+      if (threads.length > 0 && !currentThreadId) {{
+        setActiveThread(threads[0].id);
+      }}
+    }} catch(e) {{
+      console.error('Error loading threads', e);
+      document.getElementById("threadList").innerHTML = '<div style="padding: 12px; text-align: center;">Error al cargar conversaciones</div>';
     }}
   }}
 
@@ -286,30 +306,34 @@ html = f"""
   async function loadMessages(threadId, poll = false) {{
     const limit = poll ? 50 : 500;
     let url = `${{API_BASE}}/threads/${{threadId}}/messages?user_id=${{currentUserId}}&limit=${{limit}}`;
-    const data = await fetchJSON(url);
-    let messages = data.messages || [];
-    if (poll && lastRenderedMessageId !== null) {{
-      messages = messages.filter(m => parseInt(m.id) > lastRenderedMessageId);
+    try {{
+      const data = await fetchJSON(url);
+      let messages = data.messages || [];
+      if (poll && lastRenderedMessageId !== null) {{
+        messages = messages.filter(m => parseInt(m.id) > lastRenderedMessageId);
+      }}
+      if (messages.length === 0 && !poll) {{
+        document.getElementById("messagesArea").innerHTML = '<div style="text-align: center; margin-top: 20px;">No hay mensajes</div>';
+        lastRenderedMessageId = null;
+        return;
+      }}
+      const container = document.getElementById("messagesArea");
+      if (!poll) {{
+        container.innerHTML = '';
+        lastRenderedMessageId = null;
+      }}
+      messages.forEach(msg => {{
+        const div = document.createElement("div");
+        div.className = "message" + (msg.sender_id == currentUserId ? " out" : "");
+        div.innerHTML = `<strong>${{escapeHtml(msg.sender_alias || 'Usuario')}}:</strong> ${{escapeHtml(msg.body)}}`;
+        container.appendChild(div);
+        lastRenderedMessageId = parseInt(msg.id);
+      }});
+      container.scrollTop = container.scrollHeight;
+      await markThreadRead(threadId);
+    }} catch(e) {{
+      console.error('Error loading messages', e);
     }}
-    if (messages.length === 0 && !poll) {{
-      document.getElementById("messagesArea").innerHTML = '<div style="text-align: center; margin-top: 20px;">No hay mensajes</div>';
-      lastRenderedMessageId = null;
-      return;
-    }}
-    const container = document.getElementById("messagesArea");
-    if (!poll) {{
-      container.innerHTML = '';
-      lastRenderedMessageId = null;
-    }}
-    messages.forEach(msg => {{
-      const div = document.createElement("div");
-      div.className = "message" + (msg.sender_id == currentUserId ? " out" : "");
-      div.innerHTML = `<strong>${{escapeHtml(msg.sender_alias || 'Usuario')}}:</strong> ${{escapeHtml(msg.body)}}`;
-      container.appendChild(div);
-      lastRenderedMessageId = parseInt(msg.id);
-    }});
-    container.scrollTop = container.scrollHeight;
-    await markThreadRead(threadId);
   }}
 
   async function markThreadRead(threadId) {{
@@ -318,11 +342,15 @@ html = f"""
     if (!lastMsg) return;
     const lastId = lastMsg.getAttribute("data-id");
     if (!lastId) return;
-    await fetch(`${{API_BASE}}/threads/${{threadId}}/read`, {{
-      method: "POST",
-      headers: {{ "Content-Type": "application/json" }},
-      body: JSON.stringify({{ user_id: currentUserId, last_read_message_id: lastId }})
-    }});
+    try {{
+      await fetch(`${{API_BASE}}/threads/${{threadId}}/read`, {{
+        method: "POST",
+        headers: {{ "Content-Type": "application/json" }},
+        body: JSON.stringify({{ user_id: currentUserId, last_read_message_id: lastId }})
+      }});
+    }} catch(e) {{
+      console.error('Error marking read', e);
+    }}
   }}
 
   async function sendMessage() {{
@@ -426,4 +454,4 @@ html = f"""
 </html>
 """
 
-components.html(html, height=10, scrolling=False)
+components.html(html, height=800, scrolling=False)
