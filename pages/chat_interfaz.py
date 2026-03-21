@@ -51,21 +51,24 @@ html = """
       --danger:#b00020;
 
       --frame-margin:8px;
-      --frame-pad:14px;
+      --frame-pad:10px;
       --border-size:2px;
 
-      --top-row-h:60px;
-      --title-row-h:42px;
-      --input-row-h:48px;
+      --top-row-h:52px;
+      --title-row-h:38px;
+      --input-row-h:44px;
 
-      --font-main:18px;
-      --font-small:14px;
-      --font-title:16px;
-      --font-body:15px;
+      --font-main:17px;
+      --font-small:13px;
+      --font-title:15px;
+      --font-body:14px;
 
-      --send-w:140px;
+      --send-w:128px;
       --modal-w:min(760px, calc(100vw - 24px));
       --modal-h:min(74vh, 760px);
+
+      --messages-h-desktop:clamp(240px, 29vh, 300px);
+      --messages-h-mobile:clamp(210px, 31vh, 270px);
     }
 
     *{ box-sizing:border-box; }
@@ -102,7 +105,7 @@ html = """
       display:flex;
       flex-direction:column;
       align-items:stretch;
-      gap:12px;
+      gap:10px;
       padding:var(--frame-pad) var(--frame-pad) 0 var(--frame-pad);
       overflow:hidden;
     }
@@ -121,7 +124,7 @@ html = """
       background:#fff;
       color:var(--text);
       margin:0;
-      padding:8px 14px;
+      padding:6px 12px;
       min-height:var(--top-row-h);
       display:flex;
       align-items:flex-start;
@@ -129,7 +132,7 @@ html = """
       text-align:left;
       cursor:pointer;
       font-size:var(--font-main);
-      line-height:1.1;
+      line-height:1.05;
     }
 
     .top-btn + .top-btn{ border-left:none; }
@@ -141,7 +144,7 @@ html = """
       flex-direction:column;
       align-items:flex-start;
       justify-content:center;
-      gap:4px;
+      gap:3px;
       width:100%;
       height:100%;
     }
@@ -154,7 +157,7 @@ html = """
 
     .btn-mainline{
       font-size:calc(var(--font-main) + 1px);
-      line-height:1.1;
+      line-height:1.05;
       font-weight:400;
       word-break:break-word;
     }
@@ -167,18 +170,19 @@ html = """
       justify-content:center;
       text-align:center;
       font-size:calc(var(--font-main) + 1px);
-      line-height:1.1;
+      line-height:1.05;
     }
 
     .chat-shell{
-      flex:1 1 auto;
-      min-height:0;
+      flex:0 0 auto;
       display:flex;
       flex-direction:column;
       border:var(--border-size) solid var(--border);
       background:#fff;
       width:100%;
-      height:auto;
+      height:calc(var(--title-row-h) + var(--messages-h-desktop) + var(--input-row-h));
+      min-height:calc(var(--title-row-h) + var(--messages-h-desktop) + var(--input-row-h));
+      max-height:calc(var(--title-row-h) + var(--messages-h-desktop) + var(--input-row-h));
       margin-bottom:0;
       overflow:hidden;
     }
@@ -191,8 +195,8 @@ html = """
       display:flex;
       align-items:center;
       justify-content:flex-start;
-      padding:0 14px;
-      font-size:calc(var(--font-title) + 3px);
+      padding:0 12px;
+      font-size:calc(var(--font-title) + 2px);
       font-weight:400;
       white-space:nowrap;
       overflow:hidden;
@@ -201,14 +205,16 @@ html = """
     }
 
     .messages-area{
-      flex:1 1 auto;
-      min-height:0;
+      height:var(--messages-h-desktop);
+      min-height:var(--messages-h-desktop);
+      max-height:var(--messages-h-desktop);
       overflow-y:auto;
-      padding:12px;
+      padding:10px;
       display:flex;
       flex-direction:column;
       gap:8px;
       background:#fff;
+      flex:0 0 auto;
     }
 
     .message{
@@ -218,7 +224,7 @@ html = """
       background:#fff;
       align-self:flex-start;
       font-size:var(--font-body);
-      line-height:1.35;
+      line-height:1.3;
       white-space:pre-wrap;
       word-break:break-word;
     }
@@ -239,7 +245,7 @@ html = """
     .loading,
     .error{
       text-align:center;
-      padding:20px 12px;
+      padding:18px 10px;
       color:var(--muted);
       font-size:var(--font-body);
     }
@@ -262,7 +268,7 @@ html = """
     #chatInput{
       flex:1;
       height:100%;
-      padding:0 14px;
+      padding:0 12px;
       border:none;
       border-radius:0;
       background:#fff;
@@ -287,7 +293,7 @@ html = """
       cursor:pointer;
       font-weight:400;
       color:#7a7a7a;
-      font-size:calc(var(--font-body) + 2px);
+      font-size:calc(var(--font-body) + 1px);
     }
 
     #sendBtn:hover{
@@ -560,15 +566,15 @@ html = """
     @media (max-width: 768px){
       :root{
         --frame-margin:6px;
-        --frame-pad:8px;
-        --top-row-h:48px;
-        --title-row-h:38px;
-        --input-row-h:44px;
+        --frame-pad:6px;
+        --top-row-h:44px;
+        --title-row-h:36px;
+        --input-row-h:42px;
         --font-main:14px;
-        --font-small:11px;
-        --font-title:14px;
+        --font-small:10px;
+        --font-title:13px;
         --font-body:13px;
-        --send-w:92px;
+        --send-w:88px;
       }
 
       #app{
@@ -576,23 +582,27 @@ html = """
       }
 
       .inner{
+        gap:8px;
         padding:var(--frame-pad) var(--frame-pad) 0 var(--frame-pad);
       }
 
       .chat-shell{
-        flex:1 1 auto;
-        min-height:0;
+        height:calc(var(--title-row-h) + var(--messages-h-mobile) + var(--input-row-h));
+        min-height:calc(var(--title-row-h) + var(--messages-h-mobile) + var(--input-row-h));
+        max-height:calc(var(--title-row-h) + var(--messages-h-mobile) + var(--input-row-h));
         margin-bottom:0;
       }
 
       .messages-area{
-        flex:1 1 auto;
-        min-height:0;
+        height:var(--messages-h-mobile);
+        min-height:var(--messages-h-mobile);
+        max-height:var(--messages-h-mobile);
+        padding:8px;
       }
 
       .message{ max-width:88%; }
-      .chat-header{ font-size:16px; }
-      .btn-mainline, .btn-center{ font-size:15px; }
+      .chat-header{ font-size:15px; }
+      .btn-mainline, .btn-center{ font-size:14px; }
     }
 
     @media (max-width: 420px){
@@ -600,8 +610,8 @@ html = """
         --font-main:13px;
         --font-small:10px;
         --font-title:13px;
-        --font-body:13px;
-        --send-w:86px;
+        --font-body:12px;
+        --send-w:82px;
       }
 
       .inner{ gap:8px; }
