@@ -40,6 +40,7 @@ html = """
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <title>Chat</title>
   <style>
+    /* ==================== ESTILOS TOMADOS DEL PLANO ==================== */
     :root{
       --bg: #ffffff;
       --border: #111111;
@@ -72,47 +73,29 @@ html = """
     }
 
     *{
-      box-sizing:border-box;
+      box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
 
-    html, body{
-      margin:0;
-      padding:0;
-      width:100%;
-      height:100%;
-      overflow:hidden;
-      background:var(--bg);
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
       font-family: Arial, Helvetica, sans-serif;
-      color:var(--text);
+      color: var(--text);
     }
 
-    #app{
-      position:fixed;
-      inset:0;
-      width:100vw;
-      height:100vh;
-      background:var(--bg);
-      padding:var(--frame-margin);
-    }
-
-    .frame{
-      width:100%;
-      height:100%;
-      border:var(--border-size) solid var(--border);
-      display:flex;
-      flex-direction:column;
-      background:#fff;
-      overflow:hidden;
-    }
-
-    .inner{
-      display:flex;
-      flex-direction:column;
-      width:100%;
-      height:100%;
-      padding:clamp(18px, 2.4vw, 28px);
-      gap:var(--gap-top);
+    #app {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg);
+      padding: var(--frame-margin);
+      display: flex;
     }
 
     /* Panel izquierdo: lista de conversaciones */
@@ -190,7 +173,7 @@ html = """
       min-width: 0;
     }
 
-    /* Botones superiores (estilo plano) */
+    /* Botones superiores (tomados del plano) */
     .top-buttons {
       display: grid;
       grid-template-columns: var(--btn1) var(--btn2) var(--btn3);
@@ -259,15 +242,6 @@ html = """
     }
 
     /* Área de chat */
-    .chat-shell {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      border: var(--border-size) solid var(--border);
-      background: #fff;
-    }
-
     .chat-header {
       height: var(--title-row-h);
       min-height: var(--title-row-h);
@@ -434,24 +408,12 @@ html = """
         --send-w: 96px;
       }
 
-      .inner{
-        padding:10px;
-      }
-
-      .btn-stack{
-        gap:2px;
-      }
-
-      .btn-mainline{
-        word-break:break-word;
-      }
-
-      .messages-area{
-        padding:10px;
-      }
-
       .threads-panel {
         width: 220px;
+      }
+
+      .messages-area {
+        padding: 10px;
       }
     }
 
@@ -465,10 +427,6 @@ html = """
         --send-w: 88px;
       }
 
-      .inner{
-        padding:8px;
-      }
-
       .threads-panel {
         width: 180px;
       }
@@ -477,55 +435,49 @@ html = """
 </head>
 <body>
 <div id="app">
-  <div class="frame">
-    <div class="inner">
-      <div class="threads-panel">
-        <div class="threads-header">
-          <span>Conversaciones</span>
-          <button class="new-chat-btn" id="newChatBtn">+ Nuevo</button>
-        </div>
-        <div class="thread-list" id="threadList">
-          <div class="loading">Cargando conversaciones...</div>
-        </div>
-      </div>
+  <div class="threads-panel">
+    <div class="threads-header">
+      <span>Conversaciones</span>
+      <button class="new-chat-btn" id="newChatBtn">+ Nuevo</button>
+    </div>
+    <div class="thread-list" id="threadList">
+      <div class="loading">Cargando conversaciones...</div>
+    </div>
+  </div>
 
-      <div class="chat-panel">
-        <!-- Botones superiores (plano) -->
-        <div class="top-buttons">
-          <button class="top-btn active" id="btnSocorristas" type="button">
-            <div class="btn-stack">
-              <span class="btn-topline">seleccióna</span>
-              <span class="btn-mainline">Socorristas</span>
-            </div>
-          </button>
-          <button class="top-btn" id="btnInstalacion" type="button">
-            <div class="btn-stack">
-              <span class="btn-topline">seleccióna</span>
-              <span class="btn-mainline">Instalación</span>
-            </div>
-          </button>
-          <button class="top-btn" id="btnNotificaciones" type="button">
-            <div class="btn-center">Notificaciones</div>
-          </button>
+  <div class="chat-panel">
+    <!-- Botones superiores del plano -->
+    <div class="top-buttons">
+      <button class="top-btn active" id="btnSocorristas" type="button">
+        <div class="btn-stack">
+          <span class="btn-topline">seleccióna</span>
+          <span class="btn-mainline">Socorristas</span>
         </div>
+      </button>
+      <button class="top-btn" id="btnInstalacion" type="button">
+        <div class="btn-stack">
+          <span class="btn-topline">seleccióna</span>
+          <span class="btn-mainline">Instalación</span>
+        </div>
+      </button>
+      <button class="top-btn" id="btnNotificaciones" type="button">
+        <div class="btn-center">Notificaciones</div>
+      </button>
+    </div>
 
-        <!-- Área de chat -->
-        <div class="chat-shell">
-          <div class="chat-header" id="chatHeader">Selecciona una conversación</div>
-          <div class="messages-area" id="messagesArea">
-            <div style="text-align: center; margin-top: 20px;">No hay mensajes</div>
-          </div>
-          <div class="input-area" style="display: none;" id="inputArea">
-            <input type="text" id="chatInput" placeholder="Dialogo para enviar Mensaje" autocomplete="off">
-            <button id="sendBtn">SEND</button>
-          </div>
-        </div>
-      </div>
+    <div class="chat-header" id="chatHeader">Selecciona una conversación</div>
+    <div class="messages-area" id="messagesArea">
+      <div style="text-align: center; margin-top: 20px;">No hay mensajes</div>
+    </div>
+    <div class="input-area" style="display: none;" id="inputArea">
+      <input type="text" id="chatInput" placeholder="Dialogo para enviar Mensaje" autocomplete="off">
+      <button id="sendBtn">SEND</button>
     </div>
   </div>
 </div>
 
 <script>
+  // ========== CÓDIGO ORIGINAL SIN MODIFICACIONES ==========
   const API_BASE = "https://camilo27.pythonanywhere.com/api/chat";
   const currentUserId = "REEMPLAZAR_DNI";
   let currentThreadId = null;
@@ -729,8 +681,7 @@ html = """
     if (e.key === "Enter") sendMessage();
   });
 
-  // Los botones superiores no tienen funcionalidad en esta versión, solo mantienen su apariencia.
-  // Se dejan los listeners vacíos para evitar errores de referencia.
+  // Los botones superiores no tienen funcionalidad adicional
   document.getElementById("btnSocorristas").addEventListener("click", function() {});
   document.getElementById("btnInstalacion").addEventListener("click", function() {});
   document.getElementById("btnNotificaciones").addEventListener("click", function() {});
