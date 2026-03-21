@@ -4,7 +4,20 @@ import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
 
-# Verificar autenticación
+# Eliminar márgenes y barras de Streamlit
+st.markdown(
+    """
+    <style>
+      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
+      section.main > div{padding:0 !important;margin:0 !important;}
+      header, footer{display:none !important;}
+      [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Obtener parámetros de autenticación
 if st.query_params.get("auth") != "ok":
     st.markdown(
         """
@@ -21,64 +34,55 @@ if not USER_DNI:
     st.error("No se pudo identificar al usuario. Por favor, vuelve a iniciar sesión.")
     st.stop()
 
-# Eliminar márgenes de Streamlit
-st.markdown(
-    """
-    <style>
-      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
-      section.main > div{padding:0 !important;margin:0 !important;}
-      header, footer{display:none !important;}
-      [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
+# HTML/CSS/JS del chat
 html = f"""
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Chat</title>
   <style>
-    *{{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
+    :root{{
+      --bg: #020a1a;
+      --text: #eaf2ff;
+      --border: #2a3a5a;
+      --accent: #ff9a52;
+      --msg-bg: #0f1a2a;
+      --msg-out: #2a3a5a;
     }}
-    html, body {{
-      width:100%;
-      height:100%;
-      overflow:hidden;
-      background: #020a1a;
+    *{{ box-sizing: border-box; }}
+    body, html {{
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
       font-family: 'Segoe UI', Arial, sans-serif;
+      overflow: hidden;
     }}
     #app {{
-      width:100%;
-      height:100%;
-      display:flex;
-      flex-direction:row;
-      background:#020a1a;
+      display: flex;
+      height: 100%;
+      width: 100%;
     }}
     .threads-panel {{
       width: 280px;
-      background: rgba(0,0,0,0.3);
-      border-right: 1px solid #2a3a5a;
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      flex-shrink:0;
+      background: rgba(0,0,0,0.3);
     }}
     .threads-header {{
       padding: 12px;
-      border-bottom: 1px solid #2a3a5a;
+      border-bottom: 1px solid var(--border);
       font-weight: bold;
       display: flex;
       justify-content: space-between;
-      color: #eaf2ff;
     }}
     .new-chat-btn {{
-      background: #ff9a52;
+      background: var(--accent);
       border: none;
       color: #000;
       padding: 4px 10px;
@@ -92,17 +96,16 @@ html = f"""
     }}
     .thread-item {{
       padding: 12px;
-      border-bottom: 1px solid #2a3a5a;
+      border-bottom: 1px solid var(--border);
       cursor: pointer;
       transition: background 0.2s;
-      color: #eaf2ff;
     }}
     .thread-item:hover {{
       background: rgba(255,255,255,0.1);
     }}
     .thread-item.active {{
       background: rgba(255,255,255,0.2);
-      border-left: 3px solid #ff9a52;
+      border-left: 3px solid var(--accent);
     }}
     .thread-title {{
       font-weight: bold;
@@ -119,13 +122,11 @@ html = f"""
       flex: 1;
       display: flex;
       flex-direction: column;
-      background: #020a1a;
     }}
     .chat-header {{
       padding: 12px;
-      border-bottom: 1px solid #2a3a5a;
+      border-bottom: 1px solid var(--border);
       font-weight: bold;
-      color: #eaf2ff;
     }}
     .messages-area {{
       flex: 1;
@@ -139,35 +140,33 @@ html = f"""
       max-width: 70%;
       padding: 8px 12px;
       border-radius: 12px;
-      background: #0f1a2a;
+      background: var(--msg-bg);
       align-self: flex-start;
-      color: #eaf2ff;
     }}
     .message.out {{
-      background: #2a3a5a;
+      background: var(--msg-out);
       align-self: flex-end;
     }}
     .message strong {{
-      color: #ff9a52;
+      color: var(--accent);
     }}
     .input-area {{
       display: flex;
       padding: 12px;
-      border-top: 1px solid #2a3a5a;
+      border-top: 1px solid var(--border);
       gap: 8px;
-      background: #020a1a;
     }}
     #chatInput {{
       flex: 1;
       padding: 10px;
-      border: 1px solid #2a3a5a;
+      border: 1px solid var(--border);
       border-radius: 20px;
-      background: #0f1a2a;
-      color: #eaf2ff;
+      background: var(--msg-bg);
+      color: var(--text);
       outline: none;
     }}
     #sendBtn {{
-      background: #ff9a52;
+      background: var(--accent);
       border: none;
       padding: 0 20px;
       border-radius: 20px;
@@ -188,21 +187,20 @@ html = f"""
       z-index: 1000;
     }}
     .modal-content {{
-      background: #020a1a;
-      border: 1px solid #2a3a5a;
+      background: var(--bg);
+      border: 1px solid var(--border);
       border-radius: 12px;
       width: 300px;
       max-width: 90%;
       padding: 20px;
-      color: #eaf2ff;
     }}
     .modal-content input {{
       width: 100%;
       padding: 8px;
       margin-bottom: 12px;
-      border: 1px solid #2a3a5a;
-      background: #0f1a2a;
-      color: #eaf2ff;
+      border: 1px solid var(--border);
+      background: var(--msg-bg);
+      color: var(--text);
     }}
     .user-list {{
       max-height: 200px;
@@ -219,16 +217,15 @@ html = f"""
       float: right;
       cursor: pointer;
     }}
-    /* Scrollbars */
-    .thread-list::-webkit-scrollbar, .messages-area::-webkit-scrollbar {{
-      width: 6px;
+    .loading {{
+      text-align: center;
+      padding: 20px;
+      color: var(--text);
     }}
-    .thread-list::-webkit-scrollbar-track, .messages-area::-webkit-scrollbar-track {{
-      background: #0a1a2a;
-    }}
-    .thread-list::-webkit-scrollbar-thumb, .messages-area::-webkit-scrollbar-thumb {{
-      background: #ff9a52;
-      border-radius: 3px;
+    .error-message {{
+      color: #ff6666;
+      text-align: center;
+      padding: 10px;
     }}
   </style>
 </head>
@@ -240,7 +237,7 @@ html = f"""
       <button class="new-chat-btn" id="newChatBtn">+ Nuevo</button>
     </div>
     <div class="thread-list" id="threadList">
-      <div style="padding: 12px; text-align: center;">Cargando...</div>
+      <div class="loading">Cargando conversaciones...</div>
     </div>
   </div>
   <div class="chat-panel">
@@ -269,10 +266,14 @@ html = f"""
 
   async function fetchJSON(url, options = {{}}) {{
     const response = await fetch(url, options);
+    if (!response.ok) {{
+      throw new Error(`HTTP ${{response.status}}`);
+    }}
     return response.json();
   }}
 
   async function loadThreads() {{
+    const listDiv = document.getElementById("threadList");
     try {{
       const data = await fetchJSON(`${{API_BASE}}/threads?user_id=${{currentUserId}}`);
       threads = data.threads || [];
@@ -280,9 +281,9 @@ html = f"""
       if (threads.length > 0 && !currentThreadId) {{
         setActiveThread(threads[0].id);
       }}
-    }} catch(e) {{
-      console.error('Error loading threads', e);
-      document.getElementById("threadList").innerHTML = '<div style="padding: 12px; text-align: center;">Error al cargar conversaciones</div>';
+    }} catch (error) {{
+      console.error("Error loading threads:", error);
+      listDiv.innerHTML = '<div class="error-message">Error al cargar conversaciones.<br>Verifique conexión con el servidor.</div>';
     }}
   }}
 
@@ -312,15 +313,15 @@ html = f"""
       if (poll && lastRenderedMessageId !== null) {{
         messages = messages.filter(m => parseInt(m.id) > lastRenderedMessageId);
       }}
-      if (messages.length === 0 && !poll) {{
-        document.getElementById("messagesArea").innerHTML = '<div style="text-align: center; margin-top: 20px;">No hay mensajes</div>';
-        lastRenderedMessageId = null;
-        return;
-      }}
       const container = document.getElementById("messagesArea");
       if (!poll) {{
         container.innerHTML = '';
         lastRenderedMessageId = null;
+      }}
+      if (messages.length === 0 && !poll) {{
+        container.innerHTML = '<div style="text-align: center; margin-top: 20px;">No hay mensajes</div>';
+        lastRenderedMessageId = null;
+        return;
       }}
       messages.forEach(msg => {{
         const div = document.createElement("div");
@@ -331,8 +332,10 @@ html = f"""
       }});
       container.scrollTop = container.scrollHeight;
       await markThreadRead(threadId);
-    }} catch(e) {{
-      console.error('Error loading messages', e);
+    }} catch (error) {{
+      console.error("Error loading messages:", error);
+      const container = document.getElementById("messagesArea");
+      if (!poll) container.innerHTML = '<div class="error-message">Error al cargar mensajes</div>';
     }}
   }}
 
@@ -348,8 +351,8 @@ html = f"""
         headers: {{ "Content-Type": "application/json" }},
         body: JSON.stringify({{ user_id: currentUserId, last_read_message_id: lastId }})
       }});
-    }} catch(e) {{
-      console.error('Error marking read', e);
+    }} catch (error) {{
+      console.error("Error marking read:", error);
     }}
   }}
 
@@ -366,8 +369,8 @@ html = f"""
         body: JSON.stringify({{ sender_id: currentUserId, body: text }})
       }});
       await loadMessages(currentThreadId, false);
-    }} catch (e) {{
-      console.error("Error sending message", e);
+    }} catch (error) {{
+      console.error("Error sending message:", error);
       alert("Error al enviar mensaje");
     }}
   }}
@@ -393,7 +396,7 @@ html = f"""
         <span class="close-modal">&times;</span>
         <h3>Nuevo chat</h3>
         <input type="text" id="userSearch" placeholder="Buscar por alias o DNI">
-        <div id="userSearchResults" class="user-list"></div>
+        <div id="userSearchResults" class="user-list">Escribe al menos 2 caracteres</div>
       </div>
     `;
     document.body.appendChild(modal);
@@ -425,16 +428,20 @@ html = f"""
               alert("No puedes chatear contigo mismo");
               return;
             }}
-            const data = await fetchJSON(`${{API_BASE}}/private/${{otherDni}}?user_id=${{currentUserId}}`);
-            if (data.thread_id) {{
-              setActiveThread(data.thread_id);
-              modal.remove();
-              await loadThreads();
+            try {{
+              const data = await fetchJSON(`${{API_BASE}}/private/${{otherDni}}?user_id=${{currentUserId}}`);
+              if (data.thread_id) {{
+                setActiveThread(data.thread_id);
+                modal.remove();
+                await loadThreads();
+              }}
+            }} catch (error) {{
+              alert("Error al crear el chat");
             }}
           }});
         }});
-      }} catch (e) {{
-        resultsDiv.innerHTML = '<div>Error al cargar usuarios</div>';
+      }} catch (error) {{
+        resultsDiv.innerHTML = '<div class="error-message">Error al cargar usuarios</div>';
       }}
     }}
     searchInput.addEventListener("input", searchUsers);
@@ -447,7 +454,9 @@ html = f"""
     if (e.key === "Enter") sendMessage();
   }});
 
+  // Inicializar
   loadThreads();
+  // Polling de hilos cada 5 segundos
   setInterval(() => loadThreads(), 5000);
 </script>
 </body>
