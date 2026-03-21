@@ -1,4 +1,4 @@
-# pages/admin.py
+# app.py
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -7,10 +7,21 @@ st.set_page_config(layout="wide")
 st.markdown(
     """
     <style>
-      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
-      section.main > div{padding:0 !important;margin:0 !important;}
-      header, footer{display:none !important;}
-      [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
+      .block-container{
+        padding:0 !important;
+        margin:0 !important;
+        max-width:100% !important;
+      }
+      section.main > div{
+        padding:0 !important;
+        margin:0 !important;
+      }
+      header, footer{
+        display:none !important;
+      }
+      iframe{
+        border:0 !important;
+      }
     </style>
     """,
     unsafe_allow_html=True,
@@ -18,415 +29,418 @@ st.markdown(
 
 html = """
 <!doctype html>
-<html>
+<html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <title>Plano 2 Chat</title>
+  <style>
+    :root{
+      --bg: #ffffff;
+      --border: #111111;
+      --text: #111111;
 
-<style>
-:root{
-  /* =========================================================
-     PALETA (AZUL base #040e31) -> ajusta tonos globales aquí
-     ========================================================= */
-  --baseBlue: #040e31;            /* BASE requerida */
-  --bgTop:  #0a1a55;              /* superior (más claro) */
-  --bgMid:  #061240;              /* medio */
-  --bgDeep: #02071c;              /* inferior (más oscuro) */
+      --frame-margin: clamp(6px, 1.4vw, 16px);
+      --border-size: 2px;
+      --radius: 0px;
 
-  --overlay1: rgba(40, 120, 255, .16); /* corte diagonal claro */
-  --overlay2: rgba(0,  10,  40, .62);  /* corte diagonal oscuro */
+      --top-row-h: clamp(58px, 8vh, 72px);
+      --title-row-h: clamp(42px, 6vh, 52px);
+      --input-row-h: clamp(52px, 7vh, 62px);
 
-  --ink: rgba(255,255,255,.92);
-  --muted: rgba(255,255,255,.62);
+      --gap-top: clamp(8px, 1vw, 14px);
+      --gap-main: 0px;
 
-  --pill: rgba(238, 245, 255, .92);
-  --pill2: rgba(255,255,255,.86);
+      --font-main: clamp(14px, 1.5vw, 20px);
+      --font-small: clamp(12px, 1.1vw, 15px);
+      --font-title: clamp(15px, 1.5vw, 20px);
+      --font-input: clamp(14px, 1.4vw, 18px);
+      --font-send: clamp(14px, 1.4vw, 18px);
 
-  --btn1:#2f7de1;
-  --btn2:#1e5fc4;
+      --pad-x: clamp(8px, 1.2vw, 14px);
+      --pad-y: clamp(6px, 0.8vw, 10px);
 
-  --shadow1: 0 22px 55px rgba(0,0,0,.55);
-  --shadow2: 0 10px 22px rgba(0,0,0,.40);
-  --blur: 14px;
+      --btn1: 1fr;
+      --btn2: 1fr;
+      --btn3: 1.15fr;
+      --send-w: clamp(96px, 22vw, 130px);
+    }
 
-  /* =========================================================
-     CONTROLES DESKTOP (pantalla completa)
-     Cambia AQUÍ posición/tamaño para desktop
-     ========================================================= */
-  --logoWDesktop: 250px;     /* tamaño logo desktop */
-  --logoTopDesktop: 0.0%;    /* subir/bajar logo desktop */
-  --logoXDesktop: 0px;       /* mover logo izq/der desktop (px) */
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-  --titleTopDesktop: 20%;    /* subir/bajar título desktop */
-  --titleSizeDesktop: 22px;  /* tamaño título desktop */ 
-  --titleXDesktop: 0px;      /* mover título izq/der desktop (px) */
+    html, body{
+      margin:0;
+      padding:0;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      background:var(--bg);
+      font-family: Arial, Helvetica, sans-serif;
+      color:var(--text);
+    }
 
-  --lblUserTopDesktop: 22%;
-  --inUserTopDesktop: 28%;
-  --lblPassTopDesktop: 42%;
-  --inPassTopDesktop: 48%;
-  --btnTopDesktop: 67%;
+    #app{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
+      background:var(--bg);
+      padding:var(--frame-margin);
+    }
 
-  --linkPolTopDesktop: 78%;
-  --linkPolLeftDesktop: 20%;
-  --linkRegTopDesktop: 78%;
-  --linkRegLeftDesktop: 68%;
+    .frame{
+      width:100%;
+      height:100%;
+      border:var(--border-size) solid var(--border);
+      display:flex;
+      flex-direction:column;
+      background:#fff;
+      overflow:hidden;
+    }
 
-  --labelSizeDesktop: 22px; /* 14px */
-  --inputSizeDesktop: 22px; /* 14px */
-  --btnTextSizeDesktop: 22px; /* 14px */
-  --linkSizeDesktop: 22px; /* 13px estoy aqui */
+    .inner{
+      display:flex;
+      flex-direction:column;
+      width:100%;
+      height:100%;
+      padding:clamp(18px, 2.4vw, 28px);
+      gap:var(--gap-top);
+    }
 
-  /* =========================================================
-     CONTROLES MÓVIL
-     Cambia AQUÍ posición/tamaño para móvil
-     ========================================================= */
-  --logoWMobile: 150px;      /* tamaño logo móvil */
-  --logoTopMobile: 6%;       /* subir/bajar logo móvil */
-  --logoXMobile: 0px;        /* mover logo izq/der móvil (px) *
+    .top-buttons{
+      display:grid;
+      grid-template-columns: var(--btn1) var(--btn2) var(--btn3);
+      gap:0;
+      width:100%;
+      min-height:var(--top-row-h);
+    }
 
-  --titleTopMobile: 20%;     /* subir/bajar título móvil */
-  --titleSizeMobile: 18px;   /* tamaño título móvil */
-  --titleXMobile: 0px;       /* mover título izq/der móvil (px) */
+    .top-btn{
+      appearance:none;
+      border:var(--border-size) solid var(--border);
+      background:#fff;
+      color:var(--text);
+      margin:0;
+      padding:var(--pad-y) var(--pad-x);
+      cursor:pointer;
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
+      text-align:left;
+      line-height:1.1;
+      min-height:var(--top-row-h);
+      font-size:var(--font-main);
+      font-weight:400;
+      transition:background .15s ease, color .15s ease;
+    }
 
-  --lblUserTopMobile: 22%;
-  --inUserTopMobile: 28%;     /* 28 */
-  --lblPassTopMobile: 42%;  /* 42 */
-  --inPassTopMobile: 48%;    /* 48 */
-  --btnTopMobile: 65%;     /* 67%*/
+    .top-btn + .top-btn{
+      border-left:none;
+    }
 
-  --linkPolTopMobile: 78%; /* 78 */
-  --linkPolLeftMobile: 20%; /* 20 */
-  --linkRegTopMobile: 78%;
-  --linkRegLeftMobile: 68%; /* 68 */
+    .top-btn.active{
+      background:#f5f5f5;
+    }
 
-  --labelSizeMobile: 16px;    /* 16 */
-  --inputSizeMobile: 16px;    /* 16 */
-  --btnTextSizeMobile: 18px; /* 14 */
-  --linkSizeMobile: 15px;  /* 13*/
-}
+    .btn-stack{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      justify-content:center;
+      gap:4px;
+    }
 
-/* RESET */
-*{box-sizing:border-box}
-html, body{
-  margin:0;
-  padding:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background: var(--baseBlue);
-}
+    .btn-topline{
+      font-size:var(--font-small);
+      font-weight:400;
+      line-height:1;
+    }
 
-/* FONDO EXTERIOR */
-#stage{
-  position:fixed;
-  inset:0;
-  width:100vw;
-  height:100vh;
-  background:
-    radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.14), transparent 60%),
-    radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
-    linear-gradient(180deg, #020614 0%, var(--baseBlue) 100%);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-}
+    .btn-mainline{
+      font-size:var(--font-main);
+      font-weight:400;
+      line-height:1.1;
+    }
 
-/* PANEL PRINCIPAL */
-#plan{
-  position:absolute;
-  left:10px; right:10px;
-  top:10px; bottom:0;
-  overflow:hidden;
-  border-radius: 34px;
-  box-shadow: var(--shadow1);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 22%),
-    linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #05164d 58%, var(--bgDeep) 100%);
-}
+    .btn-center{
+      width:100%;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      font-size:var(--font-main);
+      line-height:1.1;
+    }
 
-/* CORTE DIAGONAL */
-#plan::before{
-  content:"";
-  position:absolute;
-  inset:-10%;
-  background:
-    linear-gradient(135deg,
-      transparent 0%,
-      transparent 32%,
-      var(--overlay1) 32%,
-      var(--overlay2) 66%,
-      transparent 66%);
-  transform: rotate(-10deg);
-  opacity:.95;
-  pointer-events:none;
-}
+    .chat-shell{
+      flex:1;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      border:var(--border-size) solid var(--border);
+      background:#fff;
+    }
 
-/* VIÑETA */
-#plan::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(50% 60% at 50% 25%, rgba(255,255,255,.06), transparent 55%),
-    radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
-    linear-gradient(180deg, transparent 55%, rgba(0,0,0,.65) 100%);
-  pointer-events:none;
-}
+    .chat-title{
+      height:var(--title-row-h);
+      min-height:var(--title-row-h);
+      border-bottom:var(--border-size) solid var(--border);
+      display:flex;
+      align-items:center;
+      padding:0 var(--pad-x);
+      font-size:var(--font-title);
+      font-weight:400;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
 
-/* MARCO */
-#frame{
-  position:absolute;
-  left:9px; right:9px;
-  top:10px; bottom:0;
-  border-left: 2px solid rgba(255,255,255,.14);
-  border-right:2px solid rgba(255,255,255,.14);
-  border-top:  2px solid rgba(255,255,255,.14);
-  box-sizing:border-box;
-  pointer-events:none;
-  border-radius: 34px;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
-}
+    .chat-body{
+      flex:1;
+      min-height:160px;
+      overflow:auto;
+      background:#fff;
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
 
-/* CONTENEDOR */
-#card{
-  position:absolute;
-  left:6%;
-  right:6%;
-  top:6%;
-  bottom:6%;
-}
+    .chat-empty{
+      flex:1;
+      min-height:100%;
+    }
 
-/* =========================================================
-   LOGO (DESKTOP por defecto)
-   ========================================================= */
-.logo{
-  position:absolute;
-  left:50%;
-  top: var(--logoTopDesktop) !important;
-  transform: translateX(-50%) translateX(var(--logoXDesktop)) !important;
-  width: var(--logoWDesktop) !important;
-  height:auto;
-  display:block;
-  border-radius: 10px;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
-}
+    .msg{
+      max-width:min(78%, 560px);
+      border:var(--border-size) solid var(--border);
+      padding:10px 12px;
+      font-size:var(--font-input);
+      line-height:1.3;
+      background:#fff;
+      word-break:break-word;
+    }
 
-/* =========================================================
-   TÍTULO (DESKTOP por defecto)
-   ========================================================= */
-.title{
-  position:absolute;
-  left:0; right:0;
-  top: var(--titleTopDesktop) !important;
-  text-align:center;
-  font:800 var(--titleSizeDesktop) Arial, sans-serif !important;
-  color: var(--ink);
-  text-shadow: 0 8px 18px rgba(0,0,0,.35);
-  letter-spacing: .2px;
-  transform: translateX(var(--titleXDesktop)) !important;
-}
+    .msg.out{
+      margin-left:auto;
+    }
 
-/* LABELS */
-.label{
-  position:absolute;
-  left:18%;
-  right:18%;
-  font:700 var(--labelSizeDesktop) Arial, sans-serif !important;
-  color: rgba(255,255,255,.82);
-  text-shadow: 0 6px 14px rgba(0,0,0,.30);
-}
+    .input-row{
+      height:var(--input-row-h);
+      min-height:var(--input-row-h);
+      border-top:var(--border-size) solid var(--border);
+      display:grid;
+      grid-template-columns: 1fr var(--send-w);
+      gap:0;
+      background:#fff;
+    }
 
-/* INPUTS */
-input.field{
-  position:absolute;
-  left:22%; /* 16 */
-  right:22%; /* 16 */
-  height:10%; /* 16 */
-  border: 1px solid rgba(255,255,255,.55);
-  border-radius: 999px;
-  box-sizing:border-box;
-  background: linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
-  padding: 0 16px; /* 14 */
-  font:700 var(--inputSizeDesktop) Arial, sans-serif !important;
-  color: rgba(30,40,55,.92);
-  outline:none;
-  box-shadow:
-    0 15px 18px rgba(0,0,0,.22), /*0 10px */
-    inset 0 1px 0 rgba(255,255,255,.55);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
-}
-input.field::placeholder{ color: rgba(60,70,85,.55); }
+    .chat-input{
+      width:100%;
+      height:100%;
+      border:none;
+      outline:none;
+      padding:0 var(--pad-x);
+      font-size:var(--font-input);
+      color:var(--text);
+      background:#fff;
+    }
 
-/* BOTÓN */
-.btn{
-  position:absolute;
-  left:32%;
-  right:32%;
-  height:10%;  
-  border: 1px solid rgba(255,255,255,.10);/* Estoy aqui 10*/
-  border-radius: 999px;
-  box-sizing:border-box;
-  background:
-    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%), /* Estoy aqui transparent 80%*/
-    linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
-  box-shadow:
-    0 22px 26px rgba(0,0,0,.28),/* Estoy aqui 0 18px */
-    inset 0 1px 0 rgba(255,255,255,.22);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font:700 var(--btnTextSizeDesktop) Arial, sans-serif !important;
-  color: rgba(255,255,255,.92);
-  cursor:pointer;
-  user-select:none;
-  transition: transform .12s ease, filter .12s ease;
-}
-.btn:active{ transform: scale(.985); filter: brightness(.98); }
+    .chat-input::placeholder{
+      color:#111111;
+      opacity:1;
+    }
 
-/* LINKS */
-.link{
-  position:absolute;
-  font:700 var(--linkSizeDesktop) Arial, sans-serif !important;
-  color: rgba(255,255,255,.70);
-  white-space:nowrap;
-  text-shadow: 0 6px 14px rgba(0,0,0,.30);
-}
-.link:hover{ color: rgba(255,255,255,.85); }
+    .send-btn{
+      height:100%;
+      width:100%;
+      border:none;
+      border-left:var(--border-size) solid var(--border);
+      background:#fff;
+      color:var(--text);
+      font-size:var(--font-send);
+      font-weight:400;
+      cursor:pointer;
+    }
 
-/* Overlay sutil */
-#hud{
-  position:absolute; inset:0;
-  pointer-events:none;
-  background:
-    radial-gradient(60% 45% at 50% 18%, rgba(255,255,255,.12), transparent 60%),
-    linear-gradient(180deg, transparent 62%, rgba(0,0,0,.30) 100%);
-}
+    .send-btn:active,
+    .top-btn:active{
+      background:#ececec;
+    }
 
-/* MÓVIL */
-@media (max-width: 768px){
-  #card{ left:8%; right:8%; top:6%; bottom:8%; }
+    @media (max-width: 768px){
+      :root{
+        --frame-margin: 6px;
+        --border-size: 2px;
+        --top-row-h: 56px;
+        --title-row-h: 42px;
+        --input-row-h: 52px;
+        --pad-x: 8px;
+        --pad-y: 6px;
+        --font-main: 14px;
+        --font-small: 11px;
+        --font-title: 14px;
+        --font-input: 14px;
+        --font-send: 14px;
+        --send-w: 96px;
+      }
 
-  .logo{
-    top: var(--logoTopMobile) !important;
-    width: var(--logoWMobile) !important;
-    transform: translateX(-50%) translateX(var(--logoXMobile)) !important;
-  }
+      .inner{
+        padding:10px;
+      }
 
-  .title{
-    top: var(--titleTopMobile) !important;
-    font:800 var(--titleSizeMobile) Arial, sans-serif !important;
-    transform: translateX(var(--titleXMobile)) !important;
-  }
+      .btn-stack{
+        gap:2px;
+      }
 
-  .label{
-    left:12%;
-    right:12%;
-    font:700 var(--labelSizeMobile) Arial, sans-serif !important;
-  }
+      .btn-mainline{
+        word-break:break-word;
+      }
 
-  input.field{
-    left:12%;
-    right:12%;
-    font:700 var(--inputSizeMobile) Arial, sans-serif !important;
-  }
+      .chat-body{
+        padding:10px;
+      }
+    }
 
-  .btn{
-    left:24%;
-    right:24%;
-    font:700 var(--btnTextSizeMobile) Arial, sans-serif !important;
-  }
+    @media (max-width: 420px){
+      :root{
+        --font-main: 13px;
+        --font-small: 10px;
+        --font-title: 13px;
+        --font-input: 13px;
+        --font-send: 13px;
+        --send-w: 88px;
+      }
 
-  .link{
-    font:700 var(--linkSizeMobile) Arial, sans-serif !important;
-  }
-
-  #lblUser{ top: var(--lblUserTopMobile) !important; }
-  #inUser { top: var(--inUserTopMobile) !important; }
-  #lblPass{ top: var(--lblPassTopMobile) !important; }
-  #inPass { top: var(--inPassTopMobile) !important; }
-  #btnLogin{ top: var(--btnTopMobile) !important; }
-
-  #linkPol{
-    top: var(--linkPolTopMobile) !important;
-    left: var(--linkPolLeftMobile) !important;
-  }
-  #linkReg{
-    top: var(--linkRegTopMobile) !important;
-    left: var(--linkRegLeftMobile) !important;
-  }
-}
-</style>
+      .inner{
+        padding:8px;
+      }
+    }
+  </style>
 </head>
 <body>
-<div id="stage">
-  <div id="plan">
-    <div id="frame"></div>
+  <div id="app">
+    <div class="frame">
+      <div class="inner">
 
-    <div id="card">
-      <!-- LOGO -->
-      <img class="logo" src="https://files.catbox.moe/056m6v.jpg" alt="Logo"/>
+        <div class="top-buttons">
+          <button class="top-btn active" id="btnSocorristas" type="button">
+            <div class="btn-stack">
+              <span class="btn-topline">seleccióna</span>
+              <span class="btn-mainline">Socorristas</span>
+            </div>
+          </button>
 
-      <!-- TÍTULO -->
-      <div class="title">¡BIENVENIDO!</div>
+          <button class="top-btn" id="btnInstalacion" type="button">
+            <div class="btn-stack">
+              <span class="btn-topline">seleccióna</span>
+              <span class="btn-mainline">Instalación</span>
+            </div>
+          </button>
 
-      <div id="lblUser" class="label" style="top:22%;">Usuario:</div>
-      <input id="inUser" class="field" style="top:28%;" autocomplete="username"/>
+          <button class="top-btn" id="btnNotificaciones" type="button">
+            <div class="btn-center">Notificaciones</div>
+          </button>
+        </div>
 
-      <div id="lblPass" class="label" style="top:42%;">Contraseña:</div>
-      <input id="inPass" class="field" style="top:48%;" type="password" autocomplete="current-password"/>
+        <div class="chat-shell">
+          <div class="chat-title" id="chatTitle">Nombre del socorrista o Grupo de instalación</div>
 
-      <div id="btnLogin" class="btn" style="top:67%;" onclick="doLogin()">Login</div>
+          <div class="chat-body" id="chatBody">
+            <div class="chat-empty"></div>
+          </div>
 
-      <div id="linkPol" class="link" style="top:78%; left:20%;">Politicas:</div>
-      <!-- Enlace a la página de registro (altas_registro.py) -->
-      <div id="linkReg" class="link" style="top:78%; left:68%;"><a href="/altas_registro" style="color:inherit; text-decoration:none;">Registrarse:</a></div>
+          <div class="input-row">
+            <input
+              id="chatInput"
+              class="chat-input"
+              type="text"
+              placeholder="Dialogo para enviar Mensaje"
+              autocomplete="off"
+            />
+            <button id="sendBtn" class="send-btn" type="button">SEND</button>
+          </div>
+        </div>
+
+      </div>
     </div>
-
-    <div id="hud"></div>
   </div>
-</div>
 
-<script>
-async function doLogin(){
-  const u = (document.getElementById("inUser").value || "").trim();
-  const p = (document.getElementById("inPass").value || "").trim();
+  <script>
+    (function () {
+      const fe = window.frameElement;
+      if (fe) {
+        fe.style.position = "fixed";
+        fe.style.inset = "0";
+        fe.style.width = "100vw";
+        fe.style.height = "100vh";
+        fe.style.border = "0";
+        fe.style.margin = "0";
+        fe.style.padding = "0";
+        fe.style.zIndex = "999999";
+        fe.style.background = "transparent";
+      }
 
-  try{
-    const r = await fetch("https://camilo27.pythonanywhere.com/api/auth", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({usuario:u, password:p})
-    });
+      const btnSocorristas = document.getElementById("btnSocorristas");
+      const btnInstalacion = document.getElementById("btnInstalacion");
+      const btnNotificaciones = document.getElementById("btnNotificaciones");
+      const chatTitle = document.getElementById("chatTitle");
+      const chatInput = document.getElementById("chatInput");
+      const chatBody = document.getElementById("chatBody");
+      const sendBtn = document.getElementById("sendBtn");
 
-    const j = await r.json();
+      function setActive(button) {
+        [btnSocorristas, btnInstalacion, btnNotificaciones].forEach(btn => {
+          btn.classList.remove("active");
+        });
+        button.classList.add("active");
+      }
 
-    if (j && j.ok === true){
-      // ✅ Pasamos usuario, rol y DNI a la interfaz principal
-      const rol = (j.rol || "").toString();
-      const dni = (j.dni || "").toString();
-      window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol) + "&dni=" + encodeURIComponent(dni);
-    } else {
-      alert("Credenciales inválidas");
-    }
-  }catch(e){
-    alert("Error de conexión");
-  }
-}
+      btnSocorristas.addEventListener("click", function () {
+        setActive(btnSocorristas);
+        chatTitle.textContent = "Nombre del socorrista o Grupo de instalación";
+      });
 
-(function(){
-  var fe = window.frameElement;
-  if (fe){
-    fe.style.position="fixed";
-    fe.style.inset="0";
-    fe.style.width="100vw";
-    fe.style.height="100vh";
-    fe.style.border="0";
-    fe.style.margin="0";
-    fe.style.padding="0";
-    fe.style.background="transparent";
-  }
-})();
-</script>
+      btnInstalacion.addEventListener("click", function () {
+        setActive(btnInstalacion);
+        chatTitle.textContent = "Nombre del socorrista o Grupo de instalación";
+      });
+
+      btnNotificaciones.addEventListener("click", function () {
+        setActive(btnNotificaciones);
+        chatTitle.textContent = "Notificaciones";
+      });
+
+      function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        const empty = chatBody.querySelector(".chat-empty");
+        if (empty) empty.remove();
+
+        const bubble = document.createElement("div");
+        bubble.className = "msg out";
+        bubble.textContent = text;
+
+        chatBody.appendChild(bubble);
+        chatInput.value = "";
+        chatBody.scrollTop = chatBody.scrollHeight;
+      }
+
+      sendBtn.addEventListener("click", sendMessage);
+
+      chatInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
 """
