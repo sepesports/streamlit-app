@@ -41,101 +41,161 @@ html = """
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Chat</title>
   <style>
+    /* ========== ESTILOS BASE DEL LOGIN (fondo, panel, efectos) ========== */
     :root{
-      --bg:#ffffff;
-      --text:#111111;
-      --border:#111111;
-      --soft:#f5f5f5;
-      --soft2:#efefef;
-      --muted:#666666;
-      --danger:#b00020;
-
-      --frame-margin:8px;
-      --frame-pad:14px;
-      --border-size:2px;
-
-      --top-row-h:60px;
-      --title-row-h:42px;
-      --input-row-h:48px;
-
-      --font-main:18px;
-      --font-small:14px;
-      --font-title:16px;
-      --font-body:15px;
-
-      --send-w:140px;
-      --modal-w:min(760px, calc(100vw - 24px));
-      --modal-h:min(74vh, 760px);
-
-      --messages-h-desktop:clamp(240px, 30vh, 320px);
-      --messages-h-mobile:clamp(300px, 44vh, 420px);
-
-      /* ========== COLORES DEL BOTÓN (EFECTO LOGIN) ========== */
-      --btn1: #2f7de1;
-      --btn2: #1e5fc4;
+      --baseBlue: #040e31;
+      --bgTop:  #0a1a55;
+      --bgMid:  #061240;
+      --bgDeep: #02071c;
+      --overlay1: rgba(40, 120, 255, .16);
+      --overlay2: rgba(0,  10,  40, .62);
+      --ink: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.62);
+      --pill: rgba(238, 245, 255, .92);
+      --pill2: rgba(255,255,255,.86);
+      --btn1:#2f7de1;
+      --btn2:#1e5fc4;
+      --shadow1: 0 22px 55px rgba(0,0,0,.55);
+      --shadow2: 0 10px 22px rgba(0,0,0,.40);
+      --blur: 14px;
     }
 
     *{ box-sizing:border-box; }
-
     html, body{
       margin:0;
       padding:0;
       width:100%;
       height:100%;
-      background:var(--bg);
-      color:var(--text);
-      font-family:Arial, Helvetica, sans-serif;
       overflow:hidden;
+      background: var(--baseBlue);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
-    #app{
-      width:100%;
-      height:100%;
-      padding:var(--frame-margin);
-      background:var(--bg);
+    #stage{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
+      background:
+        radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.14), transparent 60%),
+        radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
+        linear-gradient(180deg, #020614 0%, var(--baseBlue) 100%);
     }
 
-    .frame{
-      width:100%;
-      height:100%;
-      border:var(--border-size) solid var(--border);
-      background:#fff;
+    #plan{
+      position:absolute;
+      left:10px; right:10px;
+      top:10px; bottom:0;
       overflow:hidden;
+      border-radius: 34px;
+      box-shadow: var(--shadow1);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 22%),
+        linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #05164d 58%, var(--bgDeep) 100%);
     }
 
-    .inner{
-      width:100%;
-      height:100%;
-      display:flex;
-      flex-direction:column;
-      align-items:stretch;
-      gap:12px;
-      padding:var(--frame-pad);
-      overflow:hidden;
+    #plan::before{
+      content:"";
+      position:absolute;
+      inset:-10%;
+      background:
+        linear-gradient(135deg,
+          transparent 0%,
+          transparent 32%,
+          var(--overlay1) 32%,
+          var(--overlay2) 66%,
+          transparent 66%);
+      transform: rotate(-10deg);
+      opacity:.95;
+      pointer-events:none;
     }
 
-    .top-buttons{
-      display:grid;
-      grid-template-columns:1fr 1fr 1.15fr;
-      width:100%;
-      min-height:var(--top-row-h);
-      flex:0 0 auto;
+    #plan::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(50% 60% at 50% 25%, rgba(255,255,255,.06), transparent 55%),
+        radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
+        linear-gradient(180deg, transparent 55%, rgba(0,0,0,.65) 100%);
+      pointer-events:none;
     }
 
-    /* ========== ESTILOS DE BOTONES CON EFECTO DE LUZ (LOGIN) ========== */
+    #frame{
+      position:absolute;
+      left:9px; right:9px;
+      top:10px; bottom:0;
+      border-left: 2px solid rgba(255,255,255,.14);
+      border-right:2px solid rgba(255,255,255,.14);
+      border-top:  2px solid rgba(255,255,255,.14);
+      box-sizing:border-box;
+      pointer-events:none;
+      border-radius: 34px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
+    }
+
+    #card{
+      position:absolute;
+      left:6%;
+      right:6%;
+      top:6%;
+      bottom:6%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow: auto;
+    }
+
+    #hud{
+      position:absolute; inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(60% 45% at 50% 18%, rgba(255,255,255,.12), transparent 60%),
+        linear-gradient(180deg, transparent 62%, rgba(0,0,0,.30) 100%);
+    }
+
+    /* ========== ESTILOS DEL CHAT (adaptados para encajar dentro del panel) ========== */
+    .chat-container {
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow: auto;
+    }
+
+    /* Reutilizamos los estilos originales del chat pero ajustamos colores para que se vean sobre fondo oscuro */
+    :root {
+      --chat-bg: rgba(255,255,255,0.1);
+      --chat-text: #fff;
+      --chat-border: rgba(255,255,255,0.3);
+      --chat-soft: rgba(255,255,255,0.15);
+      --chat-soft2: rgba(255,255,255,0.25);
+      --chat-muted: rgba(255,255,255,0.7);
+      --chat-danger: #ff6b6b;
+    }
+
+    .top-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.15fr;
+      gap: 12px;
+    }
+
     .top-btn, #sendBtn, .new-chat-btn, .selector-close, .selector-item, .selector-action {
-      /* Reemplazamos bordes, fondos, sombras y formas */
-      border: 1px solid rgba(255,255,255,.10) !important;
+      border: 1px solid rgba(255,255,255,.20) !important;
       border-radius: 999px !important;
       background:
         radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%),
         linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%) !important;
       box-shadow:
-        0 22px 26px rgba(0,0,0,.28),
-        inset 0 1px 0 rgba(255,255,255,.22) !important;
-      color: rgba(255,255,255,.92) !important;
+        0 8px 18px rgba(0,0,0,.3),
+        inset 0 1px 0 rgba(255,255,255,.25) !important;
+      color: rgba(255,255,255,.95) !important;
       cursor: pointer;
-      user-select: none;
       transition: transform .12s ease, filter .12s ease;
       font-weight: 700 !important;
       display: flex;
@@ -144,12 +204,9 @@ html = """
       text-align: center;
     }
 
-    /* Ajustes específicos para mantener la disposición original */
     .top-btn {
-      padding: 8px 14px !important;
-      min-height: var(--top-row-h) !important;
-      line-height: 1.1;
-      font-size: var(--font-main) !important;
+      padding: 12px 16px !important;
+      font-size: 18px !important;
     }
     .top-btn .btn-stack, .top-btn .btn-center {
       width: 100%;
@@ -158,511 +215,210 @@ html = """
       flex-direction: column;
       justify-content: center;
     }
-    .top-btn .btn-topline {
-      font-size: var(--font-small);
-      font-weight: 400;
+    .btn-topline {
+      font-size: 12px;
+      opacity: 0.9;
     }
-    .top-btn .btn-mainline, .top-btn .btn-center {
-      font-size: calc(var(--font-main) + 1px);
+    .btn-mainline, .btn-center {
+      font-size: 20px;
       font-weight: 700;
     }
 
     #sendBtn {
-      width: var(--send-w);
-      min-width: var(--send-w);
-      height: 100%;
-      font-size: calc(var(--font-body) + 2px) !important;
-      border-left: none !important; /* eliminamos el borde izquierdo original */
+      width: 120px;
+      font-size: 16px !important;
     }
 
     .new-chat-btn {
-      padding: 4px 10px !important;
+      padding: 6px 12px !important;
       font-size: 12px !important;
-      background: var(--btn2) !important; /* degradado ya incluido arriba */
     }
 
     .selector-close {
       width: 48px;
-      height: 100%;
-      font-size: 22px;
-      background: transparent !important; /* ya lo cubre el estilo base */
+      font-size: 24px;
     }
 
     .selector-item, .selector-action {
       width: 100%;
       padding: 12px !important;
-      margin-bottom: 6px !important;
-      font-size: var(--font-body) !important;
-      text-align: left;
+      margin-bottom: 8px;
       justify-content: flex-start;
     }
 
-    .selector-item .selector-item-title, .selector-action .selector-item-title {
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    .selector-item .selector-item-sub {
-      font-size: 12px;
-      opacity: 0.8;
-    }
-
-    /* Efecto hover para todos los botones con luz */
     .top-btn:hover, #sendBtn:hover, .new-chat-btn:hover, .selector-close:hover, .selector-item:hover, .selector-action:hover {
       filter: brightness(0.98);
-      background:
-        radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.28), transparent 60%),
-        linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%) !important;
     }
-
-    /* Efecto al hacer clic (igual que login) */
     .top-btn:active, #sendBtn:active, .new-chat-btn:active, .selector-close:active, .selector-item:active, .selector-action:active {
       transform: scale(0.985);
-      filter: brightness(0.98);
-    }
-
-    /* Para mantener la apariencia activa del selector (resaltado) */
-    .top-btn.active, .selector-item.active {
       filter: brightness(0.96);
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), 0 22px 26px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.22) !important;
     }
 
-    /* Eliminar bordes izquierdos que podían quedar por la regla anterior */
-    .top-btn + .top-btn {
-      border-left: 1px solid rgba(255,255,255,.10) !important;
+    .chat-shell {
+      background: rgba(0,0,0,0.4);
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.2);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
     }
 
-    /* ========== FIN ESTILOS BOTONES ========== */
-
-    .btn-stack{
-      display:flex;
-      flex-direction:column;
-      align-items:flex-start;
-      justify-content:center;
-      gap:4px;
-      width:100%;
-      height:100%;
+    .chat-header {
+      padding: 12px 20px;
+      background: rgba(0,0,0,0.3);
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
     }
 
-    .btn-topline{
-      font-size:var(--font-small);
-      line-height:1;
-      font-weight:400;
+    .messages-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
-    .btn-mainline{
-      font-size:calc(var(--font-main) + 1px);
-      line-height:1.1;
-      font-weight:400;
-      word-break:break-word;
+    .message {
+      max-width: 70%;
+      padding: 8px 12px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      color: white;
+      align-self: flex-start;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .message.out {
+      background: rgba(0,0,0,0.5);
+      align-self: flex-end;
+    }
+    .message strong {
+      font-size: 12px;
+      display: block;
+      margin-bottom: 4px;
+      color: #ccc;
     }
 
-    .btn-center{
-      width:100%;
-      height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      font-size:calc(var(--font-main) + 1px);
-      line-height:1.1;
+    .input-area {
+      display: none;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      padding: 12px;
+      gap: 12px;
+      background: rgba(0,0,0,0.3);
+    }
+    #chatInput {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 30px;
+      border: none;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      font-size: 14px;
+      outline: none;
+    }
+    #chatInput::placeholder {
+      color: rgba(255,255,255,0.6);
     }
 
-    .chat-shell{
-      flex:0 0 auto;
-      display:flex;
-      flex-direction:column;
-      border:var(--border-size) solid var(--border);
-      background:#fff;
-      width:100%;
-      height:calc(var(--title-row-h) + var(--messages-h-desktop) + var(--input-row-h));
-      min-height:calc(var(--title-row-h) + var(--messages-h-desktop) + var(--input-row-h));
-      max-height:calc(var(--title-row-h) + var(--messages-h-desktop) + var(--input-row-h));
-      overflow:hidden;
+    /* modal y selector mantienen su estructura pero con estilos oscuros */
+    .user-search-modal .modal-content,
+    .selector-card {
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 24px;
+      color: white;
+    }
+    .selector-search {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+    }
+    .selector-item, .selector-action {
+      background: transparent !important;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: white !important;
+    }
+    .selector-item:hover, .selector-action:hover {
+      background: rgba(255,255,255,0.1) !important;
+    }
+    .thread-item {
+      background: transparent;
+      color: white;
+    }
+    .thread-item:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .thread-item.active {
+      background: rgba(255,255,255,0.2);
     }
 
-    .chat-header{
-      height:var(--title-row-h);
-      min-height:var(--title-row-h);
-      max-height:var(--title-row-h);
-      border-bottom:var(--border-size) solid var(--border);
-      display:flex;
-      align-items:center;
-      justify-content:flex-start;
-      padding:0 14px;
-      font-size:calc(var(--font-title) + 3px);
-      font-weight:400;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      flex:0 0 auto;
-    }
-
-    .messages-area{
-      height:var(--messages-h-desktop);
-      min-height:var(--messages-h-desktop);
-      max-height:var(--messages-h-desktop);
-      overflow-y:auto;
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      background:#fff;
-      flex:0 0 auto;
-    }
-
-    .message{
-      max-width:70%;
-      padding:8px 12px;
-      border:var(--border-size) solid var(--border);
-      background:#fff;
-      align-self:flex-start;
-      font-size:var(--font-body);
-      line-height:1.35;
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
-
-    .message.out{
-      background:var(--soft);
-      align-self:flex-end;
-    }
-
-    .message strong{
-      display:block;
-      margin-bottom:4px;
-      color:var(--text);
-      font-size:12px;
-    }
-
-    .placeholder,
-    .loading,
-    .error{
-      text-align:center;
-      padding:20px 12px;
-      color:var(--muted);
-      font-size:var(--font-body);
-    }
-
-    .error{ color:var(--danger); }
-
-    .input-area{
-      display:none;
-      padding:0;
-      border-top:var(--border-size) solid var(--border);
-      gap:0;
-      height:var(--input-row-h);
-      min-height:var(--input-row-h);
-      max-height:var(--input-row-h);
-      align-items:stretch;
-      background:#fff;
-      flex:0 0 auto;
-    }
-
-    #chatInput{
-      flex:1;
-      height:100%;
-      padding:0 14px;
-      border:none;
-      border-radius:0;
-      background:#fff;
-      color:var(--text);
-      outline:none;
-      font-size:var(--font-body);
-    }
-
-    #chatInput::placeholder{
-      color:var(--muted);
-      opacity:1;
-    }
-
-    #functionalLayer{
-      display:none !important;
-    }
-
-    .threads-panel{
-      width:280px;
-      border-right:1px solid var(--border);
-      display:flex;
-      flex-direction:column;
-      background:#fff;
-    }
-
-    .threads-header{
-      padding:12px;
-      border-bottom:1px solid var(--border);
-      font-weight:bold;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-
-    .thread-list{
-      flex:1;
-      overflow-y:auto;
-    }
-
-    .thread-item{
-      padding:12px;
-      border-bottom:1px solid var(--border);
-      cursor:pointer;
-      transition:background 0.2s;
-    }
-
-    .thread-item:hover{
-      background:var(--soft);
-    }
-
-    .thread-item.active{
-      background:var(--soft2);
-    }
-
-    .thread-title{
-      font-weight:bold;
-      margin-bottom:4px;
-    }
-
-    .thread-preview{
-      font-size:12px;
-      color:var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .user-search-modal{
-      position:fixed;
-      top:0;
-      left:0;
-      right:0;
-      bottom:0;
-      background:rgba(0,0,0,0.8);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      z-index:2000;
-    }
-
-    .modal-content{
-      background:#fff;
-      border:1px solid var(--border);
-      width:300px;
-      max-width:90%;
-      padding:20px;
-      color:var(--text);
-    }
-
-    .modal-content input{
-      width:100%;
-      padding:8px;
-      margin-bottom:12px;
-      border:1px solid var(--border);
-      background:#fff;
-      color:var(--text);
-    }
-
-    .user-list{
-      max-height:200px;
-      overflow-y:auto;
-    }
-
-    .user-item{
-      padding:6px;
-      cursor:pointer;
-      border-bottom:1px solid #ddd;
-    }
-
-    .user-item:hover{
-      background:var(--soft);
-    }
-
-    .close-modal{
-      float:right;
-      cursor:pointer;
-    }
-
-    .selector-modal{
-      position:fixed;
-      top:0;
-      left:0;
-      right:0;
-      bottom:0;
-      background:rgba(0,0,0,0.45);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:1000;
-      padding:12px;
-    }
-
-    .selector-modal.show{
-      display:flex;
-    }
-
-    .selector-card{
-      background:#fff;
-      border:var(--border-size) solid var(--border);
-      width:var(--modal-w);
-      max-width:100%;
-      height:var(--modal-h);
-      max-height:var(--modal-h);
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
-    }
-
-    .selector-head{
-      min-height:54px;
-      border-bottom:var(--border-size) solid var(--border);
-      display:grid;
-      grid-template-columns:1fr 48px;
-      align-items:center;
-    }
-
-    .selector-title{
-      padding:0 12px;
-      font-size:var(--font-title);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .selector-search-wrap{
-      border-bottom:var(--border-size) solid var(--border);
-      padding:10px;
-    }
-
-    .selector-search{
-      width:100%;
-      height:42px;
-      border:var(--border-size) solid var(--border);
-      background:#fff;
-      padding:0 10px;
-      outline:none;
-      font-size:var(--font-body);
-      color:var(--text);
-    }
-
-    .selector-list{
-      flex:1;
-      min-height:0;
-      overflow-y:auto;
-      background:#fff;
-      padding:8px;
-    }
-
-    .section-label{
-      padding:10px 12px 8px;
-      font-size:12px;
-      font-weight:700;
-      color:var(--muted);
-      border-bottom:1px solid #d8d8d8;
-      background:#fafafa;
-    }
-
-    .selector-empty{
-      text-align:center;
-      padding:18px 12px;
-      color:var(--muted);
-      font-size:var(--font-body);
-    }
-
-    @media (max-width: 768px){
-      :root{
-        --frame-margin:6px;
-        --frame-pad:8px;
-        --top-row-h:48px;
-        --title-row-h:38px;
-        --input-row-h:44px;
-        --font-main:14px;
-        --font-small:11px;
-        --font-title:14px;
-        --font-body:13px;
-        --send-w:92px;
-      }
-
-      .chat-shell{
-        height:calc(var(--title-row-h) + var(--messages-h-mobile) + var(--input-row-h));
-        min-height:calc(var(--title-row-h) + var(--messages-h-mobile) + var(--input-row-h));
-        max-height:calc(var(--title-row-h) + var(--messages-h-mobile) + var(--input-row-h));
-      }
-
-      .messages-area{
-        height:var(--messages-h-mobile);
-        min-height:var(--messages-h-mobile);
-        max-height:var(--messages-h-mobile);
-      }
-
-      .message{ max-width:88%; }
-      .chat-header{ font-size:16px; }
-      .btn-mainline, .btn-center{ font-size:15px; }
-      .top-btn { font-size: var(--font-main) !important; }
-    }
-
-    @media (max-width: 420px){
-      :root{
-        --font-main:13px;
-        --font-small:10px;
-        --font-title:13px;
-        --font-body:13px;
-        --send-w:86px;
-      }
-
-      .inner{ gap:8px; }
+    /* Ajustes móviles */
+    @media (max-width: 768px) {
+      .top-btn { font-size: 14px !important; padding: 8px 12px !important; }
+      .btn-mainline, .btn-center { font-size: 16px; }
+      .chat-header { font-size: 16px; }
+      .message { max-width: 85%; }
     }
   </style>
 </head>
 <body>
-<div id="app">
-  <div class="frame">
-    <div class="inner">
-
-      <div class="top-buttons">
-        <button class="top-btn" id="btnSocorristas" type="button">
-          <div class="btn-stack">
-            <span class="btn-topline">seleccióna</span>
-            <span class="btn-mainline">Socorristas</span>
-          </div>
-        </button>
-
-        <button class="top-btn" id="btnInstalacion" type="button">
-          <div class="btn-stack">
-            <span class="btn-topline">seleccióna</span>
-            <span class="btn-mainline">Instalación</span>
-          </div>
-        </button>
-
-        <button class="top-btn" id="btnNotificaciones" type="button">
-          <div class="btn-center">Notificaciones</div>
-        </button>
-      </div>
-
-      <div class="chat-shell">
-        <div class="chat-header" id="chatHeader">Nombre del socorrista o Grupo de instalación</div>
-        <div class="messages-area" id="messagesArea">
-          <div class="loading">Cargando conversaciones...</div>
+<div id="stage">
+  <div id="plan">
+    <div id="frame"></div>
+    <div id="card">
+      <div class="chat-container">
+        <!-- Aquí va TODO el contenido del chat original -->
+        <div class="top-buttons">
+          <button class="top-btn" id="btnSocorristas" type="button">
+            <div class="btn-stack">
+              <span class="btn-topline">seleccióna</span>
+              <span class="btn-mainline">Socorristas</span>
+            </div>
+          </button>
+          <button class="top-btn" id="btnInstalacion" type="button">
+            <div class="btn-stack">
+              <span class="btn-topline">seleccióna</span>
+              <span class="btn-mainline">Instalación</span>
+            </div>
+          </button>
+          <button class="top-btn" id="btnNotificaciones" type="button">
+            <div class="btn-center">Notificaciones</div>
+          </button>
         </div>
-        <div class="input-area" id="inputArea">
-          <input type="text" id="chatInput" placeholder="Dialogo para enviar Mensaje" autocomplete="off">
-          <button id="sendBtn">SEND</button>
-        </div>
-      </div>
 
-      <div id="functionalLayer">
-        <div class="threads-panel">
-          <div class="threads-header">
-            <span>Conversaciones</span>
-            <button class="new-chat-btn" id="newChatBtn">+ Nuevo</button>
-          </div>
-          <div class="thread-list" id="threadList">
+        <div class="chat-shell">
+          <div class="chat-header" id="chatHeader">Nombre del socorrista o Grupo de instalación</div>
+          <div class="messages-area" id="messagesArea">
             <div class="loading">Cargando conversaciones...</div>
           </div>
+          <div class="input-area" id="inputArea">
+            <input type="text" id="chatInput" placeholder="Dialogo para enviar Mensaje" autocomplete="off">
+            <button id="sendBtn">SEND</button>
+          </div>
+        </div>
+
+        <div id="functionalLayer" style="display: none;">
+          <div class="threads-panel">
+            <div class="threads-header">
+              <span>Conversaciones</span>
+              <button class="new-chat-btn" id="newChatBtn">+ Nuevo</button>
+            </div>
+            <div class="thread-list" id="threadList"></div>
+          </div>
         </div>
       </div>
-
     </div>
+    <div id="hud"></div>
   </div>
 </div>
 
+<!-- Modales igual que antes, pero con clases adaptadas -->
 <div class="selector-modal" id="selectorModal">
   <div class="selector-card">
     <div class="selector-head">
@@ -672,13 +428,12 @@ html = """
     <div class="selector-search-wrap">
       <input id="selectorSearch" class="selector-search" type="text" autocomplete="off" placeholder="Buscar">
     </div>
-    <div class="selector-list" id="selectorList">
-      <div class="loading">Cargando...</div>
-    </div>
+    <div class="selector-list" id="selectorList"></div>
   </div>
 </div>
 
 <script>
+  // *************** TODO EL JAVASCRIPT ORIGINAL SIN MODIFICACIONES ***************
   const API_BASE = "https://camilo27.pythonanywhere.com/api/chat";
   const currentUserId = "REEMPLAZAR_DNI";
   let currentThreadId = null;
