@@ -67,7 +67,7 @@ html = """
       --modal-w:min(760px, calc(100vw - 24px));
       --modal-h:min(74vh, 760px);
 
-      --messages-h-desktop:clamp(240px, 30vh, 320px);
+      --messages-h-desktop:clamp(280px, 34vh, 360px);
       --messages-h-mobile:clamp(300px, 44vh, 420px);
     }
 
@@ -87,7 +87,7 @@ html = """
     #app{
       width:100%;
       height:100%;
-      padding:var(--frame-margin);
+      padding:var(--frame-margin) var(--frame-margin) 0 var(--frame-margin);
       background:var(--bg);
     }
 
@@ -106,7 +106,7 @@ html = """
       flex-direction:column;
       align-items:stretch;
       gap:12px;
-      padding:var(--frame-pad);
+      padding:var(--frame-pad) var(--frame-pad) 0 var(--frame-pad);
       overflow:hidden;
     }
 
@@ -183,6 +183,7 @@ html = """
       min-height:calc(var(--title-row-h) + var(--messages-h-desktop) + var(--input-row-h));
       max-height:calc(var(--title-row-h) + var(--messages-h-desktop) + var(--input-row-h));
       overflow:hidden;
+      margin-bottom:0;
     }
 
     .chat-header{
@@ -561,44 +562,6 @@ html = """
       background:var(--soft);
     }
 
-    /* ========== EFECTOS DE LUZ EN BOTONES ========== */
-    .top-btn, #sendBtn, .new-chat-btn, .selector-close, .selector-item, .selector-action {
-      position: relative;
-      border-radius: 4px;
-      transition: transform 0.12s ease, filter 0.12s ease, background 0.2s ease;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.5);
-    }
-
-    /* Brillo radial sobre los botones */
-    .top-btn::before, #sendBtn::before, .new-chat-btn::before, .selector-close::before, .selector-item::before, .selector-action::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
-      pointer-events: none;
-      opacity: 0.6;
-      border-radius: inherit;
-    }
-
-    .top-btn:hover, #sendBtn:hover, .new-chat-btn:hover, .selector-close:hover, .selector-item:hover, .selector-action:hover {
-      background: var(--soft);
-      filter: brightness(0.98);
-    }
-
-    .top-btn:active, #sendBtn:active, .new-chat-btn:active, .selector-close:active, .selector-item:active, .selector-action:active {
-      transform: scale(0.985);
-      filter: brightness(0.96);
-    }
-
-    /* Mantener la apariencia activa para el selector y otros estados */
-    .top-btn.active, .selector-item.active {
-      background: var(--soft2);
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
-    }
-
     @media (max-width: 768px){
       :root{
         --frame-margin:6px;
@@ -613,10 +576,19 @@ html = """
         --send-w:92px;
       }
 
+      #app{
+        padding:var(--frame-margin) var(--frame-margin) 0 var(--frame-margin);
+      }
+
+      .inner{
+        padding:var(--frame-pad) var(--frame-pad) 0 var(--frame-pad);
+      }
+
       .chat-shell{
         height:calc(var(--title-row-h) + var(--messages-h-mobile) + var(--input-row-h));
         min-height:calc(var(--title-row-h) + var(--messages-h-mobile) + var(--input-row-h));
         max-height:calc(var(--title-row-h) + var(--messages-h-mobile) + var(--input-row-h));
+        margin-bottom:0;
       }
 
       .messages-area{
