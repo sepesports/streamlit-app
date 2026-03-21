@@ -67,8 +67,12 @@ html = """
       --modal-w:min(760px, calc(100vw - 24px));
       --modal-h:min(74vh, 760px);
 
-      --messages-h-desktop:clamp(280px, 34vh, 360px);
+      --messages-h-desktop:clamp(240px, 30vh, 320px);
       --messages-h-mobile:clamp(300px, 44vh, 420px);
+
+      /* ========== COLORES DEL BOTÓN (EFECTO LOGIN) ========== */
+      --btn1: #2f7de1;
+      --btn2: #1e5fc4;
     }
 
     *{ box-sizing:border-box; }
@@ -87,7 +91,7 @@ html = """
     #app{
       width:100%;
       height:100%;
-      padding:var(--frame-margin) var(--frame-margin) 0 var(--frame-margin);
+      padding:var(--frame-margin);
       background:var(--bg);
     }
 
@@ -106,7 +110,7 @@ html = """
       flex-direction:column;
       align-items:stretch;
       gap:12px;
-      padding:var(--frame-pad) var(--frame-pad) 0 var(--frame-pad);
+      padding:var(--frame-pad);
       overflow:hidden;
     }
 
@@ -118,25 +122,116 @@ html = """
       flex:0 0 auto;
     }
 
-    .top-btn{
-      border:var(--border-size) solid var(--border);
-      background:#fff;
-      color:var(--text);
-      margin:0;
-      padding:8px 14px;
-      min-height:var(--top-row-h);
-      display:flex;
-      align-items:flex-start;
-      justify-content:flex-start;
-      text-align:left;
-      cursor:pointer;
-      font-size:var(--font-main);
-      line-height:1.1;
+    /* ========== ESTILOS DE BOTONES CON EFECTO DE LUZ (LOGIN) ========== */
+    .top-btn, #sendBtn, .new-chat-btn, .selector-close, .selector-item, .selector-action {
+      /* Reemplazamos bordes, fondos, sombras y formas */
+      border: 1px solid rgba(255,255,255,.10) !important;
+      border-radius: 999px !important;
+      background:
+        radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%),
+        linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%) !important;
+      box-shadow:
+        0 22px 26px rgba(0,0,0,.28),
+        inset 0 1px 0 rgba(255,255,255,.22) !important;
+      color: rgba(255,255,255,.92) !important;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .12s ease, filter .12s ease;
+      font-weight: 700 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
     }
 
-    .top-btn + .top-btn{ border-left:none; }
-    .top-btn:hover{ background:var(--soft); }
-    .top-btn.active{ background:var(--soft2); }
+    /* Ajustes específicos para mantener la disposición original */
+    .top-btn {
+      padding: 8px 14px !important;
+      min-height: var(--top-row-h) !important;
+      line-height: 1.1;
+      font-size: var(--font-main) !important;
+    }
+    .top-btn .btn-stack, .top-btn .btn-center {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .top-btn .btn-topline {
+      font-size: var(--font-small);
+      font-weight: 400;
+    }
+    .top-btn .btn-mainline, .top-btn .btn-center {
+      font-size: calc(var(--font-main) + 1px);
+      font-weight: 700;
+    }
+
+    #sendBtn {
+      width: var(--send-w);
+      min-width: var(--send-w);
+      height: 100%;
+      font-size: calc(var(--font-body) + 2px) !important;
+      border-left: none !important; /* eliminamos el borde izquierdo original */
+    }
+
+    .new-chat-btn {
+      padding: 4px 10px !important;
+      font-size: 12px !important;
+      background: var(--btn2) !important; /* degradado ya incluido arriba */
+    }
+
+    .selector-close {
+      width: 48px;
+      height: 100%;
+      font-size: 22px;
+      background: transparent !important; /* ya lo cubre el estilo base */
+    }
+
+    .selector-item, .selector-action {
+      width: 100%;
+      padding: 12px !important;
+      margin-bottom: 6px !important;
+      font-size: var(--font-body) !important;
+      text-align: left;
+      justify-content: flex-start;
+    }
+
+    .selector-item .selector-item-title, .selector-action .selector-item-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .selector-item .selector-item-sub {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    /* Efecto hover para todos los botones con luz */
+    .top-btn:hover, #sendBtn:hover, .new-chat-btn:hover, .selector-close:hover, .selector-item:hover, .selector-action:hover {
+      filter: brightness(0.98);
+      background:
+        radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.28), transparent 60%),
+        linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%) !important;
+    }
+
+    /* Efecto al hacer clic (igual que login) */
+    .top-btn:active, #sendBtn:active, .new-chat-btn:active, .selector-close:active, .selector-item:active, .selector-action:active {
+      transform: scale(0.985);
+      filter: brightness(0.98);
+    }
+
+    /* Para mantener la apariencia activa del selector (resaltado) */
+    .top-btn.active, .selector-item.active {
+      filter: brightness(0.96);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), 0 22px 26px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.22) !important;
+    }
+
+    /* Eliminar bordes izquierdos que podían quedar por la regla anterior */
+    .top-btn + .top-btn {
+      border-left: 1px solid rgba(255,255,255,.10) !important;
+    }
+
+    /* ========== FIN ESTILOS BOTONES ========== */
 
     .btn-stack{
       display:flex;
@@ -183,7 +278,6 @@ html = """
       min-height:calc(var(--title-row-h) + var(--messages-h-desktop) + var(--input-row-h));
       max-height:calc(var(--title-row-h) + var(--messages-h-desktop) + var(--input-row-h));
       overflow:hidden;
-      margin-bottom:0;
     }
 
     .chat-header{
@@ -281,24 +375,6 @@ html = """
       opacity:1;
     }
 
-    #sendBtn{
-      width:var(--send-w);
-      min-width:var(--send-w);
-      height:100%;
-      background:#fff;
-      border:none;
-      border-left:var(--border-size) solid var(--border);
-      border-radius:0;
-      cursor:pointer;
-      font-weight:400;
-      color:#7a7a7a;
-      font-size:calc(var(--font-body) + 2px);
-    }
-
-    #sendBtn:hover{
-      background:var(--soft);
-    }
-
     #functionalLayer{
       display:none !important;
     }
@@ -318,15 +394,6 @@ html = """
       display:flex;
       justify-content:space-between;
       align-items:center;
-    }
-
-    .new-chat-btn{
-      background:#fff;
-      border:1px solid var(--border);
-      color:var(--text);
-      padding:4px 10px;
-      cursor:pointer;
-      font-size:12px;
     }
 
     .thread-list{
@@ -459,17 +526,6 @@ html = """
       text-overflow:ellipsis;
     }
 
-    .selector-close{
-      width:48px;
-      height:100%;
-      border:none;
-      border-left:var(--border-size) solid var(--border);
-      background:#fff;
-      font-size:22px;
-      cursor:pointer;
-      color:var(--text);
-    }
-
     .selector-search-wrap{
       border-bottom:var(--border-size) solid var(--border);
       padding:10px;
@@ -491,6 +547,7 @@ html = """
       min-height:0;
       overflow-y:auto;
       background:#fff;
+      padding:8px;
     }
 
     .section-label{
@@ -502,64 +559,11 @@ html = """
       background:#fafafa;
     }
 
-    .selector-item{
-      width:100%;
-      border:none;
-      border-bottom:1px solid #d8d8d8;
-      background:#fff;
-      text-align:left;
-      padding:12px;
-      cursor:pointer;
-      display:block;
-      color:var(--text);
-    }
-
-    .selector-item:hover{
-      background:var(--soft);
-    }
-
-    .selector-item.active{
-      background:var(--soft2);
-    }
-
-    .selector-item-title{
-      font-size:var(--font-body);
-      line-height:1.2;
-      margin-bottom:4px;
-      color:var(--text);
-    }
-
-    .selector-item-sub{
-      font-size:12px;
-      line-height:1.2;
-      color:var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
     .selector-empty{
       text-align:center;
       padding:18px 12px;
       color:var(--muted);
       font-size:var(--font-body);
-    }
-
-    .selector-action{
-      width:100%;
-      border:none;
-      border-bottom:1px solid #d8d8d8;
-      background:#fff;
-      text-align:left;
-      padding:12px;
-      cursor:pointer;
-      display:block;
-      color:var(--text);
-      font-size:var(--font-body);
-    }
-
-    .selector-action:hover{
-      background:var(--soft);
     }
 
     @media (max-width: 768px){
@@ -576,19 +580,10 @@ html = """
         --send-w:92px;
       }
 
-      #app{
-        padding:var(--frame-margin) var(--frame-margin) 0 var(--frame-margin);
-      }
-
-      .inner{
-        padding:var(--frame-pad) var(--frame-pad) 0 var(--frame-pad);
-      }
-
       .chat-shell{
         height:calc(var(--title-row-h) + var(--messages-h-mobile) + var(--input-row-h));
         min-height:calc(var(--title-row-h) + var(--messages-h-mobile) + var(--input-row-h));
         max-height:calc(var(--title-row-h) + var(--messages-h-mobile) + var(--input-row-h));
-        margin-bottom:0;
       }
 
       .messages-area{
@@ -600,6 +595,7 @@ html = """
       .message{ max-width:88%; }
       .chat-header{ font-size:16px; }
       .btn-mainline, .btn-center{ font-size:15px; }
+      .top-btn { font-size: var(--font-main) !important; }
     }
 
     @media (max-width: 420px){
