@@ -1,6 +1,7 @@
 # pages/chat_interfaz.py
 import streamlit as st
 import streamlit.components.v1 as components
+import json
 
 st.set_page_config(layout="wide")
 
@@ -32,7 +33,10 @@ if not USER_DNI:
     st.error("No se pudo identificar al usuario. Por favor, vuelve a iniciar sesión.")
     st.stop()
 
-html = """
+# Escapar el DNI para JavaScript
+escaped_dni = json.dumps(USER_DNI)
+
+html = f"""
 <!doctype html>
 <html lang="es">
 <head>
@@ -40,7 +44,7 @@ html = """
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <title>Plano 2 Chat</title>
   <style>
-    :root{
+    :root{{
       --bg: #ffffff;
       --border: #111111;
       --text: #111111;
@@ -69,14 +73,14 @@ html = """
       --btn2: 1fr;
       --btn3: 1.15fr;
       --send-w: clamp(96px, 22vw, 130px);
-    }
+    }}
 
-    *{
+    *{{
       box-sizing:border-box;
       -webkit-tap-highlight-color: transparent;
-    }
+    }}
 
-    html, body{
+    html, body{{
       margin:0;
       padding:0;
       width:100%;
@@ -85,18 +89,18 @@ html = """
       background:var(--bg);
       font-family: Arial, Helvetica, sans-serif;
       color:var(--text);
-    }
+    }}
 
-    #app{
+    #app{{
       position:fixed;
       inset:0;
       width:100vw;
       height:100vh;
       background:var(--bg);
       padding:var(--frame-margin);
-    }
+    }}
 
-    .frame{
+    .frame{{
       width:100%;
       height:100%;
       border:var(--border-size) solid var(--border);
@@ -104,26 +108,26 @@ html = """
       flex-direction:column;
       background:#fff;
       overflow:hidden;
-    }
+    }}
 
-    .inner{
+    .inner{{
       display:flex;
       flex-direction:column;
       width:100%;
       height:100%;
       padding:clamp(18px, 2.4vw, 28px);
       gap:var(--gap-top);
-    }
+    }}
 
-    .top-buttons{
+    .top-buttons{{
       display:grid;
       grid-template-columns: var(--btn1) var(--btn2) var(--btn3);
       gap:0;
       width:100%;
       min-height:var(--top-row-h);
-    }
+    }}
 
-    .top-btn, .top-select{
+    .top-btn, .top-select{{
       appearance:none;
       border:var(--border-size) solid var(--border);
       background:#fff;
@@ -142,17 +146,17 @@ html = """
       transition:background .15s ease, color .15s ease;
       width:100%;
       font-family: inherit;
-    }
+    }}
 
-    .top-select{
+    .top-select{{
       background-color: #fff;
       background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
       background-repeat: no-repeat;
       background-position: right var(--pad-x) center;
       background-size: 1.2em;
-    }
+    }}
 
-    .top-select select{
+    .top-select select{{
       opacity: 0;
       position: absolute;
       width: 100%;
@@ -160,24 +164,24 @@ html = """
       left: 0;
       top: 0;
       cursor: pointer;
-    }
+    }}
 
-    .btn-stack{
+    .btn-stack{{
       display:flex;
       flex-direction:column;
       align-items:flex-start;
       justify-content:center;
       gap:4px;
       pointer-events: none;
-    }
+    }}
 
-    .btn-topline{
+    .btn-topline{{
       font-size:var(--font-small);
       font-weight:400;
       line-height:1;
-    }
+    }}
 
-    .btn-mainline{
+    .btn-mainline{{
       font-size:var(--font-main);
       font-weight:400;
       line-height:1.1;
@@ -185,9 +189,9 @@ html = """
       overflow: hidden;
       text-overflow: ellipsis;
       max-width: 100%;
-    }
+    }}
 
-    .btn-center{
+    .btn-center{{
       width:100%;
       height:100%;
       display:flex;
@@ -196,18 +200,18 @@ html = """
       text-align:center;
       font-size:var(--font-main);
       line-height:1.1;
-    }
+    }}
 
-    .chat-shell{
+    .chat-shell{{
       flex:1;
       min-height:0;
       display:flex;
       flex-direction:column;
       border:var(--border-size) solid var(--border);
       background:#fff;
-    }
+    }}
 
-    .chat-title{
+    .chat-title{{
       height:var(--title-row-h);
       min-height:var(--title-row-h);
       border-bottom:var(--border-size) solid var(--border);
@@ -219,9 +223,9 @@ html = """
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-    }
+    }}
 
-    .chat-body{
+    .chat-body{{
       flex:1;
       min-height:160px;
       overflow:auto;
@@ -230,14 +234,14 @@ html = """
       display:flex;
       flex-direction:column;
       gap:10px;
-    }
+    }}
 
-    .chat-empty{
+    .chat-empty{{
       flex:1;
       min-height:100%;
-    }
+    }}
 
-    .msg{
+    .msg{{
       max-width:min(78%, 560px);
       border:var(--border-size) solid var(--border);
       padding:10px 12px;
@@ -245,13 +249,13 @@ html = """
       line-height:1.3;
       background:#fff;
       word-break:break-word;
-    }
+    }}
 
-    .msg.out{
+    .msg.out{{
       margin-left:auto;
-    }
+    }}
 
-    .input-row{
+    .input-row{{
       height:var(--input-row-h);
       min-height:var(--input-row-h);
       border-top:var(--border-size) solid var(--border);
@@ -259,9 +263,9 @@ html = """
       grid-template-columns: 1fr var(--send-w);
       gap:0;
       background:#fff;
-    }
+    }}
 
-    .chat-input{
+    .chat-input{{
       width:100%;
       height:100%;
       border:none;
@@ -270,14 +274,14 @@ html = """
       font-size:var(--font-input);
       color:var(--text);
       background:#fff;
-    }
+    }}
 
-    .chat-input::placeholder{
+    .chat-input::placeholder{{
       color:#111111;
       opacity:1;
-    }
+    }}
 
-    .send-btn{
+    .send-btn{{
       height:100%;
       width:100%;
       border:none;
@@ -287,16 +291,16 @@ html = """
       font-size:var(--font-send);
       font-weight:400;
       cursor:pointer;
-    }
+    }}
 
     .send-btn:active,
     .top-btn:active,
-    .top-select:active{
+    .top-select:active{{
       background:#ececec;
-    }
+    }}
 
-    @media (max-width: 768px){
-      :root{
+    @media (max-width: 768px){{
+      :root{{
         --frame-margin: 6px;
         --border-size: 2px;
         --top-row-h: 56px;
@@ -310,40 +314,40 @@ html = """
         --font-input: 14px;
         --font-send: 14px;
         --send-w: 96px;
-      }
+      }}
 
-      .inner{
+      .inner{{
         padding:10px;
-      }
+      }}
 
-      .btn-stack{
+      .btn-stack{{
         gap:2px;
-      }
+      }}
 
-      .btn-mainline{
+      .btn-mainline{{
         word-break:break-word;
         white-space: normal;
-      }
+      }}
 
-      .chat-body{
+      .chat-body{{
         padding:10px;
-      }
-    }
+      }}
+    }}
 
-    @media (max-width: 420px){
-      :root{
+    @media (max-width: 420px){{
+      :root{{
         --font-main: 13px;
         --font-small: 10px;
         --font-title: 13px;
         --font-input: 13px;
         --font-send: 13px;
         --send-w: 88px;
-      }
+      }}
 
-      .inner{
+      .inner{{
         padding:8px;
-      }
-    }
+      }}
+    }}
   </style>
 </head>
 <body>
@@ -404,10 +408,10 @@ html = """
 </div>
 
 <script>
-  (function () {
+  (function () {{
     // ========== CONFIGURACIÓN ==========
     const API_BASE = "https://camilo27.pythonanywhere.com/api/chat";
-    const currentUserId = "REEMPLAZAR_DNI";
+    const currentUserId = {escaped_dni};
     // ===================================
 
     let currentThreadId = null;
@@ -427,252 +431,261 @@ html = """
     const selectedInstalacionSpan = document.getElementById("selectedInstalacion");
     const btnNotificaciones = document.getElementById("btnNotificaciones");
 
-    function escapeHtml(text) {
+    function escapeHtml(text) {{
       if (!text) return '';
       return String(text).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
-    }
+    }}
 
-    async function fetchJSON(url, options = {}) {
+    async function fetchJSON(url, options = {{}}) {{
       const response = await fetch(url, options);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status} - ${response.statusText}`);
-      }
+      if (!response.ok) {{
+        throw new Error(`HTTP ${{response.status}} - ${{response.statusText}}`);
+      }}
       return response.json();
-    }
+    }}
 
-    async function fetchSocorristas() {
-      // Reemplazar con endpoint real que consulte la hoja ALTAS columna NOMBRE
-      // Ejemplo simulado:
-      return new Promise(resolve => {
-        setTimeout(() => {
+    // ========== FUNCIONES QUE DEBES REEMPLAZAR CON TUS DATOS REALES ==========
+    async function fetchSocorristas() {{
+      // TODO: Reemplazar con endpoint real que consulte la hoja ALTAS columna NOMBRE
+      // Ejemplo de respuesta esperada: [{{ dni: "11111111", nombre: "Ana García" }}, ...]
+      console.log("Cargando socorristas...");
+      // Simulación de carga (reemplazar con fetch real)
+      return new Promise(resolve => {{
+        setTimeout(() => {{
           resolve([
-            { dni: "11111111", nombre: "Ana García" },
-            { dni: "22222222", nombre: "Carlos López" },
-            { dni: "33333333", nombre: "María Rodríguez" }
+            {{ dni: "11111111", nombre: "Ana García" }},
+            {{ dni: "22222222", nombre: "Carlos López" }},
+            {{ dni: "33333333", nombre: "María Rodríguez" }}
           ]);
-        }, 200);
-      });
-    }
+        }}, 200);
+      }});
+    }}
 
-    async function fetchInstalaciones() {
-      // Reemplazar con endpoint real que consulte la hoja ALTAS columna INSTALACION
-      return new Promise(resolve => {
-        setTimeout(() => {
+    async function fetchInstalaciones() {{
+      // TODO: Reemplazar con endpoint real que consulte la hoja ALTAS columna INSTALACION
+      // Ejemplo: [{{ id: "inst1", nombre: "Piscina Municipal" }}, ...]
+      console.log("Cargando instalaciones...");
+      return new Promise(resolve => {{
+        setTimeout(() => {{
           resolve([
-            { id: "inst1", nombre: "Piscina Municipal" },
-            { id: "inst2", nombre: "Playa del Faro" },
-            { id: "inst3", nombre: "Club Náutico" }
+            {{ id: "inst1", nombre: "Piscina Municipal" }},
+            {{ id: "inst2", nombre: "Playa del Faro" }},
+            {{ id: "inst3", nombre: "Club Náutico" }}
           ]);
-        }, 200);
-      });
-    }
+        }}, 200);
+      }});
+    }}
+    // ==========================================================================
 
-    async function loadDropdowns() {
-      try {
+    async function loadDropdowns() {{
+      try {{
         const socorristas = await fetchSocorristas();
         socorristasSelect.innerHTML = '<option value="">Selecciona...</option>' +
-          socorristas.map(s => `<option value="${s.dni}">${escapeHtml(s.nombre)}</option>`).join('');
+          socorristas.map(s => `<option value="${{s.dni}}">${{escapeHtml(s.nombre)}}</option>`).join('');
         socorristasSelect.disabled = false;
-      } catch (error) {
+        console.log("Socorristas cargados:", socorristas.length);
+      }} catch (error) {{
         console.error("Error cargando socorristas:", error);
         socorristasSelect.innerHTML = '<option value="">Error al cargar</option>';
-      }
+      }}
 
-      try {
+      try {{
         const instalaciones = await fetchInstalaciones();
         instalacionSelect.innerHTML = '<option value="">Selecciona...</option>' +
-          instalaciones.map(i => `<option value="${i.id}">${escapeHtml(i.nombre)}</option>`).join('');
+          instalaciones.map(i => `<option value="${{i.id}}">${{escapeHtml(i.nombre)}}</option>`).join('');
         instalacionSelect.disabled = false;
-      } catch (error) {
+        console.log("Instalaciones cargadas:", instalaciones.length);
+      }} catch (error) {{
         console.error("Error cargando instalaciones:", error);
         instalacionSelect.innerHTML = '<option value="">Error al cargar</option>';
-      }
-    }
+      }}
+    }}
 
-    async function loadThreads() {
-      try {
-        const data = await fetchJSON(`${API_BASE}/threads?user_id=${encodeURIComponent(currentUserId)}`);
+    async function loadThreads() {{
+      try {{
+        const data = await fetchJSON(`${{API_BASE}}/threads?user_id=${{encodeURIComponent(currentUserId)}}`);
         threads = data.threads || [];
-      } catch (error) {
+      }} catch (error) {{
         console.error("Error loading threads:", error);
-      }
-    }
+      }}
+    }}
 
-    function findPrivateThread(otherDni) {
+    function findPrivateThread(otherDni) {{
       return threads.find(t => t.type === 'private' && t.participants && t.participants.includes(otherDni));
-    }
+    }}
 
-    async function getOrCreatePrivateThread(otherDni, contactName) {
+    async function getOrCreatePrivateThread(otherDni, contactName) {{
       let thread = findPrivateThread(otherDni);
-      if (thread) {
+      if (thread) {{
         return thread.id;
-      }
-      try {
-        const data = await fetchJSON(`${API_BASE}/private/${encodeURIComponent(otherDni)}?user_id=${encodeURIComponent(currentUserId)}`);
-        if (data.thread_id) {
+      }}
+      try {{
+        const data = await fetchJSON(`${{API_BASE}}/private/${{encodeURIComponent(otherDni)}}?user_id=${{encodeURIComponent(currentUserId)}}`);
+        if (data.thread_id) {{
           await loadThreads();
           return data.thread_id;
-        } else {
+        }} else {{
           throw new Error("No se pudo crear el hilo");
-        }
-      } catch (error) {
+        }}
+      }} catch (error) {{
         console.error("Error creating private thread:", error);
         throw error;
-      }
-    }
+      }}
+    }}
 
-    async function loadMessages(threadId, poll = false) {
+    async function loadMessages(threadId, poll = false) {{
       const limit = poll ? 30 : 500;
-      let url = `${API_BASE}/threads/${threadId}/messages?user_id=${encodeURIComponent(currentUserId)}&limit=${limit}`;
-      try {
+      let url = `${{API_BASE}}/threads/${{threadId}}/messages?user_id=${{encodeURIComponent(currentUserId)}}&limit=${{limit}}`;
+      try {{
         const data = await fetchJSON(url);
         let messages = data.messages || [];
-        if (poll && lastRenderedMessageId !== null) {
+        if (poll && lastRenderedMessageId !== null) {{
           messages = messages.filter(m => parseInt(m.id) > lastRenderedMessageId);
-        }
-        if (!poll) {
+        }}
+        if (!poll) {{
           chatBody.innerHTML = '';
           lastRenderedMessageId = null;
-        }
-        if (messages.length === 0 && !poll) {
+        }}
+        if (messages.length === 0 && !poll) {{
           chatBody.innerHTML = '<div class="chat-empty"></div>';
           lastRenderedMessageId = null;
           return;
-        }
-        messages.forEach(msg => {
+        }}
+        messages.forEach(msg => {{
           const div = document.createElement("div");
           div.className = "msg" + (msg.sender_id == currentUserId ? " out" : "");
           div.textContent = msg.body;
           chatBody.appendChild(div);
           lastRenderedMessageId = parseInt(msg.id);
-        });
+        }});
         chatBody.scrollTop = chatBody.scrollHeight;
         await markThreadRead(threadId);
-      } catch (error) {
+      }} catch (error) {{
         console.error("Error loading messages:", error);
-        if (!poll) chatBody.innerHTML = `<div class="chat-empty" style="color:red;">Error al cargar mensajes: ${escapeHtml(error.message)}</div>`;
-      }
-    }
+        if (!poll) chatBody.innerHTML = `<div class="chat-empty" style="color:red;">Error al cargar mensajes: ${{escapeHtml(error.message)}}</div>`;
+      }}
+    }}
 
-    async function markThreadRead(threadId) {
+    async function markThreadRead(threadId) {{
       const lastMsg = chatBody.querySelector(".msg:last-child");
       if (!lastMsg) return;
       const lastId = lastMsg.getAttribute("data-id");
       if (!lastId) return;
-      try {
-        await fetch(`${API_BASE}/threads/${threadId}/read`, {
+      try {{
+        await fetch(`${{API_BASE}}/threads/${{threadId}}/read`, {{
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: currentUserId, last_read_message_id: lastId })
-        });
-      } catch (error) {
+          headers: {{ "Content-Type": "application/json" }},
+          body: JSON.stringify({{ user_id: currentUserId, last_read_message_id: lastId }})
+        }});
+      }} catch (error) {{
         console.error("Error marking read:", error);
-      }
-    }
+      }}
+    }}
 
-    async function sendMessage() {
-      if (!currentThreadId) {
+    async function sendMessage() {{
+      if (!currentThreadId) {{
         alert("Selecciona un socorrista o instalación primero.");
         return;
-      }
+      }}
       const text = chatInput.value.trim();
       if (!text) return;
       chatInput.value = "";
-      try {
-        await fetch(`${API_BASE}/threads/${currentThreadId}/messages`, {
+      try {{
+        await fetch(`${{API_BASE}}/threads/${{currentThreadId}}/messages`, {{
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sender_id: currentUserId, body: text })
-        });
+          headers: {{ "Content-Type": "application/json" }},
+          body: JSON.stringify({{ sender_id: currentUserId, body: text }})
+        }});
         await loadMessages(currentThreadId, false);
-      } catch (error) {
+      }} catch (error) {{
         console.error("Error sending message:", error);
         alert("Error al enviar mensaje: " + error.message);
-      }
-    }
+      }}
+    }}
 
-    async function setActiveThread(threadId, contactName) {
+    async function setActiveThread(threadId, contactName) {{
       if (pollingInterval) clearInterval(pollingInterval);
       currentThreadId = threadId;
       currentContactName = contactName;
       chatTitleEl.textContent = contactName;
       await loadMessages(threadId, false);
-      pollingInterval = setInterval(() => {
+      pollingInterval = setInterval(() => {{
         if (currentThreadId) loadMessages(currentThreadId, true);
-      }, 10000);
-    }
+      }}, 10000);
+    }}
 
-    async function onSelectSocorrista(dni, nombre) {
+    async function onSelectSocorrista(dni, nombre) {{
       if (!dni) return;
       selectedSocorristaSpan.textContent = nombre;
       instalacionSelect.value = "";
       selectedInstalacionSpan.textContent = "Instalación";
-      try {
+      try {{
         const threadId = await getOrCreatePrivateThread(dni, nombre);
         await setActiveThread(threadId, nombre);
-      } catch (error) {
+      }} catch (error) {{
         alert("Error al iniciar chat con el socorrista: " + error.message);
-      }
-    }
+      }}
+    }}
 
-    async function onSelectInstalacion(id, nombre) {
+    async function onSelectInstalacion(id, nombre) {{
       if (!id) return;
       selectedInstalacionSpan.textContent = nombre;
       socorristasSelect.value = "";
       selectedSocorristaSpan.textContent = "Socorristas";
-      const instalacionDni = `INST_${id}`;
-      try {
+      const instalacionDni = `INST_${{id}}`;
+      try {{
         const threadId = await getOrCreatePrivateThread(instalacionDni, nombre);
         await setActiveThread(threadId, nombre);
-      } catch (error) {
+      }} catch (error) {{
         alert("Error al iniciar chat con la instalación: " + error.message);
-      }
-    }
+      }}
+    }}
 
-    socorristasSelect.addEventListener("change", (e) => {
+    socorristasSelect.addEventListener("change", (e) => {{
       const selectedDni = e.target.value;
       if (!selectedDni) return;
       const option = socorristasSelect.options[socorristasSelect.selectedIndex];
       const nombre = option.text;
       onSelectSocorrista(selectedDni, nombre);
-    });
+    }});
 
-    instalacionSelect.addEventListener("change", (e) => {
+    instalacionSelect.addEventListener("change", (e) => {{
       const selectedId = e.target.value;
       if (!selectedId) return;
       const option = instalacionSelect.options[instalacionSelect.selectedIndex];
       const nombre = option.text;
       onSelectInstalacion(selectedId, nombre);
-    });
+    }});
 
-    btnNotificaciones.addEventListener("click", () => {
+    btnNotificaciones.addEventListener("click", () => {{
       alert("Funcionalidad de notificaciones en desarrollo.");
-    });
+    }});
 
     sendBtn.addEventListener("click", sendMessage);
-    chatInput.addEventListener("keypress", (e) => {
+    chatInput.addEventListener("keypress", (e) => {{
       if (e.key === "Enter") sendMessage();
-    });
+    }});
 
-    async function init() {
-      if (currentUserId === "REEMPLAZAR_DNI") {
+    async function init() {{
+      console.log("Iniciando chat, usuario:", currentUserId);
+      if (!currentUserId || currentUserId === "") {{
         console.error("DNI de usuario no configurado");
         chatTitleEl.textContent = "Error: usuario no identificado";
         return;
-      }
+      }}
 
       await loadDropdowns();
       await loadThreads();
       threadsPollingInterval = setInterval(loadThreads, 15000);
       chatTitleEl.textContent = "Selecciona un contacto";
       chatBody.innerHTML = '<div class="chat-empty"></div>';
-    }
+    }}
 
     init();
-  })();
+  }})();
 </script>
 </body>
 </html>
-""".replace("REEMPLAZAR_DNI", USER_DNI)
+"""
 
 components.html(html, height=800, scrolling=False)
