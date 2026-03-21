@@ -582,6 +582,12 @@ html = """
     const messagesDiv = document.getElementById("messagesArea");
     const lastMsg = messagesDiv.querySelector(".message:last-child");
     if (!lastMsg) return;
+    // Nota: necesitamos almacenar el ID del mensaje en un atributo data-id
+    // Para simplificar, se puede leer el último mensaje sin data-id. 
+    // En la implementación original se usaba un atributo, pero aquí no lo estamos agregando.
+    // Una solución simple: no marcar como leído si no tenemos el ID.
+    // Sin embargo, para mantener funcionalidad completa, agregamos el data-id al mensaje.
+    // Ajustamos la creación de mensajes para incluir data-id.
     const lastId = lastMsg.getAttribute("data-id");
     if (!lastId) return;
     try {
@@ -687,22 +693,72 @@ html = """
     searchUsers();
   }
 
+  // Override loadMessages to add data-id to each message for read marking
+  const originalLoadMessages = loadMessages;
+  window.loadMessages = async function(threadId, poll) {
+    await originalLoadMessages(threadId, poll);
+    // After loading, add data-id to messages if they have id property
+    const messagesDiv = document.getElementById("messagesArea");
+    const msgElements = messagesDiv.querySelectorAll(".message");
+    // We don't have the IDs in the DOM, so we need to store them when creating messages.
+    // Let's modify the message creation inside loadMessages to include data-id.
+    // Since we cannot easily replace the function without rewriting, we'll just ensure that when messages are loaded,
+    // we add the data-id from the last fetched messages. But it's simpler to modify the original function.
+    // We'll redefine loadMessages completely with proper data-id.
+    // To avoid duplication, I'll rewrite the loadMessages function here with the fix.
+  };
+
+  // Replace loadMessages with a version that adds data-id to each message element
+  async function loadMessagesFixed(threadId, poll = false) {
+    const limit = poll ? 30 : 500;
+    let url = API_BASE + "/threads/" + threadId + "/messages?user_id=" + encodeURIComponent(currentUserId) + "&limit=" + limit;
+    try {
+      const data = await fetchJSON(url);
+      let messages = data.messages || [];
+      if (poll && lastRenderedMessageId !== null) {
+        messages = messages.filter(function(m) { return parseInt(m.id) > lastRenderedMessageId; });
+      }
+      const container = document.getElementById("messagesArea");
+      if (!poll) {
+        container.innerHTML = '';
+        lastRenderedMessageId = null;
+      }
+      if (messages.length === 0 && !poll) {
+        container.innerHTML = '<div style="text-align: center; margin-top: 20px;">No hay mensajes</div>';
+        lastRenderedMessageId = null;
+        return;
+      }
+      messages.forEach(function(msg) {
+        const div = document.createElement("div");
+        div.className = "message" + (msg.sender_id == currentUserId ? " out" : "");
+        div.setAttribute("data-id", msg.id);
+        div.innerHTML = '<strong>' + escapeHtml(msg.sender_alias || 'Usuario') + ':</strong> ' + escapeHtml(msg.body);
+        container.appendChild(div);
+        lastRenderedMessageId = parseInt(msg.id);
+      });
+      container.scrollTop = container.scrollHeight;
+      await markThreadRead(threadId);
+    } catch (error) {
+      console.error("Error loading messages:", error);
+      const container = document.getElementById("messagesArea");
+      if (!poll) container.innerHTML = '<div class="error">Error al cargar mensajes<br>' + escapeHtml(error.message) + '</div>';
+    }
+  }
+
+  // Replace the function globally
+  window.loadMessages = loadMessagesFixed;
+  const loadMessages = loadMessagesFixed;
+
   document.getElementById("newChatBtn").addEventListener("click", showNewChatModal);
   document.getElementById("sendBtn").addEventListener("click", sendMessage);
   document.getElementById("chatInput").addEventListener("keypress", function(e) {
     if (e.key === "Enter") sendMessage();
   });
 
-  // Los botones superiores son solo placeholders (sin funcionalidad adicional)
-  document.getElementById("btnSocorristas").addEventListener("click", function() {
-    // Aquí se puede agregar lógica futura sin afectar lo existente
-  });
-  document.getElementById("btnInstalacion").addEventListener("click", function() {
-    // Aquí se puede agregar lógica futura
-  });
-  document.getElementById("btnNotificaciones").addEventListener("click", function() {
-    // Aquí se puede agregar lógica futura
-  });
+  // Placeholder for top buttons (no functionality needed yet)
+  document.getElementById("btnSocorristas").addEventListener("click", function() {});
+  document.getElementById("btnInstalacion").addEventListener("click", function() {});
+  document.getElementById("btnNotificaciones").addEventListener("click", function() {});
 
   loadThreads();
   threadsPollingInterval = setInterval(loadThreads, 15000);
