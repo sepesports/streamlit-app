@@ -37,140 +37,308 @@ html = """
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <title>Chat</title>
   <style>
     :root{
-      --bg: #020a1a;
-      --text: #eaf2ff;
-      --border: #2a3a5a;
-      --accent: #ff9a52;
-      --msg-bg: #0f1a2a;
-      --msg-out: #2a3a5a;
+      --bg: #ffffff;
+      --border: #111111;
+      --text: #111111;
+
+      --frame-margin: clamp(6px, 1.4vw, 16px);
+      --border-size: 2px;
+      --radius: 0px;
+
+      --top-row-h: clamp(58px, 8vh, 72px);
+      --title-row-h: clamp(42px, 6vh, 52px);
+      --input-row-h: clamp(52px, 7vh, 62px);
+
+      --gap-top: clamp(8px, 1vw, 14px);
+      --gap-main: 0px;
+
+      --font-main: clamp(14px, 1.5vw, 20px);
+      --font-small: clamp(12px, 1.1vw, 15px);
+      --font-title: clamp(15px, 1.5vw, 20px);
+      --font-input: clamp(14px, 1.4vw, 18px);
+      --font-send: clamp(14px, 1.4vw, 18px);
+
+      --pad-x: clamp(8px, 1.2vw, 14px);
+      --pad-y: clamp(6px, 0.8vw, 10px);
+
+      --btn1: 1fr;
+      --btn2: 1fr;
+      --btn3: 1.15fr;
+      --send-w: clamp(96px, 22vw, 130px);
     }
-    *{ box-sizing: border-box; }
-    body, html {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Segoe UI', Arial, sans-serif;
-      overflow: hidden;
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color: transparent;
     }
-    #app {
-      display: flex;
-      height: 100%;
-      width: 100%;
+
+    html, body{
+      margin:0;
+      padding:0;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      background:var(--bg);
+      font-family: Arial, Helvetica, sans-serif;
+      color:var(--text);
     }
+
+    #app{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
+      background:var(--bg);
+      padding:var(--frame-margin);
+    }
+
+    .frame{
+      width:100%;
+      height:100%;
+      border:var(--border-size) solid var(--border);
+      display:flex;
+      flex-direction:row;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    /* Panel izquierdo: lista de conversaciones */
     .threads-panel {
       width: 280px;
-      border-right: 1px solid var(--border);
+      border-right: var(--border-size) solid var(--border);
       display: flex;
       flex-direction: column;
-      background: rgba(0,0,0,0.3);
+      background: #fff;
+      flex-shrink: 0;
     }
+
     .threads-header {
-      padding: 12px;
-      border-bottom: 1px solid var(--border);
+      padding: var(--pad-y) var(--pad-x);
+      border-bottom: var(--border-size) solid var(--border);
       font-weight: bold;
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      font-size: var(--font-title);
+      min-height: var(--top-row-h);
     }
+
     .new-chat-btn {
-      background: var(--accent);
-      border: none;
-      color: #000;
+      background: #fff;
+      border: var(--border-size) solid var(--border);
+      color: var(--text);
       padding: 4px 10px;
-      border-radius: 20px;
+      border-radius: 0;
       cursor: pointer;
-      font-size: 12px;
+      font-size: var(--font-small);
+      font-weight: normal;
     }
+
     .thread-list {
       flex: 1;
       overflow-y: auto;
     }
+
     .thread-item {
-      padding: 12px;
-      border-bottom: 1px solid var(--border);
+      padding: var(--pad-y) var(--pad-x);
+      border-bottom: var(--border-size) solid var(--border);
       cursor: pointer;
       transition: background 0.2s;
     }
+
     .thread-item:hover {
-      background: rgba(255,255,255,0.1);
+      background: #f5f5f5;
     }
+
     .thread-item.active {
-      background: rgba(255,255,255,0.2);
-      border-left: 3px solid var(--accent);
+      background: #f5f5f5;
+      border-left: 3px solid var(--border);
     }
+
     .thread-title {
       font-weight: bold;
       margin-bottom: 4px;
+      font-size: var(--font-main);
     }
+
     .thread-preview {
-      font-size: 12px;
-      color: #aaa;
+      font-size: var(--font-small);
+      color: #555;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
+    /* Panel derecho: chat */
     .chat-panel {
       flex: 1;
       display: flex;
       flex-direction: column;
+      min-width: 0;
     }
-    .chat-header {
-      padding: 12px;
-      border-bottom: 1px solid var(--border);
-      font-weight: bold;
+
+    /* Botones superiores (estilo plano) */
+    .top-buttons {
+      display: grid;
+      grid-template-columns: var(--btn1) var(--btn2) var(--btn3);
+      gap: 0;
+      width: 100%;
+      min-height: var(--top-row-h);
+      border-bottom: var(--border-size) solid var(--border);
     }
-    .messages-area {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px;
+
+    .top-btn {
+      appearance: none;
+      border: none;
+      background: #fff;
+      color: var(--text);
+      margin: 0;
+      padding: var(--pad-y) var(--pad-x);
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      text-align: left;
+      line-height: 1.1;
+      min-height: var(--top-row-h);
+      font-size: var(--font-main);
+      font-weight: 400;
+      transition: background .15s ease, color .15s ease;
+    }
+
+    .top-btn + .top-btn {
+      border-left: var(--border-size) solid var(--border);
+    }
+
+    .top-btn.active {
+      background: #f5f5f5;
+    }
+
+    .btn-stack {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 4px;
     }
-    .message {
-      max-width: 70%;
-      padding: 8px 12px;
-      border-radius: 12px;
-      background: var(--msg-bg);
-      align-self: flex-start;
+
+    .btn-topline {
+      font-size: var(--font-small);
+      font-weight: 400;
+      line-height: 1;
     }
-    .message.out {
-      background: var(--msg-out);
-      align-self: flex-end;
+
+    .btn-mainline {
+      font-size: var(--font-main);
+      font-weight: 400;
+      line-height: 1.1;
     }
-    .message strong {
-      color: var(--accent);
-    }
-    .input-area {
+
+    .btn-center {
+      width: 100%;
+      height: 100%;
       display: flex;
-      padding: 12px;
-      border-top: 1px solid var(--border);
-      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: var(--font-main);
+      line-height: 1.1;
     }
-    #chatInput {
+
+    /* Área de chat */
+    .chat-shell {
       flex: 1;
-      padding: 10px;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      background: var(--msg-bg);
-      color: var(--text);
-      outline: none;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
     }
-    #sendBtn {
-      background: var(--accent);
-      border: none;
-      padding: 0 20px;
-      border-radius: 20px;
-      cursor: pointer;
+
+    .chat-header {
+      height: var(--title-row-h);
+      min-height: var(--title-row-h);
+      border-bottom: var(--border-size) solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--pad-x);
+      font-size: var(--font-title);
+      font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .messages-area {
+      flex: 1;
+      min-height: 160px;
+      overflow: auto;
+      background: #fff;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      max-width: min(78%, 560px);
+      border: var(--border-size) solid var(--border);
+      padding: 10px 12px;
+      font-size: var(--font-input);
+      line-height: 1.3;
+      background: #fff;
+      word-break: break-word;
+    }
+
+    .message.out {
+      margin-left: auto;
+    }
+
+    .message strong {
       font-weight: bold;
-      color: #000;
     }
+
+    .input-area {
+      height: var(--input-row-h);
+      min-height: var(--input-row-h);
+      border-top: var(--border-size) solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr var(--send-w);
+      gap: 0;
+      background: #fff;
+    }
+
+    #chatInput {
+      width: 100%;
+      height: 100%;
+      border: none;
+      outline: none;
+      padding: 0 var(--pad-x);
+      font-size: var(--font-input);
+      color: var(--text);
+      background: #fff;
+    }
+
+    #sendBtn {
+      height: 100%;
+      width: 100%;
+      border: none;
+      border-left: var(--border-size) solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font-size: var(--font-send);
+      font-weight: 400;
+      cursor: pointer;
+    }
+
+    #sendBtn:active,
+    .top-btn:active {
+      background: #ececec;
+    }
+
+    /* Modal de búsqueda de usuarios (estilo coherente) */
     .user-search-modal {
       position: fixed;
       top: 0;
@@ -183,66 +351,141 @@ html = """
       justify-content: center;
       z-index: 1000;
     }
+
     .modal-content {
       background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      border: var(--border-size) solid var(--border);
+      border-radius: 0;
       width: 300px;
       max-width: 90%;
       padding: 20px;
     }
+
     .modal-content input {
       width: 100%;
       padding: 8px;
       margin-bottom: 12px;
-      border: 1px solid var(--border);
-      background: var(--msg-bg);
+      border: var(--border-size) solid var(--border);
+      background: var(--bg);
       color: var(--text);
     }
+
     .user-list {
       max-height: 200px;
       overflow-y: auto;
     }
+
     .user-item {
       padding: 6px;
       cursor: pointer;
+      border-bottom: var(--border-size) solid var(--border);
     }
+
     .user-item:hover {
-      background: rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.05);
     }
+
     .close-modal {
       float: right;
       cursor: pointer;
     }
+
     .loading, .error {
       text-align: center;
       padding: 20px;
       color: var(--text);
     }
+
     .error {
       color: #ff6666;
+    }
+
+    @media (max-width: 768px){
+      :root{
+        --frame-margin: 6px;
+        --border-size: 2px;
+        --top-row-h: 56px;
+        --title-row-h: 42px;
+        --input-row-h: 52px;
+        --pad-x: 8px;
+        --pad-y: 6px;
+        --font-main: 14px;
+        --font-small: 11px;
+        --font-title: 14px;
+        --font-input: 14px;
+        --font-send: 14px;
+        --send-w: 96px;
+      }
+
+      .threads-panel {
+        width: 220px;
+      }
+
+      .messages-area {
+        padding: 10px;
+      }
+    }
+
+    @media (max-width: 420px){
+      :root{
+        --font-main: 13px;
+        --font-small: 10px;
+        --font-title: 13px;
+        --font-input: 13px;
+        --font-send: 13px;
+        --send-w: 88px;
+      }
+
+      .threads-panel {
+        width: 180px;
+      }
     }
   </style>
 </head>
 <body>
 <div id="app">
-  <div class="threads-panel">
-    <div class="threads-header">
-      <span>Conversaciones</span>
-      <button class="new-chat-btn" id="newChatBtn">+ Nuevo</button>
+  <div class="frame">
+    <!-- Panel izquierdo: conversaciones -->
+    <div class="threads-panel">
+      <div class="threads-header">
+        <span>Conversaciones</span>
+        <button class="new-chat-btn" id="newChatBtn">+ Nuevo</button>
+      </div>
+      <div class="thread-list" id="threadList">
+        <div class="loading">Cargando conversaciones...</div>
+      </div>
     </div>
-    <div class="thread-list" id="threadList">
-      <div class="loading">Cargando conversaciones...</div>
-    </div>
-  </div>
-  <div class="chat-panel">
-    <div class="chat-header" id="chatHeader">Selecciona una conversación</div>
-    <div class="messages-area" id="messagesArea">
-      <div style="text-align: center; margin-top: 20px;">No hay mensajes</div>
-    </div>
-    <div class="input-area" style="display: none;" id="inputArea">
-      <input type="text" id="chatInput" placeholder="Escribe un mensaje..." autocomplete="off">
-      <button id="sendBtn">Enviar</button>
+
+    <!-- Panel derecho: chat -->
+    <div class="chat-panel">
+      <div class="top-buttons">
+        <button class="top-btn" id="btnSocorristas" type="button">
+          <div class="btn-stack">
+            <span class="btn-topline">seleccióna</span>
+            <span class="btn-mainline">Socorristas</span>
+          </div>
+        </button>
+        <button class="top-btn" id="btnInstalacion" type="button">
+          <div class="btn-stack">
+            <span class="btn-topline">seleccióna</span>
+            <span class="btn-mainline">Instalación</span>
+          </div>
+        </button>
+        <button class="top-btn" id="btnNotificaciones" type="button">
+          <div class="btn-center">Notificaciones</div>
+        </button>
+      </div>
+
+      <div class="chat-shell">
+        <div class="chat-header" id="chatHeader">Selecciona una conversación</div>
+        <div class="messages-area" id="messagesArea">
+          <div style="text-align: center; margin-top: 20px;">No hay mensajes</div>
+        </div>
+        <div class="input-area" style="display: none;" id="inputArea">
+          <input type="text" id="chatInput" placeholder="Dialogo para enviar Mensaje" autocomplete="off">
+          <button id="sendBtn">SEND</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -376,7 +619,7 @@ html = """
     loadMessages(threadId, false);
     const thread = threads.find(function(t) { return t.id == threadId; });
     document.getElementById("chatHeader").innerText = thread ? thread.title : "Conversación";
-    document.getElementById("inputArea").style.display = "flex";
+    document.getElementById("inputArea").style.display = "grid";
     renderThreadList();
     if (pollingInterval) clearInterval(pollingInterval);
     pollingInterval = setInterval(function() {
@@ -448,6 +691,17 @@ html = """
   document.getElementById("sendBtn").addEventListener("click", sendMessage);
   document.getElementById("chatInput").addEventListener("keypress", function(e) {
     if (e.key === "Enter") sendMessage();
+  });
+
+  // Los botones superiores son solo placeholders (sin funcionalidad adicional)
+  document.getElementById("btnSocorristas").addEventListener("click", function() {
+    // Aquí se puede agregar lógica futura sin afectar lo existente
+  });
+  document.getElementById("btnInstalacion").addEventListener("click", function() {
+    // Aquí se puede agregar lógica futura
+  });
+  document.getElementById("btnNotificaciones").addEventListener("click", function() {
+    // Aquí se puede agregar lógica futura
   });
 
   loadThreads();
