@@ -563,6 +563,7 @@ html = """
 
     @media (max-width: 768px){
       :root{
+        --frame-height:90%;
         --frame-margin:6px;
         --frame-pad:8px;
         --top-row-h:48px;
