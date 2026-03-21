@@ -401,7 +401,7 @@ async function doLogin(){
     const j = await r.json();
 
     if (j && j.ok === true){
-      // ✅ Pasamos usuario y rol a la interfaz principal
+      // ✅ Pasamos usuario, rol y DNI a la interfaz principal
       const rol = (j.rol || "").toString();
       const dni = (j.dni || "").toString();
       window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol) + "&dni=" + encodeURIComponent(dni);
