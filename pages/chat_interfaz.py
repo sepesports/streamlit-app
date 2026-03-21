@@ -1,4 +1,4 @@
-# chat_interfaz.py
+# chat.py
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -248,7 +248,6 @@ html = f"""
   let pollingInterval = null;
   let lastRenderedMessageId = null;
 
-  // Funciones auxiliares
   function escapeHtml(text) {{
     return String(text).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
   }}
@@ -258,7 +257,6 @@ html = f"""
     return response.json();
   }}
 
-  // Cargar hilos del usuario
   async function loadThreads() {{
     const data = await fetchJSON(`${{API_BASE}}/threads?user_id=${{currentUserId}}`);
     threads = data.threads || [];
@@ -285,7 +283,6 @@ html = f"""
     }});
   }}
 
-  // Cargar mensajes de un hilo
   async function loadMessages(threadId, poll = false) {{
     const limit = poll ? 50 : 500;
     let url = `${{API_BASE}}/threads/${{threadId}}/messages?user_id=${{currentUserId}}&limit=${{limit}}`;
@@ -312,7 +309,6 @@ html = f"""
       lastRenderedMessageId = parseInt(msg.id);
     }});
     container.scrollTop = container.scrollHeight;
-    // Marcar como leído
     await markThreadRead(threadId);
   }}
 
@@ -361,7 +357,6 @@ html = f"""
     }}, 3000);
   }}
 
-  // Nuevo chat
   function showNewChatModal() {{
     const modal = document.createElement("div");
     modal.className = "user-search-modal";
@@ -424,9 +419,7 @@ html = f"""
     if (e.key === "Enter") sendMessage();
   }});
 
-  // Inicializar
   loadThreads();
-  // Polling de hilos cada 5 segundos
   setInterval(() => loadThreads(), 5000);
 </script>
 </body>
