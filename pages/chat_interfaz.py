@@ -159,7 +159,7 @@ html = """
       position:absolute;
       left:6%;
       right:6%;
-      top:6%;
+      top:2%;               /* ← reducido de 6% a 2% para eliminar franja superior */
       bottom:6%;
     }
 
@@ -177,9 +177,10 @@ html = """
       height:100%;
       display:flex;
       flex-direction:column;
-      justify-content:center;   /* centrado vertical del bloque de chat */
+      justify-content:flex-start;   /* ← centrado vertical eliminado, ahora al inicio */
       align-items:center;
       gap:20px;
+      padding-top:20px;             /* ← pequeño margen superior para no pegar al borde */
     }
 
     /* ===== BOTONES SUPERIORES (estilo admin.py) ===== */
@@ -436,6 +437,7 @@ html = """
       .top-btn{ padding:4px 16px; }
       .message{ max-width:88%; padding:8px 12px; }
       .selector-card{ max-height:70vh; }
+      .inner{ padding-top:12px; }   /* móvil con menos padding superior */
     }
 
     /* ===== SCROLLBAR PERSONALIZADA ===== */
