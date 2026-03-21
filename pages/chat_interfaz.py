@@ -32,7 +32,7 @@ if not USER_DNI:
     st.error("No se pudo identificar al usuario. Por favor, vuelve a iniciar sesión.")
     st.stop()
 
-html = f"""
+html = """
 <!doctype html>
 <html lang="es">
 <head>
@@ -40,16 +40,16 @@ html = f"""
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Chat</title>
   <style>
-    :root{{
+    :root{
       --bg: #020a1a;
       --text: #eaf2ff;
       --border: #2a3a5a;
       --accent: #ff9a52;
       --msg-bg: #0f1a2a;
       --msg-out: #2a3a5a;
-    }}
-    *{{ box-sizing: border-box; }}
-    body, html {{
+    }
+    *{ box-sizing: border-box; }
+    body, html {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -58,27 +58,27 @@ html = f"""
       color: var(--text);
       font-family: 'Segoe UI', Arial, sans-serif;
       overflow: hidden;
-    }}
-    #app {{
+    }
+    #app {
       display: flex;
       height: 100%;
       width: 100%;
-    }}
-    .threads-panel {{
+    }
+    .threads-panel {
       width: 280px;
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       background: rgba(0,0,0,0.3);
-    }}
-    .threads-header {{
+    }
+    .threads-header {
       padding: 12px;
       border-bottom: 1px solid var(--border);
       font-weight: bold;
       display: flex;
       justify-content: space-between;
-    }}
-    .new-chat-btn {{
+    }
+    .new-chat-btn {
       background: var(--accent);
       border: none;
       color: #000;
@@ -86,74 +86,74 @@ html = f"""
       border-radius: 20px;
       cursor: pointer;
       font-size: 12px;
-    }}
-    .thread-list {{
+    }
+    .thread-list {
       flex: 1;
       overflow-y: auto;
-    }}
-    .thread-item {{
+    }
+    .thread-item {
       padding: 12px;
       border-bottom: 1px solid var(--border);
       cursor: pointer;
       transition: background 0.2s;
-    }}
-    .thread-item:hover {{
+    }
+    .thread-item:hover {
       background: rgba(255,255,255,0.1);
-    }}
-    .thread-item.active {{
+    }
+    .thread-item.active {
       background: rgba(255,255,255,0.2);
       border-left: 3px solid var(--accent);
-    }}
-    .thread-title {{
+    }
+    .thread-title {
       font-weight: bold;
       margin-bottom: 4px;
-    }}
-    .thread-preview {{
+    }
+    .thread-preview {
       font-size: 12px;
       color: #aaa;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }}
-    .chat-panel {{
+    }
+    .chat-panel {
       flex: 1;
       display: flex;
       flex-direction: column;
-    }}
-    .chat-header {{
+    }
+    .chat-header {
       padding: 12px;
       border-bottom: 1px solid var(--border);
       font-weight: bold;
-    }}
-    .messages-area {{
+    }
+    .messages-area {
       flex: 1;
       overflow-y: auto;
       padding: 12px;
       display: flex;
       flex-direction: column;
       gap: 8px;
-    }}
-    .message {{
+    }
+    .message {
       max-width: 70%;
       padding: 8px 12px;
       border-radius: 12px;
       background: var(--msg-bg);
       align-self: flex-start;
-    }}
-    .message.out {{
+    }
+    .message.out {
       background: var(--msg-out);
       align-self: flex-end;
-    }}
-    .message strong {{
+    }
+    .message strong {
       color: var(--accent);
-    }}
-    .input-area {{
+    }
+    .input-area {
       display: flex;
       padding: 12px;
       border-top: 1px solid var(--border);
       gap: 8px;
-    }}
-    #chatInput {{
+    }
+    #chatInput {
       flex: 1;
       padding: 10px;
       border: 1px solid var(--border);
@@ -161,8 +161,8 @@ html = f"""
       background: var(--msg-bg);
       color: var(--text);
       outline: none;
-    }}
-    #sendBtn {{
+    }
+    #sendBtn {
       background: var(--accent);
       border: none;
       padding: 0 20px;
@@ -170,8 +170,8 @@ html = f"""
       cursor: pointer;
       font-weight: bold;
       color: #000;
-    }}
-    .user-search-modal {{
+    }
+    .user-search-modal {
       position: fixed;
       top: 0;
       left: 0;
@@ -182,46 +182,46 @@ html = f"""
       align-items: center;
       justify-content: center;
       z-index: 1000;
-    }}
-    .modal-content {{
+    }
+    .modal-content {
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 12px;
       width: 300px;
       max-width: 90%;
       padding: 20px;
-    }}
-    .modal-content input {{
+    }
+    .modal-content input {
       width: 100%;
       padding: 8px;
       margin-bottom: 12px;
       border: 1px solid var(--border);
       background: var(--msg-bg);
       color: var(--text);
-    }}
-    .user-list {{
+    }
+    .user-list {
       max-height: 200px;
       overflow-y: auto;
-    }}
-    .user-item {{
+    }
+    .user-item {
       padding: 6px;
       cursor: pointer;
-    }}
-    .user-item:hover {{
+    }
+    .user-item:hover {
       background: rgba(255,255,255,0.1);
-    }}
-    .close-modal {{
+    }
+    .close-modal {
       float: right;
       cursor: pointer;
-    }}
-    .loading, .error {{
+    }
+    .loading, .error {
       text-align: center;
       padding: 20px;
       color: var(--text);
-    }}
-    .error {{
+    }
+    .error {
       color: #ff6666;
-    }}
+    }
   </style>
 </head>
 <body>
@@ -249,142 +249,142 @@ html = f"""
 
 <script>
   const API_BASE = "https://camilo27.pythonanywhere.com/api/chat";
-  const currentUserId = "{USER_DNI}";
+  const currentUserId = "REEMPLAZAR_DNI";
   let currentThreadId = null;
   let threads = [];
   let pollingInterval = null;
   let threadsPollingInterval = null;
   let lastRenderedMessageId = null;
 
-  function escapeHtml(text) {{
+  function escapeHtml(text) {
     return String(text).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
-  }}
+  }
 
-  async function fetchJSON(url, options = {{}}) {{
+  async function fetchJSON(url, options = {}) {
     const response = await fetch(url, options);
-    if (!response.ok) {{
-      throw new Error(`HTTP ${{response.status}} - ${{response.statusText}}`);
-    }}
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+    }
     return response.json();
-  }}
+  }
 
-  async function loadThreads() {{
+  async function loadThreads() {
     const listDiv = document.getElementById("threadList");
-    try {{
-      const data = await fetchJSON(`${{API_BASE}}/threads?user_id=${{currentUserId}}`);
+    try {
+      const data = await fetchJSON(API_BASE + "/threads?user_id=" + encodeURIComponent(currentUserId));
       threads = data.threads || [];
       renderThreadList();
-      if (threads.length > 0 && !currentThreadId) {{
+      if (threads.length > 0 && !currentThreadId) {
         setActiveThread(threads[0].id);
-      }}
-    }} catch (error) {{
+      }
+    } catch (error) {
       console.error("Error loading threads:", error);
-      listDiv.innerHTML = `<div class="error">Error al cargar conversaciones.<br>${escapeHtml(error.message)}</div>`;
-    }}
-  }}
+      listDiv.innerHTML = '<div class="error">Error al cargar conversaciones.<br>' + escapeHtml(error.message) + '</div>';
+    }
+  }
 
-  function renderThreadList() {{
+  function renderThreadList() {
     const container = document.getElementById("threadList");
-    if (threads.length === 0) {{
+    if (threads.length === 0) {
       container.innerHTML = '<div style="padding: 12px; text-align: center;">No hay conversaciones</div>';
       return;
-    }}
-    container.innerHTML = threads.map(t => `
-      <div class="thread-item ${{currentThreadId == t.id ? 'active' : ''}}" data-id="${{t.id}}">
-        <div class="thread-title">${{escapeHtml(t.title || (t.type === 'private' ? 'Privado' : 'Grupo'))}}</div>
-        <div class="thread-preview">${{escapeHtml(t.last_message || '')}}</div>
-      </div>
-    `).join('');
-    document.querySelectorAll('.thread-item').forEach(el => {{
-      el.addEventListener('click', () => setActiveThread(el.getAttribute('data-id')));
-    }});
-  }}
+    }
+    container.innerHTML = threads.map(function(t) {
+      return '<div class="thread-item' + (currentThreadId == t.id ? ' active' : '') + '" data-id="' + t.id + '">' +
+               '<div class="thread-title">' + escapeHtml(t.title || (t.type === 'private' ? 'Privado' : 'Grupo')) + '</div>' +
+               '<div class="thread-preview">' + escapeHtml(t.last_message || '') + '</div>' +
+             '</div>';
+    }).join('');
+    document.querySelectorAll('.thread-item').forEach(function(el) {
+      el.addEventListener('click', function() { setActiveThread(el.getAttribute('data-id')); });
+    });
+  }
 
-  async function loadMessages(threadId, poll = false) {{
+  async function loadMessages(threadId, poll = false) {
     const limit = poll ? 30 : 500;
-    let url = `${{API_BASE}}/threads/${{threadId}}/messages?user_id=${{currentUserId}}&limit=${{limit}}`;
-    try {{
+    let url = API_BASE + "/threads/" + threadId + "/messages?user_id=" + encodeURIComponent(currentUserId) + "&limit=" + limit;
+    try {
       const data = await fetchJSON(url);
       let messages = data.messages || [];
-      if (poll && lastRenderedMessageId !== null) {{
-        messages = messages.filter(m => parseInt(m.id) > lastRenderedMessageId);
-      }}
+      if (poll && lastRenderedMessageId !== null) {
+        messages = messages.filter(function(m) { return parseInt(m.id) > lastRenderedMessageId; });
+      }
       const container = document.getElementById("messagesArea");
-      if (!poll) {{
+      if (!poll) {
         container.innerHTML = '';
         lastRenderedMessageId = null;
-      }}
-      if (messages.length === 0 && !poll) {{
+      }
+      if (messages.length === 0 && !poll) {
         container.innerHTML = '<div style="text-align: center; margin-top: 20px;">No hay mensajes</div>';
         lastRenderedMessageId = null;
         return;
-      }}
-      messages.forEach(msg => {{
+      }
+      messages.forEach(function(msg) {
         const div = document.createElement("div");
         div.className = "message" + (msg.sender_id == currentUserId ? " out" : "");
-        div.innerHTML = `<strong>${{escapeHtml(msg.sender_alias || 'Usuario')}}:</strong> ${{escapeHtml(msg.body)}}`;
+        div.innerHTML = '<strong>' + escapeHtml(msg.sender_alias || 'Usuario') + ':</strong> ' + escapeHtml(msg.body);
         container.appendChild(div);
         lastRenderedMessageId = parseInt(msg.id);
-      }});
+      });
       container.scrollTop = container.scrollHeight;
       await markThreadRead(threadId);
-    }} catch (error) {{
+    } catch (error) {
       console.error("Error loading messages:", error);
       const container = document.getElementById("messagesArea");
-      if (!poll) container.innerHTML = `<div class="error">Error al cargar mensajes<br>${escapeHtml(error.message)}</div>`;
-    }}
-  }}
+      if (!poll) container.innerHTML = '<div class="error">Error al cargar mensajes<br>' + escapeHtml(error.message) + '</div>';
+    }
+  }
 
-  async function markThreadRead(threadId) {{
+  async function markThreadRead(threadId) {
     const messagesDiv = document.getElementById("messagesArea");
     const lastMsg = messagesDiv.querySelector(".message:last-child");
     if (!lastMsg) return;
     const lastId = lastMsg.getAttribute("data-id");
     if (!lastId) return;
-    try {{
-      await fetch(`${{API_BASE}}/threads/${{threadId}}/read`, {{
+    try {
+      await fetch(API_BASE + "/threads/" + threadId + "/read", {
         method: "POST",
-        headers: {{ "Content-Type": "application/json" }},
-        body: JSON.stringify({{ user_id: currentUserId, last_read_message_id: lastId }})
-      }});
-    }} catch (error) {{
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: currentUserId, last_read_message_id: lastId })
+      });
+    } catch (error) {
       console.error("Error marking read:", error);
-    }}
-  }}
+    }
+  }
 
-  async function sendMessage() {{
+  async function sendMessage() {
     if (!currentThreadId) return;
     const input = document.getElementById("chatInput");
     const text = input.value.trim();
     if (!text) return;
     input.value = "";
-    try {{
-      await fetch(`${{API_BASE}}/threads/${{currentThreadId}}/messages`, {{
+    try {
+      await fetch(API_BASE + "/threads/" + currentThreadId + "/messages", {
         method: "POST",
-        headers: {{ "Content-Type": "application/json" }},
-        body: JSON.stringify({{ sender_id: currentUserId, body: text }})
-      }});
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sender_id: currentUserId, body: text })
+      });
       await loadMessages(currentThreadId, false);
-    }} catch (error) {{
+    } catch (error) {
       console.error("Error sending message:", error);
       alert("Error al enviar mensaje: " + error.message);
-    }}
-  }}
+    }
+  }
 
-  function setActiveThread(threadId) {{
+  function setActiveThread(threadId) {
     currentThreadId = threadId;
     loadMessages(threadId, false);
-    const thread = threads.find(t => t.id == threadId);
-    document.getElementById("chatHeader").innerText = thread?.title || "Conversación";
+    const thread = threads.find(function(t) { return t.id == threadId; });
+    document.getElementById("chatHeader").innerText = thread ? thread.title : "Conversación";
     document.getElementById("inputArea").style.display = "flex";
     renderThreadList();
     if (pollingInterval) clearInterval(pollingInterval);
-    pollingInterval = setInterval(() => {{
+    pollingInterval = setInterval(function() {
       if (currentThreadId) loadMessages(currentThreadId, true);
-    }}, 10000);  // 10 segundos en lugar de 3
-  }}
+    }, 10000);
+  }
 
-  function showNewChatModal() {{
+  function showNewChatModal() {
     const modal = document.createElement("div");
     modal.className = "user-search-modal";
     modal.innerHTML = `
@@ -397,64 +397,64 @@ html = f"""
     `;
     document.body.appendChild(modal);
     const closeBtn = modal.querySelector(".close-modal");
-    closeBtn.onclick = () => modal.remove();
+    closeBtn.onclick = function() { modal.remove(); };
     const searchInput = modal.querySelector("#userSearch");
     const resultsDiv = modal.querySelector("#userSearchResults");
 
-    async function searchUsers() {{
+    async function searchUsers() {
       const query = searchInput.value.trim().toLowerCase();
-      if (query.length < 2) {{
+      if (query.length < 2) {
         resultsDiv.innerHTML = '<div>Escribe al menos 2 caracteres</div>';
         return;
-      }}
-      try {{
-        const users = await fetchJSON(`${{API_BASE}}/users`);
-        const filtered = users.filter(u => u.alias.toLowerCase().includes(query) || u.dni.includes(query));
-        if (filtered.length === 0) {{
+      }
+      try {
+        const users = await fetchJSON(API_BASE + "/users");
+        const filtered = users.filter(function(u) { return u.alias.toLowerCase().includes(query) || u.dni.includes(query); });
+        if (filtered.length === 0) {
           resultsDiv.innerHTML = '<div>No se encontraron usuarios</div>';
           return;
-        }}
-        resultsDiv.innerHTML = filtered.map(u => `
-          <div class="user-item" data-dni="${{u.dni}}">@${{escapeHtml(u.alias)}} (${{u.dni}})</div>
-        `).join('');
-        resultsDiv.querySelectorAll(".user-item").forEach(el => {{
-          el.addEventListener("click", async () => {{
+        }
+        resultsDiv.innerHTML = filtered.map(function(u) {
+          return '<div class="user-item" data-dni="' + u.dni + '">@' + escapeHtml(u.alias) + ' (' + u.dni + ')</div>';
+        }).join('');
+        resultsDiv.querySelectorAll(".user-item").forEach(function(el) {
+          el.addEventListener("click", async function() {
             const otherDni = el.getAttribute("data-dni");
-            if (otherDni == currentUserId) {{
+            if (otherDni == currentUserId) {
               alert("No puedes chatear contigo mismo");
               return;
-            }}
-            try {{
-              const data = await fetchJSON(`${{API_BASE}}/private/${{otherDni}}?user_id=${{currentUserId}}`);
-              if (data.thread_id) {{
+            }
+            try {
+              const data = await fetchJSON(API_BASE + "/private/" + encodeURIComponent(otherDni) + "?user_id=" + encodeURIComponent(currentUserId));
+              if (data.thread_id) {
                 setActiveThread(data.thread_id);
                 modal.remove();
                 await loadThreads();
-              }}
-            }} catch (error) {{
+              }
+            } catch (error) {
               alert("Error al crear el chat: " + error.message);
-            }}
-          }});
-        }});
-      }} catch (error) {{
-        resultsDiv.innerHTML = `<div class="error">Error al cargar usuarios<br>${escapeHtml(error.message)}</div>`;
-      }}
-    }}
+            }
+          });
+        });
+      } catch (error) {
+        resultsDiv.innerHTML = '<div class="error">Error al cargar usuarios<br>' + escapeHtml(error.message) + '</div>';
+      }
+    }
     searchInput.addEventListener("input", searchUsers);
     searchUsers();
-  }}
+  }
 
   document.getElementById("newChatBtn").addEventListener("click", showNewChatModal);
   document.getElementById("sendBtn").addEventListener("click", sendMessage);
-  document.getElementById("chatInput").addEventListener("keypress", e => {{
+  document.getElementById("chatInput").addEventListener("keypress", function(e) {
     if (e.key === "Enter") sendMessage();
-  }});
+  });
 
   loadThreads();
-  threadsPollingInterval = setInterval(() => loadThreads(), 15000);  // 15 segundos en lugar de 5
+  threadsPollingInterval = setInterval(loadThreads, 15000);
 </script>
 </body>
 </html>
-"""
+""".replace("REEMPLAZAR_DNI", USER_DNI)
 
 components.html(html, height=800, scrolling=False)
