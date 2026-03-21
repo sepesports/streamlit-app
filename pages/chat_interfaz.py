@@ -41,142 +41,208 @@ html = """
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
   <title>Chat</title>
   <style>
-    /* ===== ESTILO WHATSAPP ===== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root{
+      /* ===== PALETA ADMIN ===== */
+      --baseBlue: #040e31;
+      --bgTop:  #0a1a55;
+      --bgMid:  #061240;
+      --bgDeep: #02071c;
+      --overlay1: rgba(40, 120, 255, .16);
+      --overlay2: rgba(0,  10,  40, .62);
+      --ink: rgba(255,255,255,.92);
+      --shadow1: 0 22px 55px rgba(0,0,0,.55);
+      --blur: 14px;
+
+      /* ===== AJUSTES DE ALTURA (conservados) ===== */
+      --top-row-h: 48px;
+      --title-row-h: 44px;
+      --input-row-h: 52px;
+      --chat-shell-h-desktop: 70vh;
+      --chat-shell-h-mobile: 62vh;
+
+      /* ===== TIPOGRAFÍA WHATSAPP ===== */
+      --font-main: 15px;
+      --font-small: 12px;
+      --font-title: 16px;
+      --font-body: 14px;
+      --send-w: 88px;
     }
 
-    body, html {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
+    *{ box-sizing:border-box; margin:0; padding:0; }
+
+    html, body{
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      background: var(--baseBlue);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #f0f2f5;
     }
 
-    /* Fondo y contenedor principal (similar a WhatsApp Web) */
-    #stage {
-      position: fixed;
-      inset: 0;
-      background: #f0f2f5;
+    /* ===== ESTRUCTURA EXTERIOR (IDÉNTICA A ADMIN.PY) ===== */
+    #stage{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
+      background:
+        radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.14), transparent 60%),
+        radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
+        linear-gradient(180deg, #020614 0%, var(--baseBlue) 100%);
     }
 
-    #plan {
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      background: #f0f2f5;
-      overflow: hidden;
+    #plan{
+      position:absolute;
+      left:10px; right:10px;
+      top:10px; bottom:0;
+      overflow:hidden;
+      border-radius: 34px;
+      box-shadow: var(--shadow1);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 22%),
+        linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #05164d 58%, var(--bgDeep) 100%);
     }
 
-    /* Eliminar efectos decorativos de admin.py */
-    #plan::before, #plan::after, #frame, #hud {
-      display: none;
+    #plan::before{
+      content:"";
+      position:absolute;
+      inset:-10%;
+      background:
+        linear-gradient(135deg,
+          transparent 0%,
+          transparent 32%,
+          var(--overlay1) 32%,
+          var(--overlay2) 66%,
+          transparent 66%);
+      transform: rotate(-10deg);
+      opacity:.95;
+      pointer-events:none;
     }
 
-    #card {
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      padding: 0;
+    #plan::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(50% 60% at 50% 25%, rgba(255,255,255,.06), transparent 55%),
+        radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
+        linear-gradient(180deg, transparent 55%, rgba(0,0,0,.65) 100%);
+      pointer-events:none;
     }
 
-    .inner {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      width: 100%;
-      background: #f0f2f5;
+    #frame{
+      position:absolute;
+      left:9px; right:9px;
+      top:10px; bottom:0;
+      border-left: 2px solid rgba(255,255,255,.14);
+      border-right:2px solid rgba(255,255,255,.14);
+      border-top:  2px solid rgba(255,255,255,.14);
+      box-sizing:border-box;
+      pointer-events:none;
+      border-radius: 34px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
     }
 
-    /* Barra superior con pestañas (estilo WhatsApp) */
-    .top-buttons {
-      display: flex;
-      background: #fff;
-      border-bottom: 1px solid #e9edef;
-      padding: 0 16px;
-      height: 60px;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
+    #card{
+      position:absolute;
+      left:6%;
+      right:6%;
+      top:2%;
+      bottom:6%;
     }
 
-    .top-btn {
+    #hud{
+      position:absolute; inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(60% 45% at 50% 18%, rgba(255,255,255,.12), transparent 60%),
+        linear-gradient(180deg, transparent 62%, rgba(0,0,0,.30) 100%);
+    }
+
+    /* ===== CONTENEDOR INTERIOR ===== */
+    .inner{
+      width:100%;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+      align-items:center;
+      gap:16px;
+      padding-top:16px;
+    }
+
+    /* ===== BOTONES SUPERIORES (ESTILO WHATSAPP) ===== */
+    .top-buttons{
+      display:flex;
+      gap:8px;
+      background: rgba(0,0,0,0.2);
+      backdrop-filter: blur(8px);
+      border-radius: 40px;
+      padding: 4px;
+      flex-shrink:0;
+    }
+
+    .top-btn{
       background: transparent;
       border: none;
-      padding: 8px 16px;
-      font-size: 15px;
+      padding: 8px 20px;
+      border-radius: 32px;
+      font-size: var(--font-main);
       font-weight: 500;
-      color: #54656f;
+      color: rgba(255,255,255,0.85);
       cursor: pointer;
-      border-radius: 18px;
       transition: all 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .top-btn.active {
-      background: #e7f0e4;
-      color: #008069;
+    .top-btn.active{
+      background: #008069;
+      color: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
-    .btn-stack {
+    .btn-stack{
       display: flex;
       flex-direction: column;
       align-items: center;
+      gap: 2px;
     }
-
-    .btn-topline {
-      font-size: 11px;
-      font-weight: normal;
+    .btn-topline{
+      font-size: 10px;
       opacity: 0.7;
     }
-
-    .btn-mainline {
+    .btn-mainline{
       font-size: 14px;
       font-weight: 600;
     }
 
-    .btn-center {
-      font-size: 15px;
-      font-weight: 500;
-    }
-
-    /* Contenedor del chat (similar a WhatsApp Web) */
-    .chat-shell {
-      flex: 1;
+    /* ===== BLOQUE DEL CHAT (ESTILO WHATSAPP) ===== */
+    .chat-shell{
+      width: min(900px, 90%);
+      height: var(--chat-shell-h-desktop);
+      background: #efeae2;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.03"><path fill="none" d="M0 0h100v100H0z"/><path fill="%23000" d="M10 10h80v80H10z"/></svg>');
+      background-repeat: repeat;
+      border-radius: 28px;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      background: #efeae2;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.05"><path fill="none" d="M0 0h100v100H0z"/><path fill="%23000" d="M10 10h80v80H10z"/></svg>');
-      background-repeat: repeat;
-      overflow: hidden;
-      position: relative;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      backdrop-filter: blur(2px);
     }
 
-    /* Cabecera del chat */
-    .chat-header {
+    .chat-header{
       background: #f0f2f5;
-      padding: 12px 16px;
-      border-bottom: 1px solid #e9edef;
-      font-size: 16px;
+      padding: 12px 20px;
+      font-size: var(--font-title);
       font-weight: 500;
       color: #111b21;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      border-bottom: 1px solid #e9edef;
       flex-shrink: 0;
     }
 
-    /* Área de mensajes */
-    .messages-area {
+    .messages-area{
       flex: 1;
       overflow-y: auto;
       padding: 16px;
@@ -185,132 +251,106 @@ html = """
       gap: 8px;
     }
 
-    /* Burbujas de mensaje */
-    .message {
-      max-width: 65%;
+    .message{
+      max-width: 70%;
       padding: 8px 12px;
       border-radius: 18px;
-      font-size: 14px;
+      font-size: var(--font-body);
       line-height: 1.4;
-      word-wrap: break-word;
-      position: relative;
-      background: #fff;
+      background: #ffffff;
       color: #111b21;
-      box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
+      box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+      align-self: flex-start;
     }
 
-    .message.out {
+    .message.out{
       background: #d9f0c3;
       align-self: flex-end;
     }
 
-    .message strong {
+    .message strong{
       display: block;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 500;
       margin-bottom: 4px;
       color: #54656f;
     }
 
-    /* Área de entrada de texto */
-    .input-area {
-      display: flex;
-      align-items: center;
+    .input-area{
       background: #f0f2f5;
-      padding: 8px 12px;
+      padding: 8px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
       border-top: 1px solid #e9edef;
-      gap: 8px;
       flex-shrink: 0;
     }
 
-    #chatInput {
+    #chatInput{
       flex: 1;
       border: none;
       border-radius: 24px;
       padding: 10px 16px;
-      font-size: 15px;
-      background: #fff;
+      font-size: var(--font-body);
+      background: white;
       outline: none;
-      color: #111b21;
     }
 
-    #chatInput::placeholder {
+    #chatInput::placeholder{
       color: #8696a0;
     }
 
-    #sendBtn {
+    #sendBtn{
       background: #008069;
       border: none;
       color: white;
       font-weight: 600;
-      font-size: 14px;
       padding: 8px 20px;
       border-radius: 24px;
       cursor: pointer;
       transition: background 0.2s;
     }
 
-    #sendBtn:active {
+    #sendBtn:active{
       background: #006b56;
     }
 
-    /* Elementos de carga y error */
-    .loading, .error {
-      text-align: center;
-      padding: 20px;
-      color: #667781;
-      font-size: 14px;
+    /* ===== MODALES (ESTILO WHATSAPP) ===== */
+    .selector-modal{
+      position:fixed;
+      top:0; left:0; right:0; bottom:0;
+      background:rgba(0,0,0,0.5);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:2000;
     }
+    .selector-modal.show{ display:flex; }
 
-    .error {
-      color: #d3392c;
-    }
-
-    /* Modal selector (similar a WhatsApp) */
-    .selector-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
-    }
-
-    .selector-modal.show {
-      display: flex;
-    }
-
-    .selector-card {
-      width: 90%;
-      max-width: 500px;
+    .selector-card{
+      width: min(500px, 90%);
       max-height: 80vh;
       background: #fff;
-      border-radius: 24px;
+      border-radius: 28px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.2);
     }
 
-    .selector-head {
+    .selector-head{
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 16px;
       border-bottom: 1px solid #e9edef;
     }
-
-    .selector-title {
+    .selector-title{
       font-size: 18px;
       font-weight: 600;
       color: #111b21;
     }
-
-    .selector-close {
+    .selector-close{
       background: transparent;
       border: none;
       font-size: 24px;
@@ -318,12 +358,11 @@ html = """
       color: #54656f;
     }
 
-    .selector-search-wrap {
+    .selector-search-wrap{
       padding: 12px 16px;
       border-bottom: 1px solid #e9edef;
     }
-
-    .selector-search {
+    .selector-search{
       width: 100%;
       padding: 10px 12px;
       border-radius: 24px;
@@ -333,12 +372,12 @@ html = """
       outline: none;
     }
 
-    .selector-list {
+    .selector-list{
       flex: 1;
       overflow-y: auto;
     }
 
-    .selector-item, .selector-action {
+    .selector-item, .selector-action{
       display: block;
       width: 100%;
       text-align: left;
@@ -349,139 +388,117 @@ html = """
       font-size: 15px;
       border-bottom: 1px solid #f0f2f5;
     }
-
-    .selector-item:hover, .selector-action:hover {
+    .selector-item:hover, .selector-action:hover{
       background: #f5f6f6;
     }
-
-    .selector-item.active {
+    .selector-item.active{
       background: #e9f0e8;
     }
-
-    .selector-item-title {
+    .selector-item-title{
       font-weight: 500;
       color: #111b21;
     }
-
-    .selector-item-sub {
+    .selector-item-sub{
       font-size: 13px;
       color: #667781;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
-    .section-label {
+    .section-label{
       padding: 12px 16px 4px;
       font-size: 12px;
       font-weight: 500;
       color: #667781;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
 
-    /* Modal para nuevo chat */
-    .user-search-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 2100;
+    /* Nuevo chat modal */
+    .user-search-modal{
+      position:fixed;
+      top:0; left:0; right:0; bottom:0;
+      background:rgba(0,0,0,0.5);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:2100;
+    }
+    .modal-content{
+      background:#fff;
+      width:90%;
+      max-width:400px;
+      border-radius:28px;
+      padding:20px;
+    }
+    .modal-content h3{
+      margin-bottom:16px;
+      font-size:18px;
+    }
+    .modal-content input{
+      width:100%;
+      padding:12px;
+      border-radius:24px;
+      border:1px solid #e9edef;
+      margin-bottom:16px;
+      font-size:15px;
+    }
+    .user-list{
+      max-height:300px;
+      overflow-y:auto;
+    }
+    .user-item{
+      padding:12px;
+      cursor:pointer;
+      border-bottom:1px solid #f0f2f5;
+    }
+    .user-item:hover{
+      background:#f5f6f6;
+    }
+    .close-modal{
+      float:right;
+      font-size:24px;
+      cursor:pointer;
     }
 
-    .modal-content {
-      background: #fff;
-      width: 90%;
-      max-width: 400px;
-      border-radius: 24px;
-      padding: 20px;
-    }
+    #functionalLayer{ display:none !important; }
 
-    .modal-content h3 {
-      margin-bottom: 16px;
-      font-size: 18px;
-      color: #111b21;
-    }
-
-    .modal-content input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 24px;
-      border: 1px solid #e9edef;
-      background: #fff;
-      margin-bottom: 16px;
-      font-size: 15px;
-      outline: none;
-    }
-
-    .user-list {
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .user-item {
-      padding: 12px;
-      cursor: pointer;
-      border-bottom: 1px solid #f0f2f5;
-    }
-
-    .user-item:hover {
-      background: #f5f6f6;
-    }
-
-    .close-modal {
-      float: right;
-      font-size: 24px;
-      cursor: pointer;
-      color: #54656f;
-    }
-
-    /* Ocultar elementos no necesarios */
-    #functionalLayer {
-      display: none !important;
-    }
-
-    /* Ajustes móviles */
-    @media (max-width: 768px) {
-      .top-buttons {
-        height: 50px;
-        padding: 0 8px;
+    /* ===== MÓVIL ===== */
+    @media (max-width: 768px){
+      :root{
+        --top-row-h: 44px;
+        --title-row-h: 40px;
+        --input-row-h: 48px;
+        --chat-shell-h-desktop: var(--chat-shell-h-mobile);
+        --font-main: 13px;
+        --font-small: 10px;
+        --font-title: 14px;
+        --font-body: 13px;
+        --send-w: 76px;
       }
-      .top-btn {
-        padding: 6px 12px;
-        font-size: 13px;
+      .chat-shell{
+        width: 96%;
+        height: var(--chat-shell-h-mobile);
       }
-      .btn-mainline {
-        font-size: 13px;
+      .top-btn{
+        padding: 4px 12px;
       }
-      .message {
+      .message{
         max-width: 85%;
       }
-      .chat-header {
-        font-size: 15px;
-        padding: 10px 16px;
-      }
-      #chatInput {
-        font-size: 14px;
-      }
-      #sendBtn {
-        padding: 6px 16px;
+      .inner{
+        padding-top: 8px;
+        gap: 12px;
       }
     }
 
-    /* Scroll personalizado */
-    .messages-area::-webkit-scrollbar {
+    /* Scrollbar */
+    .messages-area::-webkit-scrollbar{
       width: 6px;
     }
-    .messages-area::-webkit-scrollbar-track {
+    .messages-area::-webkit-scrollbar-track{
       background: #f0f2f5;
     }
-    .messages-area::-webkit-scrollbar-thumb {
+    .messages-area::-webkit-scrollbar-thumb{
       background: #c1c9d0;
       border-radius: 3px;
     }
@@ -490,6 +507,7 @@ html = """
 <body>
 <div id="stage">
   <div id="plan">
+    <div id="frame"></div>
     <div id="card">
       <div class="inner">
 
@@ -536,6 +554,7 @@ html = """
 
       </div>
     </div>
+    <div id="hud"></div>
   </div>
 </div>
 
