@@ -52,6 +52,7 @@ BTN_TEXTS = [
     "Incidencias y Comunicados",
     "Registro",
     "Gestión de\nHorarios",
+    "Chat"   # Nuevo botón
 ]
 
 FOOTER_H = 18
@@ -73,7 +74,7 @@ HERO_BG_IMAGE_POS = "center"
 
 USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or "Login"
 USER_ROLE = st.query_params.get("rol") or st.query_params.get("role") or ""
-USER_DNI = st.query_params.get("dni") or ""
+USER_DNI = st.query_params.get("dni") or ""   # Nuevo
 NORMALIZED_ROLE = USER_ROLE.strip().lower()
 
 CAN_MANAGE_SCHEDULES = NORMALIZED_ROLE == "administrador"
@@ -477,7 +478,7 @@ html = """
       var LOGO_URL = "__LOGO_URL__";
       var USER_NAME = "__USER_NAME__";
       var USER_ROLE = "__USER_ROLE__";
-      var USER_DNI = "__USER_DNI__";
+      var USER_DNI = "__USER_DNI__";   // Nuevo
       var CAN_MANAGE_SCHEDULES = __CAN_MANAGE_SCHEDULES__;
       var CAN_REGISTER_USERS = __CAN_REGISTER_USERS__;
 
@@ -608,6 +609,9 @@ html = """
                   if (!params.get("rol") && USER_ROLE) {
                     params.set("rol", USER_ROLE);
                   }
+                  if (!params.get("dni") && USER_DNI) {
+                    params.set("dni", USER_DNI);
+                  }
                   window.location.href = "/altas_registro?" + params.toString();
                 }catch(e){
                   window.location.href = "/altas_registro?auth=ok";
@@ -620,27 +624,6 @@ html = """
             }
           }
 
-          // Incidencias y Comunicados -> /chat_interfaz
-          if (BTN_TEXTS[i] === "Incidencias y Comunicados") {
-            d.addEventListener("click", function(){
-              try{
-                var params = new URLSearchParams(window.location.search || "");
-                params.set("auth", "ok");
-                if (!params.get("usuario") && USER_NAME) params.set("usuario", USER_NAME);
-                if (!params.get("rol") && USER_ROLE) params.set("rol", USER_ROLE);
-                if (!params.get("dni") && USER_DNI) params.set("dni", USER_DNI);
-                window.location.href = "/chat_interfaz?" + params.toString();
-              }catch(e){
-                var fallback = new URLSearchParams();
-                fallback.set("auth", "ok");
-                if (USER_NAME) fallback.set("usuario", USER_NAME);
-                if (USER_ROLE) fallback.set("rol", USER_ROLE);
-                if (USER_DNI) fallback.set("dni", USER_DNI);
-                window.location.href = "/chat_interfaz?" + fallback.toString();
-              }
-            });
-          }
-
           // Gestión de Horarios -> /editar_horarios solo si rol = Administrador
           if (BTN_TEXTS[i] === "Gestión de\\nHorarios") {
             if (CAN_MANAGE_SCHEDULES) {
@@ -650,6 +633,9 @@ html = """
                   params.set("auth", "ok");
                   if (!params.get("rol") && USER_ROLE) {
                     params.set("rol", USER_ROLE);
+                  }
+                  if (!params.get("dni") && USER_DNI) {
+                    params.set("dni", USER_DNI);
                   }
                   window.location.href = "/editar_horarios?" + params.toString();
                 }catch(e){
@@ -661,6 +647,25 @@ html = """
               d.setAttribute("aria-disabled", "true");
               d.title = "Disponible solo para Administrador";
             }
+          }
+
+          // Chat -> /chat
+          if (BTN_TEXTS[i] === "Chat") {
+            d.addEventListener("click", function(){
+              try{
+                var params = new URLSearchParams(window.location.search || "");
+                params.set("auth", "ok");
+                if (!params.get("rol") && USER_ROLE) {
+                  params.set("rol", USER_ROLE);
+                }
+                if (!params.get("dni") && USER_DNI) {
+                  params.set("dni", USER_DNI);
+                }
+                window.location.href = "/chat?" + params.toString();
+              }catch(e){
+                window.location.href = "/chat?auth=ok";
+              }
+            });
           }
 
           grid.appendChild(d);
@@ -724,7 +729,7 @@ html = (
         .replace("__LOGO_URL__", LOGO_URL)
         .replace("__USER_NAME__", str(USER_NAME).replace('"', '\\"'))
         .replace("__USER_ROLE__", str(USER_ROLE).replace('"', '\\"'))
-        .replace("__USER_DNI__", str(USER_DNI).replace('"', '\\"'))
+        .replace("__USER_DNI__", str(USER_DNI).replace('"', '\\"'))   # Nuevo
         .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
         .replace("__CAN_REGISTER_USERS__", "true" if CAN_REGISTER_USERS else "false")
         .replace("__FOOTER_TEXT__", FOOTER_TEXT)
