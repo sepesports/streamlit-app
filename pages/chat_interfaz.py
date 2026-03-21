@@ -4,7 +4,6 @@ import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
 
-# Eliminar márgenes y barras de Streamlit
 st.markdown(
     """
     <style>
@@ -17,7 +16,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Obtener parámetros de autenticación
 if st.query_params.get("auth") != "ok":
     st.markdown(
         """
@@ -34,7 +32,6 @@ if not USER_DNI:
     st.error("No se pudo identificar al usuario. Por favor, vuelve a iniciar sesión.")
     st.stop()
 
-# HTML/CSS/JS del chat
 html = f"""
 <!doctype html>
 <html lang="es">
@@ -217,15 +214,13 @@ html = f"""
       float: right;
       cursor: pointer;
     }}
-    .loading {{
+    .loading, .error {{
       text-align: center;
       padding: 20px;
       color: var(--text);
     }}
-    .error-message {{
+    .error {{
       color: #ff6666;
-      text-align: center;
-      padding: 10px;
     }}
   </style>
 </head>
@@ -258,6 +253,7 @@ html = f"""
   let currentThreadId = null;
   let threads = [];
   let pollingInterval = null;
+  let threadsPollingInterval = null;
   let lastRenderedMessageId = null;
 
   function escapeHtml(text) {{
@@ -267,7 +263,7 @@ html = f"""
   async function fetchJSON(url, options = {{}}) {{
     const response = await fetch(url, options);
     if (!response.ok) {{
-      throw new Error(`HTTP ${{response.status}}`);
+      throw new Error(`HTTP ${{response.status}} - ${{response.statusText}}`);
     }}
     return response.json();
   }}
@@ -283,7 +279,7 @@ html = f"""
       }}
     }} catch (error) {{
       console.error("Error loading threads:", error);
-      listDiv.innerHTML = '<div class="error-message">Error al cargar conversaciones.<br>Verifique conexión con el servidor.</div>';
+      listDiv.innerHTML = `<div class="error">Error al cargar conversaciones.<br>${escapeHtml(error.message)}</div>`;
     }}
   }}
 
@@ -305,7 +301,7 @@ html = f"""
   }}
 
   async function loadMessages(threadId, poll = false) {{
-    const limit = poll ? 50 : 500;
+    const limit = poll ? 30 : 500;
     let url = `${{API_BASE}}/threads/${{threadId}}/messages?user_id=${{currentUserId}}&limit=${{limit}}`;
     try {{
       const data = await fetchJSON(url);
@@ -335,7 +331,7 @@ html = f"""
     }} catch (error) {{
       console.error("Error loading messages:", error);
       const container = document.getElementById("messagesArea");
-      if (!poll) container.innerHTML = '<div class="error-message">Error al cargar mensajes</div>';
+      if (!poll) container.innerHTML = `<div class="error">Error al cargar mensajes<br>${escapeHtml(error.message)}</div>`;
     }}
   }}
 
@@ -371,7 +367,7 @@ html = f"""
       await loadMessages(currentThreadId, false);
     }} catch (error) {{
       console.error("Error sending message:", error);
-      alert("Error al enviar mensaje");
+      alert("Error al enviar mensaje: " + error.message);
     }}
   }}
 
@@ -385,7 +381,7 @@ html = f"""
     if (pollingInterval) clearInterval(pollingInterval);
     pollingInterval = setInterval(() => {{
       if (currentThreadId) loadMessages(currentThreadId, true);
-    }}, 3000);
+    }}, 10000);  // 10 segundos en lugar de 3
   }}
 
   function showNewChatModal() {{
@@ -436,12 +432,12 @@ html = f"""
                 await loadThreads();
               }}
             }} catch (error) {{
-              alert("Error al crear el chat");
+              alert("Error al crear el chat: " + error.message);
             }}
           }});
         }});
       }} catch (error) {{
-        resultsDiv.innerHTML = '<div class="error-message">Error al cargar usuarios</div>';
+        resultsDiv.innerHTML = `<div class="error">Error al cargar usuarios<br>${escapeHtml(error.message)}</div>`;
       }}
     }}
     searchInput.addEventListener("input", searchUsers);
@@ -454,10 +450,8 @@ html = f"""
     if (e.key === "Enter") sendMessage();
   }});
 
-  // Inicializar
   loadThreads();
-  // Polling de hilos cada 5 segundos
-  setInterval(() => loadThreads(), 5000);
+  threadsPollingInterval = setInterval(() => loadThreads(), 15000);  // 15 segundos en lugar de 5
 </script>
 </body>
 </html>
