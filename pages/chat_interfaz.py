@@ -1,4 +1,4 @@
-# pages/chat_interfaz.py
+# app.py
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -7,15 +7,27 @@ st.set_page_config(layout="wide")
 st.markdown(
     """
     <style>
-      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
-      section.main > div{padding:0 !important;margin:0 !important;}
-      header, footer{display:none !important;}
-      [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
+      .block-container{
+        padding:0 !important;
+        margin:0 !important;
+        max-width:100% !important;
+      }
+      section.main > div{
+        padding:0 !important;
+        margin:0 !important;
+      }
+      header, footer{
+        display:none !important;
+      }
+      iframe{
+        border:0 !important;
+      }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
+# Autenticación: redirige si no hay auth=ok
 if st.query_params.get("auth") != "ok":
     st.markdown(
         """
@@ -32,16 +44,15 @@ if not USER_DNI:
     st.error("No se pudo identificar al usuario. Por favor, vuelve a iniciar sesión.")
     st.stop()
 
-html = """
+html = f"""
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-  <title>Chat</title>
+  <title>Plano 2 Chat</title>
   <style>
-    /* ========== ESTILOS TOMADOS DEL PLANO ========== */
-    :root{
+    :root{{
       --bg: #ffffff;
       --border: #111111;
       --text: #111111;
@@ -70,354 +81,236 @@ html = """
       --btn2: 1fr;
       --btn3: 1.15fr;
       --send-w: clamp(96px, 22vw, 130px);
-    }
+    }}
 
-    *{
-      box-sizing: border-box;
+    *{{
+      box-sizing:border-box;
       -webkit-tap-highlight-color: transparent;
-    }
+    }}
 
-    body, html {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: var(--bg);
+    html, body{{
+      margin:0;
+      padding:0;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      background:var(--bg);
       font-family: Arial, Helvetica, sans-serif;
-      color: var(--text);
-    }
+      color:var(--text);
+    }}
 
-    #app {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      background: var(--bg);
-      padding: var(--frame-margin);
-    }
+    #app{{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
+      background:var(--bg);
+      padding:var(--frame-margin);
+    }}
 
-    .frame {
-      width: 100%;
-      height: 100%;
-      border: var(--border-size) solid var(--border);
-      display: flex;
-      flex-direction: column;
-      background: #fff;
-      overflow: hidden;
-    }
+    .frame{{
+      width:100%;
+      height:100%;
+      border:var(--border-size) solid var(--border);
+      display:flex;
+      flex-direction:column;
+      background:#fff;
+      overflow:hidden;
+    }}
 
-    .inner {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      height: 100%;
-      padding: clamp(18px, 2.4vw, 28px);
-      gap: var(--gap-top);
-    }
+    .inner{{
+      display:flex;
+      flex-direction:column;
+      width:100%;
+      height:100%;
+      padding:clamp(18px, 2.4vw, 28px);
+      gap:var(--gap-top);
+    }}
 
-    .top-buttons {
-      display: grid;
+    .top-buttons{{
+      display:grid;
       grid-template-columns: var(--btn1) var(--btn2) var(--btn3);
-      gap: 0;
-      width: 100%;
-      min-height: var(--top-row-h);
-    }
+      gap:0;
+      width:100%;
+      min-height:var(--top-row-h);
+    }}
 
-    .top-btn {
-      appearance: none;
-      border: var(--border-size) solid var(--border);
-      background: #fff;
-      color: var(--text);
-      margin: 0;
-      padding: var(--pad-y) var(--pad-x);
-      cursor: pointer;
-      display: flex;
-      align-items: flex-start;
-      justify-content: flex-start;
-      text-align: left;
-      line-height: 1.1;
-      min-height: var(--top-row-h);
-      font-size: var(--font-main);
-      font-weight: 400;
-      transition: background .15s ease, color .15s ease;
-    }
+    .top-btn{{
+      appearance:none;
+      border:var(--border-size) solid var(--border);
+      background:#fff;
+      color:var(--text);
+      margin:0;
+      padding:var(--pad-y) var(--pad-x);
+      cursor:pointer;
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
+      text-align:left;
+      line-height:1.1;
+      min-height:var(--top-row-h);
+      font-size:var(--font-main);
+      font-weight:400;
+      transition:background .15s ease, color .15s ease;
+    }}
 
-    .top-btn + .top-btn {
-      border-left: none;
-    }
+    .top-btn + .top-btn{{
+      border-left:none;
+    }}
 
-    .top-btn.active {
-      background: #f5f5f5;
-    }
+    .top-btn.active{{
+      background:#f5f5f5;
+    }}
 
-    .btn-stack {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: center;
-      gap: 4px;
-    }
+    .btn-stack{{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      justify-content:center;
+      gap:4px;
+    }}
 
-    .btn-topline {
-      font-size: var(--font-small);
-      font-weight: 400;
-      line-height: 1;
-    }
+    .btn-topline{{
+      font-size:var(--font-small);
+      font-weight:400;
+      line-height:1;
+    }}
 
-    .btn-mainline {
-      font-size: var(--font-main);
-      font-weight: 400;
-      line-height: 1.1;
-    }
+    .btn-mainline{{
+      font-size:var(--font-main);
+      font-weight:400;
+      line-height:1.1;
+    }}
 
-    .btn-center {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      font-size: var(--font-main);
-      line-height: 1.1;
-    }
+    .btn-center{{
+      width:100%;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      font-size:var(--font-main);
+      line-height:1.1;
+    }}
 
-    /* Contenedor principal del chat: dos columnas (conversaciones + mensajes) */
-    .chat-layout {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      border: var(--border-size) solid var(--border);
-      background: #fff;
-      overflow: hidden;
-    }
+    .chat-shell{{
+      flex:1;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      border:var(--border-size) solid var(--border);
+      background:#fff;
+    }}
 
-    /* Panel izquierdo: lista de conversaciones */
-    .threads-panel {
-      width: 280px;
-      border-right: var(--border-size) solid var(--border);
-      display: flex;
-      flex-direction: column;
-      background: #fff;
-      flex-shrink: 0;
-    }
+    .chat-header{{
+      height:var(--title-row-h);
+      min-height:var(--title-row-h);
+      border-bottom:var(--border-size) solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 var(--pad-x);
+      font-size:var(--font-title);
+      font-weight:400;
+    }}
 
-    .threads-header {
-      padding: var(--pad-y) var(--pad-x);
-      border-bottom: var(--border-size) solid var(--border);
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: var(--font-title);
-      min-height: var(--title-row-h);
-    }
+    .chat-title{{
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }}
 
-    .new-chat-btn {
-      background: #fff;
-      border: var(--border-size) solid var(--border);
-      color: var(--text);
-      padding: 4px 10px;
-      border-radius: 0;
-      cursor: pointer;
-      font-size: var(--font-small);
-      font-weight: normal;
-    }
+    .thread-select{{
+      border:var(--border-size) solid var(--border);
+      background:#fff;
+      color:var(--text);
+      font-size:var(--font-small);
+      padding:4px 8px;
+      max-width:200px;
+    }}
 
-    .thread-list {
-      flex: 1;
-      overflow-y: auto;
-    }
+    .chat-body{{
+      flex:1;
+      min-height:160px;
+      overflow:auto;
+      background:#fff;
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }}
 
-    .thread-item {
-      padding: var(--pad-y) var(--pad-x);
-      border-bottom: var(--border-size) solid var(--border);
-      cursor: pointer;
-      transition: background 0.2s;
-    }
+    .msg{{
+      max-width:min(78%, 560px);
+      border:var(--border-size) solid var(--border);
+      padding:10px 12px;
+      font-size:var(--font-input);
+      line-height:1.3;
+      background:#fff;
+      word-break:break-word;
+    }}
 
-    .thread-item:hover {
-      background: #f5f5f5;
-    }
+    .msg.out{{
+      margin-left:auto;
+    }}
 
-    .thread-item.active {
-      background: #f5f5f5;
-      border-left: 3px solid var(--border);
-    }
-
-    .thread-title {
-      font-weight: bold;
-      margin-bottom: 4px;
-      font-size: var(--font-main);
-    }
-
-    .thread-preview {
-      font-size: var(--font-small);
-      color: #555;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* Panel derecho: mensajes */
-    .chat-panel {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    .chat-header {
-      height: var(--title-row-h);
-      min-height: var(--title-row-h);
-      border-bottom: var(--border-size) solid var(--border);
-      display: flex;
-      align-items: center;
-      padding: 0 var(--pad-x);
-      font-size: var(--font-title);
-      font-weight: 400;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .messages-area {
-      flex: 1;
-      min-height: 160px;
-      overflow: auto;
-      background: #fff;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .message {
-      max-width: min(78%, 560px);
-      border: var(--border-size) solid var(--border);
-      padding: 10px 12px;
-      font-size: var(--font-input);
-      line-height: 1.3;
-      background: #fff;
-      word-break: break-word;
-    }
-
-    .message.out {
-      margin-left: auto;
-    }
-
-    .message strong {
-      font-weight: bold;
-    }
-
-    .input-area {
-      height: var(--input-row-h);
-      min-height: var(--input-row-h);
-      border-top: var(--border-size) solid var(--border);
-      display: grid;
+    .input-row{{
+      height:var(--input-row-h);
+      min-height:var(--input-row-h);
+      border-top:var(--border-size) solid var(--border);
+      display:grid;
       grid-template-columns: 1fr var(--send-w);
-      gap: 0;
-      background: #fff;
-    }
+      gap:0;
+      background:#fff;
+    }}
 
-    #chatInput {
-      width: 100%;
-      height: 100%;
-      border: none;
-      outline: none;
-      padding: 0 var(--pad-x);
-      font-size: var(--font-input);
-      color: var(--text);
-      background: #fff;
-    }
+    .chat-input{{
+      width:100%;
+      height:100%;
+      border:none;
+      outline:none;
+      padding:0 var(--pad-x);
+      font-size:var(--font-input);
+      color:var(--text);
+      background:#fff;
+    }}
 
-    #chatInput::placeholder {
-      color: #111111;
-      opacity: 1;
-    }
+    .chat-input::placeholder{{
+      color:#111111;
+      opacity:1;
+    }}
 
-    #sendBtn {
-      height: 100%;
-      width: 100%;
-      border: none;
-      border-left: var(--border-size) solid var(--border);
-      background: #fff;
-      color: var(--text);
-      font-size: var(--font-send);
-      font-weight: 400;
-      cursor: pointer;
-    }
+    .send-btn{{
+      height:100%;
+      width:100%;
+      border:none;
+      border-left:var(--border-size) solid var(--border);
+      background:#fff;
+      color:var(--text);
+      font-size:var(--font-send);
+      font-weight:400;
+      cursor:pointer;
+    }}
 
-    #sendBtn:active,
-    .top-btn:active {
-      background: #ececec;
-    }
+    .send-btn:active,
+    .top-btn:active{{
+      background:#ececec;
+    }}
 
-    /* Modal de búsqueda de usuarios */
-    .user-search-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
+    /* Panel de notificaciones */
+    .notifications-panel{{
+      height:100%;
+      overflow:auto;
+      padding:14px;
+    }}
 
-    .modal-content {
-      background: var(--bg);
-      border: var(--border-size) solid var(--border);
-      border-radius: 0;
-      width: 300px;
-      max-width: 90%;
-      padding: 20px;
-    }
+    .notification-item{{
+      border-bottom:1px solid var(--border);
+      padding:8px 0;
+    }}
 
-    .modal-content input {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 12px;
-      border: var(--border-size) solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    .user-list {
-      max-height: 200px;
-      overflow-y: auto;
-    }
-
-    .user-item {
-      padding: 6px;
-      cursor: pointer;
-      border-bottom: var(--border-size) solid var(--border);
-    }
-
-    .user-item:hover {
-      background: rgba(0,0,0,0.05);
-    }
-
-    .close-modal {
-      float: right;
-      cursor: pointer;
-    }
-
-    .loading, .error {
-      text-align: center;
-      padding: 20px;
-      color: var(--text);
-    }
-
-    .error {
-      color: #ff6666;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      :root {
+    @media (max-width: 768px){{
+      :root{{
         --frame-margin: 6px;
         --border-size: 2px;
         --top-row-h: 56px;
@@ -431,38 +324,46 @@ html = """
         --font-input: 14px;
         --font-send: 14px;
         --send-w: 96px;
-      }
+      }}
 
-      .threads-panel {
-        width: 220px;
-      }
+      .inner{{
+        padding:10px;
+      }}
 
-      .messages-area {
-        padding: 10px;
-      }
-    }
+      .btn-stack{{
+        gap:2px;
+      }}
 
-    @media (max-width: 420px) {
-      :root {
+      .btn-mainline{{
+        word-break:break-word;
+      }}
+
+      .chat-body{{
+        padding:10px;
+      }}
+    }}
+
+    @media (max-width: 420px){{
+      :root{{
         --font-main: 13px;
         --font-small: 10px;
         --font-title: 13px;
         --font-input: 13px;
         --font-send: 13px;
         --send-w: 88px;
-      }
+      }}
 
-      .threads-panel {
-        width: 180px;
-      }
-    }
+      .inner{{
+        padding:8px;
+      }}
+    }}
   </style>
 </head>
 <body>
 <div id="app">
   <div class="frame">
     <div class="inner">
-      <!-- Botones superiores del plano -->
+
       <div class="top-buttons">
         <button class="top-btn active" id="btnSocorristas" type="button">
           <div class="btn-stack">
@@ -470,261 +371,315 @@ html = """
             <span class="btn-mainline">Socorristas</span>
           </div>
         </button>
+
         <button class="top-btn" id="btnInstalacion" type="button">
           <div class="btn-stack">
             <span class="btn-topline">seleccióna</span>
             <span class="btn-mainline">Instalación</span>
           </div>
         </button>
+
         <button class="top-btn" id="btnNotificaciones" type="button">
           <div class="btn-center">Notificaciones</div>
         </button>
       </div>
 
-      <!-- Contenedor con dos columnas: conversaciones + chat -->
-      <div class="chat-layout">
-        <!-- Panel izquierdo: lista de conversaciones -->
-        <div class="threads-panel">
-          <div class="threads-header">
-            <span>Conversaciones</span>
-            <button class="new-chat-btn" id="newChatBtn">+ Nuevo</button>
-          </div>
-          <div class="thread-list" id="threadList">
-            <div class="loading">Cargando conversaciones...</div>
-          </div>
+      <div class="chat-shell">
+        <div class="chat-header">
+          <span class="chat-title" id="chatTitle">Selecciona una conversación</span>
+          <select id="threadSelect" class="thread-select" style="display:none;"></select>
         </div>
 
-        <!-- Panel derecho: chat -->
-        <div class="chat-panel">
-          <div class="chat-header" id="chatHeader">Selecciona una conversación</div>
-          <div class="messages-area" id="messagesArea">
-            <div style="text-align: center; margin-top: 20px;">No hay mensajes</div>
-          </div>
-          <div class="input-area" style="display: none;" id="inputArea">
-            <input type="text" id="chatInput" placeholder="Dialogo para enviar Mensaje" autocomplete="off">
-            <button id="sendBtn">SEND</button>
-          </div>
+        <div class="chat-body" id="chatBody">
+          <div class="chat-empty"></div>
+        </div>
+
+        <div class="input-row">
+          <input id="chatInput" class="chat-input" type="text" placeholder="Diálogo para enviar Mensaje" autocomplete="off" disabled />
+          <button id="sendBtn" class="send-btn" type="button" disabled>SEND</button>
         </div>
       </div>
+
     </div>
   </div>
 </div>
 
 <script>
-  // ========== CÓDIGO ORIGINAL SIN MODIFICACIONES ==========
   const API_BASE = "https://camilo27.pythonanywhere.com/api/chat";
-  const currentUserId = "REEMPLAZAR_DNI";
+  const currentUserId = "{USER_DNI}";
   let currentThreadId = null;
-  let threads = [];
+  let threads = [];           // Lista completa de hilos del usuario
+  let lastRenderedMessageId = null;
   let pollingInterval = null;
   let threadsPollingInterval = null;
-  let lastRenderedMessageId = null;
+  let currentMode = "socorristas";  // "socorristas", "instalacion", "notificaciones"
 
-  function escapeHtml(text) {
+  function escapeHtml(text) {{
     return String(text).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
-  }
+  }}
 
-  async function fetchJSON(url, options = {}) {
+  async function fetchJSON(url, options = {{}}) {{
     const response = await fetch(url, options);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} - ${response.statusText}`);
-    }
+    if (!response.ok) throw new Error(`HTTP ${{response.status}} - ${{response.statusText}}`);
     return response.json();
-  }
+  }}
 
-  async function loadThreads() {
-    const listDiv = document.getElementById("threadList");
-    try {
+  // Cargar todos los hilos del usuario desde el backend
+  async function loadThreads() {{
+    try {{
       const data = await fetchJSON(API_BASE + "/threads?user_id=" + encodeURIComponent(currentUserId));
       threads = data.threads || [];
-      renderThreadList();
-      if (threads.length > 0 && !currentThreadId) {
-        setActiveThread(threads[0].id);
-      }
-    } catch (error) {
+      updateUIForMode();  // Actualizar desplegable según modo actual
+    }} catch (error) {{
       console.error("Error loading threads:", error);
-      listDiv.innerHTML = '<div class="error">Error al cargar conversaciones.<br>' + escapeHtml(error.message) + '</div>';
-    }
-  }
+    }}
+  }}
 
-  function renderThreadList() {
-    const container = document.getElementById("threadList");
-    if (threads.length === 0) {
-      container.innerHTML = '<div style="padding: 12px; text-align: center;">No hay conversaciones</div>';
+  // Actualizar la interfaz según el modo (socorristas / instalación / notificaciones)
+  function updateUIForMode() {{
+    const selectEl = document.getElementById("threadSelect");
+    const chatTitle = document.getElementById("chatTitle");
+    const chatBody = document.getElementById("chatBody");
+    const inputRow = document.querySelector(".input-row");
+    const chatInput = document.getElementById("chatInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+    if (currentMode === "notificaciones") {{
+      // Mostrar panel de notificaciones (mensajes no leídos en otros hilos)
+      selectEl.style.display = "none";
+      chatTitle.textContent = "Notificaciones";
+      chatBody.innerHTML = '<div class="notifications-panel" id="notifPanel">Cargando...</div>';
+      inputRow.style.display = "none";
+      // Detener polling de mensajes si estaba activo
+      if (pollingInterval) clearInterval(pollingInterval);
+      // Cargar notificaciones
+      loadNotifications();
       return;
-    }
-    container.innerHTML = threads.map(function(t) {
-      return '<div class="thread-item' + (currentThreadId == t.id ? ' active' : '') + '" data-id="' + t.id + '">' +
-               '<div class="thread-title">' + escapeHtml(t.title || (t.type === 'private' ? 'Privado' : 'Grupo')) + '</div>' +
-               '<div class="thread-preview">' + escapeHtml(t.last_message || '') + '</div>' +
-             '</div>';
-    }).join('');
-    document.querySelectorAll('.thread-item').forEach(function(el) {
-      el.addEventListener('click', function() { setActiveThread(el.getAttribute('data-id')); });
-    });
-  }
+    }}
 
-  async function loadMessages(threadId, poll = false) {
+    // Modos con chat: mostrar input y desplegable
+    inputRow.style.display = "grid";
+    selectEl.style.display = "block";
+
+    // Filtrar hilos según modo
+    let filteredThreads = [];
+    if (currentMode === "socorristas") {{
+      filteredThreads = threads.filter(t => t.type === "private");
+    }} else if (currentMode === "instalacion") {{
+      filteredThreads = threads.filter(t => t.type === "group");
+    }}
+
+    // Construir opciones del desplegable
+    if (filteredThreads.length === 0) {{
+      selectEl.innerHTML = '<option value="">No hay conversaciones</option>';
+      chatTitle.textContent = "Sin conversaciones";
+      // Limpiar área de mensajes y deshabilitar input
+      chatBody.innerHTML = '<div class="chat-empty"></div>';
+      chatInput.disabled = true;
+      sendBtn.disabled = true;
+      currentThreadId = null;
+      return;
+    }}
+
+    chatInput.disabled = false;
+    sendBtn.disabled = false;
+    selectEl.innerHTML = filteredThreads.map(t => `<option value="${{t.id}}">${{escapeHtml(t.title || (t.type === 'private' ? 'Privado' : 'Grupo'))}}</option>`).join('');
+    
+    // Si ya había un hilo seleccionado y aún existe en la lista, mantenerlo; si no, seleccionar el primero
+    let selectedId = currentThreadId;
+    if (selectedId && filteredThreads.some(t => t.id == selectedId)) {{
+      selectEl.value = selectedId;
+    }} else {{
+      if (filteredThreads.length > 0) {{
+        selectedId = filteredThreads[0].id;
+        selectEl.value = selectedId;
+      }} else {{
+        selectedId = null;
+      }}
+    }}
+
+    if (selectedId) {{
+      setActiveThread(selectedId);
+    }} else {{
+      // Sin hilos: limpiar chat
+      chatBody.innerHTML = '<div class="chat-empty"></div>';
+      chatTitle.textContent = "Selecciona una conversación";
+      currentThreadId = null;
+      if (pollingInterval) clearInterval(pollingInterval);
+    }}
+  }}
+
+  async function loadNotifications() {{
+    try {{
+      // Obtener todos los threads y sus estados de lectura
+      const data = await fetchJSON(API_BASE + "/threads?user_id=" + encodeURIComponent(currentUserId));
+      const threads = data.threads || [];
+      const panel = document.getElementById("notifPanel");
+      if (!panel) return;
+      const unread = threads.filter(t => t.unread_count > 0);
+      if (unread.length === 0) {{
+        panel.innerHTML = '<div>No hay notificaciones pendientes</div>';
+      }} else {{
+        panel.innerHTML = unread.map(t => `
+          <div class="notification-item" data-thread="${{t.id}}">
+            <strong>${{escapeHtml(t.title || (t.type === 'private' ? 'Privado' : 'Grupo'))}}</strong><br>
+            <span>Mensajes no leídos: ${{t.unread_count}}</span>
+          </div>
+        `).join('');
+        // Al hacer clic en una notificación, cambiar al modo correspondiente y abrir ese hilo
+        document.querySelectorAll('.notification-item').forEach(el => {{
+          el.addEventListener('click', () => {{
+            const threadId = el.getAttribute('data-thread');
+            const thread = threads.find(t => t.id == threadId);
+            if (thread) {{
+              if (thread.type === "private") {{
+                document.getElementById("btnSocorristas").click();
+              }} else {{
+                document.getElementById("btnInstalacion").click();
+              }}
+              setTimeout(() => {{
+                const selectEl = document.getElementById("threadSelect");
+                if (selectEl) {{
+                  selectEl.value = threadId;
+                  setActiveThread(threadId);
+                }}
+              }}, 100);
+            }}
+          }});
+        }});
+      }}
+    }} catch (error) {{
+      console.error("Error loading notifications:", error);
+      const panel = document.getElementById("notifPanel");
+      if (panel) panel.innerHTML = '<div>Error al cargar notificaciones</div>';
+    }}
+  }}
+
+  async function loadMessages(threadId, poll = false) {{
     const limit = poll ? 30 : 500;
-    let url = API_BASE + "/threads/" + threadId + "/messages?user_id=" + encodeURIComponent(currentUserId) + "&limit=" + limit;
-    try {
+    const url = API_BASE + "/threads/" + threadId + "/messages?user_id=" + encodeURIComponent(currentUserId) + "&limit=" + limit;
+    try {{
       const data = await fetchJSON(url);
       let messages = data.messages || [];
-      if (poll && lastRenderedMessageId !== null) {
-        messages = messages.filter(function(m) { return parseInt(m.id) > lastRenderedMessageId; });
-      }
-      const container = document.getElementById("messagesArea");
-      if (!poll) {
+      if (poll && lastRenderedMessageId !== null) {{
+        messages = messages.filter(m => parseInt(m.id) > lastRenderedMessageId);
+      }}
+      const container = document.getElementById("chatBody");
+      if (!poll) {{
         container.innerHTML = '';
         lastRenderedMessageId = null;
-      }
-      if (messages.length === 0 && !poll) {
-        container.innerHTML = '<div style="text-align: center; margin-top: 20px;">No hay mensajes</div>';
+      }}
+      if (messages.length === 0 && !poll) {{
+        container.innerHTML = '<div class="chat-empty"></div>';
         lastRenderedMessageId = null;
         return;
-      }
-      messages.forEach(function(msg) {
+      }}
+      messages.forEach(msg => {{
         const div = document.createElement("div");
-        div.className = "message" + (msg.sender_id == currentUserId ? " out" : "");
-        div.setAttribute("data-id", msg.id);
+        div.className = "msg" + (msg.sender_id == currentUserId ? " out" : "");
         div.innerHTML = '<strong>' + escapeHtml(msg.sender_alias || 'Usuario') + ':</strong> ' + escapeHtml(msg.body);
         container.appendChild(div);
         lastRenderedMessageId = parseInt(msg.id);
-      });
+      }});
       container.scrollTop = container.scrollHeight;
       await markThreadRead(threadId);
-    } catch (error) {
+    }} catch (error) {{
       console.error("Error loading messages:", error);
-      const container = document.getElementById("messagesArea");
-      if (!poll) container.innerHTML = '<div class="error">Error al cargar mensajes<br>' + escapeHtml(error.message) + '</div>';
-    }
-  }
+      if (!poll) {{
+        const container = document.getElementById("chatBody");
+        container.innerHTML = '<div class="error">Error al cargar mensajes</div>';
+      }}
+    }}
+  }}
 
-  async function markThreadRead(threadId) {
-    const messagesDiv = document.getElementById("messagesArea");
-    const lastMsg = messagesDiv.querySelector(".message:last-child");
-    if (!lastMsg) return;
-    const lastId = lastMsg.getAttribute("data-id");
-    if (!lastId) return;
-    try {
-      await fetch(API_BASE + "/threads/" + threadId + "/read", {
+  async function markThreadRead(threadId) {{
+    if (!lastRenderedMessageId) return;
+    try {{
+      await fetch(API_BASE + "/threads/" + threadId + "/read", {{
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: currentUserId, last_read_message_id: lastId })
-      });
-    } catch (error) {
+        headers: {{ "Content-Type": "application/json" }},
+        body: JSON.stringify({{ user_id: currentUserId, last_read_message_id: lastRenderedMessageId }})
+      }});
+    }} catch (error) {{
       console.error("Error marking read:", error);
-    }
-  }
+    }}
+  }}
 
-  async function sendMessage() {
+  async function sendMessage() {{
     if (!currentThreadId) return;
     const input = document.getElementById("chatInput");
     const text = input.value.trim();
     if (!text) return;
     input.value = "";
-    try {
-      await fetch(API_BASE + "/threads/" + currentThreadId + "/messages", {
+    try {{
+      await fetch(API_BASE + "/threads/" + currentThreadId + "/messages", {{
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sender_id: currentUserId, body: text })
-      });
+        headers: {{ "Content-Type": "application/json" }},
+        body: JSON.stringify({{ sender_id: currentUserId, body: text }})
+      }});
       await loadMessages(currentThreadId, false);
-    } catch (error) {
+    }} catch (error) {{
       console.error("Error sending message:", error);
       alert("Error al enviar mensaje: " + error.message);
-    }
-  }
+    }}
+  }}
 
-  function setActiveThread(threadId) {
+  function setActiveThread(threadId) {{
     currentThreadId = threadId;
     loadMessages(threadId, false);
-    const thread = threads.find(function(t) { return t.id == threadId; });
-    document.getElementById("chatHeader").innerText = thread ? thread.title : "Conversación";
-    document.getElementById("inputArea").style.display = "grid";
-    renderThreadList();
+    const thread = threads.find(t => t.id == threadId);
+    const title = thread ? thread.title : (thread.type === "private" ? "Chat privado" : "Grupo");
+    document.getElementById("chatTitle").textContent = title;
+    // Reiniciar polling para este hilo
     if (pollingInterval) clearInterval(pollingInterval);
-    pollingInterval = setInterval(function() {
-      if (currentThreadId) loadMessages(currentThreadId, true);
-    }, 10000);
-  }
+    pollingInterval = setInterval(() => {{
+      if (currentThreadId && currentMode !== "notificaciones") loadMessages(currentThreadId, true);
+    }}, 10000);
+  }}
 
-  function showNewChatModal() {
-    const modal = document.createElement("div");
-    modal.className = "user-search-modal";
-    modal.innerHTML = `
-      <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <h3>Nuevo chat</h3>
-        <input type="text" id="userSearch" placeholder="Buscar por alias o DNI">
-        <div id="userSearchResults" class="user-list">Escribe al menos 2 caracteres</div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    const closeBtn = modal.querySelector(".close-modal");
-    closeBtn.onclick = function() { modal.remove(); };
-    const searchInput = modal.querySelector("#userSearch");
-    const resultsDiv = modal.querySelector("#userSearchResults");
+  // Eventos de los botones superiores
+  document.getElementById("btnSocorristas").addEventListener("click", () => {{
+    document.getElementById("btnSocorristas").classList.add("active");
+    document.getElementById("btnInstalacion").classList.remove("active");
+    document.getElementById("btnNotificaciones").classList.remove("active");
+    currentMode = "socorristas";
+    updateUIForMode();
+  }});
 
-    async function searchUsers() {
-      const query = searchInput.value.trim().toLowerCase();
-      if (query.length < 2) {
-        resultsDiv.innerHTML = '<div>Escribe al menos 2 caracteres</div>';
-        return;
-      }
-      try {
-        const users = await fetchJSON(API_BASE + "/users");
-        const filtered = users.filter(function(u) { return u.alias.toLowerCase().includes(query) || u.dni.includes(query); });
-        if (filtered.length === 0) {
-          resultsDiv.innerHTML = '<div>No se encontraron usuarios</div>';
-          return;
-        }
-        resultsDiv.innerHTML = filtered.map(function(u) {
-          return '<div class="user-item" data-dni="' + u.dni + '">@' + escapeHtml(u.alias) + ' (' + u.dni + ')</div>';
-        }).join('');
-        resultsDiv.querySelectorAll(".user-item").forEach(function(el) {
-          el.addEventListener("click", async function() {
-            const otherDni = el.getAttribute("data-dni");
-            if (otherDni == currentUserId) {
-              alert("No puedes chatear contigo mismo");
-              return;
-            }
-            try {
-              const data = await fetchJSON(API_BASE + "/private/" + encodeURIComponent(otherDni) + "?user_id=" + encodeURIComponent(currentUserId));
-              if (data.thread_id) {
-                setActiveThread(data.thread_id);
-                modal.remove();
-                await loadThreads();
-              }
-            } catch (error) {
-              alert("Error al crear el chat: " + error.message);
-            }
-          });
-        });
-      } catch (error) {
-        resultsDiv.innerHTML = '<div class="error">Error al cargar usuarios<br>' + escapeHtml(error.message) + '</div>';
-      }
-    }
-    searchInput.addEventListener("input", searchUsers);
-    searchUsers();
-  }
+  document.getElementById("btnInstalacion").addEventListener("click", () => {{
+    document.getElementById("btnInstalacion").classList.add("active");
+    document.getElementById("btnSocorristas").classList.remove("active");
+    document.getElementById("btnNotificaciones").classList.remove("active");
+    currentMode = "instalacion";
+    updateUIForMode();
+  }});
 
-  document.getElementById("newChatBtn").addEventListener("click", showNewChatModal);
+  document.getElementById("btnNotificaciones").addEventListener("click", () => {{
+    document.getElementById("btnNotificaciones").classList.add("active");
+    document.getElementById("btnSocorristas").classList.remove("active");
+    document.getElementById("btnInstalacion").classList.remove("active");
+    currentMode = "notificaciones";
+    updateUIForMode();
+  }});
+
+  // Evento cambio de selección en desplegable
+  document.getElementById("threadSelect").addEventListener("change", (e) => {{
+    const newId = e.target.value;
+    if (newId) setActiveThread(newId);
+  }});
+
+  // Eventos de envío
   document.getElementById("sendBtn").addEventListener("click", sendMessage);
-  document.getElementById("chatInput").addEventListener("keypress", function(e) {
+  document.getElementById("chatInput").addEventListener("keypress", (e) => {{
     if (e.key === "Enter") sendMessage();
-  });
+  }});
 
-  // Los botones superiores no tienen funcionalidad adicional
-  document.getElementById("btnSocorristas").addEventListener("click", function() {});
-  document.getElementById("btnInstalacion").addEventListener("click", function() {});
-  document.getElementById("btnNotificaciones").addEventListener("click", function() {});
-
+  // Inicialización
   loadThreads();
   threadsPollingInterval = setInterval(loadThreads, 15000);
 </script>
 </body>
 </html>
-""".replace("REEMPLAZAR_DNI", USER_DNI)
+"""
 
-components.html(html, height=800, scrolling=False)
+components.html(html, height=10, scrolling=False)
