@@ -1,4 +1,4 @@
-# chat.py
+# pages/chat_interfaz.py
 import streamlit as st
 import streamlit.components.v1 as components
 
