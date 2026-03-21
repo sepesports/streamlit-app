@@ -93,7 +93,7 @@ html = """
 
     .frame{
       width:100%;
-      height:100%;
+      height:80%;
       border:var(--border-size) solid var(--border);
       background:#fff;
       overflow:hidden;
