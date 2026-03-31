@@ -431,7 +431,9 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
              placeholder="Usuario"/>
 
       <div id="lblPass" class="label" style="top:42%;">Contraseña:</div>
-      <input id="inPass" class="field" style="top:48%;" type="password" 
+      <!-- CAMBIO CLAVE: campo de texto con seguridad visual, sin ser password nativo -->
+      <input id="inPass" class="field" style="top:48%; -webkit-text-security: disc; text-security: disc;" 
+             type="text" 
              autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" 
              placeholder="Contraseña"/>
 
