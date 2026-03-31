@@ -1,3 +1,4 @@
+html = """
 <!doctype html>
 <html>
 <head>
@@ -343,15 +344,6 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
   bottom: 0;
   border-radius: 0;
 }
-/* Opcional: si deseas que también #card ocupe un poco más de espacio,
-   puedes descomentar la siguiente línea, pero por ahora no se modifica
-   la estructura interna para respetar el diseño original */
-/* #stage.fullscreen-mode #card {
-  left: 4%;
-  right: 4%;
-  top: 4%;
-  bottom: 4%;
-} */
 
 /* MÓVIL */
 @media (max-width: 768px){
@@ -504,3 +496,4 @@ async function doLogin(){
 </script>
 </body>
 </html>
+"""
