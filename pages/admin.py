@@ -1,27 +1,8 @@
-# pages/admin.py
-import streamlit as st
-import streamlit.components.v1 as components
-
-st.set_page_config(layout="wide")
-
-st.markdown(
-    """
-    <style>
-      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
-      section.main > div{padding:0 !important;margin:0 !important;}
-      header, footer{display:none !important;}
-      [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-html = """
 <!doctype html>
 <html>
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 
 <style>
 :root{
@@ -72,10 +53,10 @@ html = """
   --linkRegTopDesktop: 78%;
   --linkRegLeftDesktop: 68%;
 
-  --labelSizeDesktop: 22px; /* 14px */
-  --inputSizeDesktop: 22px; /* 14px */
-  --btnTextSizeDesktop: 22px; /* 14px */
-  --linkSizeDesktop: 22px; /* 13px estoy aqui */
+  --labelSizeDesktop: 22px;
+  --inputSizeDesktop: 22px;
+  --btnTextSizeDesktop: 22px;
+  --linkSizeDesktop: 22px;
 
   /* =========================================================
      CONTROLES MÓVIL
@@ -83,27 +64,27 @@ html = """
      ========================================================= */
   --logoWMobile: 150px;      /* tamaño logo móvil */
   --logoTopMobile: 6%;       /* subir/bajar logo móvil */
-  --logoXMobile: 0px;        /* mover logo izq/der móvil (px) *
+  --logoXMobile: 0px;        /* mover logo izq/der móvil (px) */
 
   --titleTopMobile: 20%;     /* subir/bajar título móvil */
   --titleSizeMobile: 18px;   /* tamaño título móvil */
   --titleXMobile: 0px;       /* mover título izq/der móvil (px) */
 
   --lblUserTopMobile: 22%;
-  --inUserTopMobile: 28%;     /* 28 */
-  --lblPassTopMobile: 42%;  /* 42 */
-  --inPassTopMobile: 48%;    /* 48 */
-  --btnTopMobile: 65%;     /* 67%*/
+  --inUserTopMobile: 28%;
+  --lblPassTopMobile: 42%;
+  --inPassTopMobile: 48%;
+  --btnTopMobile: 65%;
 
-  --linkPolTopMobile: 78%; /* 78 */
-  --linkPolLeftMobile: 20%; /* 20 */
+  --linkPolTopMobile: 78%;
+  --linkPolLeftMobile: 20%;
   --linkRegTopMobile: 78%;
-  --linkRegLeftMobile: 68%; /* 68 */
+  --linkRegLeftMobile: 68%;
 
-  --labelSizeMobile: 16px;    /* 16 */
-  --inputSizeMobile: 16px;    /* 16 */
-  --btnTextSizeMobile: 18px; /* 14 */
-  --linkSizeMobile: 15px;  /* 13*/
+  --labelSizeMobile: 16px;
+  --inputSizeMobile: 16px;
+  --btnTextSizeMobile: 18px;
+  --linkSizeMobile: 15px;
 }
 
 /* RESET */
@@ -128,6 +109,7 @@ html, body{
     radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
     linear-gradient(180deg, #020614 0%, var(--baseBlue) 100%);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  transition: all 0.2s ease;
 }
 
 /* PANEL PRINCIPAL */
@@ -141,6 +123,7 @@ html, body{
   background:
     linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 22%),
     linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #05164d 58%, var(--bgDeep) 100%);
+  transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
 
 /* CORTE DIAGONAL */
@@ -184,6 +167,7 @@ html, body{
   pointer-events:none;
   border-radius: 34px;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
+  transition: all 0.3s ease;
 }
 
 /* CONTENEDOR */
@@ -238,39 +222,39 @@ html, body{
 /* INPUTS */
 input.field{
   position:absolute;
-  left:22%; /* 16 */
-  right:22%; /* 16 */
-  height:10%; /* 16 */
+  left:22%;
+  right:22%;
+  height:10%;
   border: 1px solid rgba(255,255,255,.55);
   border-radius: 999px;
   box-sizing:border-box;
   background: linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
-  padding: 0 16px; /* 14 */
+  padding: 0 16px;
   font:700 var(--inputSizeDesktop) Arial, sans-serif !important;
   color: rgba(30,40,55,.92);
   outline:none;
   box-shadow:
-    0 15px 18px rgba(0,0,0,.22), /*0 10px */
+    0 15px 18px rgba(0,0,0,.22),
     inset 0 1px 0 rgba(255,255,255,.55);
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
 }
 input.field::placeholder{ color: rgba(60,70,85,.55); }
 
-/* BOTÓN */
+/* BOTÓN LOGIN */
 .btn{
   position:absolute;
   left:32%;
   right:32%;
   height:10%;  
-  border: 1px solid rgba(255,255,255,.10);/* Estoy aqui 10*/
+  border: 1px solid rgba(255,255,255,.10);
   border-radius: 999px;
   box-sizing:border-box;
   background:
-    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%), /* Estoy aqui transparent 80%*/
+    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%),
     linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
   box-shadow:
-    0 22px 26px rgba(0,0,0,.28),/* Estoy aqui 0 18px */
+    0 22px 26px rgba(0,0,0,.28),
     inset 0 1px 0 rgba(255,255,255,.22);
   display:flex;
   align-items:center;
@@ -301,6 +285,73 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
     radial-gradient(60% 45% at 50% 18%, rgba(255,255,255,.12), transparent 60%),
     linear-gradient(180deg, transparent 62%, rgba(0,0,0,.30) 100%);
 }
+
+/* ================== BOTÓN FULLSCREEN MÓVIL ================== */
+.fullscreen-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(12px);
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: white;
+  cursor: pointer;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255,255,255,0.2);
+  font-weight: bold;
+  user-select: none;
+  touch-action: manipulation;
+}
+.fullscreen-toggle:active {
+  transform: scale(0.92);
+  background: rgba(0,0,0,0.8);
+}
+/* Oculto en desktop */
+@media (min-width: 769px) {
+  .fullscreen-toggle {
+    display: none;
+  }
+}
+/* Ajuste para móvil: solo visible */
+@media (max-width: 768px) {
+  .fullscreen-toggle {
+    display: flex;
+  }
+}
+
+/* ================== MODO FULLSCREEN (ACTIVO) ================== */
+#stage.fullscreen-mode #plan {
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+#stage.fullscreen-mode #frame {
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 0;
+}
+/* Opcional: si deseas que también #card ocupe un poco más de espacio,
+   puedes descomentar la siguiente línea, pero por ahora no se modifica
+   la estructura interna para respetar el diseño original */
+/* #stage.fullscreen-mode #card {
+  left: 4%;
+  right: 4%;
+  top: 4%;
+  bottom: 4%;
+} */
 
 /* MÓVIL */
 @media (max-width: 768px){
@@ -386,6 +437,9 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
   </div>
 </div>
 
+<!-- Botón flotante para activar/desactivar fullscreen en móviles -->
+<div id="fullscreenToggleBtn" class="fullscreen-toggle">⤢</div>
+
 <script>
 async function doLogin(){
   const u = (document.getElementById("inUser").value || "").trim();
@@ -401,7 +455,6 @@ async function doLogin(){
     const j = await r.json();
 
     if (j && j.ok === true){
-      // ✅ Pasamos usuario, rol y DNI a la interfaz principal
       const rol = (j.rol || "").toString();
       const dni = (j.dni || "").toString();
       window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol) + "&dni=" + encodeURIComponent(dni);
@@ -413,6 +466,28 @@ async function doLogin(){
   }
 }
 
+// Toggle para el modo fullscreen móvil
+(function(){
+  const btn = document.getElementById("fullscreenToggleBtn");
+  const stage = document.getElementById("stage");
+
+  if(btn && stage){
+    btn.addEventListener("click", function(e){
+      e.preventDefault();
+      stage.classList.toggle("fullscreen-mode");
+      // Cambiar el ícono del botón según el estado (opcional)
+      if(stage.classList.contains("fullscreen-mode")){
+        btn.textContent = "✕";   // icono de cerrar
+        btn.style.fontSize = "26px";
+      } else {
+        btn.textContent = "⤢";
+        btn.style.fontSize = "28px";
+      }
+    });
+  }
+})();
+
+// Asegurar que el iframe (Streamlit) ocupe toda la pantalla
 (function(){
   var fe = window.frameElement;
   if (fe){
@@ -429,6 +504,3 @@ async function doLogin(){
 </script>
 </body>
 </html>
-"""
-
-components.html(html, height=10, scrolling=False)
