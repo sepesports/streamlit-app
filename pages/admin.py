@@ -426,10 +426,14 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
       <div class="title">¡BIENVENIDO!</div>
 
       <div id="lblUser" class="label" style="top:22%;">Usuario:</div>
-      <input id="inUser" class="field" style="top:28%;" autocomplete="username"/>
+      <input id="inUser" class="field" style="top:28%;" 
+             autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" 
+             placeholder="Usuario"/>
 
       <div id="lblPass" class="label" style="top:42%;">Contraseña:</div>
-      <input id="inPass" class="field" style="top:48%;" type="password" autocomplete="current-password"/>
+      <input id="inPass" class="field" style="top:48%;" type="password" 
+             autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" 
+             placeholder="Contraseña"/>
 
       <div id="btnLogin" class="btn" style="top:67%;" onclick="doLogin()">Login</div>
 
@@ -477,12 +481,10 @@ const btn = document.getElementById("fullscreenToggleBtn");
 
 function toggleFullscreen() {
   if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
-    // Entrar en fullscreen
-    const elem = document.documentElement; // Usamos el html para que ocupe toda la pantalla
+    const elem = document.documentElement;
     const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
     if (requestMethod) {
       requestMethod.call(elem).then(() => {
-        // Aplicamos la clase CSS para expandir el contenido interno
         stage.classList.add("fullscreen-mode");
         btn.textContent = "✕";
         btn.style.fontSize = "26px";
@@ -491,7 +493,6 @@ function toggleFullscreen() {
       });
     }
   } else {
-    // Salir de fullscreen
     const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
     if (exitMethod) {
       exitMethod.call(document).then(() => {
@@ -505,7 +506,6 @@ function toggleFullscreen() {
   }
 }
 
-// Escuchar cambios en el estado fullscreen (por si el usuario sale con gesto del sistema)
 function onFullscreenChange() {
   const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
   if (isFullscreen) {
@@ -550,5 +550,4 @@ if (btn) {
 </html>
 """
 
-# Altura suficiente para que el contenido fijo se vea
 components.html(html, height=1000, scrolling=False)
