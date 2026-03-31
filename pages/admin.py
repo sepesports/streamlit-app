@@ -54,10 +54,10 @@ html = """
   --linkRegTopDesktop: 78%;
   --linkRegLeftDesktop: 68%;
 
-  --labelSizeDesktop: 22px;
-  --inputSizeDesktop: 22px;
-  --btnTextSizeDesktop: 22px;
-  --linkSizeDesktop: 22px;
+  --labelSizeDesktop: 22px; /* 14px */
+  --inputSizeDesktop: 22px; /* 14px */
+  --btnTextSizeDesktop: 22px; /* 14px */
+  --linkSizeDesktop: 22px; /* 13px estoy aqui */
 
   /* =========================================================
      CONTROLES MÓVIL
@@ -72,20 +72,20 @@ html = """
   --titleXMobile: 0px;       /* mover título izq/der móvil (px) */
 
   --lblUserTopMobile: 22%;
-  --inUserTopMobile: 28%;
-  --lblPassTopMobile: 42%;
-  --inPassTopMobile: 48%;
-  --btnTopMobile: 65%;
+  --inUserTopMobile: 28%;     /* 28 */
+  --lblPassTopMobile: 42%;  /* 42 */
+  --inPassTopMobile: 48%;    /* 48 */
+  --btnTopMobile: 65%;     /* 67%*/
 
-  --linkPolTopMobile: 78%;
-  --linkPolLeftMobile: 20%;
+  --linkPolTopMobile: 78%; /* 78 */
+  --linkPolLeftMobile: 20%; /* 20 */
   --linkRegTopMobile: 78%;
-  --linkRegLeftMobile: 68%;
+  --linkRegLeftMobile: 68%; /* 68 */
 
-  --labelSizeMobile: 16px;
-  --inputSizeMobile: 16px;
-  --btnTextSizeMobile: 18px;
-  --linkSizeMobile: 15px;
+  --labelSizeMobile: 16px;    /* 16 */
+  --inputSizeMobile: 16px;    /* 16 */
+  --btnTextSizeMobile: 18px; /* 14 */
+  --linkSizeMobile: 15px;  /* 13*/
 }
 
 /* RESET */
@@ -223,39 +223,39 @@ html, body{
 /* INPUTS */
 input.field{
   position:absolute;
-  left:22%;
-  right:22%;
-  height:10%;
+  left:22%; /* 16 */
+  right:22%; /* 16 */
+  height:10%; /* 16 */
   border: 1px solid rgba(255,255,255,.55);
   border-radius: 999px;
   box-sizing:border-box;
   background: linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
-  padding: 0 16px;
+  padding: 0 16px; /* 14 */
   font:700 var(--inputSizeDesktop) Arial, sans-serif !important;
   color: rgba(30,40,55,.92);
   outline:none;
   box-shadow:
-    0 15px 18px rgba(0,0,0,.22),
+    0 15px 18px rgba(0,0,0,.22), /*0 10px */
     inset 0 1px 0 rgba(255,255,255,.55);
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
 }
 input.field::placeholder{ color: rgba(60,70,85,.55); }
 
-/* BOTÓN LOGIN */
+/* BOTÓN */
 .btn{
   position:absolute;
   left:32%;
   right:32%;
   height:10%;  
-  border: 1px solid rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.10);/* Estoy aqui 10*/
   border-radius: 999px;
   box-sizing:border-box;
   background:
-    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%),
+    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%), /* Estoy aqui transparent 80%*/
     linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
   box-shadow:
-    0 22px 26px rgba(0,0,0,.28),
+    0 22px 26px rgba(0,0,0,.28),/* Estoy aqui 0 18px */
     inset 0 1px 0 rgba(255,255,255,.22);
   display:flex;
   align-items:center;
@@ -447,6 +447,7 @@ async function doLogin(){
     const j = await r.json();
 
     if (j && j.ok === true){
+      // ✅ Pasamos usuario, rol y DNI a la interfaz principal
       const rol = (j.rol || "").toString();
       const dni = (j.dni || "").toString();
       window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol) + "&dni=" + encodeURIComponent(dni);
@@ -479,7 +480,6 @@ async function doLogin(){
   }
 })();
 
-// Asegurar que el iframe (Streamlit) ocupe toda la pantalla
 (function(){
   var fe = window.frameElement;
   if (fe){
