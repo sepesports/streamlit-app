@@ -28,13 +28,13 @@ html = """
   /* =========================================================
      PALETA (AZUL base #040e31) -> ajusta tonos globales aquí
      ========================================================= */
-  --baseBlue: #040e31;            /* BASE requerida */
-  --bgTop:  #0a1a55;              /* superior (más claro) */
-  --bgMid:  #061240;              /* medio */
-  --bgDeep: #02071c;              /* inferior (más oscuro) */
+  --baseBlue: #040e31;
+  --bgTop:  #0a1a55;
+  --bgMid:  #061240;
+  --bgDeep: #02071c;
 
-  --overlay1: rgba(40, 120, 255, .16); /* corte diagonal claro */
-  --overlay2: rgba(0,  10,  40, .62);  /* corte diagonal oscuro */
+  --overlay1: rgba(40, 120, 255, .16);
+  --overlay2: rgba(0,  10,  40, .62);
 
   --ink: rgba(255,255,255,.92);
   --muted: rgba(255,255,255,.62);
@@ -49,9 +49,7 @@ html = """
   --shadow2: 0 10px 22px rgba(0,0,0,.40);
   --blur: 14px;
 
-  /* =========================================================
-     CONTROLES DESKTOP (pantalla completa)
-     ========================================================= */
+  /* DESKTOP */
   --logoWDesktop: 250px;
   --logoTopDesktop: 0.0%;
   --logoXDesktop: 0px;
@@ -76,9 +74,7 @@ html = """
   --btnTextSizeDesktop: 22px;
   --linkSizeDesktop: 22px;
 
-  /* =========================================================
-     CONTROLES MÓVIL
-     ========================================================= */
+  /* MÓVIL */
   --logoWMobile: 150px;
   --logoTopMobile: 6%;
   --logoXMobile: 0px;
@@ -340,8 +336,11 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
   }
 }
 
-/* ================== MODO FULLSCREEN (ACTIVO) ================== */
-#stage.fullscreen-mode #plan {
+/* ================== MODO FULLSCREEN (CSS auxiliar) ================== */
+/* Esta clase se aplica cuando el fullscreen está activo (por API) */
+html:fullscreen #stage.fullscreen-mode #plan,
+html:-webkit-full-screen #stage.fullscreen-mode #plan,
+html:-moz-full-screen #stage.fullscreen-mode #plan {
   left: 0;
   right: 0;
   top: 0;
@@ -349,7 +348,9 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
   border-radius: 0;
   box-shadow: none;
 }
-#stage.fullscreen-mode #frame {
+html:fullscreen #stage.fullscreen-mode #frame,
+html:-webkit-full-screen #stage.fullscreen-mode #frame,
+html:-moz-full-screen #stage.fullscreen-mode #frame {
   left: 0;
   right: 0;
   top: 0;
@@ -470,26 +471,67 @@ async function doLogin(){
   }
 }
 
-// Toggle para el modo fullscreen móvil
-(function(){
-  const btn = document.getElementById("fullscreenToggleBtn");
-  const stage = document.getElementById("stage");
+// ================== FULLSCREEN API REAL ==================
+const stage = document.getElementById("stage");
+const btn = document.getElementById("fullscreenToggleBtn");
 
-  if(btn && stage){
-    btn.addEventListener("click", function(e){
-      e.preventDefault();
-      stage.classList.toggle("fullscreen-mode");
-      if(stage.classList.contains("fullscreen-mode")){
+function toggleFullscreen() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+    // Entrar en fullscreen
+    const elem = document.documentElement; // Usamos el html para que ocupe toda la pantalla
+    const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
+    if (requestMethod) {
+      requestMethod.call(elem).then(() => {
+        // Aplicamos la clase CSS para expandir el contenido interno
+        stage.classList.add("fullscreen-mode");
         btn.textContent = "✕";
         btn.style.fontSize = "26px";
-      } else {
+      }).catch(err => {
+        console.log("Error al entrar en fullscreen:", err);
+      });
+    }
+  } else {
+    // Salir de fullscreen
+    const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+    if (exitMethod) {
+      exitMethod.call(document).then(() => {
+        stage.classList.remove("fullscreen-mode");
         btn.textContent = "⤢";
         btn.style.fontSize = "28px";
-      }
-    });
+      }).catch(err => {
+        console.log("Error al salir de fullscreen:", err);
+      });
+    }
   }
-})();
+}
 
+// Escuchar cambios en el estado fullscreen (por si el usuario sale con gesto del sistema)
+function onFullscreenChange() {
+  const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  if (isFullscreen) {
+    stage.classList.add("fullscreen-mode");
+    btn.textContent = "✕";
+    btn.style.fontSize = "26px";
+  } else {
+    stage.classList.remove("fullscreen-mode");
+    btn.textContent = "⤢";
+    btn.style.fontSize = "28px";
+  }
+}
+
+document.addEventListener("fullscreenchange", onFullscreenChange);
+document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+document.addEventListener("mozfullscreenchange", onFullscreenChange);
+document.addEventListener("MSFullscreenChange", onFullscreenChange);
+
+if (btn) {
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    toggleFullscreen();
+  });
+}
+
+// Asegurar que el iframe (Streamlit) ocupe toda la pantalla
 (function(){
   var fe = window.frameElement;
   if (fe){
@@ -508,5 +550,5 @@ async function doLogin(){
 </html>
 """
 
-# CAMBIO CLAVE: altura suficiente para que el contenido fijo se vea
+# Altura suficiente para que el contenido fijo se vea
 components.html(html, height=1000, scrolling=False)
