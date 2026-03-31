@@ -1,3 +1,21 @@
+# pages/admin.py
+import streamlit as st
+import streamlit.components.v1 as components
+
+st.set_page_config(layout="wide")
+
+st.markdown(
+    """
+    <style>
+      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
+      section.main > div{padding:0 !important;margin:0 !important;}
+      header, footer{display:none !important;}
+      [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 html = """
 <!doctype html>
 <html>
@@ -33,15 +51,14 @@ html = """
 
   /* =========================================================
      CONTROLES DESKTOP (pantalla completa)
-     Cambia AQUÍ posición/tamaño para desktop
      ========================================================= */
-  --logoWDesktop: 250px;     /* tamaño logo desktop */
-  --logoTopDesktop: 0.0%;    /* subir/bajar logo desktop */
-  --logoXDesktop: 0px;       /* mover logo izq/der desktop (px) */
+  --logoWDesktop: 250px;
+  --logoTopDesktop: 0.0%;
+  --logoXDesktop: 0px;
 
-  --titleTopDesktop: 20%;    /* subir/bajar título desktop */
-  --titleSizeDesktop: 22px;  /* tamaño título desktop */ 
-  --titleXDesktop: 0px;      /* mover título izq/der desktop (px) */
+  --titleTopDesktop: 20%;
+  --titleSizeDesktop: 22px;
+  --titleXDesktop: 0px;
 
   --lblUserTopDesktop: 22%;
   --inUserTopDesktop: 28%;
@@ -54,38 +71,37 @@ html = """
   --linkRegTopDesktop: 78%;
   --linkRegLeftDesktop: 68%;
 
-  --labelSizeDesktop: 22px; /* 14px */
-  --inputSizeDesktop: 22px; /* 14px */
-  --btnTextSizeDesktop: 22px; /* 14px */
-  --linkSizeDesktop: 22px; /* 13px estoy aqui */
+  --labelSizeDesktop: 22px;
+  --inputSizeDesktop: 22px;
+  --btnTextSizeDesktop: 22px;
+  --linkSizeDesktop: 22px;
 
   /* =========================================================
      CONTROLES MÓVIL
-     Cambia AQUÍ posición/tamaño para móvil
      ========================================================= */
-  --logoWMobile: 150px;      /* tamaño logo móvil */
-  --logoTopMobile: 6%;       /* subir/bajar logo móvil */
-  --logoXMobile: 0px;        /* mover logo izq/der móvil (px) */
+  --logoWMobile: 150px;
+  --logoTopMobile: 6%;
+  --logoXMobile: 0px;
 
-  --titleTopMobile: 20%;     /* subir/bajar título móvil */
-  --titleSizeMobile: 18px;   /* tamaño título móvil */
-  --titleXMobile: 0px;       /* mover título izq/der móvil (px) */
+  --titleTopMobile: 20%;
+  --titleSizeMobile: 18px;
+  --titleXMobile: 0px;
 
   --lblUserTopMobile: 22%;
-  --inUserTopMobile: 28%;     /* 28 */
-  --lblPassTopMobile: 42%;  /* 42 */
-  --inPassTopMobile: 48%;    /* 48 */
-  --btnTopMobile: 65%;     /* 67%*/
+  --inUserTopMobile: 28%;
+  --lblPassTopMobile: 42%;
+  --inPassTopMobile: 48%;
+  --btnTopMobile: 65%;
 
-  --linkPolTopMobile: 78%; /* 78 */
-  --linkPolLeftMobile: 20%; /* 20 */
+  --linkPolTopMobile: 78%;
+  --linkPolLeftMobile: 20%;
   --linkRegTopMobile: 78%;
-  --linkRegLeftMobile: 68%; /* 68 */
+  --linkRegLeftMobile: 68%;
 
-  --labelSizeMobile: 16px;    /* 16 */
-  --inputSizeMobile: 16px;    /* 16 */
-  --btnTextSizeMobile: 18px; /* 14 */
-  --linkSizeMobile: 15px;  /* 13*/
+  --labelSizeMobile: 16px;
+  --inputSizeMobile: 16px;
+  --btnTextSizeMobile: 18px;
+  --linkSizeMobile: 15px;
 }
 
 /* RESET */
@@ -180,9 +196,7 @@ html, body{
   bottom:6%;
 }
 
-/* =========================================================
-   LOGO (DESKTOP por defecto)
-   ========================================================= */
+/* LOGO */
 .logo{
   position:absolute;
   left:50%;
@@ -195,9 +209,7 @@ html, body{
   filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
 }
 
-/* =========================================================
-   TÍTULO (DESKTOP por defecto)
-   ========================================================= */
+/* TÍTULO */
 .title{
   position:absolute;
   left:0; right:0;
@@ -223,39 +235,39 @@ html, body{
 /* INPUTS */
 input.field{
   position:absolute;
-  left:22%; /* 16 */
-  right:22%; /* 16 */
-  height:10%; /* 16 */
+  left:22%;
+  right:22%;
+  height:10%;
   border: 1px solid rgba(255,255,255,.55);
   border-radius: 999px;
   box-sizing:border-box;
   background: linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
-  padding: 0 16px; /* 14 */
+  padding: 0 16px;
   font:700 var(--inputSizeDesktop) Arial, sans-serif !important;
   color: rgba(30,40,55,.92);
   outline:none;
   box-shadow:
-    0 15px 18px rgba(0,0,0,.22), /*0 10px */
+    0 15px 18px rgba(0,0,0,.22),
     inset 0 1px 0 rgba(255,255,255,.55);
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
 }
 input.field::placeholder{ color: rgba(60,70,85,.55); }
 
-/* BOTÓN */
+/* BOTÓN LOGIN */
 .btn{
   position:absolute;
   left:32%;
   right:32%;
   height:10%;  
-  border: 1px solid rgba(255,255,255,.10);/* Estoy aqui 10*/
+  border: 1px solid rgba(255,255,255,.10);
   border-radius: 999px;
   box-sizing:border-box;
   background:
-    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%), /* Estoy aqui transparent 80%*/
+    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%),
     linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
   box-shadow:
-    0 22px 26px rgba(0,0,0,.28),/* Estoy aqui 0 18px */
+    0 22px 26px rgba(0,0,0,.28),
     inset 0 1px 0 rgba(255,255,255,.22);
   display:flex;
   align-items:center;
@@ -447,7 +459,6 @@ async function doLogin(){
     const j = await r.json();
 
     if (j && j.ok === true){
-      // ✅ Pasamos usuario, rol y DNI a la interfaz principal
       const rol = (j.rol || "").toString();
       const dni = (j.dni || "").toString();
       window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol) + "&dni=" + encodeURIComponent(dni);
@@ -468,9 +479,8 @@ async function doLogin(){
     btn.addEventListener("click", function(e){
       e.preventDefault();
       stage.classList.toggle("fullscreen-mode");
-      // Cambiar el ícono del botón según el estado (opcional)
       if(stage.classList.contains("fullscreen-mode")){
-        btn.textContent = "✕";   // icono de cerrar
+        btn.textContent = "✕";
         btn.style.fontSize = "26px";
       } else {
         btn.textContent = "⤢";
@@ -497,3 +507,6 @@ async function doLogin(){
 </body>
 </html>
 """
+
+# CAMBIO CLAVE: altura suficiente para que el contenido fijo se vea
+components.html(html, height=1000, scrolling=False)
