@@ -397,22 +397,28 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
       <img class="logo" src="https://files.catbox.moe/056m6v.jpg" alt="Logo"/>
       <div class="title">¡BIENVENIDO!</div>
 
-      <div id="lblUser" class="label" style="top:22%;">Usuario:</div>
-      <input id="inUser" class="field" style="top:28%;" 
-             autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" 
-             placeholder="Usuario"/>
+      <form autocomplete="off" style="margin:0; padding:0; position:relative; height:100%; width:100%;">
+        <div id="lblUser" class="label" style="top:22%;">Usuario:</div>
+        <input id="inUser" class="field" style="top:28%;" 
+               autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" 
+               placeholder="Usuario"/>
 
-      <div id="lblPass" class="label" style="top:42%;">Contraseña:</div>
-      <!-- Campo de contraseña con id neutro y sin type="password" -->
-      <input id="txtPwd" class="field" style="top:48%; -webkit-text-security: disc; text-security: disc;" 
-             type="text" 
-             autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" 
-             placeholder="Contraseña"/>
+        <div id="lblPass" class="label" style="top:42%;">Contraseña:</div>
+        <!-- Campo de contraseña con todas las medidas anti-QuickType -->
+        <input id="txtPwd" class="field" style="top:48%; -webkit-text-security: disc; text-security: disc;" 
+               type="text" 
+               autocomplete="new-password" 
+               autocapitalize="off" 
+               autocorrect="off" 
+               spellcheck="false" 
+               inputmode="text"
+               placeholder="Contraseña"/>
 
-      <div id="btnLogin" class="btn" style="top:67%;" onclick="doLogin()">Login</div>
+        <div id="btnLogin" class="btn" style="top:67%;" onclick="doLogin()">Login</div>
 
-      <div id="linkPol" class="link" style="top:78%; left:20%;">Politicas:</div>
-      <div id="linkReg" class="link" style="top:78%; left:68%;"><a href="/altas_registro" style="color:inherit; text-decoration:none;">Registrarse:</a></div>
+        <div id="linkPol" class="link" style="top:78%; left:20%;">Politicas:</div>
+        <div id="linkReg" class="link" style="top:78%; left:68%;"><a href="/altas_registro" style="color:inherit; text-decoration:none;">Registrarse:</a></div>
+      </form>
     </div>
 
     <div id="hud"></div>
@@ -424,7 +430,7 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
 <script>
 async function doLogin(){
   const u = (document.getElementById("inUser").value || "").trim();
-  const p = (document.getElementById("txtPwd").value || "").trim();  // ID cambiado
+  const p = (document.getElementById("txtPwd").value || "").trim();
 
   try{
     const r = await fetch("https://camilo27.pythonanywhere.com/api/auth", {
