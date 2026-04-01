@@ -22,12 +22,9 @@ html = """
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no"/>
 <style>
 :root{
-  /* =========================================================
-     PALETA (AZUL base #040e31) -> ajusta tonos globales aquí
-     ========================================================= */
   --baseBlue: #040e31;
   --bgTop:  #0a1a55;
   --bgMid:  #061240;
@@ -49,7 +46,6 @@ html = """
   --shadow2: 0 10px 22px rgba(0,0,0,.40);
   --blur: 14px;
 
-  /* DESKTOP */
   --logoWDesktop: 250px;
   --logoTopDesktop: 0.0%;
   --logoXDesktop: 0px;
@@ -74,7 +70,6 @@ html = """
   --btnTextSizeDesktop: 22px;
   --linkSizeDesktop: 22px;
 
-  /* MÓVIL */
   --logoWMobile: 150px;
   --logoTopMobile: 6%;
   --logoXMobile: 0px;
@@ -100,7 +95,6 @@ html = """
   --linkSizeMobile: 15px;
 }
 
-/* RESET */
 *{box-sizing:border-box}
 html, body{
   margin:0;
@@ -111,7 +105,6 @@ html, body{
   background: var(--baseBlue);
 }
 
-/* FONDO EXTERIOR */
 #stage{
   position:fixed;
   inset:0;
@@ -125,7 +118,6 @@ html, body{
   transition: all 0.2s ease;
 }
 
-/* PANEL PRINCIPAL */
 #plan{
   position:absolute;
   left:10px; right:10px;
@@ -139,7 +131,6 @@ html, body{
   transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
 
-/* CORTE DIAGONAL */
 #plan::before{
   content:"";
   position:absolute;
@@ -156,7 +147,6 @@ html, body{
   pointer-events:none;
 }
 
-/* VIÑETA */
 #plan::after{
   content:"";
   position:absolute;
@@ -168,7 +158,6 @@ html, body{
   pointer-events:none;
 }
 
-/* MARCO */
 #frame{
   position:absolute;
   left:9px; right:9px;
@@ -183,7 +172,6 @@ html, body{
   transition: all 0.3s ease;
 }
 
-/* CONTENEDOR */
 #card{
   position:absolute;
   left:6%;
@@ -192,7 +180,6 @@ html, body{
   bottom:6%;
 }
 
-/* LOGO */
 .logo{
   position:absolute;
   left:50%;
@@ -205,7 +192,6 @@ html, body{
   filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
 }
 
-/* TÍTULO */
 .title{
   position:absolute;
   left:0; right:0;
@@ -218,7 +204,6 @@ html, body{
   transform: translateX(var(--titleXDesktop)) !important;
 }
 
-/* LABELS */
 .label{
   position:absolute;
   left:18%;
@@ -228,7 +213,6 @@ html, body{
   text-shadow: 0 6px 14px rgba(0,0,0,.30);
 }
 
-/* INPUTS */
 input.field{
   position:absolute;
   left:22%;
@@ -250,7 +234,6 @@ input.field{
 }
 input.field::placeholder{ color: rgba(60,70,85,.55); }
 
-/* BOTÓN LOGIN */
 .btn{
   position:absolute;
   left:32%;
@@ -276,7 +259,6 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
 }
 .btn:active{ transform: scale(.985); filter: brightness(.98); }
 
-/* LINKS */
 .link{
   position:absolute;
   font:700 var(--linkSizeDesktop) Arial, sans-serif !important;
@@ -286,7 +268,6 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
 }
 .link:hover{ color: rgba(255,255,255,.85); }
 
-/* Overlay sutil */
 #hud{
   position:absolute; inset:0;
   pointer-events:none;
@@ -295,7 +276,6 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
     linear-gradient(180deg, transparent 62%, rgba(0,0,0,.30) 100%);
 }
 
-/* ================== BOTÓN FULLSCREEN MÓVIL ================== */
 .fullscreen-toggle {
   position: fixed;
   bottom: 20px;
@@ -323,21 +303,17 @@ input.field::placeholder{ color: rgba(60,70,85,.55); }
   transform: scale(0.92);
   background: rgba(0,0,0,0.8);
 }
-/* Oculto en desktop */
 @media (min-width: 769px) {
   .fullscreen-toggle {
     display: none;
   }
 }
-/* Ajuste para móvil: solo visible */
 @media (max-width: 768px) {
   .fullscreen-toggle {
     display: flex;
   }
 }
 
-/* ================== MODO FULLSCREEN (CSS auxiliar) ================== */
-/* Esta clase se aplica cuando el fullscreen está activo (por API) */
 html:fullscreen #stage.fullscreen-mode #plan,
 html:-webkit-full-screen #stage.fullscreen-mode #plan,
 html:-moz-full-screen #stage.fullscreen-mode #plan {
@@ -358,7 +334,6 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   border-radius: 0;
 }
 
-/* MÓVIL */
 @media (max-width: 768px){
   #card{ left:8%; right:8%; top:6%; bottom:8%; }
 
@@ -399,7 +374,7 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   #lblUser{ top: var(--lblUserTopMobile) !important; }
   #inUser { top: var(--inUserTopMobile) !important; }
   #lblPass{ top: var(--lblPassTopMobile) !important; }
-  #inPass { top: var(--inPassTopMobile) !important; }
+  #txtPwd { top: var(--inPassTopMobile) !important; }
   #btnLogin{ top: var(--btnTopMobile) !important; }
 
   #linkPol{
@@ -419,10 +394,7 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
     <div id="frame"></div>
 
     <div id="card">
-      <!-- LOGO -->
       <img class="logo" src="https://files.catbox.moe/056m6v.jpg" alt="Logo"/>
-
-      <!-- TÍTULO -->
       <div class="title">¡BIENVENIDO!</div>
 
       <div id="lblUser" class="label" style="top:22%;">Usuario:</div>
@@ -431,8 +403,8 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
              placeholder="Usuario"/>
 
       <div id="lblPass" class="label" style="top:42%;">Contraseña:</div>
-      <!-- CAMBIO CLAVE: campo de texto con seguridad visual, sin ser password nativo -->
-      <input id="inPass" class="field" style="top:48%; -webkit-text-security: disc; text-security: disc;" 
+      <!-- Campo de contraseña con id neutro y sin type="password" -->
+      <input id="txtPwd" class="field" style="top:48%; -webkit-text-security: disc; text-security: disc;" 
              type="text" 
              autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" 
              placeholder="Contraseña"/>
@@ -440,7 +412,6 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
       <div id="btnLogin" class="btn" style="top:67%;" onclick="doLogin()">Login</div>
 
       <div id="linkPol" class="link" style="top:78%; left:20%;">Politicas:</div>
-      <!-- Enlace a la página de registro (altas_registro.py) -->
       <div id="linkReg" class="link" style="top:78%; left:68%;"><a href="/altas_registro" style="color:inherit; text-decoration:none;">Registrarse:</a></div>
     </div>
 
@@ -448,13 +419,12 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   </div>
 </div>
 
-<!-- Botón flotante para activar/desactivar fullscreen en móviles -->
 <div id="fullscreenToggleBtn" class="fullscreen-toggle">⤢</div>
 
 <script>
 async function doLogin(){
   const u = (document.getElementById("inUser").value || "").trim();
-  const p = (document.getElementById("inPass").value || "").trim();
+  const p = (document.getElementById("txtPwd").value || "").trim();  // ID cambiado
 
   try{
     const r = await fetch("https://camilo27.pythonanywhere.com/api/auth", {
@@ -477,7 +447,6 @@ async function doLogin(){
   }
 }
 
-// ================== FULLSCREEN API REAL ==================
 const stage = document.getElementById("stage");
 const btn = document.getElementById("fullscreenToggleBtn");
 
@@ -533,7 +502,6 @@ if (btn) {
   });
 }
 
-// Asegurar que el iframe (Streamlit) ocupe toda la pantalla
 (function(){
   var fe = window.frameElement;
   if (fe){
