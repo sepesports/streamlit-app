@@ -4,8 +4,28 @@ import streamlit.components.v1 as components
 
 # ==============================================================================
 # PLANTILLA "CALENDARIO" — TEMA HUD NARANJA
-# Versión final: con estados personalizados, checkboxes y modal.
+# Versión final: con autenticación, filtro por DNI y carga corregida.
 # ==============================================================================
+
+query_params = st.query_params
+AUTH_USER = query_params.get("usuario") or query_params.get("user") or ""
+AUTH_ROLE = query_params.get("rol") or query_params.get("role") or ""
+AUTH_DNI = query_params.get("dni") or ""
+
+NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
+IS_SOCORRISTA = NORMALIZED_ROLE == "socorrista"
+IS_ADMIN_OR_DIRECTIVO = NORMALIZED_ROLE in ["administrador", "directivo"]
+
+if not AUTH_USER or not AUTH_ROLE:
+    st.markdown(
+        """
+        <script>
+          window.location.href="/admin";
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.stop()
 
 PAD_X_PX = 10
 PAD_TOP_PX = 10
@@ -52,6 +72,9 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+def escape_js(s):
+    return str(s).replace("\\", "\\\\").replace('"', '\\"').replace("'", "\\'")
 
 html = r"""
 <!doctype html>
@@ -736,7 +759,7 @@ html = r"""
             <select id="yearSelect"></select>
             <span class="caret">▾</span>
           </div>
-          <div class="select selectPill">
+          <div class="select selectPill" id="socorristaSelectContainer">
             <select id="socorristaSelect">
               <option value="">Todos los socorristas</option>
             </select>
@@ -756,6 +779,7 @@ html = r"""
           <h3 class="agendaTitle">Agenda del día</h3>
           <div class="meta agendaMeta" id="agendaMeta">
             <div><b>Fecha:</b> <span id="fechaDisplay">—</span></div>
+            <div><b>Usuario:</b> <span id="userDisplay">__AUTH_USER_HTML__</span> (<span id="roleDisplay">__AUTH_ROLE_HTML__</span>)</div>
           </div>
           <div id="table" class="tableCard">
             <!-- Cabecera para móvil -->
@@ -818,8 +842,12 @@ html = r"""
   const API_BASE = "https://camilo27.pythonanywhere.com";
   const ENDPOINT_MALLAS = API_BASE + "/api/mallas";
 
-  // Usuario conectado (hardcodeado para demo)
-  const CURRENT_USER = "Bilal";
+  const CURRENT_USER = "__AUTH_USER_JS__";
+  const CURRENT_ROLE = "__AUTH_ROLE_LOWER_JS__";
+  const CURRENT_DNI = "__AUTH_DNI_JS__";
+
+  const IS_SOCORRISTA = CURRENT_ROLE === "socorrista";
+  const IS_ADMIN_OR_DIRECTIVO = CURRENT_ROLE === "administrador" || CURRENT_ROLE === "directivo";
 
   let currentDate = new Date();
   currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
@@ -838,6 +866,7 @@ html = r"""
   // Para manejo de selección
   let selectedRows = new Set(); // almacena índices de filas seleccionadas (frente al array filtrado actual)
   let currentFilteredRows = [];  // se actualiza en cada updateAgenda
+  let DNI_COLUMN_NAME = null;
 
   function pad2(n){ return String(n).padStart(2,'0'); }
 
@@ -856,13 +885,26 @@ html = r"""
   function parseSheetDateToKey(fechaStr){
     const s = (fechaStr || "").trim();
     if(!s) return "";
-    if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){
-      const [dd,mm,yyyy] = s.split("/");
-      return `${yyyy}-${mm}-${dd}`;
+
+    const parts = s.split("/");
+    if (parts.length === 3) {
+      const dd = parts[0].padStart(2, "0");
+      const mm = parts[1].padStart(2, "0");
+      const yyyy = parts[2];
+      if (/^\d{4}$/.test(yyyy) && Number(mm) >= 1 && Number(mm) <= 12 && Number(dd) >= 1 && Number(dd) <= 31) {
+        return `${yyyy}-${mm}-${dd}`;
+      }
     }
+
     if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
       return s;
     }
+
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) {
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    }
+
     return "";
   }
 
@@ -871,6 +913,18 @@ html = r"""
       if(row && Object.prototype.hasOwnProperty.call(row, k)) return row[k];
     }
     return "";
+  }
+
+  function detectDNIColumn(row) {
+    const possibleNames = [
+      "DNI", "dni", "Cédula", "cedula", "Documento", "documento",
+      "Cedula de ciudadania", "Numero documento", "Número documento",
+      "Identificación", "identificacion", "ID", "id"
+    ];
+    for (const name of possibleNames) {
+      if (row && Object.prototype.hasOwnProperty.call(row, name)) return name;
+    }
+    return null;
   }
 
   // Normalizador original (para fallback)
@@ -1000,14 +1054,27 @@ html = r"""
   function getFilteredRows(){
     const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
     const keySel = formatDateKey(selectedDate);
+
     return ALL_ROWS.filter(r => {
       const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
       if(!fechaKey) return false;
       if(fechaKey < formatDateKey(currentDate)) return false;
-      if(soc){
+
+      if (IS_SOCORRISTA && CURRENT_DNI) {
+        let rowDNI = "";
+        if (DNI_COLUMN_NAME) {
+          rowDNI = String(r[DNI_COLUMN_NAME] || "").trim();
+        } else {
+          rowDNI = String(getField(r, ["DNI", "dni", "Cédula", "cedula", "Documento", "documento", "Cedula de ciudadania", "Numero documento", "Número documento", "Identificación", "identificacion", "ID", "id"])).trim();
+        }
+        if (rowDNI.toLowerCase() !== CURRENT_DNI.toLowerCase()) return false;
+      }
+
+      if (!IS_SOCORRISTA && soc) {
         const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
         if(rs !== soc) return false;
       }
+
       if(FILTER_MODE === "dia"){
         return fechaKey === keySel;
       }
@@ -1231,6 +1298,7 @@ html = r"""
 
   function fillSocorristaSelect(){
     const sel = document.getElementById("socorristaSelect");
+    if (!sel) return;
     sel.innerHTML = '<option value="">Todos los socorristas</option>';
     SOCORRISTAS.forEach(name => {
       const opt = document.createElement("option");
@@ -1244,14 +1312,25 @@ html = r"""
   function rebuildAvailability(){
     AVAILABLE_DATES = new Set();
     const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
+
     ALL_ROWS.forEach(r => {
       const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
       if(!fechaKey) return;
       if(fechaKey < formatDateKey(currentDate)) return;
-      if(soc){
+
+      if (IS_SOCORRISTA && CURRENT_DNI) {
+        let rowDNI = "";
+        if (DNI_COLUMN_NAME) {
+          rowDNI = String(r[DNI_COLUMN_NAME] || "").trim();
+        } else {
+          rowDNI = String(getField(r, ["DNI", "dni", "Cédula", "cedula", "Documento", "documento", "Cedula de ciudadania", "Numero documento", "Número documento", "Identificación", "identificacion", "ID", "id"])).trim();
+        }
+        if (rowDNI.toLowerCase() !== CURRENT_DNI.toLowerCase()) return;
+      } else if (!IS_SOCORRISTA && soc) {
         const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
         if(rs !== soc) return;
       }
+
       AVAILABLE_DATES.add(fechaKey);
     });
   }
@@ -1263,13 +1342,34 @@ html = r"""
       if(!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
       if(!data || data.ok !== true || !Array.isArray(data.rows)) throw new Error("JSON inválido");
+
       ALL_ROWS = data.rows;
-      const setS = new Set();
-      ALL_ROWS.forEach(r => {
-        const s = String(getField(r, ["Socorrista","socorrista"])).trim();
-        if(s) setS.add(s);
-      });
-      SOCORRISTAS = Array.from(setS).sort((a,b)=>a.localeCompare(b, 'es', {sensitivity:'base'}));
+      DNI_COLUMN_NAME = ALL_ROWS.length ? detectDNIColumn(ALL_ROWS[0]) : null;
+
+      if (IS_SOCORRISTA) {
+        const setS = new Set();
+        ALL_ROWS.forEach(r => {
+          let rowDNI = "";
+          if (DNI_COLUMN_NAME) {
+            rowDNI = String(r[DNI_COLUMN_NAME] || "").trim();
+          } else {
+            rowDNI = String(getField(r, ["DNI", "dni", "Cédula", "cedula", "Documento", "documento", "Cedula de ciudadania", "Numero documento", "Número documento", "Identificación", "identificacion", "ID", "id"])).trim();
+          }
+          if (CURRENT_DNI && rowDNI.toLowerCase() === CURRENT_DNI.toLowerCase()) {
+            const s = String(getField(r, ["Socorrista","socorrista"])).trim();
+            if (s) setS.add(s);
+          }
+        });
+        SOCORRISTAS = Array.from(setS).sort((a,b)=>a.localeCompare(b, 'es', {sensitivity:'base'}));
+      } else {
+        const setS = new Set();
+        ALL_ROWS.forEach(r => {
+          const s = String(getField(r, ["Socorrista","socorrista"])).trim();
+          if(s) setS.add(s);
+        });
+        SOCORRISTAS = Array.from(setS).sort((a,b)=>a.localeCompare(b, 'es', {sensitivity:'base'}));
+      }
+
       fillSocorristaSelect();
       rebuildAvailability();
       setSyncBadge(true, "SYNC OK");
@@ -1279,9 +1379,11 @@ html = r"""
       ALL_ROWS = [];
       SOCORRISTAS = [];
       AVAILABLE_DATES = new Set();
+      DNI_COLUMN_NAME = null;
       setSyncBadge(false, "SYNC ERROR");
       renderCalendar(currentYear, currentMonth);
       updateAgenda();
+      console.error("Error loading mallas:", e);
     }
   }
 
@@ -1294,27 +1396,35 @@ html = r"""
   const novedadInput = document.getElementById('novedadInput');
 
   function showModal() {
-    modalOverlay.style.display = 'flex';
+    if (modalOverlay) modalOverlay.style.display = 'flex';
   }
 
   function hideModal() {
-    modalOverlay.style.display = 'none';
+    if (modalOverlay) modalOverlay.style.display = 'none';
   }
 
-  optNovedad.addEventListener('change', function(e) {
-    novedadInput.style.display = e.target.checked ? 'block' : 'none';
-  });
+  if (optNovedad) {
+    optNovedad.addEventListener('change', function(e) {
+      if (novedadInput) {
+        novedadInput.style.display = e.target.checked ? 'block' : 'none';
+      }
+    });
+  }
 
-  modalCancel.addEventListener('click', hideModal);
-  modalSend.addEventListener('click', function() {
-    hideModal();
-    // Por ahora solo cierra
-  });
+  if (modalCancel) modalCancel.addEventListener('click', hideModal);
+  if (modalSend) {
+    modalSend.addEventListener('click', function() {
+      hideModal();
+      // Por ahora solo cierra
+    });
+  }
 
   // Cerrar modal si se hace clic fuera del contenido
-  modalOverlay.addEventListener('click', function(e) {
-    if (e.target === modalOverlay) hideModal();
-  });
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', function(e) {
+      if (e.target === modalOverlay) hideModal();
+    });
+  }
 
   function init() {
     const yearSelect = document.getElementById('yearSelect');
@@ -1330,10 +1440,19 @@ html = r"""
     document.getElementById('prevMonth').addEventListener('click', () => changeMonth(-1));
     document.getElementById('nextMonth').addEventListener('click', () => changeMonth(1));
 
+    if (IS_SOCORRISTA) {
+      const socorristaContainer = document.getElementById('socorristaSelectContainer');
+      if (socorristaContainer) socorristaContainer.style.display = 'none';
+    }
+
     document.getElementById('applyFilters').addEventListener('click', () => {
       const newMonth = parseInt(document.getElementById('monthSelect').value);
       const newYear = parseInt(document.getElementById('yearSelect').value);
-      FILTER_SOCORRISTA = document.getElementById('socorristaSelect').value || "";
+      if (!IS_SOCORRISTA) {
+        FILTER_SOCORRISTA = document.getElementById('socorristaSelect').value || "";
+      } else {
+        FILTER_SOCORRISTA = "";
+      }
       FILTER_MODE = document.getElementById('modeSelect').value || "dia";
       currentMonth = newMonth;
       currentYear = newYear;
@@ -1352,15 +1471,20 @@ html = r"""
     });
 
     // Botones inferiores
-    document.getElementById('btnModificar').addEventListener('click', function() {
-      if (!this.disabled) {
-        showModal();
-      }
-    });
+    const btnModificar = document.getElementById('btnModificar');
+    if (btnModificar) {
+      btnModificar.addEventListener('click', function() {
+        if (!this.disabled) {
+          showModal();
+        }
+      });
+    }
 
     // Inicialmente deshabilitados
-    document.getElementById('btnAplicar').disabled = true;
-    document.getElementById('btnModificar').disabled = true;
+    const btnAplicar = document.getElementById('btnAplicar');
+    const btnModificarEl = document.getElementById('btnModificar');
+    if (btnAplicar) btnAplicar.disabled = true;
+    if (btnModificarEl) btnModificarEl.disabled = true;
 
     renderCalendar(currentYear, currentMonth);
     updateAgenda();
@@ -1375,7 +1499,12 @@ html = r"""
 </html>
 """
 
-html = (html.replace("__PADX__", str(PAD_X_PX))
+html = (html.replace("__AUTH_USER_HTML__", escape_js(AUTH_USER))
+        .replace("__AUTH_ROLE_HTML__", escape_js(AUTH_ROLE))
+        .replace("__AUTH_USER_JS__", escape_js(AUTH_USER))
+        .replace("__AUTH_ROLE_LOWER_JS__", escape_js(NORMALIZED_ROLE))
+        .replace("__AUTH_DNI_JS__", escape_js(AUTH_DNI))
+        .replace("__PADX__", str(PAD_X_PX))
         .replace("__PADTOP__", str(PAD_TOP_PX))
         .replace("__B__", str(BORDER_PX))
         .replace("__BC__", BORDER_COLOR)
