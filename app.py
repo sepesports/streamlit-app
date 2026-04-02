@@ -1,4 +1,5 @@
 # app.py
+import json
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -52,7 +53,7 @@ BTN_TEXTS = [
     "Incidencias y Comunicados",
     "Registro",
     "Gestión de\nHorarios",
-    "Chat"   # Nuevo botón
+    "Chat"
 ]
 
 FOOTER_H = 18
@@ -112,6 +113,25 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+
+def _dict_to_js_obj(d: dict) -> str:
+    parts = []
+    for k, v in d.items():
+        try:
+            ik = int(k)
+            fv = float(v)
+        except Exception:
+            continue
+        if fv <= 0:
+            continue
+        parts.append(f'"{ik}":{fv}')
+    return "{" + ",".join(parts) + "}"
+
+
+def _js_str(value) -> str:
+    return json.dumps("" if value is None else str(value), ensure_ascii=False)
+
 
 html = """
 <!doctype html>
@@ -475,10 +495,10 @@ html = """
       var BTN_TEXTS = __BTN_TEXTS__;
       var MIN_BTN_W_PX = __MIN_BTN_W_PX__;
       var MOBILE_MAX_W_PX = __MOBILE_MAX_W_PX__;
-      var LOGO_URL = "__LOGO_URL__";
-      var USER_NAME = "__USER_NAME__";
-      var USER_ROLE = "__USER_ROLE__";
-      var USER_DNI = "__USER_DNI__";
+      var LOGO_URL = __LOGO_URL__;
+      var USER_NAME = __USER_NAME__;
+      var USER_ROLE = __USER_ROLE__;
+      var USER_DNI = __USER_DNI__;
       var CAN_MANAGE_SCHEDULES = __CAN_MANAGE_SCHEDULES__;
       var CAN_REGISTER_USERS = __CAN_REGISTER_USERS__;
 
@@ -529,6 +549,34 @@ html = """
         } else {
           if (BTN_OVR_D && BTN_OVR_D[i] != null) return BTN_OVR_D[i];
           return null;
+        }
+      }
+
+      function buildAppParams(){
+        var params = new URLSearchParams();
+        params.set("auth", "ok");
+
+        if (USER_NAME && USER_NAME !== "Login") {
+          params.set("usuario", USER_NAME);
+        }
+
+        if (USER_ROLE) {
+          params.set("rol", USER_ROLE);
+        }
+
+        if (USER_DNI) {
+          params.set("dni", USER_DNI);
+        }
+
+        return params;
+      }
+
+      function goToPage(path){
+        try{
+          var params = buildAppParams();
+          window.top.location.href = path + "?" + params.toString();
+        }catch(e){
+          window.location.href = path + "?auth=ok";
         }
       }
 
@@ -586,36 +634,16 @@ html = """
 
           d.appendChild(sp);
 
-          // Horarios -> /calendario
           if (BTN_TEXTS[i] === "Horarios") {
             d.addEventListener("click", function(){
-              try{
-                var params = new URLSearchParams(window.location.search || "");
-                params.set("auth", "ok");
-                window.location.href = "/calendario?" + params.toString();
-              }catch(e){
-                window.location.href = "/calendario?auth=ok";
-              }
+              goToPage("/calendario");
             });
           }
 
-          // Registro -> /altas_registro solo si rol = Administrador
           if (BTN_TEXTS[i] === "Registro") {
             if (CAN_REGISTER_USERS) {
               d.addEventListener("click", function(){
-                try{
-                  var params = new URLSearchParams(window.location.search || "");
-                  params.set("auth", "ok");
-                  if (!params.get("rol") && USER_ROLE) {
-                    params.set("rol", USER_ROLE);
-                  }
-                  if (!params.get("dni") && USER_DNI) {
-                    params.set("dni", USER_DNI);
-                  }
-                  window.location.href = "/altas_registro?" + params.toString();
-                }catch(e){
-                  window.location.href = "/altas_registro?auth=ok";
-                }
+                goToPage("/altas_registro");
               });
             } else {
               d.classList.add("disabled");
@@ -624,23 +652,10 @@ html = """
             }
           }
 
-          // Gestión de Horarios -> /editar_horarios solo si rol = Administrador
           if (BTN_TEXTS[i] === "Gestión de\\nHorarios") {
             if (CAN_MANAGE_SCHEDULES) {
               d.addEventListener("click", function(){
-                try{
-                  var params = new URLSearchParams(window.location.search || "");
-                  params.set("auth", "ok");
-                  if (!params.get("rol") && USER_ROLE) {
-                    params.set("rol", USER_ROLE);
-                  }
-                  if (!params.get("dni") && USER_DNI) {
-                    params.set("dni", USER_DNI);
-                  }
-                  window.location.href = "/editar_horarios?" + params.toString();
-                }catch(e){
-                  window.location.href = "/editar_horarios?auth=ok";
-                }
+                goToPage("/editar_horarios");
               });
             } else {
               d.classList.add("disabled");
@@ -649,22 +664,9 @@ html = """
             }
           }
 
-          // Chat -> /chat_interfaz
           if (BTN_TEXTS[i] === "Chat") {
             d.addEventListener("click", function(){
-              try{
-                var params = new URLSearchParams(window.location.search || "");
-                params.set("auth", "ok");
-                if (!params.get("rol") && USER_ROLE) {
-                  params.set("rol", USER_ROLE);
-                }
-                if (!params.get("dni") && USER_DNI) {
-                  params.set("dni", USER_DNI);
-                }
-                window.location.href = "/chat_interfaz?" + params.toString();
-              }catch(e){
-                window.location.href = "/chat_interfaz?auth=ok";
-              }
+              goToPage("/chat_interfaz");
             });
           }
 
@@ -683,19 +685,6 @@ html = """
 </body>
 </html>
 """
-
-def _dict_to_js_obj(d: dict) -> str:
-    parts = []
-    for k, v in d.items():
-        try:
-            ik = int(k)
-            fv = float(v)
-        except Exception:
-            continue
-        if fv <= 0:
-            continue
-        parts.append(f'"{ik}":{fv}')
-    return "{" + ",".join(parts) + "}"
 
 html = (
     html.replace("__PADX__", str(PAD_X_PX))
@@ -723,13 +712,13 @@ html = (
         .replace("__FOOT_R__", str(FOOTER_RIGHT))
         .replace("__FOOT_H__", str(FOOTER_H))
         .replace("__FOOT_BOTTOM__", str(FOOTER_BOTTOM))
-        .replace("__BTN_TEXTS__", str(BTN_TEXTS).replace("'", '"'))
+        .replace("__BTN_TEXTS__", json.dumps(BTN_TEXTS, ensure_ascii=False))
         .replace("__MIN_BTN_W_PX__", str(MIN_BTN_W_PX))
         .replace("__MOBILE_MAX_W_PX__", str(MOBILE_MAX_W_PX))
         .replace("__LOGO_URL__", LOGO_URL)
-        .replace("__USER_NAME__", str(USER_NAME).replace('"', '\\"'))
-        .replace("__USER_ROLE__", str(USER_ROLE).replace('"', '\\"'))
-        .replace("__USER_DNI__", str(USER_DNI).replace('"', '\\"'))
+        .replace("__USER_NAME__", _js_str(USER_NAME))
+        .replace("__USER_ROLE__", _js_str(USER_ROLE))
+        .replace("__USER_DNI__", _js_str(USER_DNI))
         .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
         .replace("__CAN_REGISTER_USERS__", "true" if CAN_REGISTER_USERS else "false")
         .replace("__FOOTER_TEXT__", FOOTER_TEXT)
