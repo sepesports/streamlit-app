@@ -7,11 +7,64 @@ import streamlit.components.v1 as components
 # Versión final: con detección automática de columna DNI y depuración en consola
 # ==============================================================================
 
+st.set_page_config(layout="wide")
+
+def _clean_value(value):
+    if isinstance(value, list):
+        value = value[0] if value else ""
+    return str(value or "").strip()
+
+def _qp_value(*keys):
+    for key in keys:
+        value = _clean_value(st.query_params.get(key, ""))
+        if value:
+            return value
+    return ""
+
+def _session_value(*keys):
+    candidate_containers = [
+        st.session_state,
+        st.session_state.get("user_data", {}),
+        st.session_state.get("auth_data", {}),
+        st.session_state.get("usuario_data", {}),
+        st.session_state.get("perfil", {}),
+    ]
+
+    for container in candidate_containers:
+        if not isinstance(container, dict):
+            continue
+        for key in keys:
+            if key in container:
+                value = _clean_value(container.get(key, ""))
+                if value:
+                    return value
+    return ""
+
 # Obtener parámetros de autenticación
-query_params = st.query_params
-AUTH_USER = query_params.get("usuario") or query_params.get("user") or ""
-AUTH_ROLE = query_params.get("rol") or query_params.get("role") or ""
-AUTH_DNI = query_params.get("dni") or ""
+AUTH_USER = (
+    _qp_value("usuario", "user")
+    or _session_value("usuario", "user", "username", "correo", "email", "nombre")
+)
+AUTH_ROLE = (
+    _qp_value("rol", "role")
+    or _session_value("rol", "role", "tipo_rol", "Tipo_rol", "perfil")
+)
+AUTH_DNI = (
+    _qp_value("dni")
+    or _session_value("dni", "DNI", "documento", "Documento", "cedula", "Cédula")
+)
+
+if AUTH_USER:
+    st.session_state["usuario"] = AUTH_USER
+if AUTH_ROLE:
+    st.session_state["rol"] = AUTH_ROLE
+if AUTH_DNI:
+    st.session_state["dni"] = AUTH_DNI
+if AUTH_USER and AUTH_ROLE:
+    st.query_params["usuario"] = AUTH_USER
+    st.query_params["rol"] = AUTH_ROLE
+    if AUTH_DNI:
+        st.query_params["dni"] = AUTH_DNI
 
 # Normalizar rol
 NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
@@ -20,6 +73,7 @@ IS_ADMIN_OR_DIRECTIVO = NORMALIZED_ROLE in ["administrador", "directivo"]
 
 # Si no hay autenticación, redirigir
 if not AUTH_USER or not AUTH_ROLE:
+    st.error("No se encontró la sesión de usuario.")
     st.markdown(
         """
         <script>
@@ -63,14 +117,13 @@ DAY_CELL_GAP_PX = 6
 
 AGENDA_ROWS = 5
 
-st.set_page_config(layout="wide")
-
 st.markdown(
     """
     <style>
       .block-container{padding:0!important;margin:0!important;max-width:100%!important;}
       section.main > div{padding:0!important;margin:0!important;}
       header, footer{display:none!important;}
+      iframe{border:0!important;}
     </style>
     """,
     unsafe_allow_html=True,
@@ -78,7 +131,15 @@ st.markdown(
 
 # Escapar valores para JavaScript
 def escape_js(s):
-    return str(s).replace('"', '\\"').replace("'", "\\'")
+    return (
+        str(s)
+        .replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("'", "\\'")
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+    )
+
 
 html = r"""
 <!doctype html>
