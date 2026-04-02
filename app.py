@@ -1,7 +1,6 @@
 # app.py
 import streamlit as st
 import streamlit.components.v1 as components
-from urllib.parse import urlencode
 
 st.set_page_config(layout="wide")
 
@@ -53,7 +52,7 @@ BTN_TEXTS = [
     "Incidencias y Comunicados",
     "Registro",
     "Gestión de\nHorarios",
-    "Chat"
+    "Chat"   # Nuevo botón
 ]
 
 FOOTER_H = 18
@@ -113,49 +112,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-
-def _dict_to_js_obj(d: dict) -> str:
-    parts = []
-    for k, v in d.items():
-        try:
-            ik = int(k)
-            fv = float(v)
-        except Exception:
-            continue
-        if fv <= 0:
-            continue
-        parts.append(f'"{ik}":{fv}')
-    return "{" + ",".join(parts) + "}"
-
-def _js_escape(value) -> str:
-    return (
-        str(value)
-        .replace("\\", "\\\\")
-        .replace('"', '\\"')
-        .replace("\r", "\\r")
-        .replace("\n", "\\n")
-    )
-
-def _build_page_url(path: str) -> str:
-    params = {"auth": "ok"}
-
-    if USER_NAME:
-        params["usuario"] = USER_NAME
-        params["user"] = USER_NAME
-
-    if USER_ROLE:
-        params["rol"] = USER_ROLE
-        params["role"] = USER_ROLE
-
-    if USER_DNI:
-        params["dni"] = USER_DNI
-
-    return f"{path}?{urlencode(params)}"
-
-URL_CALENDARIO = _build_page_url("/calendario")
-URL_ALTAS_REGISTRO = _build_page_url("/altas_registro")
-URL_EDITAR_HORARIOS = _build_page_url("/editar_horarios")
-URL_CHAT = _build_page_url("/chat_interfaz")
 
 html = """
 <!doctype html>
@@ -403,7 +359,6 @@ html = """
       transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, filter .12s ease;
       cursor:pointer;
       user-select:none;
-      text-decoration:none;
     }
 
     .btn::before{
@@ -449,7 +404,6 @@ html = """
       line-height:1.05;
       white-space: pre-line;
       text-shadow: 0 1px 0 rgba(0,0,0,.25);
-      pointer-events:none;
     }
 
     #footer{
@@ -531,11 +485,6 @@ html = """
       var BTN_OVR_D = __BTN_OVR_D__;
       var BTN_OVR_M = __BTN_OVR_M__;
 
-      var URL_CALENDARIO = "__URL_CALENDARIO__";
-      var URL_ALTAS_REGISTRO = "__URL_ALTAS_REGISTRO__";
-      var URL_EDITAR_HORARIOS = "__URL_EDITAR_HORARIOS__";
-      var URL_CHAT = "__URL_CHAT__";
-
       var hdr = document.getElementById("hdr");
       hdr.innerHTML = "";
 
@@ -583,35 +532,6 @@ html = """
         }
       }
 
-      function createButtonElement(label, href, disabled, titleText){
-        var el;
-
-        if (href && !disabled){
-          el = document.createElement("a");
-          el.href = href;
-          el.target = "_top";
-          el.rel = "noopener noreferrer";
-        } else {
-          el = document.createElement("div");
-        }
-
-        el.className = "btn";
-
-        if (disabled){
-          el.classList.add("disabled");
-          el.setAttribute("aria-disabled", "true");
-          if (titleText){
-            el.title = titleText;
-          }
-        }
-
-        var sp = document.createElement("span");
-        sp.textContent = label;
-        el.appendChild(sp);
-
-        return { element: el, textNode: sp };
-      }
-
       function buildButtons(){
         grid.innerHTML = "";
 
@@ -651,42 +571,102 @@ html = """
           var x = left + col * (w + gapX);
           var y = row * (btnH + gapY);
 
-          var label = BTN_TEXTS[i];
-          var href = "";
-          var disabled = false;
-          var titleText = "";
-
-          if (label === "Horarios") {
-            href = URL_CALENDARIO;
-          } else if (label === "Registro") {
-            if (CAN_REGISTER_USERS) {
-              href = URL_ALTAS_REGISTRO;
-            } else {
-              disabled = true;
-              titleText = "Disponible solo para Administrador";
-            }
-          } else if (label.indexOf("Gestión de") === 0) {
-            if (CAN_MANAGE_SCHEDULES) {
-              href = URL_EDITAR_HORARIOS;
-            } else {
-              disabled = true;
-              titleText = "Disponible solo para Administrador";
-            }
-          } else if (label === "Chat") {
-            href = URL_CHAT;
-          }
-
-          var built = createButtonElement(label, href, disabled, titleText);
-          var d = built.element;
-          var sp = built.textNode;
-
+          var d = document.createElement("div");
+          d.className = "btn";
           d.style.left = x + "%";
           d.style.top = y + "%";
           d.style.width = w + "%";
           d.style.height = btnH + "%";
 
+          var sp = document.createElement("span");
+          sp.textContent = BTN_TEXTS[i];
+
           var fs = overrideFs(i);
           if (fs != null) sp.style.fontSize = fs + "px";
+
+          d.appendChild(sp);
+
+          // Horarios -> /calendario
+          if (BTN_TEXTS[i] === "Horarios") {
+            d.addEventListener("click", function(){
+              try{
+                var params = new URLSearchParams(window.location.search || "");
+                params.set("auth", "ok");
+                window.location.href = "/calendario?" + params.toString();
+              }catch(e){
+                window.location.href = "/calendario?auth=ok";
+              }
+            });
+          }
+
+          // Registro -> /altas_registro solo si rol = Administrador
+          if (BTN_TEXTS[i] === "Registro") {
+            if (CAN_REGISTER_USERS) {
+              d.addEventListener("click", function(){
+                try{
+                  var params = new URLSearchParams(window.location.search || "");
+                  params.set("auth", "ok");
+                  if (!params.get("rol") && USER_ROLE) {
+                    params.set("rol", USER_ROLE);
+                  }
+                  if (!params.get("dni") && USER_DNI) {
+                    params.set("dni", USER_DNI);
+                  }
+                  window.location.href = "/altas_registro?" + params.toString();
+                }catch(e){
+                  window.location.href = "/altas_registro?auth=ok";
+                }
+              });
+            } else {
+              d.classList.add("disabled");
+              d.setAttribute("aria-disabled", "true");
+              d.title = "Disponible solo para Administrador";
+            }
+          }
+
+          // Gestión de Horarios -> /editar_horarios solo si rol = Administrador
+          if (BTN_TEXTS[i] === "Gestión de\\nHorarios") {
+            if (CAN_MANAGE_SCHEDULES) {
+              d.addEventListener("click", function(){
+                try{
+                  var params = new URLSearchParams(window.location.search || "");
+                  params.set("auth", "ok");
+                  if (!params.get("rol") && USER_ROLE) {
+                    params.set("rol", USER_ROLE);
+                  }
+                  if (!params.get("dni") && USER_DNI) {
+                    params.set("dni", USER_DNI);
+                  }
+                  window.location.href = "/editar_horarios?" + params.toString();
+                }catch(e){
+                  window.location.href = "/editar_horarios?auth=ok";
+                }
+              });
+            } else {
+              d.classList.add("disabled");
+              d.setAttribute("aria-disabled", "true");
+              d.title = "Disponible solo para Administrador";
+            }
+          }
+
+          // Chat -> /chat_interfaz
+          if (BTN_TEXTS[i] === "Chat") {
+            d.addEventListener("click", function(){
+              try{
+                var params = new URLSearchParams(window.location.search || "");
+                params.set("auth", "ok");
+                if (!params.get("rol") && USER_ROLE) {
+                  params.set("rol", USER_ROLE);
+                }
+                if (!params.get("dni") && USER_DNI) {
+                  params.set("dni", USER_DNI);
+                }
+                window.location.href = "/chat_interfaz?" + params.toString();
+              }catch(e){
+                window.location.href = "/chat_interfaz?auth=ok";
+              }
+            });
+          }
 
           grid.appendChild(d);
         }
@@ -703,6 +683,19 @@ html = """
 </body>
 </html>
 """
+
+def _dict_to_js_obj(d: dict) -> str:
+    parts = []
+    for k, v in d.items():
+        try:
+            ik = int(k)
+            fv = float(v)
+        except Exception:
+            continue
+        if fv <= 0:
+            continue
+        parts.append(f'"{ik}":{fv}')
+    return "{" + ",".join(parts) + "}"
 
 html = (
     html.replace("__PADX__", str(PAD_X_PX))
@@ -734,9 +727,9 @@ html = (
         .replace("__MIN_BTN_W_PX__", str(MIN_BTN_W_PX))
         .replace("__MOBILE_MAX_W_PX__", str(MOBILE_MAX_W_PX))
         .replace("__LOGO_URL__", LOGO_URL)
-        .replace("__USER_NAME__", _js_escape(USER_NAME))
-        .replace("__USER_ROLE__", _js_escape(USER_ROLE))
-        .replace("__USER_DNI__", _js_escape(USER_DNI))
+        .replace("__USER_NAME__", str(USER_NAME).replace('"', '\\"'))
+        .replace("__USER_ROLE__", str(USER_ROLE).replace('"', '\\"'))
+        .replace("__USER_DNI__", str(USER_DNI).replace('"', '\\"'))
         .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
         .replace("__CAN_REGISTER_USERS__", "true" if CAN_REGISTER_USERS else "false")
         .replace("__FOOTER_TEXT__", FOOTER_TEXT)
@@ -758,10 +751,6 @@ html = (
         .replace("__HERO_BG_URL__", HERO_BG_IMAGE_URL)
         .replace("__HERO_BG_FIT__", HERO_BG_IMAGE_FIT)
         .replace("__HERO_BG_POS__", HERO_BG_IMAGE_POS)
-        .replace("__URL_CALENDARIO__", _js_escape(URL_CALENDARIO))
-        .replace("__URL_ALTAS_REGISTRO__", _js_escape(URL_ALTAS_REGISTRO))
-        .replace("__URL_EDITAR_HORARIOS__", _js_escape(URL_EDITAR_HORARIOS))
-        .replace("__URL_CHAT__", _js_escape(URL_CHAT))
 )
 
 components.html(html, height=10, scrolling=False)
