@@ -1,4 +1,6 @@
-# calendario.py
+import json
+from html import escape as html_escape
+
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -76,9 +78,14 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Escapar valores para JavaScript
-def escape_js(s):
-    return str(s).replace('"', '\\"').replace("'", "\\'")
+AUTH_PAYLOAD = {
+    "user": str(AUTH_USER or ""),
+    "role": str(AUTH_ROLE or ""),
+    "dni": str(AUTH_DNI or ""),
+}
+AUTH_JSON = json.dumps(AUTH_PAYLOAD, ensure_ascii=False)
+AUTH_USER_HTML = html_escape(AUTH_PAYLOAD["user"])
+AUTH_ROLE_HTML = html_escape(AUTH_PAYLOAD["role"])
 
 html = r"""
 <!doctype html>
@@ -783,7 +790,7 @@ html = r"""
           <h3 class="agendaTitle">Agenda del día</h3>
           <div class="meta agendaMeta" id="agendaMeta">
             <div><b>Fecha:</b> <span id="fechaDisplay">—</span></div>
-            <div><b>Usuario:</b> <span id="userDisplay">""" + escape_js(AUTH_USER) + """</span> (<span id="roleDisplay">""" + escape_js(AUTH_ROLE) + """</span>)</div>
+            <div><b>Usuario:</b> <span id="userDisplay">__AUTH_USER_HTML__</span> (<span id="roleDisplay">__AUTH_ROLE_HTML__</span>)</div>
           </div>
           <div id="table" class="tableCard">
             <!-- Cabecera para móvil -->
@@ -841,16 +848,19 @@ html = r"""
     </div>
   </div>
 
+
 <script>
 (function(){
   const API_BASE = "https://camilo27.pythonanywhere.com";
   const ENDPOINT_MALLAS = API_BASE + "/api/mallas";
 
   // Usuario autenticado (desde parámetros URL)
-  const CURRENT_USER = \"""" + escape_js(AUTH_USER) + """\";
-  const CURRENT_ROLE = \"""" + escape_js(AUTH_ROLE) + """\".toLowerCase();
-  const CURRENT_DNI = \"""" + escape_js(AUTH_DNI) + """\";
-  
+  const AUTH = __AUTH_JSON__;
+  const CURRENT_USER = String(AUTH.user || "");
+  const CURRENT_ROLE = String(AUTH.role || "").toLowerCase();
+  const CURRENT_DNI = String(AUTH.dni || "");
+
+
   const IS_SOCORRISTA = CURRENT_ROLE === "socorrista";
   const IS_ADMIN_OR_DIRECTIVO = CURRENT_ROLE === "administrador" || CURRENT_ROLE === "directivo";
 
@@ -941,11 +951,9 @@ html = r"""
     ];
     for (let name of possibleNames) {
       if (row.hasOwnProperty(name)) {
-        console.log(`✅ Columna DNI detectada: "${name}"`);
         return name;
       }
     }
-    console.warn("⚠️ No se encontró ninguna columna que parezca DNI en los datos.");
     return null;
   }
 
@@ -1359,29 +1367,13 @@ html = r"""
       if(!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
       if(!data || data.ok !== true || !Array.isArray(data.rows)) throw new Error("JSON inválido");
-      
+
       ALL_ROWS = data.rows;
-      
-      console.log("=== DEPURACIÓN: DATOS RECIBIDOS ===");
       if (ALL_ROWS.length > 0) {
-        console.log("Primera fila completa:", ALL_ROWS[0]);
-        console.log("Columnas disponibles:", Object.keys(ALL_ROWS[0]));
-        // Detectar columna DNI automáticamente
         DNI_COLUMN_NAME = detectDNIColumn(ALL_ROWS[0]);
-        if (!DNI_COLUMN_NAME) {
-          console.warn("No se encontró columna DNI, el filtro no funcionará para socorristas.");
-        } else {
-          console.log(`Usando columna DNI: "${DNI_COLUMN_NAME}"`);
-          // Mostrar algunos valores de ejemplo para verificar
-          const sampleDNIs = ALL_ROWS.slice(0, 5).map(r => r[DNI_COLUMN_NAME]);
-          console.log("Ejemplos de DNI en los datos:", sampleDNIs);
-        }
       } else {
-        console.warn("No hay filas en los datos.");
+        DNI_COLUMN_NAME = null;
       }
-      console.log("DNI del usuario autenticado (CURRENT_DNI):", CURRENT_DNI);
-      console.log("Rol:", CURRENT_ROLE);
-      console.log("====================================");
       
       // Construir lista de socorristas según el rol
       if (IS_SOCORRISTA) {
@@ -1415,7 +1407,6 @@ html = r"""
       renderCalendar(currentYear, currentMonth);
       updateAgenda();
     }catch(e){
-      console.error("Error loading mallas:", e);
       ALL_ROWS = [];
       SOCORRISTAS = [];
       AVAILABLE_DATES = new Set();
@@ -1552,6 +1543,9 @@ html = (html.replace("__PADX__", str(PAD_X_PX))
         .replace("__CALCOLS__", str(CAL_COLS))
         .replace("__CALROWS__", str(CAL_ROWS))
         .replace("__AGENDAROWS__", str(AGENDA_ROWS))
+        .replace("__AUTH_JSON__", AUTH_JSON)
+        .replace("__AUTH_USER_HTML__", AUTH_USER_HTML)
+        .replace("__AUTH_ROLE_HTML__", AUTH_ROLE_HTML)
 )
 
 components.html(html, height=1100, scrolling=False)
