@@ -1,6 +1,7 @@
-import json
+# app.py
 import streamlit as st
 import streamlit.components.v1 as components
+from urllib.parse import urlencode
 
 st.set_page_config(layout="wide")
 
@@ -52,7 +53,7 @@ BTN_TEXTS = [
     "Incidencias y Comunicados",
     "Registro",
     "Gestión de\nHorarios",
-    "Chat",
+    "Chat"
 ]
 
 FOOTER_H = 18
@@ -108,11 +109,53 @@ st.markdown(
       .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
       section.main > div{padding:0 !important;margin:0 !important;}
       header, footer{display:none !important;}
-      iframe[title="st.iframe"]{display:block !important;width:100% !important;}
     </style>
     """,
     unsafe_allow_html=True,
 )
+
+def _dict_to_js_obj(d: dict) -> str:
+    parts = []
+    for k, v in d.items():
+        try:
+            ik = int(k)
+            fv = float(v)
+        except Exception:
+            continue
+        if fv <= 0:
+            continue
+        parts.append(f'"{ik}":{fv}')
+    return "{" + ",".join(parts) + "}"
+
+def _js_escape(value) -> str:
+    return (
+        str(value)
+        .replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\r", "\\r")
+        .replace("\n", "\\n")
+    )
+
+def _build_page_url(path: str) -> str:
+    params = {"auth": "ok"}
+
+    if USER_NAME:
+        params["usuario"] = USER_NAME
+        params["user"] = USER_NAME
+
+    if USER_ROLE:
+        params["rol"] = USER_ROLE
+        params["role"] = USER_ROLE
+
+    if USER_DNI:
+        params["dni"] = USER_DNI
+
+    return f"{path}?{urlencode(params)}"
+
+URL_CALENDARIO = _build_page_url("/calendario")
+URL_ALTAS_REGISTRO = _build_page_url("/altas_registro")
+URL_EDITAR_HORARIOS = _build_page_url("/editar_horarios")
+URL_CHAT = _build_page_url("/chat_interfaz")
 
 html = """
 <!doctype html>
@@ -154,7 +197,6 @@ html = """
       margin:0;
       padding:0;
       width:100%;
-      min-height:100%;
       height:100%;
       overflow:hidden;
       background: var(--bg);
@@ -164,11 +206,10 @@ html = """
     }
 
     #stage{
-      position:absolute;
+      position:fixed;
       inset:0;
-      width:100%;
-      height:100%;
-      min-height:100vh;
+      width:100vw;
+      height:100vh;
       background:
         radial-gradient(1200px 700px at 50% 18%, rgba(40,130,255,.22) 0%, rgba(8,35,95,.15) 35%, rgba(2,10,26,0) 70%),
         linear-gradient(280deg, #03102a 0%, #020a1a 70%, #010612 100%);
@@ -362,6 +403,7 @@ html = """
       transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, filter .12s ease;
       cursor:pointer;
       user-select:none;
+      text-decoration:none;
     }
 
     .btn::before{
@@ -407,6 +449,7 @@ html = """
       line-height:1.05;
       white-space: pre-line;
       text-shadow: 0 1px 0 rgba(0,0,0,.25);
+      pointer-events:none;
     }
 
     #footer{
@@ -462,73 +505,36 @@ html = """
 
   <script>
     (function(){
+      var fe = window.frameElement;
+      if (fe){
+        fe.style.position = "fixed";
+        fe.style.inset = "0";
+        fe.style.width = "100vw";
+        fe.style.height = "100vh";
+        fe.style.border = "0";
+        fe.style.margin = "0";
+        fe.style.padding = "0";
+        fe.style.zIndex = "999999";
+        fe.style.background = "transparent";
+      }
+
       var BTN_TEXTS = __BTN_TEXTS__;
       var MIN_BTN_W_PX = __MIN_BTN_W_PX__;
       var MOBILE_MAX_W_PX = __MOBILE_MAX_W_PX__;
-      var LOGO_URL = __LOGO_URL_JSON__;
-      var USER_NAME = __USER_NAME_JSON__;
-      var USER_ROLE = __USER_ROLE_JSON__;
-      var USER_DNI = __USER_DNI_JSON__;
+      var LOGO_URL = "__LOGO_URL__";
+      var USER_NAME = "__USER_NAME__";
+      var USER_ROLE = "__USER_ROLE__";
+      var USER_DNI = "__USER_DNI__";
       var CAN_MANAGE_SCHEDULES = __CAN_MANAGE_SCHEDULES__;
       var CAN_REGISTER_USERS = __CAN_REGISTER_USERS__;
 
       var BTN_OVR_D = __BTN_OVR_D__;
       var BTN_OVR_M = __BTN_OVR_M__;
 
-      function fitFrame(){
-        try {
-          var fe = window.frameElement;
-          if (!fe) return;
-          fe.style.display = "block";
-          fe.style.width = "100%";
-          fe.style.border = "0";
-          fe.style.margin = "0";
-          fe.style.padding = "0";
-          var newHeight = Math.max(
-            window.innerHeight || 0,
-            document.documentElement.scrollHeight || 0,
-            document.body.scrollHeight || 0,
-            950
-          );
-          fe.style.height = newHeight + "px";
-        } catch (e) {}
-      }
-
-      function getTargetWindow(){
-        try {
-          if (window.top && window.top !== window) return window.top;
-        } catch (e) {}
-        try {
-          if (window.parent && window.parent !== window) return window.parent;
-        } catch (e) {}
-        return window;
-      }
-
-      function buildRouteParams(){
-        var params;
-        try {
-          params = new URLSearchParams(getTargetWindow().location.search || "");
-        } catch (e) {
-          params = new URLSearchParams("");
-        }
-
-        params.set("auth", "ok");
-
-        if (USER_NAME) params.set("usuario", USER_NAME);
-        if (USER_ROLE) params.set("rol", USER_ROLE);
-        if (USER_DNI) params.set("dni", USER_DNI);
-
-        return params;
-      }
-
-      function goToPage(path){
-        var url = path + "?" + buildRouteParams().toString();
-        try {
-          getTargetWindow().location.href = url;
-        } catch (e) {
-          window.location.href = url;
-        }
-      }
+      var URL_CALENDARIO = "__URL_CALENDARIO__";
+      var URL_ALTAS_REGISTRO = "__URL_ALTAS_REGISTRO__";
+      var URL_EDITAR_HORARIOS = "__URL_EDITAR_HORARIOS__";
+      var URL_CHAT = "__URL_CHAT__";
 
       var hdr = document.getElementById("hdr");
       hdr.innerHTML = "";
@@ -577,6 +583,35 @@ html = """
         }
       }
 
+      function createButtonElement(label, href, disabled, titleText){
+        var el;
+
+        if (href && !disabled){
+          el = document.createElement("a");
+          el.href = href;
+          el.target = "_top";
+          el.rel = "noopener noreferrer";
+        } else {
+          el = document.createElement("div");
+        }
+
+        el.className = "btn";
+
+        if (disabled){
+          el.classList.add("disabled");
+          el.setAttribute("aria-disabled", "true");
+          if (titleText){
+            el.title = titleText;
+          }
+        }
+
+        var sp = document.createElement("span");
+        sp.textContent = label;
+        el.appendChild(sp);
+
+        return { element: el, textNode: sp };
+      }
+
       function buildButtons(){
         grid.innerHTML = "";
 
@@ -616,63 +651,45 @@ html = """
           var x = left + col * (w + gapX);
           var y = row * (btnH + gapY);
 
-          var d = document.createElement("div");
-          d.className = "btn";
+          var label = BTN_TEXTS[i];
+          var href = "";
+          var disabled = false;
+          var titleText = "";
+
+          if (label === "Horarios") {
+            href = URL_CALENDARIO;
+          } else if (label === "Registro") {
+            if (CAN_REGISTER_USERS) {
+              href = URL_ALTAS_REGISTRO;
+            } else {
+              disabled = true;
+              titleText = "Disponible solo para Administrador";
+            }
+          } else if (label.indexOf("Gestión de") === 0) {
+            if (CAN_MANAGE_SCHEDULES) {
+              href = URL_EDITAR_HORARIOS;
+            } else {
+              disabled = true;
+              titleText = "Disponible solo para Administrador";
+            }
+          } else if (label === "Chat") {
+            href = URL_CHAT;
+          }
+
+          var built = createButtonElement(label, href, disabled, titleText);
+          var d = built.element;
+          var sp = built.textNode;
+
           d.style.left = x + "%";
           d.style.top = y + "%";
           d.style.width = w + "%";
           d.style.height = btnH + "%";
 
-          var sp = document.createElement("span");
-          var label = BTN_TEXTS[i] || "";
-          var buttonKey = label.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
-          sp.textContent = label;
-
           var fs = overrideFs(i);
           if (fs != null) sp.style.fontSize = fs + "px";
 
-          d.appendChild(sp);
-
-          if (buttonKey === "Horarios") {
-            d.addEventListener("click", function(){
-              goToPage("/calendario");
-            });
-          }
-
-          if (buttonKey === "Registro") {
-            if (CAN_REGISTER_USERS) {
-              d.addEventListener("click", function(){
-                goToPage("/altas_registro");
-              });
-            } else {
-              d.classList.add("disabled");
-              d.setAttribute("aria-disabled", "true");
-              d.title = "Disponible solo para Administrador";
-            }
-          }
-
-          if (buttonKey === "Gestión de Horarios") {
-            if (CAN_MANAGE_SCHEDULES) {
-              d.addEventListener("click", function(){
-                goToPage("/editar_horarios");
-              });
-            } else {
-              d.classList.add("disabled");
-              d.setAttribute("aria-disabled", "true");
-              d.title = "Disponible solo para Administrador";
-            }
-          }
-
-          if (buttonKey === "Chat") {
-            d.addEventListener("click", function(){
-              goToPage("/chat_interfaz");
-            });
-          }
-
           grid.appendChild(d);
         }
-
-        fitFrame();
       }
 
       function update(){
@@ -680,86 +697,71 @@ html = """
       }
 
       window.addEventListener("resize", update);
-      window.addEventListener("load", update);
       update();
-      setTimeout(fitFrame, 100);
-      setTimeout(fitFrame, 400);
-      setTimeout(fitFrame, 900);
     })();
   </script>
 </body>
 </html>
 """
 
-
-def _dict_to_js_obj(d: dict) -> str:
-    parts = []
-    for k, v in d.items():
-        try:
-            ik = int(k)
-            fv = float(v)
-        except Exception:
-            continue
-        if fv <= 0:
-            continue
-        parts.append(f'"{ik}":{fv}')
-    return "{" + ",".join(parts) + "}"
-
-
 html = (
     html.replace("__PADX__", str(PAD_X_PX))
-    .replace("__PADTOP__", str(PAD_TOP_PX))
-    .replace("__B__", str(BORDER_PX))
-    .replace("__BC__", BORDER_COLOR)
-    .replace("__BG__", BG_COLOR)
-    .replace("__HEADERBG__", HEADER_BG)
-    .replace("__IMGBG__", IMG_BG)
-    .replace("__BTNBG__", BTN_BG)
-    .replace("__FOOTERBG__", FOOTER_BG)
-    .replace("__HDR_TOP__", str(HEADER_TOP))
-    .replace("__HDR_H__", str(HEADER_HEIGHT))
-    .replace("__IMG_L__", str(IMG_LEFT))
-    .replace("__IMG_R__", str(IMG_RIGHT))
-    .replace("__IMG_T__", str(IMG_TOP))
-    .replace("__IMG_H__", str(IMG_HEIGHT))
-    .replace("__BTN_AREA_TOP__", str(BTN_AREA_TOP))
-    .replace("__BTN_L__", str(BTN_LEFT))
-    .replace("__BTN_R__", str(BTN_RIGHT))
-    .replace("__BTN_H__", str(BTN_H))
-    .replace("__BTN_GAP_X__", str(BTN_GAP_X))
-    .replace("__BTN_GAP_Y__", str(BTN_GAP_Y))
-    .replace("__FOOT_L__", str(FOOTER_LEFT))
-    .replace("__FOOT_R__", str(FOOTER_RIGHT))
-    .replace("__FOOT_H__", str(FOOTER_H))
-    .replace("__FOOT_BOTTOM__", str(FOOTER_BOTTOM))
-    .replace("__BTN_TEXTS__", json.dumps(BTN_TEXTS, ensure_ascii=False))
-    .replace("__MIN_BTN_W_PX__", str(MIN_BTN_W_PX))
-    .replace("__MOBILE_MAX_W_PX__", str(MOBILE_MAX_W_PX))
-    .replace("__LOGO_URL_JSON__", json.dumps(LOGO_URL, ensure_ascii=False))
-    .replace("__USER_NAME_JSON__", json.dumps(str(USER_NAME), ensure_ascii=False))
-    .replace("__USER_ROLE_JSON__", json.dumps(str(USER_ROLE), ensure_ascii=False))
-    .replace("__USER_DNI_JSON__", json.dumps(str(USER_DNI), ensure_ascii=False))
-    .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
-    .replace("__CAN_REGISTER_USERS__", "true" if CAN_REGISTER_USERS else "false")
-    .replace("__FOOTER_TEXT__", FOOTER_TEXT)
-    .replace("__HERO_FS_D__", str(HERO_FONT_SIZE_DESKTOP_PX))
-    .replace("__HERO_FS_M__", str(HERO_FONT_SIZE_MOBILE_PX))
-    .replace("__HDR_FS_D__", str(HEADER_FONT_SIZE_DESKTOP_PX))
-    .replace("__HDR_FS_M__", str(HEADER_FONT_SIZE_MOBILE_PX))
-    .replace("__BTN_FS_D__", str(BTN_FONT_SIZE_DESKTOP_PX))
-    .replace("__BTN_FS_M__", str(BTN_FONT_SIZE_MOBILE_PX))
-    .replace("__FOOT_FS_D__", str(FOOTER_FONT_SIZE_DESKTOP_PX))
-    .replace("__FOOT_FS_M__", str(FOOTER_FONT_SIZE_MOBILE_PX))
-    .replace("__LOGO_PAD_D__", str(LOGO_PADDING_PX_DESKTOP))
-    .replace("__LOGO_PAD_M__", str(LOGO_PADDING_PX_MOBILE))
-    .replace("__LOGO_RAD__", str(LOGO_BORDER_RADIUS_PX))
-    .replace("__LOGO_FIT__", LOGO_OBJECT_FIT)
-    .replace("__LOGO_BORDER__", LOGO_BORDER)
-    .replace("__BTN_OVR_D__", _dict_to_js_obj(BTN_FONT_OVERRIDES_DESKTOP_PX))
-    .replace("__BTN_OVR_M__", _dict_to_js_obj(BTN_FONT_OVERRIDES_MOBILE_PX))
-    .replace("__HERO_BG_URL__", HERO_BG_IMAGE_URL)
-    .replace("__HERO_BG_FIT__", HERO_BG_IMAGE_FIT)
-    .replace("__HERO_BG_POS__", HERO_BG_IMAGE_POS)
+        .replace("__PADTOP__", str(PAD_TOP_PX))
+        .replace("__B__", str(BORDER_PX))
+        .replace("__BC__", BORDER_COLOR)
+        .replace("__BG__", BG_COLOR)
+        .replace("__HEADERBG__", HEADER_BG)
+        .replace("__IMGBG__", IMG_BG)
+        .replace("__BTNBG__", BTN_BG)
+        .replace("__FOOTERBG__", FOOTER_BG)
+        .replace("__HDR_TOP__", str(HEADER_TOP))
+        .replace("__HDR_H__", str(HEADER_HEIGHT))
+        .replace("__IMG_L__", str(IMG_LEFT))
+        .replace("__IMG_R__", str(IMG_RIGHT))
+        .replace("__IMG_T__", str(IMG_TOP))
+        .replace("__IMG_H__", str(IMG_HEIGHT))
+        .replace("__BTN_AREA_TOP__", str(BTN_AREA_TOP))
+        .replace("__BTN_L__", str(BTN_LEFT))
+        .replace("__BTN_R__", str(BTN_RIGHT))
+        .replace("__BTN_H__", str(BTN_H))
+        .replace("__BTN_GAP_X__", str(BTN_GAP_X))
+        .replace("__BTN_GAP_Y__", str(BTN_GAP_Y))
+        .replace("__FOOT_L__", str(FOOTER_LEFT))
+        .replace("__FOOT_R__", str(FOOTER_RIGHT))
+        .replace("__FOOT_H__", str(FOOTER_H))
+        .replace("__FOOT_BOTTOM__", str(FOOTER_BOTTOM))
+        .replace("__BTN_TEXTS__", str(BTN_TEXTS).replace("'", '"'))
+        .replace("__MIN_BTN_W_PX__", str(MIN_BTN_W_PX))
+        .replace("__MOBILE_MAX_W_PX__", str(MOBILE_MAX_W_PX))
+        .replace("__LOGO_URL__", LOGO_URL)
+        .replace("__USER_NAME__", _js_escape(USER_NAME))
+        .replace("__USER_ROLE__", _js_escape(USER_ROLE))
+        .replace("__USER_DNI__", _js_escape(USER_DNI))
+        .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
+        .replace("__CAN_REGISTER_USERS__", "true" if CAN_REGISTER_USERS else "false")
+        .replace("__FOOTER_TEXT__", FOOTER_TEXT)
+        .replace("__HERO_FS_D__", str(HERO_FONT_SIZE_DESKTOP_PX))
+        .replace("__HERO_FS_M__", str(HERO_FONT_SIZE_MOBILE_PX))
+        .replace("__HDR_FS_D__", str(HEADER_FONT_SIZE_DESKTOP_PX))
+        .replace("__HDR_FS_M__", str(HEADER_FONT_SIZE_MOBILE_PX))
+        .replace("__BTN_FS_D__", str(BTN_FONT_SIZE_DESKTOP_PX))
+        .replace("__BTN_FS_M__", str(BTN_FONT_SIZE_MOBILE_PX))
+        .replace("__FOOT_FS_D__", str(FOOTER_FONT_SIZE_DESKTOP_PX))
+        .replace("__FOOT_FS_M__", str(FOOTER_FONT_SIZE_MOBILE_PX))
+        .replace("__LOGO_PAD_D__", str(LOGO_PADDING_PX_DESKTOP))
+        .replace("__LOGO_PAD_M__", str(LOGO_PADDING_PX_MOBILE))
+        .replace("__LOGO_RAD__", str(LOGO_BORDER_RADIUS_PX))
+        .replace("__LOGO_FIT__", LOGO_OBJECT_FIT)
+        .replace("__LOGO_BORDER__", LOGO_BORDER)
+        .replace("__BTN_OVR_D__", _dict_to_js_obj(BTN_FONT_OVERRIDES_DESKTOP_PX))
+        .replace("__BTN_OVR_M__", _dict_to_js_obj(BTN_FONT_OVERRIDES_MOBILE_PX))
+        .replace("__HERO_BG_URL__", HERO_BG_IMAGE_URL)
+        .replace("__HERO_BG_FIT__", HERO_BG_IMAGE_FIT)
+        .replace("__HERO_BG_POS__", HERO_BG_IMAGE_POS)
+        .replace("__URL_CALENDARIO__", _js_escape(URL_CALENDARIO))
+        .replace("__URL_ALTAS_REGISTRO__", _js_escape(URL_ALTAS_REGISTRO))
+        .replace("__URL_EDITAR_HORARIOS__", _js_escape(URL_EDITAR_HORARIOS))
+        .replace("__URL_CHAT__", _js_escape(URL_CHAT))
 )
 
-components.html(html, height=1100, scrolling=False)
+components.html(html, height=10, scrolling=False)
