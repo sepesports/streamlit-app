@@ -1,20 +1,25 @@
 # pages/calendario.py
 import streamlit as st
 import streamlit.components.v1 as components
+import json
 
 # ==============================================================================
-# CALENDARIO - TEMA HUD NARANJA (VERSIÓN CORREGIDA CON RUTEO SEGURO)
+# PLANTILLA "CALENDARIO" — TEMA HUD NARANJA
+# Versión corregida: inyección JS segura con json.dumps
 # ==============================================================================
 
+# Obtener parámetros de autenticación
 query_params = st.query_params
 AUTH_USER = query_params.get("usuario") or query_params.get("user") or ""
 AUTH_ROLE = query_params.get("rol") or query_params.get("role") or ""
 AUTH_DNI = query_params.get("dni") or ""
 
+# Normalizar rol
 NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
 IS_SOCORRISTA = NORMALIZED_ROLE == "socorrista"
 IS_ADMIN_OR_DIRECTIVO = NORMALIZED_ROLE in ["administrador", "directivo"]
 
+# Si no hay autenticación, redirigir
 if not AUTH_USER or not AUTH_ROLE:
     st.markdown(
         """
@@ -26,6 +31,7 @@ if not AUTH_USER or not AUTH_ROLE:
     )
     st.stop()
 
+# ===================== CONFIGURACIÓN VISUAL =====================
 PAD_X_PX = 10
 PAD_TOP_PX = 10
 BORDER_PX = 2
@@ -51,14 +57,12 @@ BOTTOMBAR_H = 10
 INNER_L = 4
 INNER_R = 4
 INNER_TOP_GAP = 0.7
-
 CAL_COLS = 7
 CAL_ROWS = 6
 DAY_CELL_GAP_PX = 6
 AGENDA_ROWS = 5
 
 st.set_page_config(layout="wide")
-
 st.markdown(
     """
     <style>
@@ -70,10 +74,13 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-def escape_js(s):
-    return str(s).replace('"', '\\"').replace("'", "\\'")
+# ===================== GENERAR HTML CON DATOS SEGUROS =====================
+# Convertir variables Python a JSON para inyectar en JavaScript
+user_json = json.dumps(AUTH_USER)
+role_json = json.dumps(AUTH_ROLE)
+dni_json = json.dumps(AUTH_DNI)
 
-# ===================== CÓDIGO HTML COMPLETO =====================
+# Plantilla HTML (raw string multilínea)
 html = r"""
 <!doctype html>
 <html>
@@ -543,7 +550,10 @@ html = r"""
       </div>
       <div id="agenda" class="panel agendaBlock">
         <h3 class="agendaTitle">Agenda del día</h3>
-        <div class="meta agendaMeta" id="agendaMeta"><div><b>Fecha:</b> <span id="fechaDisplay">—</span></div><div><b>Usuario:</b> <span id="userDisplay">""" + escape_js(AUTH_USER) + """</span> (<span id="roleDisplay">""" + escape_js(AUTH_ROLE) + """</span>)</div></div>
+        <div class="meta agendaMeta" id="agendaMeta">
+          <div><b>Fecha:</b> <span id="fechaDisplay">—</span></div>
+          <div><b>Usuario:</b> <span id="userDisplay">USUARIO</span> (<span id="roleDisplay">ROL</span>)</div>
+        </div>
         <div id="table" class="tableCard">
           <div class="mobile-header"><div style="width:26px;"></div><div class="horas"><span>Inicio</span><span>Finaliza</span><span>Horas</span></div><div style="width:24px;"></div></div>
           <div id="thead" class="tableHeader"><div></div><div>Instalación</div><div>Inicio</div><div>Finaliza</div><div>Horas</div><div>Estado</div></div>
@@ -555,26 +565,42 @@ html = r"""
   </div>
 </div>
 <div class="modal-overlay" id="modalOverlay"><div class="modal" id="modal"><h3>Modificar turno</h3><div class="modal-option"><input type="radio" name="modalOption" id="optLiberar" value="liberar" checked><label for="optLiberar">Liberar Turno</label></div><div class="modal-option"><input type="radio" name="modalOption" id="optNovedad" value="novedad"><label for="optNovedad">Novedad</label><div class="modal-input" id="novedadInput" style="display:none;"><input type="text" placeholder="Escriba la novedad..."></div></div><div class="modal-option"><input type="radio" name="modalOption" id="optCalamidad" value="calamidad"><label for="optCalamidad">Calamidad</label></div><div class="modal-actions"><button class="btn" id="modalCancel">Cancelar</button><button class="btn primary" id="modalSend">Enviar</button></div></div></div>
+
 <script>
 (function(){
+  // ========== DATOS DEL USUARIO (inyectados desde Python) ==========
+  const CURRENT_USER = """ + user_json + """;
+  const CURRENT_ROLE = (""" + role_json + """).toLowerCase();
+  const CURRENT_DNI = """ + dni_json + """;
+  
+  const IS_SOCORRISTA = CURRENT_ROLE === "socorrista";
+  const IS_ADMIN_OR_DIRECTIVO = CURRENT_ROLE === "administrador" || CURRENT_ROLE === "directivo";
+
+  // Mostrar usuario en la interfaz
+  document.getElementById('userDisplay').innerText = CURRENT_USER;
+  document.getElementById('roleDisplay').innerText = CURRENT_ROLE;
+
+  // API
   const API_BASE = "https://camilo27.pythonanywhere.com";
   const ENDPOINT_MALLAS = API_BASE + "/api/mallas";
-  const CURRENT_USER = \"""" + escape_js(AUTH_USER) + """\";
-  const CURRENT_ROLE = \"""" + escape_js(AUTH_ROLE) + """\".toLowerCase();
-  const CURRENT_DNI = \"""" + escape_js(AUTH_DNI) + """\";
-  const IS_SOCORRISTA = CURRENT_ROLE === "socorrista";
+
   let currentDate = new Date();
   currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+
   let selectedDate = new Date(currentDate);
   let currentMonth = selectedDate.getMonth();
   let currentYear = selectedDate.getFullYear();
+
   let ALL_ROWS = [];
   let AVAILABLE_DATES = new Set();
   let SOCORRISTAS = [];
+
   let FILTER_SOCORRISTA = "";
   let FILTER_MODE = "dia";
+
   let selectedRows = new Set();
   let currentFilteredRows = [];
+
   let DNI_COLUMN_NAME = null;
 
   if (IS_SOCORRISTA) {
@@ -588,6 +614,7 @@ html = r"""
   function toKeyYMD(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
   function formatDateKey(date) { return toKeyYMD(date.getFullYear(), date.getMonth()+1, date.getDate()); }
   function formatDisplayDate(date) { return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }); }
+
   function parseSheetDateToKey(fechaStr) {
     const s = (fechaStr || "").trim();
     if (!s) return "";
@@ -603,13 +630,19 @@ html = r"""
     if (!isNaN(d.getTime())) return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
     return "";
   }
-  function getField(row, keys){ for(const k of keys){ if(row && Object.prototype.hasOwnProperty.call(row, k)) return row[k]; } return ""; }
+
+  function getField(row, keys){
+    for(const k of keys) if(row && Object.prototype.hasOwnProperty.call(row, k)) return row[k];
+    return "";
+  }
+
   function detectDNIColumn(row) {
     const possibleNames = ["DNI","dni","Cédula","cedula","Documento","documento","Cedula de ciudadania","Numero documento","Número documento","Identificación","identificacion","ID","id"];
     for (let name of possibleNames) if (row.hasOwnProperty(name)) { console.log(`✅ Columna DNI detectada: "${name}"`); return name; }
     console.warn("⚠️ No se encontró columna DNI");
     return null;
   }
+
   function normalizeEstado(s){
     const v = String(s || "").trim().toLowerCase();
     if(!v) return {label:"OTRO", cls:"other"};
@@ -617,6 +650,7 @@ html = r"""
     if(v.includes("ocup")) return {label:"OCUPADO", cls:"busy"};
     return {label:String(s).toUpperCase(), cls:"other"};
   }
+
   function getDisplayStatus(row) {
     const rawEstado = getField(row, ["estado","Estado","estado "]).toLowerCase().trim();
     const socorrista = getField(row, ["Socorrista","socorrista"]).trim();
@@ -627,10 +661,22 @@ html = r"""
     }
     return normalizeEstado(rawEstado);
   }
-  function formatTime(t) { if (!t) return '-'; const str = String(t); return str.replace(/(\d{1,2}:\d{2}):\d{2}$/, '$1'); }
-  function setSyncBadge(ok, text){ const el = document.getElementById("syncBadge"); el.textContent = text; el.className = ok ? "ok" : "err"; }
+
+  function formatTime(t) {
+    if (!t) return '-';
+    const str = String(t);
+    return str.replace(/(\d{1,2}:\d{2}):\d{2}$/, '$1');
+  }
+
+  function setSyncBadge(ok, text){
+    const el = document.getElementById("syncBadge");
+    el.textContent = text;
+    el.className = ok ? "ok" : "err";
+  }
+
   function daysInMonth(year, month) { return new Date(year, month + 1, 0).getDate(); }
   function getFirstDayOfMonth(year, month) { let day = new Date(year, month, 1).getDay(); return day === 0 ? 7 : day; }
+
   function getMonthDays(year, month) {
     const firstDay = getFirstDayOfMonth(year, month);
     const totalDays = daysInMonth(year, month);
@@ -653,7 +699,12 @@ html = r"""
     if (days.length > 42) days.length = 42;
     return days;
   }
-  function updateMonthYearDisplay(year, month) { document.getElementById('monthSelect').value = month; document.getElementById('yearSelect').value = year; }
+
+  function updateMonthYearDisplay(year, month) {
+    document.getElementById('monthSelect').value = month;
+    document.getElementById('yearSelect').value = year;
+  }
+
   function renderCalendar(year, month) {
     const daysEl = document.getElementById('days');
     daysEl.innerHTML = '';
@@ -679,6 +730,7 @@ html = r"""
     });
     document.getElementById('monthDisplay').textContent = new Date(year, month, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
   }
+
   function getFilteredRows(){
     const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
     const keySel = formatDateKey(selectedDate);
@@ -700,7 +752,9 @@ html = r"""
       return true;
     });
   }
+
   function isMobile() { return window.innerWidth <= 520; }
+
   function updateButtons() {
     const aplicarBtn = document.getElementById('btnAplicar');
     const modificarBtn = document.getElementById('btnModificar');
@@ -717,6 +771,7 @@ html = r"""
     aplicarBtn.disabled = !allDisponible;
     modificarBtn.disabled = !allProgramado;
   }
+
   function buildDesktopRow(r, idx) {
     const inst = getField(r, ["Instalacion","Instalación","instalacion"]);
     const ini = formatTime(getField(r, ["Ingreso","Inicio","ingreso","inicio"]));
@@ -739,6 +794,7 @@ html = r"""
     row.appendChild(col0); row.appendChild(col1); row.appendChild(col2); row.appendChild(col3); row.appendChild(col4); row.appendChild(col5);
     return row;
   }
+
   function buildMobileRow(r, idx) {
     const inst = getField(r, ["Instalacion","Instalación","instalacion"]) || '-';
     const ini = formatTime(getField(r, ["Ingreso","Inicio","ingreso","inicio"]));
@@ -768,6 +824,7 @@ html = r"""
     main.addEventListener('click', function(e) { if (e.target.type === 'checkbox') return; e.stopPropagation(); row.classList.toggle('expanded'); expandIcon.textContent = row.classList.contains('expanded') ? '−' : '+'; });
     return row;
   }
+
   function updateAgenda(){
     const tbody = document.getElementById('tbody');
     tbody.innerHTML = '';
@@ -789,6 +846,7 @@ html = r"""
     rows.forEach((r, idx) => { const row = mobile ? buildMobileRow(r, idx) : buildDesktopRow(r, idx); tbody.appendChild(row); });
     updateButtons();
   }
+
   function changeMonth(delta) {
     let newMonth = currentMonth + delta, newYear = currentYear;
     if (newMonth < 0) { newMonth = 11; newYear--; }
@@ -802,12 +860,14 @@ html = r"""
     updateAgenda();
     updateMonthYearDisplay(currentYear, currentMonth);
   }
+
   function fillSocorristaSelect(){
     const sel = document.getElementById("socorristaSelect");
     sel.innerHTML = '<option value="">Todos los socorristas</option>';
     SOCORRISTAS.forEach(name => { const opt = document.createElement("option"); opt.value = name; opt.textContent = name; sel.appendChild(opt); });
     sel.value = FILTER_SOCORRISTA || "";
   }
+
   function rebuildAvailability(){
     AVAILABLE_DATES = new Set();
     const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
@@ -827,6 +887,7 @@ html = r"""
       AVAILABLE_DATES.add(fechaKey);
     });
   }
+
   async function loadMallas(){
     setSyncBadge(false, "SYNC…");
     try{
@@ -872,6 +933,7 @@ html = r"""
       updateAgenda();
     }
   }
+
   const modalOverlay = document.getElementById('modalOverlay');
   const modalCancel = document.getElementById('modalCancel');
   const modalSend = document.getElementById('modalSend');
@@ -883,6 +945,7 @@ html = r"""
   if(modalCancel) modalCancel.addEventListener('click', hideModal);
   if(modalSend) modalSend.addEventListener('click', hideModal);
   if(modalOverlay) modalOverlay.addEventListener('click', function(e){ if(e.target === modalOverlay) hideModal(); });
+
   function init(){
     const yearSelect = document.getElementById('yearSelect');
     const y0 = new Date().getFullYear();
@@ -923,6 +986,7 @@ html = r"""
 </html>
 """
 
+# Reemplazar placeholders (aunque en este HTML no hay, se mantiene por compatibilidad)
 html = (html.replace("__PADX__", str(PAD_X_PX))
         .replace("__PADTOP__", str(PAD_TOP_PX))
         .replace("__B__", str(BORDER_PX))
