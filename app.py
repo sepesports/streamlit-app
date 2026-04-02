@@ -1,4 +1,3 @@
-# app.py
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -52,7 +51,7 @@ BTN_TEXTS = [
     "Incidencias y Comunicados",
     "Registro",
     "Gestión de\nHorarios",
-    "Chat"   # Nuevo botón
+    "Chat"
 ]
 
 FOOTER_H = 18
@@ -485,6 +484,48 @@ html = """
       var BTN_OVR_D = __BTN_OVR_D__;
       var BTN_OVR_M = __BTN_OVR_M__;
 
+      function getTargetWindow(){
+        try {
+          if (window.top && window.top !== window) return window.top;
+        } catch (e) {}
+        try {
+          if (window.parent && window.parent !== window) return window.parent;
+        } catch (e) {}
+        return window;
+      }
+
+      function buildRouteParams(){
+        var params;
+        try {
+          params = new URLSearchParams(getTargetWindow().location.search || "");
+        } catch (e) {
+          params = new URLSearchParams("");
+        }
+
+        params.set("auth", "ok");
+
+        if (USER_NAME) {
+          params.set("usuario", USER_NAME);
+        }
+        if (USER_ROLE) {
+          params.set("rol", USER_ROLE);
+        }
+        if (USER_DNI) {
+          params.set("dni", USER_DNI);
+        }
+
+        return params;
+      }
+
+      function goToPage(path){
+        var url = path + "?" + buildRouteParams().toString();
+        try {
+          getTargetWindow().location.assign(url);
+        } catch (e) {
+          window.location.href = url;
+        }
+      }
+
       var hdr = document.getElementById("hdr");
       hdr.innerHTML = "";
 
@@ -579,43 +620,25 @@ html = """
           d.style.height = btnH + "%";
 
           var sp = document.createElement("span");
-          sp.textContent = BTN_TEXTS[i];
+          var label = BTN_TEXTS[i] || "";
+          var buttonKey = label.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
+          sp.textContent = label;
 
           var fs = overrideFs(i);
           if (fs != null) sp.style.fontSize = fs + "px";
 
           d.appendChild(sp);
 
-          // Horarios -> /calendario
-          if (BTN_TEXTS[i] === "Horarios") {
+          if (buttonKey === "Horarios") {
             d.addEventListener("click", function(){
-              try{
-                var params = new URLSearchParams(window.location.search || "");
-                params.set("auth", "ok");
-                window.location.href = "/calendario?" + params.toString();
-              }catch(e){
-                window.location.href = "/calendario?auth=ok";
-              }
+              goToPage("/calendario");
             });
           }
 
-          // Registro -> /altas_registro solo si rol = Administrador
-          if (BTN_TEXTS[i] === "Registro") {
+          if (buttonKey === "Registro") {
             if (CAN_REGISTER_USERS) {
               d.addEventListener("click", function(){
-                try{
-                  var params = new URLSearchParams(window.location.search || "");
-                  params.set("auth", "ok");
-                  if (!params.get("rol") && USER_ROLE) {
-                    params.set("rol", USER_ROLE);
-                  }
-                  if (!params.get("dni") && USER_DNI) {
-                    params.set("dni", USER_DNI);
-                  }
-                  window.location.href = "/altas_registro?" + params.toString();
-                }catch(e){
-                  window.location.href = "/altas_registro?auth=ok";
-                }
+                goToPage("/altas_registro");
               });
             } else {
               d.classList.add("disabled");
@@ -624,23 +647,10 @@ html = """
             }
           }
 
-          // Gestión de Horarios -> /editar_horarios solo si rol = Administrador
-          if (BTN_TEXTS[i] === "Gestión de\\nHorarios") {
+          if (buttonKey === "Gestión de Horarios") {
             if (CAN_MANAGE_SCHEDULES) {
               d.addEventListener("click", function(){
-                try{
-                  var params = new URLSearchParams(window.location.search || "");
-                  params.set("auth", "ok");
-                  if (!params.get("rol") && USER_ROLE) {
-                    params.set("rol", USER_ROLE);
-                  }
-                  if (!params.get("dni") && USER_DNI) {
-                    params.set("dni", USER_DNI);
-                  }
-                  window.location.href = "/editar_horarios?" + params.toString();
-                }catch(e){
-                  window.location.href = "/editar_horarios?auth=ok";
-                }
+                goToPage("/editar_horarios");
               });
             } else {
               d.classList.add("disabled");
@@ -649,22 +659,9 @@ html = """
             }
           }
 
-          // Chat -> /chat_interfaz
-          if (BTN_TEXTS[i] === "Chat") {
+          if (buttonKey === "Chat") {
             d.addEventListener("click", function(){
-              try{
-                var params = new URLSearchParams(window.location.search || "");
-                params.set("auth", "ok");
-                if (!params.get("rol") && USER_ROLE) {
-                  params.set("rol", USER_ROLE);
-                }
-                if (!params.get("dni") && USER_DNI) {
-                  params.set("dni", USER_DNI);
-                }
-                window.location.href = "/chat_interfaz?" + params.toString();
-              }catch(e){
-                window.location.href = "/chat_interfaz?auth=ok";
-              }
+              goToPage("/chat_interfaz");
             });
           }
 
