@@ -1,6 +1,4 @@
-import json
-from html import escape as html_escape
-
+# calendario.py
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -9,35 +7,28 @@ import streamlit.components.v1 as components
 # Versión final: con detección automática de columna DNI y depuración en consola
 # ==============================================================================
 
-# Obtener parámetros de autenticación de forma segura
+# Obtener parámetros de autenticación
 query_params = st.query_params
-
-
-def _qp_value(*keys: str) -> str:
-    for key in keys:
-        try:
-            value = query_params.get(key)
-        except Exception:
-            value = ""
-        if isinstance(value, (list, tuple)):
-            value = value[-1] if value else ""
-        if value is None:
-            value = ""
-        value = str(value).strip()
-        if value:
-            return value
-    return ""
-
-
-AUTH_USER = _qp_value("usuario", "user")
-AUTH_ROLE = _qp_value("rol", "role")
-AUTH_DNI = _qp_value("dni")
-AUTH_READY = bool(AUTH_USER and AUTH_ROLE)
+AUTH_USER = query_params.get("usuario") or query_params.get("user") or ""
+AUTH_ROLE = query_params.get("rol") or query_params.get("role") or ""
+AUTH_DNI = query_params.get("dni") or ""
 
 # Normalizar rol
-NORMALIZED_ROLE = AUTH_ROLE.lower()
+NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
 IS_SOCORRISTA = NORMALIZED_ROLE == "socorrista"
 IS_ADMIN_OR_DIRECTIVO = NORMALIZED_ROLE in ["administrador", "directivo"]
+
+# Si no hay autenticación, redirigir
+if not AUTH_USER or not AUTH_ROLE:
+    st.markdown(
+        """
+        <script>
+          window.location.href="/admin";
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.stop()
 
 PAD_X_PX = 10
 PAD_TOP_PX = 10
@@ -85,15 +76,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-AUTH_PAYLOAD = {
-    "user": AUTH_USER,
-    "role": AUTH_ROLE,
-    "dni": AUTH_DNI,
-    "auth_ready": AUTH_READY,
-}
-AUTH_JSON = json.dumps(AUTH_PAYLOAD, ensure_ascii=False)
-AUTH_USER_HTML = html_escape(AUTH_PAYLOAD["user"] or "SIN_USUARIO")
-AUTH_ROLE_HTML = html_escape(AUTH_PAYLOAD["role"] or "SIN_ROL")
+# Escapar valores para JavaScript
+def escape_js(s):
+    return str(s).replace('"', '\\"').replace("'", "\\'")
 
 html = r"""
 <!doctype html>
@@ -798,7 +783,7 @@ html = r"""
           <h3 class="agendaTitle">Agenda del día</h3>
           <div class="meta agendaMeta" id="agendaMeta">
             <div><b>Fecha:</b> <span id="fechaDisplay">—</span></div>
-            <div><b>Usuario:</b> <span id="userDisplay">__AUTH_USER_HTML__</span> (<span id="roleDisplay">__AUTH_ROLE_HTML__</span>)</div>
+            <div><b>Usuario:</b> <span id="userDisplay">""" + escape_js(AUTH_USER) + """</span> (<span id="roleDisplay">""" + escape_js(AUTH_ROLE) + """</span>)</div>
           </div>
           <div id="table" class="tableCard">
             <!-- Cabecera para móvil -->
@@ -856,47 +841,16 @@ html = r"""
     </div>
   </div>
 
-  <div id="debugBox" style="display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;padding:12px 14px;border-radius:14px;background:rgba(120,0,0,.92);border:1px solid rgba(255,120,120,.55);color:#fff;font:12px/1.45 monospace;white-space:pre-wrap;max-height:40vh;overflow:auto;box-shadow:0 16px 40px rgba(0,0,0,.45);"></div>
-
 <script>
 (function(){
-  function showDebug(message){
-    try{
-      const el = document.getElementById("debugBox");
-      if(!el) return;
-      el.style.display = "block";
-      el.textContent += (el.textContent ? "\n" : "") + String(message);
-    }catch(_e){}
-  }
-
-  window.addEventListener("error", function(event){
-    const msg = `[JS ERROR] ${event.message} @ ${event.filename || "inline"}:${event.lineno || 0}:${event.colno || 0}`;
-    console.error(msg, event.error);
-    showDebug(msg);
-  });
-
-  window.addEventListener("unhandledrejection", function(event){
-    const reason = event && event.reason ? (event.reason.stack || event.reason.message || String(event.reason)) : "Promise rejection sin detalle";
-    const msg = `[PROMISE ERROR] ${reason}`;
-    console.error(msg);
-    showDebug(msg);
-  });
-
-  showDebug("[CALENDARIO] Script cargado");
   const API_BASE = "https://camilo27.pythonanywhere.com";
   const ENDPOINT_MALLAS = API_BASE + "/api/mallas";
 
   // Usuario autenticado (desde parámetros URL)
-  const AUTH = __AUTH_JSON__;
-  const CURRENT_USER = String(AUTH.user || "");
-  const CURRENT_ROLE = String(AUTH.role || "").toLowerCase();
-  const CURRENT_DNI = String(AUTH.dni || "");
-
-  console.log("[CALENDARIO] AUTH", AUTH);
-  if (!AUTH.auth_ready) {
-    showDebug("[CALENDARIO] Aviso: no llegaron query params completos desde app.py. La vista cargará igual para depuración. user=" + CURRENT_USER + " | role=" + CURRENT_ROLE + " | dni=" + CURRENT_DNI);
-  }
-
+  const CURRENT_USER = \"""" + escape_js(AUTH_USER) + """\";
+  const CURRENT_ROLE = \"""" + escape_js(AUTH_ROLE) + """\".toLowerCase();
+  const CURRENT_DNI = \"""" + escape_js(AUTH_DNI) + """\";
+  
   const IS_SOCORRISTA = CURRENT_ROLE === "socorrista";
   const IS_ADMIN_OR_DIRECTIVO = CURRENT_ROLE === "administrador" || CURRENT_ROLE === "directivo";
 
@@ -1400,17 +1354,13 @@ html = r"""
 
   async function loadMallas(){
     setSyncBadge(false, "SYNC…");
-    console.log("[CALENDARIO] Cargando mallas desde", ENDPOINT_MALLAS);
-    showDebug("[CALENDARIO] Cargando mallas desde " + ENDPOINT_MALLAS);
     try{
       const res = await fetch(ENDPOINT_MALLAS, {method:"GET"});
       if(!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
       if(!data || data.ok !== true || !Array.isArray(data.rows)) throw new Error("JSON inválido");
-
+      
       ALL_ROWS = data.rows;
-      console.log("[CALENDARIO] Filas recibidas:", ALL_ROWS.length);
-      showDebug("[CALENDARIO] Filas recibidas: " + ALL_ROWS.length);
       
       console.log("=== DEPURACIÓN: DATOS RECIBIDOS ===");
       if (ALL_ROWS.length > 0) {
@@ -1602,9 +1552,6 @@ html = (html.replace("__PADX__", str(PAD_X_PX))
         .replace("__CALCOLS__", str(CAL_COLS))
         .replace("__CALROWS__", str(CAL_ROWS))
         .replace("__AGENDAROWS__", str(AGENDA_ROWS))
-        .replace("__AUTH_JSON__", AUTH_JSON)
-        .replace("__AUTH_USER_HTML__", AUTH_USER_HTML)
-        .replace("__AUTH_ROLE_HTML__", AUTH_ROLE_HTML)
 )
 
 components.html(html, height=1100, scrolling=False)
