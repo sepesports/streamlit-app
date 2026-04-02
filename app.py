@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -111,6 +112,28 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+def _dict_to_js_obj(d: dict) -> str:
+    parts = []
+    for k, v in d.items():
+        try:
+            ik = int(k)
+            fv = float(v)
+        except Exception:
+            continue
+        if fv <= 0:
+            continue
+        parts.append(f'"{ik}":{fv}')
+    return "{" + ",".join(parts) + "}"
+
+def _js_escape(value) -> str:
+    return (
+        str(value)
+        .replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\r", "\\r")
+        .replace("\n", "\\n")
+    )
 
 html = """
 <!doctype html>
@@ -484,48 +507,6 @@ html = """
       var BTN_OVR_D = __BTN_OVR_D__;
       var BTN_OVR_M = __BTN_OVR_M__;
 
-      function getTargetWindow(){
-        try {
-          if (window.top && window.top !== window) return window.top;
-        } catch (e) {}
-        try {
-          if (window.parent && window.parent !== window) return window.parent;
-        } catch (e) {}
-        return window;
-      }
-
-      function buildRouteParams(){
-        var params;
-        try {
-          params = new URLSearchParams(getTargetWindow().location.search || "");
-        } catch (e) {
-          params = new URLSearchParams("");
-        }
-
-        params.set("auth", "ok");
-
-        if (USER_NAME) {
-          params.set("usuario", USER_NAME);
-        }
-        if (USER_ROLE) {
-          params.set("rol", USER_ROLE);
-        }
-        if (USER_DNI) {
-          params.set("dni", USER_DNI);
-        }
-
-        return params;
-      }
-
-      function goToPage(path){
-        var url = path + "?" + buildRouteParams().toString();
-        try {
-          getTargetWindow().location.assign(url);
-        } catch (e) {
-          window.location.href = url;
-        }
-      }
-
       var hdr = document.getElementById("hdr");
       hdr.innerHTML = "";
 
@@ -571,6 +552,72 @@ html = """
           if (BTN_OVR_D && BTN_OVR_D[i] != null) return BTN_OVR_D[i];
           return null;
         }
+      }
+
+      function getHostLocation(){
+        try{
+          if (window.top && window.top.location && window.top.location.href) {
+            return new URL(window.top.location.href);
+          }
+        }catch(e){}
+
+        try{
+          if (window.parent && window.parent.location && window.parent.location.href) {
+            return new URL(window.parent.location.href);
+          }
+        }catch(e){}
+
+        return new URL(window.location.href);
+      }
+
+      function buildTargetUrl(path){
+        var hostUrl = getHostLocation();
+        var target = new URL(path, hostUrl.origin);
+
+        try{
+          hostUrl.searchParams.forEach(function(value, key){
+            target.searchParams.set(key, value);
+          });
+        }catch(e){}
+
+        target.searchParams.set("auth", "ok");
+
+        if (USER_NAME) {
+          target.searchParams.set("usuario", USER_NAME);
+          target.searchParams.set("user", USER_NAME);
+        }
+
+        if (USER_ROLE) {
+          target.searchParams.set("rol", USER_ROLE);
+          target.searchParams.set("role", USER_ROLE);
+        }
+
+        if (USER_DNI) {
+          target.searchParams.set("dni", USER_DNI);
+        }
+
+        return target.toString();
+      }
+
+      function goTo(path){
+        var targetUrl = buildTargetUrl(path);
+
+        try{
+          window.open(targetUrl, "_top");
+          return;
+        }catch(e){}
+
+        try{
+          window.top.location.href = targetUrl;
+          return;
+        }catch(e){}
+
+        try{
+          window.parent.location.href = targetUrl;
+          return;
+        }catch(e){}
+
+        window.location.href = targetUrl;
       }
 
       function buildButtons(){
@@ -620,25 +667,25 @@ html = """
           d.style.height = btnH + "%";
 
           var sp = document.createElement("span");
-          var label = BTN_TEXTS[i] || "";
-          var buttonKey = label.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
-          sp.textContent = label;
+          sp.textContent = BTN_TEXTS[i];
 
           var fs = overrideFs(i);
           if (fs != null) sp.style.fontSize = fs + "px";
 
           d.appendChild(sp);
 
-          if (buttonKey === "Horarios") {
+          // Horarios -> /calendario
+          if (BTN_TEXTS[i] === "Horarios") {
             d.addEventListener("click", function(){
-              goToPage("/calendario");
+              goTo("/calendario");
             });
           }
 
-          if (buttonKey === "Registro") {
+          // Registro -> /altas_registro solo si rol = Administrador
+          if (BTN_TEXTS[i] === "Registro") {
             if (CAN_REGISTER_USERS) {
               d.addEventListener("click", function(){
-                goToPage("/altas_registro");
+                goTo("/altas_registro");
               });
             } else {
               d.classList.add("disabled");
@@ -647,10 +694,11 @@ html = """
             }
           }
 
-          if (buttonKey === "Gestión de Horarios") {
+          // Gestión de Horarios -> /editar_horarios solo si rol = Administrador
+          if (BTN_TEXTS[i] === "Gestión de\\nHorarios") {
             if (CAN_MANAGE_SCHEDULES) {
               d.addEventListener("click", function(){
-                goToPage("/editar_horarios");
+                goTo("/editar_horarios");
               });
             } else {
               d.classList.add("disabled");
@@ -659,9 +707,10 @@ html = """
             }
           }
 
-          if (buttonKey === "Chat") {
+          // Chat -> /chat_interfaz
+          if (BTN_TEXTS[i] === "Chat") {
             d.addEventListener("click", function(){
-              goToPage("/chat_interfaz");
+              goTo("/chat_interfaz");
             });
           }
 
@@ -680,19 +729,6 @@ html = """
 </body>
 </html>
 """
-
-def _dict_to_js_obj(d: dict) -> str:
-    parts = []
-    for k, v in d.items():
-        try:
-            ik = int(k)
-            fv = float(v)
-        except Exception:
-            continue
-        if fv <= 0:
-            continue
-        parts.append(f'"{ik}":{fv}')
-    return "{" + ",".join(parts) + "}"
 
 html = (
     html.replace("__PADX__", str(PAD_X_PX))
@@ -724,9 +760,9 @@ html = (
         .replace("__MIN_BTN_W_PX__", str(MIN_BTN_W_PX))
         .replace("__MOBILE_MAX_W_PX__", str(MOBILE_MAX_W_PX))
         .replace("__LOGO_URL__", LOGO_URL)
-        .replace("__USER_NAME__", str(USER_NAME).replace('"', '\\"'))
-        .replace("__USER_ROLE__", str(USER_ROLE).replace('"', '\\"'))
-        .replace("__USER_DNI__", str(USER_DNI).replace('"', '\\"'))
+        .replace("__USER_NAME__", _js_escape(USER_NAME))
+        .replace("__USER_ROLE__", _js_escape(USER_ROLE))
+        .replace("__USER_DNI__", _js_escape(USER_DNI))
         .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
         .replace("__CAN_REGISTER_USERS__", "true" if CAN_REGISTER_USERS else "false")
         .replace("__FOOTER_TEXT__", FOOTER_TEXT)
