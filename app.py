@@ -715,7 +715,7 @@ html = (
         .replace("__BTN_TEXTS__", json.dumps(BTN_TEXTS, ensure_ascii=False))
         .replace("__MIN_BTN_W_PX__", str(MIN_BTN_W_PX))
         .replace("__MOBILE_MAX_W_PX__", str(MOBILE_MAX_W_PX))
-        .replace("__LOGO_URL__", LOGO_URL)
+        .replace("__LOGO_URL__", _js_str(LOGO_URL))
         .replace("__USER_NAME__", _js_str(USER_NAME))
         .replace("__USER_ROLE__", _js_str(USER_ROLE))
         .replace("__USER_DNI__", _js_str(USER_DNI))
