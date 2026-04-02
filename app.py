@@ -1,6 +1,7 @@
 # app.py
 import streamlit as st
 import streamlit.components.v1 as components
+from urllib.parse import urlencode
 
 st.set_page_config(layout="wide")
 
@@ -134,6 +135,27 @@ def _js_escape(value) -> str:
         .replace("\r", "\\r")
         .replace("\n", "\\n")
     )
+
+def _build_page_url(path: str) -> str:
+    params = {"auth": "ok"}
+
+    if USER_NAME:
+        params["usuario"] = USER_NAME
+        params["user"] = USER_NAME
+
+    if USER_ROLE:
+        params["rol"] = USER_ROLE
+        params["role"] = USER_ROLE
+
+    if USER_DNI:
+        params["dni"] = USER_DNI
+
+    return f"{path}?{urlencode(params)}"
+
+URL_CALENDARIO = _build_page_url("/calendario")
+URL_ALTAS_REGISTRO = _build_page_url("/altas_registro")
+URL_EDITAR_HORARIOS = _build_page_url("/editar_horarios")
+URL_CHAT = _build_page_url("/chat_interfaz")
 
 html = """
 <!doctype html>
@@ -507,6 +529,11 @@ html = """
       var BTN_OVR_D = __BTN_OVR_D__;
       var BTN_OVR_M = __BTN_OVR_M__;
 
+      var URL_CALENDARIO = "__URL_CALENDARIO__";
+      var URL_ALTAS_REGISTRO = "__URL_ALTAS_REGISTRO__";
+      var URL_EDITAR_HORARIOS = "__URL_EDITAR_HORARIOS__";
+      var URL_CHAT = "__URL_CHAT__";
+
       var hdr = document.getElementById("hdr");
       hdr.innerHTML = "";
 
@@ -554,70 +581,30 @@ html = """
         }
       }
 
-      function getHostLocation(){
+      function navigateTo(url){
         try{
-          if (window.top && window.top.location && window.top.location.href) {
-            return new URL(window.top.location.href);
-          }
-        }catch(e){}
-
-        try{
-          if (window.parent && window.parent.location && window.parent.location.href) {
-            return new URL(window.parent.location.href);
-          }
-        }catch(e){}
-
-        return new URL(window.location.href);
-      }
-
-      function buildTargetUrl(path){
-        var hostUrl = getHostLocation();
-        var target = new URL(path, hostUrl.origin);
-
-        try{
-          hostUrl.searchParams.forEach(function(value, key){
-            target.searchParams.set(key, value);
-          });
-        }catch(e){}
-
-        target.searchParams.set("auth", "ok");
-
-        if (USER_NAME) {
-          target.searchParams.set("usuario", USER_NAME);
-          target.searchParams.set("user", USER_NAME);
-        }
-
-        if (USER_ROLE) {
-          target.searchParams.set("rol", USER_ROLE);
-          target.searchParams.set("role", USER_ROLE);
-        }
-
-        if (USER_DNI) {
-          target.searchParams.set("dni", USER_DNI);
-        }
-
-        return target.toString();
-      }
-
-      function goTo(path){
-        var targetUrl = buildTargetUrl(path);
-
-        try{
-          window.open(targetUrl, "_top");
+          var a = document.createElement("a");
+          a.href = url;
+          a.target = "_top";
+          a.rel = "noopener";
+          a.style.display = "none";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
           return;
         }catch(e){}
 
         try{
-          window.top.location.href = targetUrl;
+          window.top.location.href = url;
           return;
         }catch(e){}
 
         try{
-          window.parent.location.href = targetUrl;
+          window.parent.location.href = url;
           return;
         }catch(e){}
 
-        window.location.href = targetUrl;
+        window.location.href = url;
       }
 
       function buildButtons(){
@@ -677,7 +664,7 @@ html = """
           // Horarios -> /calendario
           if (BTN_TEXTS[i] === "Horarios") {
             d.addEventListener("click", function(){
-              goTo("/calendario");
+              navigateTo(URL_CALENDARIO);
             });
           }
 
@@ -685,7 +672,7 @@ html = """
           if (BTN_TEXTS[i] === "Registro") {
             if (CAN_REGISTER_USERS) {
               d.addEventListener("click", function(){
-                goTo("/altas_registro");
+                navigateTo(URL_ALTAS_REGISTRO);
               });
             } else {
               d.classList.add("disabled");
@@ -698,7 +685,7 @@ html = """
           if (BTN_TEXTS[i] === "Gestión de\\nHorarios") {
             if (CAN_MANAGE_SCHEDULES) {
               d.addEventListener("click", function(){
-                goTo("/editar_horarios");
+                navigateTo(URL_EDITAR_HORARIOS);
               });
             } else {
               d.classList.add("disabled");
@@ -710,7 +697,7 @@ html = """
           // Chat -> /chat_interfaz
           if (BTN_TEXTS[i] === "Chat") {
             d.addEventListener("click", function(){
-              goTo("/chat_interfaz");
+              navigateTo(URL_CHAT);
             });
           }
 
@@ -784,6 +771,10 @@ html = (
         .replace("__HERO_BG_URL__", HERO_BG_IMAGE_URL)
         .replace("__HERO_BG_FIT__", HERO_BG_IMAGE_FIT)
         .replace("__HERO_BG_POS__", HERO_BG_IMAGE_POS)
+        .replace("__URL_CALENDARIO__", _js_escape(URL_CALENDARIO))
+        .replace("__URL_ALTAS_REGISTRO__", _js_escape(URL_ALTAS_REGISTRO))
+        .replace("__URL_EDITAR_HORARIOS__", _js_escape(URL_EDITAR_HORARIOS))
+        .replace("__URL_CHAT__", _js_escape(URL_CHAT))
 )
 
 components.html(html, height=10, scrolling=False)
