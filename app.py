@@ -16,28 +16,22 @@ if st.query_params.get("auth") != "ok":
     )
     st.stop()
 
-# ===================== BASE (NO CAMBIAR ESTRUCTURA) =====================
-
+# ===================== BASE =====================
 PAD_X_PX = 8
 PAD_TOP_PX = 8
-
 BORDER_PX = 1
 BORDER_COLOR = "rgba(255,255,255,.12)"
-
 BG_COLOR = "#020a1a"
 HEADER_BG = "transparent"
 IMG_BG = "transparent"
 BTN_BG = "transparent"
 FOOTER_BG = "transparent"
-
 IMG_LEFT = 0
 IMG_RIGHT = 0
 IMG_TOP = 10
 IMG_HEIGHT = 44
-
 HEADER_TOP = 0
 HEADER_HEIGHT = 10
-
 BTN_AREA_TOP = 55
 BTN_H = 23
 BTN_GAP_X = 2
@@ -52,22 +46,19 @@ BTN_TEXTS = [
     "Incidencias y Comunicados",
     "Registro",
     "Gestión de\nHorarios",
-    "Chat"   # Nuevo botón
+    "Chat"
 ]
 
 FOOTER_H = 18
 FOOTER_BOTTOM = 5
 FOOTER_LEFT = 6
 FOOTER_RIGHT = 6
-
 MIN_BTN_W_PX = 130
 MOBILE_MAX_W_PX = 500
 
 # ===================== CONTENIDO =====================
-
 LOGO_URL = "https://files.catbox.moe/056m6v.jpg"
 FOOTER_TEXT = "2026 Socorrista ProVersión 1.0. Todos los derechos reservados"
-
 HERO_BG_IMAGE_URL = "https://files.catbox.moe/16109j.jpeg"
 HERO_BG_IMAGE_FIT = "cover"
 HERO_BG_IMAGE_POS = "center"
@@ -83,19 +74,14 @@ CAN_REGISTER_USERS = NORMALIZED_ROLE == "administrador"
 # ===================== AJUSTES EDITABLES =====================
 HERO_FONT_SIZE_DESKTOP_PX = 44
 HERO_FONT_SIZE_MOBILE_PX = 13
-
 HEADER_FONT_SIZE_DESKTOP_PX = 40
 HEADER_FONT_SIZE_MOBILE_PX = 23
-
 BTN_FONT_SIZE_DESKTOP_PX = 17
 BTN_FONT_SIZE_MOBILE_PX = 17
-
 FOOTER_FONT_SIZE_DESKTOP_PX = 13
 FOOTER_FONT_SIZE_MOBILE_PX = 13
-
 BTN_FONT_OVERRIDES_DESKTOP_PX = {}
 BTN_FONT_OVERRIDES_MOBILE_PX = {}
-
 LOGO_PADDING_PX_DESKTOP = 0
 LOGO_PADDING_PX_MOBILE = 0
 LOGO_BORDER_RADIUS_PX = 0
@@ -123,28 +109,22 @@ html = """
     :root{
       --padx: __PADX__px;
       --padtop: __PADTOP__px;
-
       --b: __B__px;
       --bc: __BC__;
-
       --bg: __BG__;
       --headerbg: __HEADERBG__;
       --imgbg: __IMGBG__;
       --btnbg: __BTNBG__;
       --footerbg: __FOOTERBG__;
-
       --txt: #eaf2ff;
       --txt2: rgba(234,242,255,.85);
-
       --shadow0: 0 18px 40px rgba(0,0,0,.60);
       --shadow1: 0 12px 26px rgba(0,0,0,.55);
       --shadow2: 0 10px 18px rgba(0,0,0,.45);
-
       --heroFs: __HERO_FS_D__px;
       --hdrFs: __HDR_FS_D__px;
       --btnFs: __BTN_FS_D__px;
       --footFs: __FOOT_FS_D__px;
-
       --logoPad: __LOGO_PAD_D__px;
       --logoRad: __LOGO_RAD__px;
     }
@@ -445,18 +425,15 @@ html = """
 <body>
   <div id="stage">
     <div id="frame"></div>
-
     <div id="plan">
       <div id="hdr"></div>
       <div id="img">¡BIENVENIDO!</div>
-
       <div id="btn-area">
         <div id="btn-grid"></div>
         <div id="footer">__FOOTER_TEXT__</div>
       </div>
     </div>
   </div>
-
   <script>
     (function(){
       var fe = window.frameElement;
@@ -500,7 +477,6 @@ html = """
         var d = document.createElement("div");
         d.className = "hdr-cell" + (c.white ? " white" : "");
         d.style.width = c.w + "%";
-
         if (c.kind === "logo"){
           d.className += " hdr-logo";
           var img = document.createElement("img");
@@ -514,7 +490,6 @@ html = """
         } else {
           d.textContent = c.t;
         }
-
         hdr.appendChild(d);
       });
 
@@ -534,59 +509,45 @@ html = """
 
       function buildButtons(){
         grid.innerHTML = "";
-
         var vw = window.innerWidth;
         var r = plan.getBoundingClientRect();
         var planW = r.width;
-
         var left = __BTN_L__;
         var right = __BTN_R__;
         var gapX = __BTN_GAP_X__;
         var gapY = __BTN_GAP_Y__;
         var btnH = __BTN_H__;
-
         if (vw <= MOBILE_MAX_W_PX){
           if (gapX < 2) gapX = 2;
           if (gapY < 3) gapY = 3;
         }
-
         var count = BTN_TEXTS.length;
         var cols = 3;
         var usable = 100 - left - right;
-
         while (cols > 1){
           var wPctTry = (usable - (gapX * (cols - 1))) / cols;
           var wPxTry = (wPctTry / 100) * planW;
           if (wPctTry > 0 && wPxTry >= MIN_BTN_W_PX) break;
           cols -= 1;
         }
-
         var w = (usable - (gapX * (cols - 1))) / cols;
         if (w < 0) w = 0;
-
         for (var i = 0; i < count; i++){
           var row = Math.floor(i / cols);
           var col = i % cols;
-
           var x = left + col * (w + gapX);
           var y = row * (btnH + gapY);
-
           var d = document.createElement("div");
           d.className = "btn";
           d.style.left = x + "%";
           d.style.top = y + "%";
           d.style.width = w + "%";
           d.style.height = btnH + "%";
-
           var sp = document.createElement("span");
           sp.textContent = BTN_TEXTS[i];
-
           var fs = overrideFs(i);
           if (fs != null) sp.style.fontSize = fs + "px";
-
           d.appendChild(sp);
-
-          // Horarios -> /calendario
           if (BTN_TEXTS[i] === "Horarios") {
             d.addEventListener("click", function(){
               try{
@@ -598,20 +559,14 @@ html = """
               }
             });
           }
-
-          // Registro -> /altas_registro solo si rol = Administrador
           if (BTN_TEXTS[i] === "Registro") {
             if (CAN_REGISTER_USERS) {
               d.addEventListener("click", function(){
                 try{
                   var params = new URLSearchParams(window.location.search || "");
                   params.set("auth", "ok");
-                  if (!params.get("rol") && USER_ROLE) {
-                    params.set("rol", USER_ROLE);
-                  }
-                  if (!params.get("dni") && USER_DNI) {
-                    params.set("dni", USER_DNI);
-                  }
+                  if (!params.get("rol") && USER_ROLE) params.set("rol", USER_ROLE);
+                  if (!params.get("dni") && USER_DNI) params.set("dni", USER_DNI);
                   window.location.href = "/altas_registro?" + params.toString();
                 }catch(e){
                   window.location.href = "/altas_registro?auth=ok";
@@ -623,20 +578,14 @@ html = """
               d.title = "Disponible solo para Administrador";
             }
           }
-
-          // Gestión de Horarios -> /editar_horarios solo si rol = Administrador
           if (BTN_TEXTS[i] === "Gestión de\\nHorarios") {
             if (CAN_MANAGE_SCHEDULES) {
               d.addEventListener("click", function(){
                 try{
                   var params = new URLSearchParams(window.location.search || "");
                   params.set("auth", "ok");
-                  if (!params.get("rol") && USER_ROLE) {
-                    params.set("rol", USER_ROLE);
-                  }
-                  if (!params.get("dni") && USER_DNI) {
-                    params.set("dni", USER_DNI);
-                  }
+                  if (!params.get("rol") && USER_ROLE) params.set("rol", USER_ROLE);
+                  if (!params.get("dni") && USER_DNI) params.set("dni", USER_DNI);
                   window.location.href = "/editar_horarios?" + params.toString();
                 }catch(e){
                   window.location.href = "/editar_horarios?auth=ok";
@@ -648,34 +597,23 @@ html = """
               d.title = "Disponible solo para Administrador";
             }
           }
-
-          // Chat -> /chat_interfaz
           if (BTN_TEXTS[i] === "Chat") {
             d.addEventListener("click", function(){
               try{
                 var params = new URLSearchParams(window.location.search || "");
                 params.set("auth", "ok");
-                if (!params.get("rol") && USER_ROLE) {
-                  params.set("rol", USER_ROLE);
-                }
-                if (!params.get("dni") && USER_DNI) {
-                  params.set("dni", USER_DNI);
-                }
+                if (!params.get("rol") && USER_ROLE) params.set("rol", USER_ROLE);
+                if (!params.get("dni") && USER_DNI) params.set("dni", USER_DNI);
                 window.location.href = "/chat_interfaz?" + params.toString();
               }catch(e){
                 window.location.href = "/chat_interfaz?auth=ok";
               }
             });
           }
-
           grid.appendChild(d);
         }
       }
-
-      function update(){
-        buildButtons();
-      }
-
+      function update(){ buildButtons(); }
       window.addEventListener("resize", update);
       update();
     })();
