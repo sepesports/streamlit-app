@@ -9,28 +9,35 @@ import streamlit.components.v1 as components
 # Versión final: con detección automática de columna DNI y depuración en consola
 # ==============================================================================
 
-# Obtener parámetros de autenticación
+# Obtener parámetros de autenticación de forma segura
 query_params = st.query_params
-AUTH_USER = query_params.get("usuario") or query_params.get("user") or ""
-AUTH_ROLE = query_params.get("rol") or query_params.get("role") or ""
-AUTH_DNI = query_params.get("dni") or ""
+
+
+def _qp_value(*keys: str) -> str:
+    for key in keys:
+        try:
+            value = query_params.get(key)
+        except Exception:
+            value = ""
+        if isinstance(value, (list, tuple)):
+            value = value[-1] if value else ""
+        if value is None:
+            value = ""
+        value = str(value).strip()
+        if value:
+            return value
+    return ""
+
+
+AUTH_USER = _qp_value("usuario", "user")
+AUTH_ROLE = _qp_value("rol", "role")
+AUTH_DNI = _qp_value("dni")
+AUTH_READY = bool(AUTH_USER and AUTH_ROLE)
 
 # Normalizar rol
-NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
+NORMALIZED_ROLE = AUTH_ROLE.lower()
 IS_SOCORRISTA = NORMALIZED_ROLE == "socorrista"
 IS_ADMIN_OR_DIRECTIVO = NORMALIZED_ROLE in ["administrador", "directivo"]
-
-# Si no hay autenticación, redirigir
-if not AUTH_USER or not AUTH_ROLE:
-    st.markdown(
-        """
-        <script>
-          window.location.href="/admin";
-        </script>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.stop()
 
 PAD_X_PX = 10
 PAD_TOP_PX = 10
@@ -79,13 +86,14 @@ st.markdown(
 )
 
 AUTH_PAYLOAD = {
-    "user": str(AUTH_USER or ""),
-    "role": str(AUTH_ROLE or ""),
-    "dni": str(AUTH_DNI or ""),
+    "user": AUTH_USER,
+    "role": AUTH_ROLE,
+    "dni": AUTH_DNI,
+    "auth_ready": AUTH_READY,
 }
 AUTH_JSON = json.dumps(AUTH_PAYLOAD, ensure_ascii=False)
-AUTH_USER_HTML = html_escape(AUTH_PAYLOAD["user"])
-AUTH_ROLE_HTML = html_escape(AUTH_PAYLOAD["role"])
+AUTH_USER_HTML = html_escape(AUTH_PAYLOAD["user"] or "SIN_USUARIO")
+AUTH_ROLE_HTML = html_escape(AUTH_PAYLOAD["role"] or "SIN_ROL")
 
 html = r"""
 <!doctype html>
@@ -885,6 +893,9 @@ html = r"""
   const CURRENT_DNI = String(AUTH.dni || "");
 
   console.log("[CALENDARIO] AUTH", AUTH);
+  if (!AUTH.auth_ready) {
+    showDebug("[CALENDARIO] Aviso: no llegaron query params completos desde app.py. La vista cargará igual para depuración. user=" + CURRENT_USER + " | role=" + CURRENT_ROLE + " | dni=" + CURRENT_DNI);
+  }
 
   const IS_SOCORRISTA = CURRENT_ROLE === "socorrista";
   const IS_ADMIN_OR_DIRECTIVO = CURRENT_ROLE === "administrador" || CURRENT_ROLE === "directivo";
