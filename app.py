@@ -568,16 +568,12 @@ html = """
           params.set("dni", USER_DNI);
         }
 
-        return params;
+        return params.toString();
       }
 
       function goToPage(path){
-        try{
-          var params = buildAppParams();
-          window.top.location.href = path + "?" + params.toString();
-        }catch(e){
-          window.location.href = path + "?auth=ok";
-        }
+        var qs = buildAppParams();
+        window.location.href = path + "?" + qs;
       }
 
       function buildButtons(){
