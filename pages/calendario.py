@@ -7,11 +7,22 @@ import streamlit.components.v1 as components
 # Versión final: con detección automática de columna DNI y depuración en consola
 # ==============================================================================
 
+st.set_page_config(layout="wide")
+
+def _qp_value(*keys):
+    for key in keys:
+        value = st.query_params.get(key, "")
+        if isinstance(value, list):
+            value = value[0] if value else ""
+        value = str(value or "").strip()
+        if value:
+            return value
+    return ""
+
 # Obtener parámetros de autenticación
-query_params = st.query_params
-AUTH_USER = query_params.get("usuario") or query_params.get("user") or ""
-AUTH_ROLE = query_params.get("rol") or query_params.get("role") or ""
-AUTH_DNI = query_params.get("dni") or ""
+AUTH_USER = _qp_value("usuario", "user")
+AUTH_ROLE = _qp_value("rol", "role")
+AUTH_DNI = _qp_value("dni")
 
 # Normalizar rol
 NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
@@ -63,14 +74,13 @@ DAY_CELL_GAP_PX = 6
 
 AGENDA_ROWS = 5
 
-st.set_page_config(layout="wide")
-
 st.markdown(
     """
     <style>
       .block-container{padding:0!important;margin:0!important;max-width:100%!important;}
       section.main > div{padding:0!important;margin:0!important;}
       header, footer{display:none!important;}
+      iframe{border:0!important;}
     </style>
     """,
     unsafe_allow_html=True,
