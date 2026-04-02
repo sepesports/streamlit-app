@@ -24,13 +24,13 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Datos seguros para JS
+# Convertir a JSON válido para JavaScript
 user_json = json.dumps(AUTH_USER)
 role_json = json.dumps(AUTH_ROLE)
 dni_json = json.dumps(AUTH_DNI)
 
-# Plantilla HTML (sin f-strings para evitar errores de sintaxis)
-html_template = """
+# Plantilla HTML (sin f-strings, con comillas simples triples para evitar conflictos)
+html_template = '''
 <!DOCTYPE html>
 <html>
 <head>
@@ -205,25 +205,12 @@ html_template = """
 </div>
 
 <script>
-    // Capturar errores globales
-    window.addEventListener('error', function(e) {
-        document.getElementById('app').innerHTML = '<div class="error-box">❌ ERROR EN JS: ' + e.message + '</div>';
-        console.error(e);
-    });
-
-    (function() {
+    (function(){
         try {
             const CURRENT_USER = __AUTH_USER__;
             const CURRENT_ROLE = (__AUTH_ROLE__).toLowerCase();
             const CURRENT_DNI = __AUTH_DNI__;
             const IS_SOCORRISTA = CURRENT_ROLE === "socorrista";
-
-            document.getElementById('app').innerHTML = `
-                <div class="debug-info">
-                    ✅ Depuración: Usuario: ${CURRENT_USER} | Rol: ${CURRENT_ROLE} | DNI: ${CURRENT_DNI} | Socorrista: ${IS_SOCORRISTA}
-                </div>
-                <div class="loading">Cargando datos desde la API...</div>
-            `;
 
             const API_URL = "https://camilo27.pythonanywhere.com/api/mallas";
             let allRows = [];
@@ -458,9 +445,9 @@ html_template = """
 </script>
 </body>
 </html>
-"""
+'''
 
-# Reemplazar los placeholders con los valores JSON (sin f-strings, usando replace simple)
+# Reemplazar los marcadores con los valores JSON seguros
 html = html_template.replace("__AUTH_USER__", user_json)
 html = html.replace("__AUTH_ROLE__", role_json)
 html = html.replace("__AUTH_DNI__", dni_json)
