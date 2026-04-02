@@ -52,8 +52,7 @@ BTN_TEXTS = [
     "Control de\nHoras",
     "Incidencias y Comunicados",
     "Registro",
-    "Gestión de\nHorarios",
-    "Chat"
+    "Gestión de\nHorarios"
 ]
 
 FOOTER_H = 18
@@ -636,6 +635,12 @@ html = """
             });
           }
 
+          if (BTN_TEXTS[i] === "Incidencias y Comunicados") {
+            d.addEventListener("click", function(){
+              goToPage("/chat_interfaz");
+            });
+          }
+
           if (BTN_TEXTS[i] === "Registro") {
             if (CAN_REGISTER_USERS) {
               d.addEventListener("click", function(){
@@ -658,12 +663,6 @@ html = """
               d.setAttribute("aria-disabled", "true");
               d.title = "Disponible solo para Administrador";
             }
-          }
-
-          if (BTN_TEXTS[i] === "Chat") {
-            d.addEventListener("click", function(){
-              goToPage("/chat_interfaz");
-            });
           }
 
           grid.appendChild(d);
