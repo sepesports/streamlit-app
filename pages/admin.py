@@ -456,43 +456,75 @@ async function doLogin(){
 const stage = document.getElementById("stage");
 const btn = document.getElementById("fullscreenToggleBtn");
 
-function toggleFullscreen() {
-  if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
-    const elem = document.documentElement;
-    const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
-    if (requestMethod) {
-      requestMethod.call(elem).then(() => {
-        stage.classList.add("fullscreen-mode");
+// Funciones auxiliares de persistencia
+function setFullscreenFlag(active) {
+  if (active) {
+    localStorage.setItem("fullscreenActive", "true");
+  } else {
+    localStorage.removeItem("fullscreenActive");
+  }
+}
+
+// Función para entrar en fullscreen
+function enterFullscreen() {
+  const elem = document.documentElement;
+  const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
+  if (requestMethod) {
+    requestMethod.call(elem).then(() => {
+      if (stage) stage.classList.add("fullscreen-mode");
+      if (btn) {
         btn.textContent = "✕";
         btn.style.fontSize = "26px";
-      }).catch(err => {
-        console.log("Error al entrar en fullscreen:", err);
-      });
-    }
-  } else {
-    const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
-    if (exitMethod) {
-      exitMethod.call(document).then(() => {
-        stage.classList.remove("fullscreen-mode");
+      }
+      setFullscreenFlag(true);
+    }).catch(err => {
+      console.log("Error al entrar en fullscreen:", err);
+    });
+  }
+}
+
+// Función para salir de fullscreen
+function exitFullscreen() {
+  const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+  if (exitMethod) {
+    exitMethod.call(document).then(() => {
+      if (stage) stage.classList.remove("fullscreen-mode");
+      if (btn) {
         btn.textContent = "⤢";
         btn.style.fontSize = "28px";
-      }).catch(err => {
-        console.log("Error al salir de fullscreen:", err);
-      });
-    }
+      }
+      setFullscreenFlag(false);
+    }).catch(err => {
+      console.log("Error al salir de fullscreen:", err);
+    });
+  }
+}
+
+function toggleFullscreen() {
+  const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  if (isFull) {
+    exitFullscreen();
+  } else {
+    enterFullscreen();
   }
 }
 
 function onFullscreenChange() {
-  const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-  if (isFullscreen) {
-    stage.classList.add("fullscreen-mode");
-    btn.textContent = "✕";
-    btn.style.fontSize = "26px";
+  const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  if (isFull) {
+    if (stage) stage.classList.add("fullscreen-mode");
+    if (btn) {
+      btn.textContent = "✕";
+      btn.style.fontSize = "26px";
+    }
+    setFullscreenFlag(true);
   } else {
-    stage.classList.remove("fullscreen-mode");
-    btn.textContent = "⤢";
-    btn.style.fontSize = "28px";
+    if (stage) stage.classList.remove("fullscreen-mode");
+    if (btn) {
+      btn.textContent = "⤢";
+      btn.style.fontSize = "28px";
+    }
+    setFullscreenFlag(false);
   }
 }
 
@@ -506,6 +538,24 @@ if (btn) {
     e.preventDefault();
     toggleFullscreen();
   });
+}
+
+// Restaurar fullscreen si estaba activo (solo móvil)
+if (window.innerWidth <= 768) {
+  const savedFlag = localStorage.getItem("fullscreenActive");
+  if (savedFlag === "true") {
+    const isCurrentlyFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+    if (!isCurrentlyFull) {
+      enterFullscreen();
+    } else {
+      // Asegurar UI
+      if (stage) stage.classList.add("fullscreen-mode");
+      if (btn) {
+        btn.textContent = "✕";
+        btn.style.fontSize = "26px";
+      }
+    }
+  }
 }
 
 (function(){
