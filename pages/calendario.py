@@ -728,6 +728,64 @@ html = r"""
     .calendarGrid{gap:8px;}
     .day{height:34px;}
   }
+
+  /* ========== FULLSCREEN TOGGLE STYLES (solo móvil) ========== */
+  .fullscreen-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 48px;
+    height: 48px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(12px);
+    border-radius: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: white;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255,255,255,0.2);
+    font-weight: bold;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  .fullscreen-toggle:active {
+    transform: scale(0.92);
+    background: rgba(0,0,0,0.8);
+  }
+  @media (min-width: 769px) {
+    .fullscreen-toggle {
+      display: none;
+    }
+  }
+  @media (max-width: 768px) {
+    .fullscreen-toggle {
+      display: flex;
+    }
+  }
+  html:fullscreen #stage.fullscreen-mode #plan,
+  html:-webkit-full-screen #stage.fullscreen-mode #plan,
+  html:-moz-full-screen #stage.fullscreen-mode #plan {
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  html:fullscreen #stage.fullscreen-mode #frame,
+  html:-webkit-full-screen #stage.fullscreen-mode #frame,
+  html:-moz-full-screen #stage.fullscreen-mode #frame {
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: 0;
+  }
 </style>
 </head>
 <body>
@@ -848,6 +906,8 @@ html = r"""
     </div>
   </div>
 
+  <!-- Botón de pantalla completa (solo móvil) -->
+  <div id="fullscreenToggleBtn" class="fullscreen-toggle">⤢</div>
 
 <script>
 (function(){
@@ -1510,6 +1570,113 @@ html = r"""
 
   init();
 })();
+
+// ==================== FULLSCREEN PERSISTENCE (solo móvil) ====================
+(function() {
+  const stageEl = document.getElementById("stage");
+  const toggleBtn = document.getElementById("fullscreenToggleBtn");
+  const isMobile = window.innerWidth <= 768;
+
+  function setFullscreenFlag(active) {
+    if (active) {
+      localStorage.setItem("fullscreenActive", "true");
+    } else {
+      localStorage.removeItem("fullscreenActive");
+    }
+  }
+
+  function enterFullscreen() {
+    const elem = document.documentElement;
+    const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
+    if (requestMethod) {
+      requestMethod.call(elem).then(() => {
+        if (stageEl) stageEl.classList.add("fullscreen-mode");
+        if (toggleBtn) {
+          toggleBtn.textContent = "✕";
+          toggleBtn.style.fontSize = "26px";
+        }
+        setFullscreenFlag(true);
+      }).catch(err => {
+        console.log("Error al entrar en fullscreen:", err);
+      });
+    }
+  }
+
+  function exitFullscreen() {
+    const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+    if (exitMethod) {
+      exitMethod.call(document).then(() => {
+        if (stageEl) stageEl.classList.remove("fullscreen-mode");
+        if (toggleBtn) {
+          toggleBtn.textContent = "⤢";
+          toggleBtn.style.fontSize = "28px";
+        }
+        setFullscreenFlag(false);
+      }).catch(err => {
+        console.log("Error al salir de fullscreen:", err);
+      });
+    }
+  }
+
+  function toggleFullscreen() {
+    const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+    if (isFull) {
+      exitFullscreen();
+    } else {
+      enterFullscreen();
+    }
+  }
+
+  function onFullscreenChange() {
+    const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+    if (isFull) {
+      if (stageEl) stageEl.classList.add("fullscreen-mode");
+      if (toggleBtn) {
+        toggleBtn.textContent = "✕";
+        toggleBtn.style.fontSize = "26px";
+      }
+      setFullscreenFlag(true);
+    } else {
+      if (stageEl) stageEl.classList.remove("fullscreen-mode");
+      if (toggleBtn) {
+        toggleBtn.textContent = "⤢";
+        toggleBtn.style.fontSize = "28px";
+      }
+      setFullscreenFlag(false);
+    }
+  }
+
+  // Restaurar fullscreen si estaba activo (solo móvil)
+  if (isMobile) {
+    const savedFlag = localStorage.getItem("fullscreenActive");
+    if (savedFlag === "true") {
+      const isCurrentlyFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+      if (!isCurrentlyFull) {
+        enterFullscreen();
+      } else {
+        // Asegurar UI
+        if (stageEl) stageEl.classList.add("fullscreen-mode");
+        if (toggleBtn) {
+          toggleBtn.textContent = "✕";
+          toggleBtn.style.fontSize = "26px";
+        }
+      }
+    }
+  }
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      toggleFullscreen();
+    });
+  }
+
+  document.addEventListener("fullscreenchange", onFullscreenChange);
+  document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+  document.addEventListener("mozfullscreenchange", onFullscreenChange);
+  document.addEventListener("MSFullscreenChange", onFullscreenChange);
+})();
+// ==================== FIN FULLSCREEN PERSISTENCE ====================
 </script>
 
 </body>
