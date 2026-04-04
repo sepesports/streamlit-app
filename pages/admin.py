@@ -1,52 +1,6 @@
-# app.py
+# pages/admin.py
 import streamlit as st
 import streamlit.components.v1 as components
-
-# ===== AJUSTES =====
-PHONE_W_PX = 390
-PHONE_H_PX = 844
-PHONE_BORDER_PX = 3
-PHONE_BORDER_COLOR = "#111111"
-PHONE_BG = "#FFFFFF"
-OUTSIDE_BG = "#EDEDED"
-
-GRID_COLOR = "rgba(0,0,0,0.10)"
-MID_COLOR = "rgba(0,0,0,0.25)"
-BLOCK_BORDER = "2px dashed rgba(0,0,0,.55)"
-BLOCK_BG = "rgba(0,0,0,.03)"
-LABEL_BG = "rgba(255,255,255,.92)"
-
-# BLOQUES MOBILE (0–100 dentro del área del teléfono)
-# id, left, top, width, height
-BLOCKS = [
-    {"id": "SOCIAL_BAR",        "left": 4,   "top": 2,    "width": 28,  "height": 4.5},
-    {"id": "LOGO",              "left": 32,  "top": 1.5,  "width": 36,  "height": 5.5},
-    {"id": "BTN_LOGIN",         "left": 6,   "top": 8.5,  "width": 42,  "height": 5.5},
-    {"id": "BTN_REGISTRATE",    "left": 52,  "top": 8.5,  "width": 42,  "height": 5.5},
-    {"id": "BTN_JUGAR_AHORA",   "left": 6,   "top": 15.5, "width": 88,  "height": 6.0},
-
-    {"id": "HERO_BANNER",       "left": 0,   "top": 23.0, "width": 100, "height": 22.0},
-    {"id": "HERO_ARROW_L",      "left": 2,   "top": 31.5, "width": 8,   "height": 6.5},
-    {"id": "HERO_ARROW_R",      "left": 90,  "top": 31.5, "width": 8,   "height": 6.5},
-    {"id": "HERO_DOTS",         "left": 37,  "top": 43.0, "width": 26,  "height": 2.5},
-
-    {"id": "MODE_CLASSIC",      "left": 6,   "top": 48.0, "width": 42,  "height": 6.5},
-    {"id": "MODE_PPM",          "left": 52,  "top": 48.0, "width": 42,  "height": 6.5},
-    {"id": "MODE_FANTASY",      "left": 6,   "top": 56.0, "width": 88,  "height": 6.5},
-
-    {"id": "MATCH_01",          "left": 4,   "top": 65.5, "width": 44,  "height": 9.0},
-    {"id": "MATCH_02",          "left": 52,  "top": 65.5, "width": 44,  "height": 9.0},
-    {"id": "MATCH_03",          "left": 4,   "top": 76.0, "width": 44,  "height": 9.0},
-    {"id": "MATCH_04",          "left": 52,  "top": 76.0, "width": 44,  "height": 9.0},
-    {"id": "MATCH_05",          "left": 4,   "top": 86.5, "width": 44,  "height": 9.0},
-    {"id": "MATCH_06",          "left": 52,  "top": 86.5, "width": 44,  "height": 9.0},
-
-    {"id": "RETO_01",           "left": 4,   "top": 98.5, "width": 92,  "height": 11.0},
-    {"id": "RETO_02",           "left": 4,   "top": 111.0,"width": 92,  "height": 11.0},
-    {"id": "RETO_03",           "left": 4,   "top": 123.5,"width": 92,  "height": 11.0},
-    {"id": "RETO_04",           "left": 4,   "top": 136.0,"width": 92,  "height": 11.0},
-]
-# ===================
 
 st.set_page_config(layout="wide")
 
@@ -56,195 +10,570 @@ st.markdown(
       .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
       section.main > div{padding:0 !important;margin:0 !important;}
       header, footer{display:none !important;}
-      iframe{display:block !important;}
+      [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-def blocks_to_html(blocks):
-    out = []
-    for b in blocks:
-        out.append(
-            f"""
-            <div class="blk"
-                 style="left:{b["left"]}%; top:{b["top"]}%;
-                        width:{b["width"]}%; height:{b["height"]}%;">
-
-              <span class="blk-label">{b["id"]}</span>
-            </div>
-            """
-        )
-    return "\n".join(out)
-
-html = f"""
+html = """
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root{{
-      --phone-w:{PHONE_W_PX}px;
-      --phone-h:{PHONE_H_PX}px;
-      --phone-border:{PHONE_BORDER_PX}px;
-      --phone-border-color:{PHONE_BORDER_COLOR};
-      --phone-bg:{PHONE_BG};
-      --outside-bg:{OUTSIDE_BG};
-      --grid-color:{GRID_COLOR};
-      --mid-color:{MID_COLOR};
-      --block-border:{BLOCK_BORDER};
-      --block-bg:{BLOCK_BG};
-      --label-bg:{LABEL_BG};
-    }}
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no"/>
+<style>
+:root{
+  --baseBlue: #040e31;
+  --bgTop:  #0a1a55;
+  --bgMid:  #061240;
+  --bgDeep: #02071c;
 
-    *{{box-sizing:border-box;}}
-    html, body{{
-      margin:0;
-      padding:0;
-      width:100%;
-      height:100%;
-      overflow:hidden;
-      background:var(--outside-bg);
-      font-family:Arial, sans-serif;
-    }}
+  --overlay1: rgba(40, 120, 255, .16);
+  --overlay2: rgba(0,  10,  40, .62);
 
-    #stage{{
-      position:fixed;
-      inset:0;
-      width:100vw;
-      height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:var(--outside-bg);
-    }}
+  --ink: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.62);
 
-    #phone{{
-      position:relative;
-      width:min(var(--phone-w), 96vw);
-      height:min(var(--phone-h), 96vh);
-      aspect-ratio:390 / 844;
-      border:var(--phone-border) solid var(--phone-border-color);
-      border-radius:28px;
-      background:var(--phone-bg);
-      overflow:auto;
-      box-shadow:0 10px 35px rgba(0,0,0,.18);
-    }}
+  --pill: rgba(238, 245, 255, .92);
+  --pill2: rgba(255,255,255,.86);
 
-    #screen{{
-      position:relative;
-      width:100%;
-      height:148%;
-      background:var(--phone-bg);
-    }}
+  --btn1:#2f7de1;
+  --btn2:#1e5fc4;
 
-    #overlay{{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-    }}
+  --shadow1: 0 22px 55px rgba(0,0,0,.55);
+  --shadow2: 0 10px 22px rgba(0,0,0,.40);
+  --blur: 14px;
 
-    .grid{{
-      position:absolute;
-      inset:0;
-      background-image:
-        linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
-        linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
-      background-size:10% 10%;
-    }}
+  --logoWDesktop: 250px;
+  --logoTopDesktop: 0.0%;
+  --logoXDesktop: 0px;
 
-    .mid-v{{
-      position:absolute;
-      left:50%;
-      top:0;
-      bottom:0;
-      width:1px;
-      background:var(--mid-color);
-    }}
+  --titleTopDesktop: 20%;
+  --titleSizeDesktop: 22px;
+  --titleXDesktop: 0px;
 
-    .mid-h{{
-      position:absolute;
-      top:50%;
-      left:0;
-      right:0;
-      height:1px;
-      background:var(--mid-color);
-    }}
+  --lblUserTopDesktop: 22%;
+  --inUserTopDesktop: 28%;
+  --lblPassTopDesktop: 42%;
+  --inPassTopDesktop: 48%;
+  --btnTopDesktop: 67%;
 
-    .blk{{
-      position:absolute;
-      border:var(--block-border);
-      background:var(--block-bg);
-    }}
+  --linkPolTopDesktop: 78%;
+  --linkPolLeftDesktop: 20%;
+  --linkRegTopDesktop: 78%;
+  --linkRegLeftDesktop: 68%;
 
-    .blk-label{{
-      position:absolute;
-      top:2px;
-      left:2px;
-      font:11px Arial, sans-serif;
-      background:var(--label-bg);
-      border:1px solid rgba(0,0,0,.15);
-      border-radius:4px;
-      padding:2px 6px;
-      white-space:nowrap;
-    }}
+  --labelSizeDesktop: 22px;
+  --inputSizeDesktop: 22px;
+  --btnTextSizeDesktop: 22px;
+  --linkSizeDesktop: 22px;
 
-    #hud{{
-      position:sticky;
-      top:8px;
-      left:8px;
-      margin:8px;
-      width:max-content;
-      font:12px Arial, sans-serif;
-      background:rgba(255,255,255,.95);
-      border:1px solid rgba(0,0,0,.2);
-      border-radius:6px;
-      padding:6px 10px;
-      z-index:3;
-      pointer-events:none;
-    }}
-  </style>
+  --logoWMobile: 150px;
+  --logoTopMobile: 6%;
+  --logoXMobile: 0px;
+
+  --titleTopMobile: 20%;
+  --titleSizeMobile: 18px;
+  --titleXMobile: 0px;
+
+  --lblUserTopMobile: 22%;
+  --inUserTopMobile: 28%;
+  --lblPassTopMobile: 42%;
+  --inPassTopMobile: 48%;
+  --btnTopMobile: 65%;
+
+  --linkPolTopMobile: 78%;
+  --linkPolLeftMobile: 20%;
+  --linkRegTopMobile: 78%;
+  --linkRegLeftMobile: 68%;
+
+  --labelSizeMobile: 16px;
+  --inputSizeMobile: 16px;
+  --btnTextSizeMobile: 18px;
+  --linkSizeMobile: 15px;
+}
+
+*{box-sizing:border-box}
+html, body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background: var(--baseBlue);
+}
+
+#stage{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.14), transparent 60%),
+    radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
+    linear-gradient(180deg, #020614 0%, var(--baseBlue) 100%);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  transition: all 0.2s ease;
+}
+
+#plan{
+  position:absolute;
+  left:10px; right:10px;
+  top:10px; bottom:0;
+  overflow:hidden;
+  border-radius: 34px;
+  box-shadow: var(--shadow1);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 22%),
+    linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #05164d 58%, var(--bgDeep) 100%);
+  transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+
+#plan::before{
+  content:"";
+  position:absolute;
+  inset:-10%;
+  background:
+    linear-gradient(135deg,
+      transparent 0%,
+      transparent 32%,
+      var(--overlay1) 32%,
+      var(--overlay2) 66%,
+      transparent 66%);
+  transform: rotate(-10deg);
+  opacity:.95;
+  pointer-events:none;
+}
+
+#plan::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(50% 60% at 50% 25%, rgba(255,255,255,.06), transparent 55%),
+    radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
+    linear-gradient(180deg, transparent 55%, rgba(0,0,0,.65) 100%);
+  pointer-events:none;
+}
+
+#frame{
+  position:absolute;
+  left:9px; right:9px;
+  top:10px; bottom:0;
+  border-left: 2px solid rgba(255,255,255,.14);
+  border-right:2px solid rgba(255,255,255,.14);
+  border-top:  2px solid rgba(255,255,255,.14);
+  box-sizing:border-box;
+  pointer-events:none;
+  border-radius: 34px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
+  transition: all 0.3s ease;
+}
+
+#card{
+  position:absolute;
+  left:6%;
+  right:6%;
+  top:6%;
+  bottom:6%;
+}
+
+.logo{
+  position:absolute;
+  left:50%;
+  top: var(--logoTopDesktop) !important;
+  transform: translateX(-50%) translateX(var(--logoXDesktop)) !important;
+  width: var(--logoWDesktop) !important;
+  height:auto;
+  display:block;
+  border-radius: 10px;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
+}
+
+.title{
+  position:absolute;
+  left:0; right:0;
+  top: var(--titleTopDesktop) !important;
+  text-align:center;
+  font:800 var(--titleSizeDesktop) Arial, sans-serif !important;
+  color: var(--ink);
+  text-shadow: 0 8px 18px rgba(0,0,0,.35);
+  letter-spacing: .2px;
+  transform: translateX(var(--titleXDesktop)) !important;
+}
+
+.label{
+  position:absolute;
+  left:18%;
+  right:18%;
+  font:700 var(--labelSizeDesktop) Arial, sans-serif !important;
+  color: rgba(255,255,255,.82);
+  text-shadow: 0 6px 14px rgba(0,0,0,.30);
+}
+
+input.field{
+  position:absolute;
+  left:22%;
+  right:22%;
+  height:10%;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 999px;
+  box-sizing:border-box;
+  background: linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
+  padding: 0 16px;
+  font:700 var(--inputSizeDesktop) Arial, sans-serif !important;
+  color: rgba(30,40,55,.92);
+  outline:none;
+  box-shadow:
+    0 15px 18px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.55);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+}
+input.field::placeholder{ color: rgba(60,70,85,.55); }
+
+.btn{
+  position:absolute;
+  left:32%;
+  right:32%;
+  height:10%;  
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 999px;
+  box-sizing:border-box;
+  background:
+    radial-gradient(120px 40px at 30% 25%, rgba(255,255,255,.22), transparent 60%),
+    linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
+  box-shadow:
+    0 22px 26px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.22);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font:700 var(--btnTextSizeDesktop) Arial, sans-serif !important;
+  color: rgba(255,255,255,.92);
+  cursor:pointer;
+  user-select:none;
+  transition: transform .12s ease, filter .12s ease;
+}
+.btn:active{ transform: scale(.985); filter: brightness(.98); }
+
+.link{
+  position:absolute;
+  font:700 var(--linkSizeDesktop) Arial, sans-serif !important;
+  color: rgba(255,255,255,.70);
+  white-space:nowrap;
+  text-shadow: 0 6px 14px rgba(0,0,0,.30);
+}
+.link:hover{ color: rgba(255,255,255,.85); }
+
+#hud{
+  position:absolute; inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(60% 45% at 50% 18%, rgba(255,255,255,.12), transparent 60%),
+    linear-gradient(180deg, transparent 62%, rgba(0,0,0,.30) 100%);
+}
+
+.fullscreen-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(12px);
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: white;
+  cursor: pointer;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255,255,255,0.2);
+  font-weight: bold;
+  user-select: none;
+  touch-action: manipulation;
+}
+.fullscreen-toggle:active {
+  transform: scale(0.92);
+  background: rgba(0,0,0,0.8);
+}
+@media (min-width: 769px) {
+  .fullscreen-toggle {
+    display: none;
+  }
+}
+@media (max-width: 768px) {
+  .fullscreen-toggle {
+    display: flex;
+  }
+}
+
+html:fullscreen #stage.fullscreen-mode #plan,
+html:-webkit-full-screen #stage.fullscreen-mode #plan,
+html:-moz-full-screen #stage.fullscreen-mode #plan {
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+html:fullscreen #stage.fullscreen-mode #frame,
+html:-webkit-full-screen #stage.fullscreen-mode #frame,
+html:-moz-full-screen #stage.fullscreen-mode #frame {
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 0;
+}
+
+@media (max-width: 768px){
+  #card{ left:8%; right:8%; top:6%; bottom:8%; }
+
+  .logo{
+    top: var(--logoTopMobile) !important;
+    width: var(--logoWMobile) !important;
+    transform: translateX(-50%) translateX(var(--logoXMobile)) !important;
+  }
+
+  .title{
+    top: var(--titleTopMobile) !important;
+    font:800 var(--titleSizeMobile) Arial, sans-serif !important;
+    transform: translateX(var(--titleXMobile)) !important;
+  }
+
+  .label{
+    left:12%;
+    right:12%;
+    font:700 var(--labelSizeMobile) Arial, sans-serif !important;
+  }
+
+  input.field{
+    left:12%;
+    right:12%;
+    font:700 var(--inputSizeMobile) Arial, sans-serif !important;
+  }
+
+  .btn{
+    left:24%;
+    right:24%;
+    font:700 var(--btnTextSizeMobile) Arial, sans-serif !important;
+  }
+
+  .link{
+    font:700 var(--linkSizeMobile) Arial, sans-serif !important;
+  }
+
+  #lblUser{ top: var(--lblUserTopMobile) !important; }
+  #inUser { top: var(--inUserTopMobile) !important; }
+  #lblPass{ top: var(--lblPassTopMobile) !important; }
+  #txtPwd { top: var(--inPassTopMobile) !important; }
+  #btnLogin{ top: var(--btnTopMobile) !important; }
+
+  #linkPol{
+    top: var(--linkPolTopMobile) !important;
+    left: var(--linkPolLeftMobile) !important;
+  }
+  #linkReg{
+    top: var(--linkRegTopMobile) !important;
+    left: var(--linkRegLeftMobile) !important;
+  }
+}
+</style>
 </head>
 <body>
-  <div id="stage">
-    <div id="phone">
-      <div id="screen">
-        <div id="overlay">
-          <div class="grid"></div>
-          <div class="mid-v"></div>
-          <div class="mid-h"></div>
-          {blocks_to_html(BLOCKS)}
-        </div>
-        <div id="hud">Cargando...</div>
-      </div>
+<div id="stage">
+  <div id="plan">
+    <div id="frame"></div>
+
+    <div id="card">
+      <img class="logo" src="https://files.catbox.moe/056m6v.jpg" alt="Logo"/>
+      <div class="title">¡BIENVENIDO!</div>
+
+      <form autocomplete="off" style="margin:0; padding:0; position:relative; height:100%; width:100%;">
+        <div id="lblUser" class="label" style="top:22%;">Usuario:</div>
+        <input id="inUser" class="field" style="top:28%;" 
+               autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" 
+               placeholder="Usuario"/>
+
+        <div id="lblPass" class="label" style="top:42%;">Contraseña:</div>
+        <!-- Campo de contraseña con todas las medidas anti-QuickType -->
+        <input id="txtPwd" class="field" style="top:48%; -webkit-text-security: disc; text-security: disc;" 
+               type="text" 
+               autocomplete="new-password" 
+               autocapitalize="off" 
+               autocorrect="off" 
+               spellcheck="false" 
+               inputmode="text"
+               placeholder="Contraseña"/>
+
+        <div id="btnLogin" class="btn" style="top:67%;" onclick="doLogin()">Login</div>
+
+        <div id="linkPol" class="link" style="top:78%; left:20%;">Politicas:</div>
+        <div id="linkReg" class="link" style="top:78%; left:68%;"><a href="/altas_registro" style="color:inherit; text-decoration:none;">Registrarse:</a></div>
+      </form>
     </div>
+
+    <div id="hud"></div>
   </div>
+</div>
 
-  <script>
-    (function(){{
-      var hud = document.getElementById("hud");
-      var phone = document.getElementById("phone");
-      var screen = document.getElementById("screen");
+<div id="fullscreenToggleBtn" class="fullscreen-toggle">⤢</div>
 
-      function update(){{
-        var pw = Math.round(phone.clientWidth);
-        var ph = Math.round(phone.clientHeight);
-        var sh = Math.round(screen.clientHeight);
+<script>
+async function doLogin(){
+  const u = (document.getElementById("inUser").value || "").trim();
+  const p = (document.getElementById("txtPwd").value || "").trim();
 
-        hud.textContent =
-          "Phone(px): " + pw + " x " + ph +
-          " | Alto plano: " + sh +
-          " | 10% ancho=" + Math.round(pw * 0.10) + "px" +
-          " | 10% alto plano=" + Math.round(sh * 0.10) + "px";
-      }}
+  try{
+    const r = await fetch("https://camilo27.pythonanywhere.com/api/auth", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({usuario:u, password:p})
+    });
 
-      window.addEventListener("resize", update);
-      update();
-    }})();
-  </script>
+    const j = await r.json();
+
+    if (j && j.ok === true){
+      const rol = (j.rol || "").toString();
+      const dni = (j.dni || "").toString();
+      window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol) + "&dni=" + encodeURIComponent(dni);
+    } else {
+      alert("Credenciales inválidas");
+    }
+  }catch(e){
+    alert("Error de conexión");
+  }
+}
+
+const stage = document.getElementById("stage");
+const btn = document.getElementById("fullscreenToggleBtn");
+
+// Funciones auxiliares de persistencia
+function setFullscreenFlag(active) {
+  if (active) {
+    localStorage.setItem("fullscreenActive", "true");
+  } else {
+    localStorage.removeItem("fullscreenActive");
+  }
+}
+
+// Función para entrar en fullscreen
+function enterFullscreen() {
+  const elem = document.documentElement;
+  const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
+  if (requestMethod) {
+    requestMethod.call(elem).then(() => {
+      if (stage) stage.classList.add("fullscreen-mode");
+      if (btn) {
+        btn.textContent = "✕";
+        btn.style.fontSize = "26px";
+      }
+      setFullscreenFlag(true);
+    }).catch(err => {
+      console.log("Error al entrar en fullscreen:", err);
+    });
+  }
+}
+
+// Función para salir de fullscreen
+function exitFullscreen() {
+  const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+  if (exitMethod) {
+    exitMethod.call(document).then(() => {
+      if (stage) stage.classList.remove("fullscreen-mode");
+      if (btn) {
+        btn.textContent = "⤢";
+        btn.style.fontSize = "28px";
+      }
+      setFullscreenFlag(false);
+    }).catch(err => {
+      console.log("Error al salir de fullscreen:", err);
+    });
+  }
+}
+
+function toggleFullscreen() {
+  const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  if (isFull) {
+    exitFullscreen();
+  } else {
+    enterFullscreen();
+  }
+}
+
+function onFullscreenChange() {
+  const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  if (isFull) {
+    if (stage) stage.classList.add("fullscreen-mode");
+    if (btn) {
+      btn.textContent = "✕";
+      btn.style.fontSize = "26px";
+    }
+    setFullscreenFlag(true);
+  } else {
+    if (stage) stage.classList.remove("fullscreen-mode");
+    if (btn) {
+      btn.textContent = "⤢";
+      btn.style.fontSize = "28px";
+    }
+    setFullscreenFlag(false);
+  }
+}
+
+document.addEventListener("fullscreenchange", onFullscreenChange);
+document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+document.addEventListener("mozfullscreenchange", onFullscreenChange);
+document.addEventListener("MSFullscreenChange", onFullscreenChange);
+
+if (btn) {
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    toggleFullscreen();
+  });
+}
+
+// Restaurar fullscreen si estaba activo (solo móvil)
+if (window.innerWidth <= 768) {
+  const savedFlag = localStorage.getItem("fullscreenActive");
+  if (savedFlag === "true") {
+    const isCurrentlyFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+    if (!isCurrentlyFull) {
+      enterFullscreen();
+    } else {
+      // Asegurar UI
+      if (stage) stage.classList.add("fullscreen-mode");
+      if (btn) {
+        btn.textContent = "✕";
+        btn.style.fontSize = "26px";
+      }
+    }
+  }
+}
+
+(function(){
+  var fe = window.frameElement;
+  if (fe){
+    fe.style.position="fixed";
+    fe.style.inset="0";
+    fe.style.width="100vw";
+    fe.style.height="100vh";
+    fe.style.border="0";
+    fe.style.margin="0";
+    fe.style.padding="0";
+    fe.style.background="transparent";
+  }
+})();
+</script>
 </body>
 </html>
 """
 
-components.html(html, height=960, scrolling=False)
+components.html(html, height=1000, scrolling=False)
