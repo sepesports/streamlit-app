@@ -334,6 +334,62 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   border-radius: 0;
 }
 
+/* SPLASH SCREEN */
+#splash {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, #0a1a55 0%, #02071c 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20000;
+  transition: opacity 1s ease-out, visibility 0s linear 1s;
+  backdrop-filter: blur(4px);
+}
+.splash-content {
+  text-align: center;
+  animation: glowPulse 1.2s ease-in-out infinite alternate;
+}
+.splash-text {
+  font-size: 4rem;
+  font-weight: 900;
+  font-family: 'Segoe UI', 'Arial Black', sans-serif;
+  letter-spacing: 8px;
+  background: linear-gradient(135deg, #ffffff, #aaccff, #4a7eff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 20px rgba(74,126,255,0.7);
+  margin-bottom: 20px;
+}
+.splash-halo {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(74,126,255,0.6) 0%, rgba(74,126,255,0) 70%);
+  animation: haloExpand 1s infinite alternate;
+  filter: blur(8px);
+}
+@keyframes glowPulse {
+  0% { text-shadow: 0 0 5px #4a7eff, 0 0 10px #4a7eff; opacity: 0.8; }
+  100% { text-shadow: 0 0 25px #4a7eff, 0 0 35px #2f5fcf; opacity: 1; }
+}
+@keyframes haloExpand {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1.2); opacity: 0.2; }
+}
+.splash-hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+@media (max-width: 768px){
+  .splash-text { font-size: 2.5rem; letter-spacing: 4px; }
+  .splash-halo { width: 80px; height: 80px; }
+}
+
 @media (max-width: 768px){
   #card{ left:8%; right:8%; top:6%; bottom:8%; }
 
@@ -411,7 +467,6 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
                placeholder="Usuario"/>
 
         <div id="lblPass" class="label" style="top:42%;">Contraseña:</div>
-        <!-- Campo de contraseña con todas las medidas anti-QuickType -->
         <input id="txtPwd" class="field" style="top:48%; -webkit-text-security: disc; text-security: disc;" 
                type="text" 
                autocomplete="new-password" 
@@ -432,9 +487,31 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   </div>
 </div>
 
+<!-- SPLASH SCREEN -->
+<div id="splash">
+  <div class="splash-content">
+    <div class="splash-halo"></div>
+    <div class="splash-text">SYNTRA</div>
+  </div>
+</div>
+
 <div id="fullscreenToggleBtn" class="fullscreen-toggle">⤢</div>
 
 <script>
+// Splash screen timer: fade out after 2 seconds
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    var splash = document.getElementById('splash');
+    if (splash) {
+      splash.classList.add('splash-hidden');
+      // Remove from DOM after transition to avoid blocking interactions
+      setTimeout(function() {
+        if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+      }, 1000);
+    }
+  }, 2000);
+});
+
 async function doLogin(){
   const u = (document.getElementById("inUser").value || "").trim();
   const p = (document.getElementById("txtPwd").value || "").trim();
@@ -463,7 +540,6 @@ async function doLogin(){
 const stage = document.getElementById("stage");
 const btn = document.getElementById("fullscreenToggleBtn");
 
-// Funciones auxiliares de persistencia
 function setFullscreenFlag(active) {
   if (active) {
     localStorage.setItem("fullscreenActive", "true");
@@ -472,7 +548,6 @@ function setFullscreenFlag(active) {
   }
 }
 
-// Función para entrar en fullscreen
 function enterFullscreen() {
   const elem = document.documentElement;
   const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
@@ -490,7 +565,6 @@ function enterFullscreen() {
   }
 }
 
-// Función para salir de fullscreen
 function exitFullscreen() {
   const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
   if (exitMethod) {
@@ -547,7 +621,6 @@ if (btn) {
   });
 }
 
-// Restaurar fullscreen si estaba activo (solo móvil)
 if (window.innerWidth <= 768) {
   const savedFlag = localStorage.getItem("fullscreenActive");
   if (savedFlag === "true") {
@@ -555,7 +628,6 @@ if (window.innerWidth <= 768) {
     if (!isCurrentlyFull) {
       enterFullscreen();
     } else {
-      // Asegurar UI
       if (stage) stage.classList.add("fullscreen-mode");
       if (btn) {
         btn.textContent = "✕";
