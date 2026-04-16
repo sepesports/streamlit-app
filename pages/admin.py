@@ -334,7 +334,7 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   border-radius: 0;
 }
 
-/* ========== SPLASH MEJORADO ========== */
+/* ========== SPLASH MEJORADO con ajuste de posición vertical ========== */
 #splash {
   position: fixed;
   inset: 0;
@@ -342,13 +342,22 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   height: 100%;
   background: radial-gradient(ellipse at center, #030b1f 0%, #000000 100%);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center;      /* centrado vertical */
+  justify-content: center;  /* centrado horizontal */
   z-index: 20000;
   transition: opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1), visibility 0s linear 0.8s;
   backdrop-filter: blur(2px);
   font-family: 'Segoe UI', 'Arial Black', 'Impact', sans-serif;
   overflow: hidden;
+}
+
+/* Contenedor del texto: lo subimos un 8% respecto al centro */
+.splash-content {
+  text-align: center;
+  z-index: 10;
+  animation: fadeInScale 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  position: relative;
+  top: -8%;  /* Ajuste hacia arriba */
 }
 
 /* Grid de neón */
@@ -382,13 +391,6 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
 @keyframes scan {
   0% { top: -10%; }
   100% { top: 110%; }
-}
-
-/* Contenedor del texto */
-.splash-content {
-  text-align: center;
-  z-index: 10;
-  animation: fadeInScale 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 @keyframes fadeInScale {
@@ -504,7 +506,7 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   visibility: hidden;
 }
 
-/* Responsive */
+/* Responsive para móvil */
 @media (max-width: 768px) {
   .glitch-text {
     font-size: 2.5rem;
@@ -516,6 +518,9 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   }
   .splash-grid {
     background-size: 20px 20px;
+  }
+  .splash-content {
+    top: -5%;  /* menos desplazamiento en móvil para no cortar */
   }
 }
 
