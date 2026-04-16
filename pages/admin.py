@@ -334,170 +334,97 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   border-radius: 0;
 }
 
-/* ========== SPLASH MEJORADO con ajuste de posición vertical ========== */
+/* ========== NUEVO SPLASH PROFESIONAL TEMÁTICO (SALVAMENTO ACUÁTICO) ========== */
 #splash {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(ellipse at center, #030b1f 0%, #000000 100%);
+  background: linear-gradient(145deg, #021c3a 0%, #00122a 100%);
   display: flex;
-  align-items: center;      /* centrado vertical */
-  justify-content: center;  /* centrado horizontal */
+  align-items: center;
+  justify-content: center;
   z-index: 20000;
-  transition: opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1), visibility 0s linear 0.8s;
-  backdrop-filter: blur(2px);
-  font-family: 'Segoe UI', 'Arial Black', 'Impact', sans-serif;
+  transition: opacity 1s ease-out, visibility 0s linear 1s;
+  font-family: 'Segoe UI', 'Roboto', 'Poppins', sans-serif;
   overflow: hidden;
 }
 
-/* Contenedor del texto: lo subimos un 8% respecto al centro */
+/* Fondo de ondas sutiles */
+.waves-bg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(transparent 0px, transparent 98px, rgba(74, 126, 255, 0.08) 98px, rgba(74, 126, 255, 0.12) 100px);
+  pointer-events: none;
+  animation: waveMove 6s linear infinite;
+}
+
+@keyframes waveMove {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100px; }
+}
+
+/* Contenedor principal del splash */
 .splash-content {
   text-align: center;
   z-index: 10;
-  animation: fadeInScale 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation: fadeInUp 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
   position: relative;
-  top: -8%;  /* Ajuste hacia arriba */
+  top: -5%; /* centrado visual */
 }
 
-/* Grid de neón */
-.splash-grid {
-  position: absolute;
-  inset: 0;
-  background-image: 
-    linear-gradient(rgba(74,126,255,0.15) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(74,126,255,0.15) 1px, transparent 1px);
-  background-size: 40px 40px;
-  animation: gridMove 20s linear infinite;
-  opacity: 0.5;
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes gridMove {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(40px, 40px); }
-}
-
-/* Líneas de escaneo */
-.scan-line {
-  position: absolute;
-  width: 100%;
-  height: 8px;
-  background: rgba(74,126,255,0.4);
-  filter: blur(2px);
-  animation: scan 4s linear infinite;
-  top: -10%;
-}
-
-@keyframes scan {
-  0% { top: -10%; }
-  100% { top: 110%; }
-}
-
-@keyframes fadeInScale {
-  0% { opacity: 0; transform: scale(0.8); filter: blur(10px); }
-  100% { opacity: 1; transform: scale(1); filter: blur(0); }
-}
-
-/* Texto con glitch */
-.glitch-text {
-  font-size: 6rem;
-  font-weight: 900;
-  letter-spacing: 12px;
-  position: relative;
-  display: inline-block;
-  color: white;
-  text-shadow: 
-    0 0 10px #4a7eff,
-    0 0 20px #4a7eff,
-    0 0 40px #2f5fcf;
-  animation: glitchSkew 3s infinite alternate;
-}
-
-.glitch-text::before,
-.glitch-text::after {
-  content: attr(data-text);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: transparent;
-}
-
-.glitch-text::before {
-  color: #ff00cc;
-  z-index: -1;
-  animation: glitchOffset 0.2s infinite linear alternate-reverse;
-}
-
-.glitch-text::after {
-  color: #00ffff;
-  z-index: -2;
-  animation: glitchOffset2 0.18s infinite linear alternate-reverse;
-}
-
-@keyframes glitchOffset {
-  0% { transform: translate(0); opacity: 0.8; }
-  100% { transform: translate(-4px, 2px); opacity: 0.4; }
-}
-
-@keyframes glitchOffset2 {
-  0% { transform: translate(0); opacity: 0.8; }
-  100% { transform: translate(4px, -2px); opacity: 0.4; }
-}
-
-@keyframes glitchSkew {
-  0% { transform: skew(0deg); }
-  95% { transform: skew(0deg); }
-  96% { transform: skew(2deg); }
-  97% { transform: skew(-2deg); }
-  98% { transform: skew(1deg); }
-  100% { transform: skew(0deg); }
-}
-
-/* Halo de luz pulsante */
-.halo-ring {
-  width: 200px;
-  height: 200px;
+/* Símbolo de salvavidas (cruz de rescate) */
+.lifeguard-symbol {
+  width: 100px;
+  height: 100px;
   margin: 0 auto 20px;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(74,126,255,0.8) 0%, rgba(74,126,255,0) 70%);
-  animation: haloPulse 1.2s infinite alternate;
-  filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  border: 2px solid rgba(74, 126, 255, 0.6);
+  box-shadow: 0 0 20px rgba(74, 126, 255, 0.3);
+  animation: pulseSoft 1.5s infinite alternate;
 }
 
-@keyframes haloPulse {
-  0% { transform: scale(0.6); opacity: 0.5; }
-  100% { transform: scale(1.2); opacity: 0.2; }
+.lifeguard-symbol svg {
+  width: 60px;
+  height: 60px;
+  filter: drop-shadow(0 0 6px #4a7eff);
 }
 
-/* Partículas (canvas) */
-#particles-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 5;
+@keyframes pulseSoft {
+  0% { transform: scale(0.95); opacity: 0.7; box-shadow: 0 0 10px rgba(74,126,255,0.3); }
+  100% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 30px rgba(74,126,255,0.6); }
 }
 
-/* Destello de lente */
-.lens-flare {
-  position: absolute;
-  width: 150%;
-  height: 150%;
-  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 60%);
-  top: -25%;
-  left: -25%;
-  animation: flareRotate 8s linear infinite;
-  pointer-events: none;
-  mix-blend-mode: overlay;
+/* Texto SYNTRA limpio y elegante */
+.syntra-text {
+  font-size: 3.8rem;
+  font-weight: 700;
+  letter-spacing: 6px;
+  color: white;
+  text-shadow: 0 0 15px rgba(74,126,255,0.8);
+  margin-top: 10px;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
 }
 
-@keyframes flareRotate {
-  0% { transform: rotate(0deg) translate(10%, 10%); }
-  100% { transform: rotate(360deg) translate(10%, 10%); }
+.sub {
+  font-size: 1rem;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.6);
+  margin-top: 12px;
+  font-weight: 400;
 }
 
 /* Ocultar splash */
@@ -506,21 +433,25 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   visibility: hidden;
 }
 
-/* Responsive para móvil */
+/* Responsive */
 @media (max-width: 768px) {
-  .glitch-text {
-    font-size: 2.5rem;
-    letter-spacing: 6px;
+  .lifeguard-symbol {
+    width: 70px;
+    height: 70px;
   }
-  .halo-ring {
-    width: 120px;
-    height: 120px;
+  .lifeguard-symbol svg {
+    width: 42px;
+    height: 42px;
   }
-  .splash-grid {
-    background-size: 20px 20px;
+  .syntra-text {
+    font-size: 2.2rem;
+    letter-spacing: 3px;
+  }
+  .sub {
+    font-size: 0.8rem;
   }
   .splash-content {
-    top: -5%;  /* menos desplazamiento en móvil para no cortar */
+    top: -3%;
   }
 }
 
@@ -621,103 +552,35 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   </div>
 </div>
 
-<!-- SPLASH MEJORADO -->
+<!-- SPLASH PROFESIONAL -->
 <div id="splash">
-  <canvas id="particles-canvas"></canvas>
-  <div class="splash-grid"></div>
-  <div class="scan-line"></div>
-  <div class="lens-flare"></div>
+  <div class="waves-bg"></div>
   <div class="splash-content">
-    <div class="halo-ring"></div>
-    <div class="glitch-text" data-text="SYNTRA">SYNTRA</div>
+    <div class="lifeguard-symbol">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="42" stroke="#4a7eff" stroke-width="3" fill="none"/>
+        <path d="M50 20 L50 80 M20 50 L80 50" stroke="#4a7eff" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="8" fill="#4a7eff"/>
+        <path d="M50 8 L50 20 M50 80 L50 92 M8 50 L20 50 M80 50 L92 50" stroke="#4a7eff" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="syntra-text">SYNTRA</div>
+    <div class="sub">Lifeguard Management</div>
   </div>
 </div>
 
 <div id="fullscreenToggleBtn" class="fullscreen-toggle">⤢</div>
 
 <script>
-// ---------- PARTÍCULAS ----------
-const canvas = document.getElementById('particles-canvas');
-let ctx = null;
-let particles = [];
-let animationId = null;
-
-function initParticles() {
-  if (!canvas) return;
-  ctx = canvas.getContext('2d');
-  resizeCanvas();
-  const particleCount = 120;
-  for (let i = 0; i < particleCount; i++) {
-    particles.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      radius: Math.random() * 3 + 1,
-      speedX: (Math.random() - 0.5) * 0.8,
-      speedY: (Math.random() - 0.5) * 0.5,
-      alpha: Math.random() * 0.6 + 0.2,
-      color: `rgba(74, 126, 255, ${Math.random() * 0.5 + 0.2})`
-    });
-  }
-  drawParticles();
-}
-
-function resizeCanvas() {
-  if (!canvas) return;
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-
-function drawParticles() {
-  if (!ctx || !canvas) return;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (let p of particles) {
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-    ctx.fillStyle = p.color;
-    ctx.fill();
-    // actualizar posición
-    p.x += p.speedX;
-    p.y += p.speedY;
-    if (p.x < 0) p.x = canvas.width;
-    if (p.x > canvas.width) p.x = 0;
-    if (p.y < 0) p.y = canvas.height;
-    if (p.y > canvas.height) p.y = 0;
-  }
-  animationId = requestAnimationFrame(drawParticles);
-}
-
-window.addEventListener('resize', () => {
-  if (canvas) {
-    resizeCanvas();
-    // Reajustar partículas al nuevo tamaño
-    if (particles.length) {
-      for (let p of particles) {
-        p.x = Math.random() * canvas.width;
-        p.y = Math.random() * canvas.height;
-      }
-    }
-  }
-});
-
-// Iniciar partículas solo si el splash existe
-if (document.getElementById('splash')) {
-  initParticles();
-}
-
-// ---------- SPLASH TIMER ----------
+// ---------- SPLASH TIMER (2 segundos) ----------
 window.addEventListener('load', function() {
   setTimeout(function() {
     var splash = document.getElementById('splash');
     if (splash) {
       splash.classList.add('splash-hidden');
-      // Detener animación de partículas para ahorrar recursos
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-        animationId = null;
-      }
       setTimeout(function() {
         if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
-      }, 800);
+      }, 1000);
     }
   }, 2000);
 });
