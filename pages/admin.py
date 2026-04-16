@@ -385,6 +385,13 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
     top: var(--linkRegTopMobile) !important;
     left: var(--linkRegLeftMobile) !important;
   }
+
+  /* Ocultar título y etiquetas en móvil */
+  .title,
+  #lblUser,
+  #lblPass {
+    display: none;
+  }
 }
 </style>
 </head>
