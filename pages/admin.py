@@ -204,15 +204,7 @@ html, body{
   transform: translateX(var(--titleXDesktop)) !important;
 }
 
-.label{
-  position:absolute;
-  left:18%;
-  right:18%;
-  font:700 var(--labelSizeDesktop) Arial, sans-serif !important;
-  color: rgba(255,255,255,.82);
-  text-shadow: 0 6px 14px rgba(0,0,0,.30);
-}
-
+/* Las etiquetas ya no se usan, se eliminan del HTML */
 input.field{
   position:absolute;
   left:22%;
@@ -334,7 +326,7 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   border-radius: 0;
 }
 
-/* ========== NUEVO SPLASH PROFESIONAL TEMÁTICO (SALVAMENTO ACUÁTICO) ========== */
+/* ========== SPLASH PROFESIONAL TEMÁTICO (SALVAMENTO ACUÁTICO) ========== */
 #splash {
   position: fixed;
   inset: 0;
@@ -470,12 +462,6 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
     transform: translateX(var(--titleXMobile)) !important;
   }
 
-  .label{
-    left:12%;
-    right:12%;
-    font:700 var(--labelSizeMobile) Arial, sans-serif !important;
-  }
-
   input.field{
     left:12%;
     right:12%;
@@ -492,9 +478,7 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
     font:700 var(--linkSizeMobile) Arial, sans-serif !important;
   }
 
-  #lblUser{ top: var(--lblUserTopMobile) !important; }
   #inUser { top: var(--inUserTopMobile) !important; }
-  #lblPass{ top: var(--lblPassTopMobile) !important; }
   #txtPwd { top: var(--inPassTopMobile) !important; }
   #btnLogin{ top: var(--btnTopMobile) !important; }
 
@@ -507,10 +491,8 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
     left: var(--linkRegLeftMobile) !important;
   }
 
-  /* Ocultar título y etiquetas en móvil */
-  .title,
-  #lblUser,
-  #lblPass {
+  /* Ocultar título en móvil (opcional, se mantiene) */
+  .title {
     display: none;
   }
 }
@@ -526,12 +508,11 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
       <div class="title">¡BIENVENIDO!</div>
 
       <form autocomplete="off" style="margin:0; padding:0; position:relative; height:100%; width:100%;">
-        <div id="lblUser" class="label" style="top:22%;">Usuario:</div>
+        <!-- Las etiquetas "Usuario:" y "Contraseña:" han sido eliminadas -->
         <input id="inUser" class="field" style="top:28%;" 
                autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" 
                placeholder="Usuario"/>
 
-        <div id="lblPass" class="label" style="top:42%;">Contraseña:</div>
         <input id="txtPwd" class="field" style="top:48%; -webkit-text-security: disc; text-security: disc;" 
                type="text" 
                autocomplete="new-password" 
