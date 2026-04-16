@@ -334,60 +334,189 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   border-radius: 0;
 }
 
-/* SPLASH SCREEN */
+/* ========== SPLASH MEJORADO ========== */
 #splash {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(ellipse at center, #0a1a55 0%, #02071c 100%);
+  background: radial-gradient(ellipse at center, #030b1f 0%, #000000 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 20000;
-  transition: opacity 1s ease-out, visibility 0s linear 1s;
-  backdrop-filter: blur(4px);
+  transition: opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1), visibility 0s linear 0.8s;
+  backdrop-filter: blur(2px);
+  font-family: 'Segoe UI', 'Arial Black', 'Impact', sans-serif;
+  overflow: hidden;
 }
+
+/* Grid de neón */
+.splash-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(74,126,255,0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74,126,255,0.15) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: gridMove 20s linear infinite;
+  opacity: 0.5;
+}
+
+@keyframes gridMove {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(40px, 40px); }
+}
+
+/* Líneas de escaneo */
+.scan-line {
+  position: absolute;
+  width: 100%;
+  height: 8px;
+  background: rgba(74,126,255,0.4);
+  filter: blur(2px);
+  animation: scan 4s linear infinite;
+  top: -10%;
+}
+
+@keyframes scan {
+  0% { top: -10%; }
+  100% { top: 110%; }
+}
+
+/* Contenedor del texto */
 .splash-content {
   text-align: center;
-  animation: glowPulse 1.2s ease-in-out infinite alternate;
+  z-index: 10;
+  animation: fadeInScale 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
-.splash-text {
-  font-size: 4rem;
+
+@keyframes fadeInScale {
+  0% { opacity: 0; transform: scale(0.8); filter: blur(10px); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+/* Texto con glitch */
+.glitch-text {
+  font-size: 6rem;
   font-weight: 900;
-  font-family: 'Segoe UI', 'Arial Black', sans-serif;
-  letter-spacing: 8px;
-  background: linear-gradient(135deg, #ffffff, #aaccff, #4a7eff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: 0 0 20px rgba(74,126,255,0.7);
-  margin-bottom: 20px;
+  letter-spacing: 12px;
+  position: relative;
+  display: inline-block;
+  color: white;
+  text-shadow: 
+    0 0 10px #4a7eff,
+    0 0 20px #4a7eff,
+    0 0 40px #2f5fcf;
+  animation: glitchSkew 3s infinite alternate;
 }
-.splash-halo {
-  width: 120px;
-  height: 120px;
-  margin: 0 auto;
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.glitch-text::before {
+  color: #ff00cc;
+  z-index: -1;
+  animation: glitchOffset 0.2s infinite linear alternate-reverse;
+}
+
+.glitch-text::after {
+  color: #00ffff;
+  z-index: -2;
+  animation: glitchOffset2 0.18s infinite linear alternate-reverse;
+}
+
+@keyframes glitchOffset {
+  0% { transform: translate(0); opacity: 0.8; }
+  100% { transform: translate(-4px, 2px); opacity: 0.4; }
+}
+
+@keyframes glitchOffset2 {
+  0% { transform: translate(0); opacity: 0.8; }
+  100% { transform: translate(4px, -2px); opacity: 0.4; }
+}
+
+@keyframes glitchSkew {
+  0% { transform: skew(0deg); }
+  95% { transform: skew(0deg); }
+  96% { transform: skew(2deg); }
+  97% { transform: skew(-2deg); }
+  98% { transform: skew(1deg); }
+  100% { transform: skew(0deg); }
+}
+
+/* Halo de luz pulsante */
+.halo-ring {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 20px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(74,126,255,0.6) 0%, rgba(74,126,255,0) 70%);
-  animation: haloExpand 1s infinite alternate;
-  filter: blur(8px);
+  background: radial-gradient(circle, rgba(74,126,255,0.8) 0%, rgba(74,126,255,0) 70%);
+  animation: haloPulse 1.2s infinite alternate;
+  filter: blur(12px);
 }
-@keyframes glowPulse {
-  0% { text-shadow: 0 0 5px #4a7eff, 0 0 10px #4a7eff; opacity: 0.8; }
-  100% { text-shadow: 0 0 25px #4a7eff, 0 0 35px #2f5fcf; opacity: 1; }
-}
-@keyframes haloExpand {
-  0% { transform: scale(0.8); opacity: 0.6; }
+
+@keyframes haloPulse {
+  0% { transform: scale(0.6); opacity: 0.5; }
   100% { transform: scale(1.2); opacity: 0.2; }
 }
+
+/* Partículas (canvas) */
+#particles-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Destello de lente */
+.lens-flare {
+  position: absolute;
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 60%);
+  top: -25%;
+  left: -25%;
+  animation: flareRotate 8s linear infinite;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+@keyframes flareRotate {
+  0% { transform: rotate(0deg) translate(10%, 10%); }
+  100% { transform: rotate(360deg) translate(10%, 10%); }
+}
+
+/* Ocultar splash */
 .splash-hidden {
   opacity: 0;
   visibility: hidden;
 }
-@media (max-width: 768px){
-  .splash-text { font-size: 2.5rem; letter-spacing: 4px; }
-  .splash-halo { width: 80px; height: 80px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .glitch-text {
+    font-size: 2.5rem;
+    letter-spacing: 6px;
+  }
+  .halo-ring {
+    width: 120px;
+    height: 120px;
+  }
+  .splash-grid {
+    background-size: 20px 20px;
+  }
 }
 
 @media (max-width: 768px){
@@ -487,31 +616,108 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   </div>
 </div>
 
-<!-- SPLASH SCREEN -->
+<!-- SPLASH MEJORADO -->
 <div id="splash">
+  <canvas id="particles-canvas"></canvas>
+  <div class="splash-grid"></div>
+  <div class="scan-line"></div>
+  <div class="lens-flare"></div>
   <div class="splash-content">
-    <div class="splash-halo"></div>
-    <div class="splash-text">SYNTRA</div>
+    <div class="halo-ring"></div>
+    <div class="glitch-text" data-text="SYNTRA">SYNTRA</div>
   </div>
 </div>
 
 <div id="fullscreenToggleBtn" class="fullscreen-toggle">⤢</div>
 
 <script>
-// Splash screen timer: fade out after 2 seconds
+// ---------- PARTÍCULAS ----------
+const canvas = document.getElementById('particles-canvas');
+let ctx = null;
+let particles = [];
+let animationId = null;
+
+function initParticles() {
+  if (!canvas) return;
+  ctx = canvas.getContext('2d');
+  resizeCanvas();
+  const particleCount = 120;
+  for (let i = 0; i < particleCount; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: Math.random() * 3 + 1,
+      speedX: (Math.random() - 0.5) * 0.8,
+      speedY: (Math.random() - 0.5) * 0.5,
+      alpha: Math.random() * 0.6 + 0.2,
+      color: `rgba(74, 126, 255, ${Math.random() * 0.5 + 0.2})`
+    });
+  }
+  drawParticles();
+}
+
+function resizeCanvas() {
+  if (!canvas) return;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function drawParticles() {
+  if (!ctx || !canvas) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (let p of particles) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fillStyle = p.color;
+    ctx.fill();
+    // actualizar posición
+    p.x += p.speedX;
+    p.y += p.speedY;
+    if (p.x < 0) p.x = canvas.width;
+    if (p.x > canvas.width) p.x = 0;
+    if (p.y < 0) p.y = canvas.height;
+    if (p.y > canvas.height) p.y = 0;
+  }
+  animationId = requestAnimationFrame(drawParticles);
+}
+
+window.addEventListener('resize', () => {
+  if (canvas) {
+    resizeCanvas();
+    // Reajustar partículas al nuevo tamaño
+    if (particles.length) {
+      for (let p of particles) {
+        p.x = Math.random() * canvas.width;
+        p.y = Math.random() * canvas.height;
+      }
+    }
+  }
+});
+
+// Iniciar partículas solo si el splash existe
+if (document.getElementById('splash')) {
+  initParticles();
+}
+
+// ---------- SPLASH TIMER ----------
 window.addEventListener('load', function() {
   setTimeout(function() {
     var splash = document.getElementById('splash');
     if (splash) {
       splash.classList.add('splash-hidden');
-      // Remove from DOM after transition to avoid blocking interactions
+      // Detener animación de partículas para ahorrar recursos
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
       setTimeout(function() {
         if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
-      }, 1000);
+      }, 800);
     }
   }, 2000);
 });
 
+// ---------- LOGIN Y FULLSCREEN (sin cambios) ----------
 async function doLogin(){
   const u = (document.getElementById("inUser").value || "").trim();
   const p = (document.getElementById("txtPwd").value || "").trim();
@@ -541,11 +747,8 @@ const stage = document.getElementById("stage");
 const btn = document.getElementById("fullscreenToggleBtn");
 
 function setFullscreenFlag(active) {
-  if (active) {
-    localStorage.setItem("fullscreenActive", "true");
-  } else {
-    localStorage.removeItem("fullscreenActive");
-  }
+  if (active) localStorage.setItem("fullscreenActive", "true");
+  else localStorage.removeItem("fullscreenActive");
 }
 
 function enterFullscreen() {
@@ -554,14 +757,9 @@ function enterFullscreen() {
   if (requestMethod) {
     requestMethod.call(elem).then(() => {
       if (stage) stage.classList.add("fullscreen-mode");
-      if (btn) {
-        btn.textContent = "✕";
-        btn.style.fontSize = "26px";
-      }
+      if (btn) { btn.textContent = "✕"; btn.style.fontSize = "26px"; }
       setFullscreenFlag(true);
-    }).catch(err => {
-      console.log("Error al entrar en fullscreen:", err);
-    });
+    }).catch(err => console.log(err));
   }
 }
 
@@ -570,41 +768,26 @@ function exitFullscreen() {
   if (exitMethod) {
     exitMethod.call(document).then(() => {
       if (stage) stage.classList.remove("fullscreen-mode");
-      if (btn) {
-        btn.textContent = "⤢";
-        btn.style.fontSize = "28px";
-      }
+      if (btn) { btn.textContent = "⤢"; btn.style.fontSize = "28px"; }
       setFullscreenFlag(false);
-    }).catch(err => {
-      console.log("Error al salir de fullscreen:", err);
-    });
+    }).catch(err => console.log(err));
   }
 }
 
 function toggleFullscreen() {
   const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-  if (isFull) {
-    exitFullscreen();
-  } else {
-    enterFullscreen();
-  }
+  isFull ? exitFullscreen() : enterFullscreen();
 }
 
 function onFullscreenChange() {
   const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
   if (isFull) {
     if (stage) stage.classList.add("fullscreen-mode");
-    if (btn) {
-      btn.textContent = "✕";
-      btn.style.fontSize = "26px";
-    }
+    if (btn) { btn.textContent = "✕"; btn.style.fontSize = "26px"; }
     setFullscreenFlag(true);
   } else {
     if (stage) stage.classList.remove("fullscreen-mode");
-    if (btn) {
-      btn.textContent = "⤢";
-      btn.style.fontSize = "28px";
-    }
+    if (btn) { btn.textContent = "⤢"; btn.style.fontSize = "28px"; }
     setFullscreenFlag(false);
   }
 }
@@ -614,26 +797,14 @@ document.addEventListener("webkitfullscreenchange", onFullscreenChange);
 document.addEventListener("mozfullscreenchange", onFullscreenChange);
 document.addEventListener("MSFullscreenChange", onFullscreenChange);
 
-if (btn) {
-  btn.addEventListener("click", (e) => {
-    e.preventDefault();
-    toggleFullscreen();
-  });
-}
+if (btn) btn.addEventListener("click", (e) => { e.preventDefault(); toggleFullscreen(); });
 
 if (window.innerWidth <= 768) {
   const savedFlag = localStorage.getItem("fullscreenActive");
   if (savedFlag === "true") {
     const isCurrentlyFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-    if (!isCurrentlyFull) {
-      enterFullscreen();
-    } else {
-      if (stage) stage.classList.add("fullscreen-mode");
-      if (btn) {
-        btn.textContent = "✕";
-        btn.style.fontSize = "26px";
-      }
-    }
+    if (!isCurrentlyFull) enterFullscreen();
+    else { if (stage) stage.classList.add("fullscreen-mode"); if (btn) { btn.textContent = "✕"; btn.style.fontSize = "26px"; } }
   }
 }
 
