@@ -50,77 +50,6 @@ WORDPRESS_CHAT_TARGET = WORDPRESS_CHAT_URL + "?" + urlencode(
 )
 WORDPRESS_CHAT_TARGET_JSON = json.dumps(WORDPRESS_CHAT_TARGET, ensure_ascii=False)
 
-st.markdown(
-    f"""
-    <script>
-      (function(){{
-        var target = {WORDPRESS_CHAT_TARGET_JSON};
-        var ua = navigator.userAgent || "";
-        var width = Math.min(window.innerWidth || 9999, screen.width || 9999);
-        var coarse = false;
-
-        try{{
-          coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-        }}catch(e){{}}
-
-        var mobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
-        var mobileWidth = width <= 768;
-        var touchMobile = coarse && width <= 1024;
-
-        if(!(mobileUA || mobileWidth || touchMobile)) return;
-
-        function go(){{
-          try{{ window.top.location.replace(target); return; }}catch(e){{}}
-          try{{ window.parent.location.replace(target); return; }}catch(e){{}}
-          try{{ window.location.replace(target); return; }}catch(e){{}}
-        }}
-
-        go();
-        setTimeout(go, 50);
-        setTimeout(go, 150);
-        setTimeout(go, 400);
-      }})();
-    </script>
-    """,
-    unsafe_allow_html=True,
-)
-
-components.html(
-    f"""
-    <script>
-      (function(){{
-        var target = {WORDPRESS_CHAT_TARGET_JSON};
-        var ua = navigator.userAgent || "";
-        var width = Math.min(window.innerWidth || 9999, screen.width || 9999);
-        var coarse = false;
-
-        try{{
-          coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-        }}catch(e){{}}
-
-        var mobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
-        var mobileWidth = width <= 768;
-        var touchMobile = coarse && width <= 1024;
-
-        if(!(mobileUA || mobileWidth || touchMobile)) return;
-
-        function go(){{
-          try{{ window.top.location.replace(target); return; }}catch(e){{}}
-          try{{ window.parent.location.replace(target); return; }}catch(e){{}}
-          try{{ window.location.replace(target); return; }}catch(e){{}}
-        }}
-
-        go();
-        setTimeout(go, 80);
-        setTimeout(go, 300);
-        setTimeout(go, 900);
-      }})();
-    </script>
-    """,
-    height=0,
-    width=0,
-)
-
 html = """
 <!doctype html>
 <html lang="es">
@@ -128,6 +57,109 @@ html = """
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
   <title>Chat</title>
+  <style id="wpMobileRedirectPrehide">
+    @media (max-width: 820px), (pointer: coarse) and (max-width: 1024px){
+      html, body{
+        background:#020614 !important;
+        overflow:hidden !important;
+      }
+      #stage{
+        opacity:0 !important;
+        pointer-events:none !important;
+      }
+    }
+  </style>
+  <script>
+    (function(){
+      var target = __WP_CHAT_TARGET_JSON__;
+      var ua = navigator.userAgent || "";
+      var vw = Math.min(
+        window.innerWidth || 9999,
+        document.documentElement ? (document.documentElement.clientWidth || 9999) : 9999,
+        screen.width || 9999
+      );
+      var sw = Math.min(screen.width || 9999, screen.availWidth || 9999);
+      var coarse = false;
+      var standalone = false;
+
+      try{
+        coarse = !!(
+          (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) ||
+          (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)
+        );
+      }catch(e){}
+
+      try{
+        standalone = !!(
+          (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+          navigator.standalone === true
+        );
+      }catch(e){}
+
+      var mobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
+      var mobileViewport = vw <= 820 || sw <= 820;
+      var isMobile = mobileUA || (coarse && mobileViewport) || standalone;
+
+      function removePrehide(){
+        var style = document.getElementById("wpMobileRedirectPrehide");
+        if(style && style.parentNode){
+          style.parentNode.removeChild(style);
+        }
+      }
+
+      if(!isMobile){
+        removePrehide();
+        return;
+      }
+
+      function anchorRedirect(){
+        try{
+          var a = document.createElement("a");
+          a.href = target;
+          a.target = "_top";
+          a.rel = "noopener";
+          a.style.display = "none";
+          document.documentElement.appendChild(a);
+          a.click();
+          return true;
+        }catch(e){
+          return false;
+        }
+      }
+
+      function go(){
+        anchorRedirect();
+
+        try{
+          if(window.top && window.top !== window){
+            window.top.location.assign(target);
+            return;
+          }
+        }catch(e){}
+
+        try{
+          if(window.parent && window.parent !== window){
+            window.parent.location.assign(target);
+            return;
+          }
+        }catch(e){}
+
+        try{
+          window.location.assign(target);
+          return;
+        }catch(e){}
+      }
+
+      go();
+      setTimeout(go, 40);
+      setTimeout(go, 120);
+      setTimeout(go, 300);
+      setTimeout(go, 700);
+      setTimeout(go, 1300);
+
+      setTimeout(removePrehide, 2600);
+    })();
+  </script>
   <style>
     :root{
       /* ===== PALETA ADMIN ===== */
@@ -1193,6 +1225,6 @@ html = """
 </script>
 </body>
 </html>
-""".replace("REEMPLAZAR_DNI", USER_DNI)
+""".replace("REEMPLAZAR_DNI", USER_DNI).replace("__WP_CHAT_TARGET_JSON__", WORDPRESS_CHAT_TARGET_JSON)
 
 components.html(html, height=800, scrolling=False)
