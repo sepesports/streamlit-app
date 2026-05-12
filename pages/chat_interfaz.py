@@ -15,6 +15,13 @@ st.markdown(
       header, footer{display:none !important;}
       [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
       iframe{border:0 !important;}
+
+      @media (max-width: 768px), (pointer: coarse) and (max-width: 1024px){
+        .block-container{opacity:0 !important;pointer-events:none !important;}
+        section.main > div{opacity:0 !important;pointer-events:none !important;}
+        iframe{opacity:0 !important;pointer-events:none !important;}
+        [data-testid="stAppViewContainer"], .stApp{background:#020614 !important;}
+      }
     </style>
     """,
     unsafe_allow_html=True,
@@ -47,6 +54,42 @@ WORDPRESS_CHAT_TARGET = WORDPRESS_CHAT_URL + "?" + urlencode({
     "dni": USER_DNI,
 })
 WORDPRESS_CHAT_TARGET_JSON = json.dumps(WORDPRESS_CHAT_TARGET, ensure_ascii=False)
+
+components.html(
+    f"""
+    <script>
+      (function(){{
+        var target = {WORDPRESS_CHAT_TARGET_JSON};
+        var ua = navigator.userAgent || "";
+        var width = Math.min(window.innerWidth || 9999, screen.width || 9999);
+        var coarse = false;
+
+        try{{
+          coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+        }}catch(e){{}}
+
+        var mobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
+        var mobileWidth = width <= 768;
+        var touchMobile = coarse && width <= 1024;
+
+        if(!(mobileUA || mobileWidth || touchMobile)) return;
+
+        function go(){{
+          try{{ window.top.location.replace(target); return; }}catch(e){{}}
+          try{{ window.parent.location.replace(target); return; }}catch(e){{}}
+          try{{ window.location.replace(target); return; }}catch(e){{}}
+          window.location.href = target;
+        }}
+
+        go();
+        setTimeout(go, 60);
+        setTimeout(go, 220);
+      }})();
+    </script>
+    """,
+    height=0,
+    width=0,
+)
 
 html = """
 <!doctype html>
@@ -158,6 +201,13 @@ setTimeout(go, 900);
       overflow:hidden;
       background: var(--baseBlue);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    @media (max-width: 768px), (pointer: coarse) and (max-width: 1024px){
+      body{
+        opacity:0 !important;
+        pointer-events:none !important;
+      }
     }
 
     /* ===== ESTRUCTURA EXTERIOR (IDÉNTICA A ADMIN.PY) ===== */
