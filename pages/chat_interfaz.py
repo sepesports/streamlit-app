@@ -15,13 +15,6 @@ st.markdown(
       header, footer{display:none !important;}
       [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
       iframe{border:0 !important;}
-
-      @media (max-width: 768px), (pointer: coarse) and (max-width: 1024px){
-        .block-container{opacity:0 !important;pointer-events:none !important;}
-        section.main > div{opacity:0 !important;pointer-events:none !important;}
-        iframe{opacity:0 !important;pointer-events:none !important;}
-        [data-testid="stAppViewContainer"], .stApp{background:#020614 !important;}
-      }
     </style>
     """,
     unsafe_allow_html=True,
@@ -47,13 +40,115 @@ if not USER_DNI:
     st.stop()
 
 WORDPRESS_CHAT_URL = "https://www.meditaciondelyosoy.com/chat/"
-WORDPRESS_CHAT_TARGET = WORDPRESS_CHAT_URL + "?" + urlencode({
-    "auth": "ok",
-    "usuario": USER_NAME,
-    "rol": USER_ROLE,
-    "dni": USER_DNI,
-})
+WORDPRESS_CHAT_TARGET = WORDPRESS_CHAT_URL + "?" + urlencode(
+    {
+        "auth": "ok",
+        "usuario": USER_NAME,
+        "rol": USER_ROLE,
+        "dni": USER_DNI,
+    }
+)
 WORDPRESS_CHAT_TARGET_JSON = json.dumps(WORDPRESS_CHAT_TARGET, ensure_ascii=False)
+
+st.markdown(
+    f"""
+    <style>
+      #mobile-chat-redirect-cover{{
+        display:none;
+      }}
+
+      @media (max-width:768px), (pointer:coarse) and (max-width:1024px){{
+        #mobile-chat-redirect-cover{{
+          position:fixed !important;
+          inset:0 !important;
+          z-index:2147483647 !important;
+          display:grid !important;
+          place-items:center !important;
+          padding:22px !important;
+          background:
+            radial-gradient(900px 520px at 50% -10%, rgba(255,255,255,.16), transparent 60%),
+            linear-gradient(180deg,#020614,#040e31) !important;
+          color:#fff !important;
+          font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif !important;
+        }}
+
+        #mobile-chat-redirect-cover .box{{
+          width:min(420px,94vw);
+          border:1px solid rgba(255,255,255,.14);
+          border-radius:26px;
+          padding:22px;
+          text-align:center;
+          background:rgba(255,255,255,.07);
+          box-shadow:0 22px 55px rgba(0,0,0,.52);
+        }}
+
+        #mobile-chat-redirect-cover .title{{
+          font-size:18px;
+          font-weight:900;
+          margin-bottom:8px;
+        }}
+
+        #mobile-chat-redirect-cover .txt{{
+          font-size:13px;
+          color:rgba(255,255,255,.68);
+          margin-bottom:16px;
+        }}
+
+        #mobile-chat-redirect-cover .btn{{
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          width:100%;
+          height:46px;
+          border-radius:999px;
+          background:#008069;
+          color:#fff !important;
+          text-decoration:none !important;
+          font-weight:900;
+        }}
+      }}
+    </style>
+
+    <div id="mobile-chat-redirect-cover">
+      <div class="box">
+        <div class="title">Abriendo chat móvil</div>
+        <div class="txt">Redirección segura a WordPress con la sesión actual.</div>
+        <a class="btn" href="{WORDPRESS_CHAT_TARGET}" target="_top" rel="noopener">Abrir chat móvil</a>
+      </div>
+    </div>
+
+    <script>
+      (function(){{
+        var target = {WORDPRESS_CHAT_TARGET_JSON};
+        var ua = navigator.userAgent || "";
+        var width = Math.min(window.innerWidth || 9999, screen.width || 9999);
+        var coarse = false;
+
+        try{{
+          coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+        }}catch(e){{}}
+
+        var mobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
+        var mobileWidth = width <= 768;
+        var touchMobile = coarse && width <= 1024;
+
+        if(!(mobileUA || mobileWidth || touchMobile)) return;
+
+        function go(){{
+          try{{ window.top.location.href = target; return; }}catch(e){{}}
+          try{{ window.parent.location.href = target; return; }}catch(e){{}}
+          try{{ window.location.href = target; return; }}catch(e){{}}
+        }}
+
+        go();
+        setTimeout(go, 80);
+        setTimeout(go, 300);
+        setTimeout(go, 900);
+      }})();
+    </script>
+    """,
+    unsafe_allow_html=True,
+)
 
 components.html(
     f"""
@@ -75,15 +170,15 @@ components.html(
         if(!(mobileUA || mobileWidth || touchMobile)) return;
 
         function go(){{
-          try{{ window.top.location.replace(target); return; }}catch(e){{}}
-          try{{ window.parent.location.replace(target); return; }}catch(e){{}}
-          try{{ window.location.replace(target); return; }}catch(e){{}}
-          window.location.href = target;
+          try{{ window.top.location.href = target; return; }}catch(e){{}}
+          try{{ window.parent.location.href = target; return; }}catch(e){{}}
+          try{{ window.location.href = target; return; }}catch(e){{}}
         }}
 
         go();
-        setTimeout(go, 60);
-        setTimeout(go, 220);
+        setTimeout(go, 80);
+        setTimeout(go, 300);
+        setTimeout(go, 900);
       }})();
     </script>
     """,
@@ -98,73 +193,6 @@ html = """
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
   <title>Chat</title>
-  <script>
-    (function(){
-      var target = __WP_CHAT_TARGET_JSON__;
-      var ua = navigator.userAgent || "";
-      var w = Math.min(window.innerWidth || 9999, screen.width || 9999);
-      var coarse = false;
-
-      try{
-        coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-      }catch(e){}
-
-      var mobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
-      var mobileWidth = w <= 768;
-      var touchMobile = coarse && w <= 1024;
-      var isMobile = mobileUA || mobileWidth || touchMobile;
-
-      if(!isMobile){
-        return;
-      }
-
-      function go(){
-        try{ window.top.location.replace(target); return; }catch(e){}
-        try{ window.parent.location.replace(target); return; }catch(e){}
-        try{ window.location.replace(target); return; }catch(e){}
-        window.location.href = target;
-      }
-
-      setTimeout(go, 20);
-      setTimeout(go, 180);
-      setTimeout(go, 700);
-
-      document.open();
-      document.write(`<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Redirigiendo</title>
-<style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#020614;color:#fff}body{display:grid;place-items:center;padding:22px;background:radial-gradient(900px 520px at 50% -10%,rgba(255,255,255,.16),transparent 60%),linear-gradient(180deg,#020614,#040e31)}.box{width:min(420px,94vw);border:1px solid rgba(255,255,255,.14);border-radius:26px;padding:22px;text-align:center;background:rgba(255,255,255,.07);box-shadow:0 22px 55px rgba(0,0,0,.52)}.title{font-size:18px;font-weight:900;margin-bottom:8px}.txt{font-size:13px;color:rgba(255,255,255,.68);margin-bottom:16px}.btn{display:flex;align-items:center;justify-content:center;width:100%;height:46px;border-radius:999px;background:#008069;color:#fff;text-decoration:none;font-weight:900}
-</style>
-</head>
-<body>
-<div class="box">
-<div class="title">Abriendo chat móvil</div>
-<div class="txt">Redirección segura a WordPress con la sesión actual.</div>
-<a class="btn" href="${target.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" target="_top" rel="noopener">Abrir chat</a>
-</div>
-<script>
-(function(){
-var target = ${JSON.stringify(target)};
-function go(){
-try{ window.top.location.replace(target); return; }catch(e){}
-try{ window.parent.location.replace(target); return; }catch(e){}
-try{ window.location.replace(target); return; }catch(e){}
-window.location.href = target;
-}
-setTimeout(go, 30);
-setTimeout(go, 250);
-setTimeout(go, 900);
-})();
-<\/script>
-</body>
-</html>`);
-      document.close();
-    })();
-  </script>
   <style>
     :root{
       /* ===== PALETA ADMIN ===== */
@@ -201,13 +229,6 @@ setTimeout(go, 900);
       overflow:hidden;
       background: var(--baseBlue);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    @media (max-width: 768px), (pointer: coarse) and (max-width: 1024px){
-      body{
-        opacity:0 !important;
-        pointer-events:none !important;
-      }
     }
 
     /* ===== ESTRUCTURA EXTERIOR (IDÉNTICA A ADMIN.PY) ===== */
@@ -1237,6 +1258,6 @@ setTimeout(go, 900);
 </script>
 </body>
 </html>
-""".replace("REEMPLAZAR_DNI", USER_DNI).replace("__WP_CHAT_TARGET_JSON__", WORDPRESS_CHAT_TARGET_JSON)
+""".replace("REEMPLAZAR_DNI", USER_DNI)
 
 components.html(html, height=800, scrolling=False)
