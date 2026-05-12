@@ -1,4 +1,7 @@
 # pages/chat_interfaz.py
+import json
+from urllib.parse import urlencode
+
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -28,10 +31,50 @@ if st.query_params.get("auth") != "ok":
     )
     st.stop()
 
+USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or ""
+USER_ROLE = st.query_params.get("rol") or st.query_params.get("role") or ""
 USER_DNI = st.query_params.get("dni") or ""
+
 if not USER_DNI:
     st.error("No se pudo identificar al usuario. Por favor, vuelve a iniciar sesión.")
     st.stop()
+
+WORDPRESS_CHAT_URL = "https://www.meditaciondelyosoy.com/chat/"
+
+wp_params = {
+    "auth": "ok",
+    "usuario": USER_NAME,
+    "rol": USER_ROLE,
+    "dni": USER_DNI,
+}
+
+WORDPRESS_CHAT_TARGET = WORDPRESS_CHAT_URL + "?" + urlencode(
+    {k: v for k, v in wp_params.items() if v is not None and str(v).strip() != ""}
+)
+
+components.html(
+    f"""
+    <script>
+      (function(){{
+        var target = {json.dumps(WORDPRESS_CHAT_TARGET, ensure_ascii=False)};
+        var ua = navigator.userAgent || "";
+        var isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
+        var isMobileWidth = window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
+        var isTouchMobile = navigator.maxTouchPoints && navigator.maxTouchPoints > 1 && window.innerWidth <= 900;
+
+        if (isMobileUA || isMobileWidth || isTouchMobile) {{
+          try {{
+            window.top.location.replace(target);
+          }} catch(e) {{
+            window.parent.location.href = target;
+          }}
+        }}
+      }})();
+    </script>
+    """,
+    height=0,
+    width=0,
+)
 
 html = """
 <!doctype html>
@@ -42,7 +85,6 @@ html = """
   <title>Chat</title>
   <style>
     :root{
-      /* ===== PALETA ADMIN ===== */
       --baseBlue: #040e31;
       --bgTop:  #0a1a55;
       --bgMid:  #061240;
@@ -53,14 +95,12 @@ html = """
       --shadow1: 0 22px 55px rgba(0,0,0,.55);
       --blur: 14px;
 
-      /* ===== AJUSTES DE ALTURA (conservados) ===== */
       --top-row-h: 48px;
       --title-row-h: 44px;
       --input-row-h: 52px;
       --chat-shell-h-desktop: 70vh;
       --chat-shell-h-mobile: 62vh;
 
-      /* ===== TIPOGRAFÍA WHATSAPP ===== */
       --font-main: 15px;
       --font-small: 12px;
       --font-title: 16px;
@@ -78,7 +118,6 @@ html = """
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
-    /* ===== ESTRUCTURA EXTERIOR (IDÉNTICA A ADMIN.PY) ===== */
     #stage{
       position:fixed;
       inset:0;
@@ -158,7 +197,6 @@ html = """
         linear-gradient(180deg, transparent 62%, rgba(0,0,0,.30) 100%);
     }
 
-    /* ===== CONTENEDOR INTERIOR ===== */
     .inner{
       width:100%;
       height:100%;
@@ -170,7 +208,6 @@ html = """
       padding-top:16px;
     }
 
-    /* ===== BOTONES SUPERIORES (ESTILO WHATSAPP) ===== */
     .top-buttons{
       display:flex;
       gap:8px;
@@ -208,16 +245,17 @@ html = """
       align-items: center;
       gap: 2px;
     }
+
     .btn-topline{
       font-size: 10px;
       opacity: 0.7;
     }
+
     .btn-mainline{
       font-size: 14px;
       font-weight: 600;
     }
 
-    /* ===== BLOQUE DEL CHAT (ESTILO WHATSAPP) ===== */
     .chat-shell{
       width: min(900px, 90%);
       height: var(--chat-shell-h-desktop);
@@ -315,7 +353,6 @@ html = """
       background: #006b56;
     }
 
-    /* ===== MODALES (ESTILO WHATSAPP) ===== */
     .selector-modal{
       position:fixed;
       top:0; left:0; right:0; bottom:0;
@@ -325,6 +362,7 @@ html = """
       justify-content:center;
       z-index:2000;
     }
+
     .selector-modal.show{ display:flex; }
 
     .selector-card{
@@ -345,11 +383,13 @@ html = """
       padding: 16px;
       border-bottom: 1px solid #e9edef;
     }
+
     .selector-title{
       font-size: 18px;
       font-weight: 600;
       color: #111b21;
     }
+
     .selector-close{
       background: transparent;
       border: none;
@@ -362,6 +402,7 @@ html = """
       padding: 12px 16px;
       border-bottom: 1px solid #e9edef;
     }
+
     .selector-search{
       width: 100%;
       padding: 10px 12px;
@@ -388,16 +429,20 @@ html = """
       font-size: 15px;
       border-bottom: 1px solid #f0f2f5;
     }
+
     .selector-item:hover, .selector-action:hover{
       background: #f5f6f6;
     }
+
     .selector-item.active{
       background: #e9f0e8;
     }
+
     .selector-item-title{
       font-weight: 500;
       color: #111b21;
     }
+
     .selector-item-sub{
       font-size: 13px;
       color: #667781;
@@ -405,6 +450,7 @@ html = """
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
     .section-label{
       padding: 12px 16px 4px;
       font-size: 12px;
@@ -413,7 +459,12 @@ html = """
       text-transform: uppercase;
     }
 
-    /* Nuevo chat modal */
+    .selector-empty{
+      padding: 14px 16px;
+      color:#667781;
+      font-size:14px;
+    }
+
     .user-search-modal{
       position:fixed;
       top:0; left:0; right:0; bottom:0;
@@ -423,6 +474,7 @@ html = """
       justify-content:center;
       z-index:2100;
     }
+
     .modal-content{
       background:#fff;
       width:90%;
@@ -430,10 +482,12 @@ html = """
       border-radius:28px;
       padding:20px;
     }
+
     .modal-content h3{
       margin-bottom:16px;
       font-size:18px;
     }
+
     .modal-content input{
       width:100%;
       padding:12px;
@@ -442,27 +496,38 @@ html = """
       margin-bottom:16px;
       font-size:15px;
     }
+
     .user-list{
       max-height:300px;
       overflow-y:auto;
     }
+
     .user-item{
       padding:12px;
       cursor:pointer;
       border-bottom:1px solid #f0f2f5;
     }
+
     .user-item:hover{
       background:#f5f6f6;
     }
+
     .close-modal{
       float:right;
       font-size:24px;
       cursor:pointer;
     }
 
+    .loading,
+    .error{
+      padding:14px;
+      color:#667781;
+      font-size:14px;
+      text-align:center;
+    }
+
     #functionalLayer{ display:none !important; }
 
-    /* ===== MÓVIL ===== */
     @media (max-width: 768px){
       :root{
         --top-row-h: 44px;
@@ -475,35 +540,39 @@ html = """
         --font-body: 13px;
         --send-w: 76px;
       }
+
       .chat-shell{
         width: 96%;
         height: var(--chat-shell-h-mobile);
       }
+
       .top-btn{
         padding: 4px 12px;
       }
+
       .message{
         max-width: 85%;
       }
+
       .inner{
         padding-top: 8px;
         gap: 12px;
       }
     }
 
-    /* Scrollbar */
     .messages-area::-webkit-scrollbar{
       width: 6px;
     }
+
     .messages-area::-webkit-scrollbar-track{
       background: #f0f2f5;
     }
+
     .messages-area::-webkit-scrollbar-thumb{
       background: #c1c9d0;
       border-radius: 3px;
     }
 
-    /* ========== FULLSCREEN TOGGLE STYLES (solo móvil) ========== */
     .fullscreen-toggle {
       position: fixed;
       bottom: 20px;
@@ -527,20 +596,24 @@ html = """
       user-select: none;
       touch-action: manipulation;
     }
+
     .fullscreen-toggle:active {
       transform: scale(0.92);
       background: rgba(0,0,0,0.8);
     }
+
     @media (min-width: 769px) {
       .fullscreen-toggle {
         display: none;
       }
     }
+
     @media (max-width: 768px) {
       .fullscreen-toggle {
         display: flex;
       }
     }
+
     html:fullscreen #stage.fullscreen-mode #plan,
     html:-webkit-full-screen #stage.fullscreen-mode #plan,
     html:-moz-full-screen #stage.fullscreen-mode #plan {
@@ -551,6 +624,7 @@ html = """
       border-radius: 0;
       box-shadow: none;
     }
+
     html:fullscreen #stage.fullscreen-mode #frame,
     html:-webkit-full-screen #stage.fullscreen-mode #frame,
     html:-moz-full-screen #stage.fullscreen-mode #frame {
@@ -562,10 +636,12 @@ html = """
     }
   </style>
 </head>
+
 <body>
 <div id="stage">
   <div id="plan">
     <div id="frame"></div>
+
     <div id="card">
       <div class="inner">
 
@@ -576,12 +652,14 @@ html = """
               <span class="btn-mainline">Socorristas</span>
             </div>
           </button>
+
           <button class="top-btn" id="btnInstalacion" type="button">
             <div class="btn-stack">
               <span class="btn-topline">selecciona</span>
               <span class="btn-mainline">Instalación</span>
             </div>
           </button>
+
           <button class="top-btn" id="btnNotificaciones" type="button">
             <div class="btn-center">Notificaciones</div>
           </button>
@@ -589,9 +667,11 @@ html = """
 
         <div class="chat-shell">
           <div class="chat-header" id="chatHeader">Nombre del socorrista o Grupo de instalación</div>
+
           <div class="messages-area" id="messagesArea">
             <div class="loading">Cargando conversaciones...</div>
           </div>
+
           <div class="input-area" id="inputArea">
             <input type="text" id="chatInput" placeholder="Mensaje" autocomplete="off">
             <button id="sendBtn">Enviar</button>
@@ -604,6 +684,7 @@ html = """
               <span>Conversaciones</span>
               <button class="new-chat-btn" id="newChatBtn">+ Nuevo</button>
             </div>
+
             <div class="thread-list" id="threadList">
               <div class="loading">Cargando conversaciones...</div>
             </div>
@@ -612,6 +693,7 @@ html = """
 
       </div>
     </div>
+
     <div id="hud"></div>
   </div>
 </div>
@@ -622,21 +704,23 @@ html = """
       <div class="selector-title" id="selectorTitle">Selección</div>
       <button class="selector-close" id="selectorClose" type="button">×</button>
     </div>
+
     <div class="selector-search-wrap">
       <input id="selectorSearch" class="selector-search" type="text" autocomplete="off" placeholder="Buscar">
     </div>
+
     <div class="selector-list" id="selectorList">
       <div class="loading">Cargando...</div>
     </div>
   </div>
 </div>
 
-<!-- Botón de pantalla completa (solo móvil) -->
 <div id="fullscreenToggleBtn" class="fullscreen-toggle">⤢</div>
 
 <script>
   const API_BASE = "https://camilo27.pythonanywhere.com/api/chat";
   const currentUserId = "REEMPLAZAR_DNI";
+
   let currentThreadId = null;
   let threads = [];
   let pollingInterval = null;
@@ -644,23 +728,32 @@ html = """
   let lastRenderedMessageId = null;
 
   function escapeHtml(text) {
-    return String(text).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+    return String(text)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
   }
 
   async function fetchJSON(url, options = {}) {
     const response = await fetch(url, options);
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status} - ${response.statusText}`);
     }
+
     return response.json();
   }
 
   async function loadThreads() {
     const listDiv = document.getElementById("threadList");
+
     try {
       const data = await fetchJSON(API_BASE + "/threads?user_id=" + encodeURIComponent(currentUserId));
       threads = data.threads || [];
       renderThreadList();
+
       if (threads.length > 0 && !currentThreadId) {
         setActiveThread(threads[0].id);
       }
@@ -672,67 +765,93 @@ html = """
 
   function renderThreadList() {
     const container = document.getElementById("threadList");
+
     if (threads.length === 0) {
       container.innerHTML = '<div style="padding: 12px; text-align: center;">No hay conversaciones</div>';
       return;
     }
+
     container.innerHTML = threads.map(function(t) {
       return '<div class="thread-item' + (currentThreadId == t.id ? ' active' : '') + '" data-id="' + t.id + '">' +
                '<div class="thread-title">' + escapeHtml(t.title || (t.type === 'private' ? 'Privado' : 'Grupo')) + '</div>' +
                '<div class="thread-preview">' + escapeHtml(t.last_message || '') + '</div>' +
              '</div>';
     }).join('');
+
     document.querySelectorAll('.thread-item').forEach(function(el) {
-      el.addEventListener('click', function() { setActiveThread(el.getAttribute('data-id')); });
+      el.addEventListener('click', function() {
+        setActiveThread(el.getAttribute('data-id'));
+      });
     });
   }
 
   async function loadMessages(threadId, poll = false) {
     const limit = poll ? 30 : 500;
-    let url = API_BASE + "/threads/" + threadId + "/messages?user_id=" + encodeURIComponent(currentUserId) + "&limit=" + limit;
+    const url = API_BASE + "/threads/" + threadId + "/messages?user_id=" + encodeURIComponent(currentUserId) + "&limit=" + limit;
+
     try {
       const data = await fetchJSON(url);
       let messages = data.messages || [];
+
       if (poll && lastRenderedMessageId !== null) {
-        messages = messages.filter(function(m) { return parseInt(m.id) > lastRenderedMessageId; });
+        messages = messages.filter(function(m) {
+          return parseInt(m.id) > lastRenderedMessageId;
+        });
       }
+
       const container = document.getElementById("messagesArea");
+
       if (!poll) {
         container.innerHTML = '';
         lastRenderedMessageId = null;
       }
+
       if (messages.length === 0 && !poll) {
         container.innerHTML = '<div style="text-align: center; margin-top: 20px;">No hay mensajes</div>';
         lastRenderedMessageId = null;
         return;
       }
+
       messages.forEach(function(msg) {
         const div = document.createElement("div");
         div.className = "message" + (msg.sender_id == currentUserId ? " out" : "");
+        div.setAttribute("data-id", String(msg.id || ""));
         div.innerHTML = '<strong>' + escapeHtml(msg.sender_alias || 'Usuario') + ':</strong> ' + escapeHtml(msg.body);
         container.appendChild(div);
         lastRenderedMessageId = parseInt(msg.id);
       });
+
       container.scrollTop = container.scrollHeight;
       await markThreadRead(threadId);
     } catch (error) {
       console.error("Error loading messages:", error);
+
       const container = document.getElementById("messagesArea");
-      if (!poll) container.innerHTML = '<div class="error">Error al cargar mensajes<br>' + escapeHtml(error.message) + '</div>';
+
+      if (!poll) {
+        container.innerHTML = '<div class="error">Error al cargar mensajes<br>' + escapeHtml(error.message) + '</div>';
+      }
     }
   }
 
   async function markThreadRead(threadId) {
     const messagesDiv = document.getElementById("messagesArea");
     const lastMsg = messagesDiv.querySelector(".message:last-child");
+
     if (!lastMsg) return;
+
     const lastId = lastMsg.getAttribute("data-id");
+
     if (!lastId) return;
+
     try {
       await fetch(API_BASE + "/threads/" + threadId + "/read", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: currentUserId, last_read_message_id: lastId })
+        body: JSON.stringify({
+          user_id: currentUserId,
+          last_read_message_id: lastId
+        })
       });
     } catch (error) {
       console.error("Error marking read:", error);
@@ -741,16 +860,24 @@ html = """
 
   async function sendMessage() {
     if (!currentThreadId) return;
+
     const input = document.getElementById("chatInput");
     const text = input.value.trim();
+
     if (!text) return;
+
     input.value = "";
+
     try {
       await fetch(API_BASE + "/threads/" + currentThreadId + "/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sender_id: currentUserId, body: text })
+        body: JSON.stringify({
+          sender_id: currentUserId,
+          body: text
+        })
       });
+
       await loadMessages(currentThreadId, false);
     } catch (error) {
       console.error("Error sending message:", error);
@@ -761,11 +888,20 @@ html = """
   function setActiveThread(threadId) {
     currentThreadId = threadId;
     loadMessages(threadId, false);
-    const thread = threads.find(function(t) { return t.id == threadId; });
-    document.getElementById("chatHeader").innerText = thread ? (thread.title || (thread.type === 'private' ? 'Privado' : 'Grupo')) : "Conversación";
+
+    const thread = threads.find(function(t) {
+      return t.id == threadId;
+    });
+
+    document.getElementById("chatHeader").innerText = thread
+      ? (thread.title || (thread.type === 'private' ? 'Privado' : 'Grupo'))
+      : "Conversación";
+
     document.getElementById("inputArea").style.display = "flex";
     renderThreadList();
+
     if (pollingInterval) clearInterval(pollingInterval);
+
     pollingInterval = setInterval(function() {
       if (currentThreadId) loadMessages(currentThreadId, true);
     }, 10000);
@@ -774,6 +910,7 @@ html = """
   function showNewChatModal() {
     const modal = document.createElement("div");
     modal.className = "user-search-modal";
+
     modal.innerHTML = `
       <div class="modal-content">
         <span class="close-modal">&times;</span>
@@ -782,37 +919,57 @@ html = """
         <div id="userSearchResults" class="user-list">Escribe al menos 2 caracteres</div>
       </div>
     `;
+
     document.body.appendChild(modal);
+
     const closeBtn = modal.querySelector(".close-modal");
-    closeBtn.onclick = function() { modal.remove(); };
+    closeBtn.onclick = function() {
+      modal.remove();
+    };
+
     const searchInput = modal.querySelector("#userSearch");
     const resultsDiv = modal.querySelector("#userSearchResults");
 
     async function searchUsers() {
       const query = searchInput.value.trim().toLowerCase();
+
       if (query.length < 2) {
         resultsDiv.innerHTML = '<div>Escribe al menos 2 caracteres</div>';
         return;
       }
+
       try {
         const users = await fetchJSON(API_BASE + "/users");
-        const filtered = users.filter(function(u) { return u.alias.toLowerCase().includes(query) || u.dni.includes(query); });
+
+        const filtered = users.filter(function(u) {
+          return String(u.alias || "").toLowerCase().includes(query) ||
+                 String(u.dni || "").includes(query);
+        });
+
         if (filtered.length === 0) {
           resultsDiv.innerHTML = '<div>No se encontraron usuarios</div>';
           return;
         }
+
         resultsDiv.innerHTML = filtered.map(function(u) {
-          return '<div class="user-item" data-dni="' + u.dni + '">@' + escapeHtml(u.alias) + ' (' + u.dni + ')</div>';
+          return '<div class="user-item" data-dni="' + escapeHtml(u.dni) + '">@' + escapeHtml(u.alias) + ' (' + escapeHtml(u.dni) + ')</div>';
         }).join('');
+
         resultsDiv.querySelectorAll(".user-item").forEach(function(el) {
           el.addEventListener("click", async function() {
             const otherDni = el.getAttribute("data-dni");
+
             if (otherDni == currentUserId) {
               alert("No puedes chatear contigo mismo");
               return;
             }
+
             try {
-              const data = await fetchJSON(API_BASE + "/private/" + encodeURIComponent(otherDni) + "?user_id=" + encodeURIComponent(currentUserId));
+              const data = await fetchJSON(
+                API_BASE + "/private/" + encodeURIComponent(otherDni) +
+                "?user_id=" + encodeURIComponent(currentUserId)
+              );
+
               if (data.thread_id) {
                 setActiveThread(data.thread_id);
                 modal.remove();
@@ -827,12 +984,14 @@ html = """
         resultsDiv.innerHTML = '<div class="error">Error al cargar usuarios<br>' + escapeHtml(error.message) + '</div>';
       }
     }
+
     searchInput.addEventListener("input", searchUsers);
     searchUsers();
   }
 
   document.getElementById("newChatBtn").addEventListener("click", showNewChatModal);
   document.getElementById("sendBtn").addEventListener("click", sendMessage);
+
   document.getElementById("chatInput").addEventListener("keypress", function(e) {
     if (e.key === "Enter") sendMessage();
   });
@@ -850,19 +1009,27 @@ html = """
   }
 
   function syncTopButtonsFromThread() {
-    const thread = threads.find(function(t) { return String(t.id) === String(currentThreadId); });
+    const thread = threads.find(function(t) {
+      return String(t.id) === String(currentThreadId);
+    });
+
     if (!thread) {
       setTopActive(null);
       return;
     }
-    if (thread.type === "private") setTopActive("socorristas");
-    else setTopActive("instalacion");
+
+    if (thread.type === "private") {
+      setTopActive("socorristas");
+    } else {
+      setTopActive("instalacion");
+    }
   }
 
   function openSelector(mode) {
     selectorMode = mode;
     document.getElementById("selectorModal").classList.add("show");
     renderSelector();
+
     setTimeout(function() {
       document.getElementById("selectorSearch").focus();
     }, 10);
@@ -881,9 +1048,13 @@ html = """
     let list = threads.slice();
 
     if (selectorMode === "socorristas") {
-      list = list.filter(function(t) { return t.type === "private"; });
+      list = list.filter(function(t) {
+        return t.type === "private";
+      });
     } else if (selectorMode === "instalacion") {
-      list = list.filter(function(t) { return t.type !== "private"; });
+      list = list.filter(function(t) {
+        return t.type !== "private";
+      });
     }
 
     if (!query) return list;
@@ -930,7 +1101,7 @@ html = """
       html += '<div class="selector-empty">No hay conversaciones</div>';
     } else {
       html += list.map(function(t) {
-        return '<button class="selector-item selector-thread' + (currentThreadId == t.id ? ' active' : '') + '" data-id="' + t.id + '">' +
+        return '<button class="selector-item selector-thread' + (currentThreadId == t.id ? ' active' : '') + '" data-id="' + escapeHtml(t.id) + '">' +
                  '<div class="selector-item-title">' + escapeHtml(t.title || (t.type === 'private' ? 'Privado' : 'Grupo')) + '</div>' +
                  '<div class="selector-item-sub">' + escapeHtml(t.last_message || '') + '</div>' +
                '</button>';
@@ -940,6 +1111,7 @@ html = """
     selectorList.innerHTML = html;
 
     const selectorNewChat = document.getElementById("selectorNewChat");
+
     if (selectorNewChat) {
       selectorNewChat.addEventListener("click", function() {
         closeSelector();
@@ -956,17 +1128,25 @@ html = """
   }
 
   const __originalLoadThreads = loadThreads;
+
   loadThreads = async function() {
     await __originalLoadThreads();
     syncTopButtonsFromThread();
-    if (selectorMode) renderSelector();
+
+    if (selectorMode) {
+      renderSelector();
+    }
   };
 
   const __originalSetActiveThread = setActiveThread;
+
   setActiveThread = function(threadId) {
     __originalSetActiveThread(threadId);
     syncTopButtonsFromThread();
-    if (selectorMode) renderSelector();
+
+    if (selectorMode) {
+      renderSelector();
+    }
   };
 
   document.getElementById("btnSocorristas").addEventListener("click", function() {
@@ -996,7 +1176,6 @@ html = """
   loadThreads();
   threadsPollingInterval = setInterval(loadThreads, 15000);
 
-  // ==================== FULLSCREEN PERSISTENCE (solo móvil) ====================
   (function() {
     const stageEl = document.getElementById("stage");
     const toggleBtn = document.getElementById("fullscreenToggleBtn");
@@ -1012,14 +1191,21 @@ html = """
 
     function enterFullscreen() {
       const elem = document.documentElement;
-      const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
+      const requestMethod =
+        elem.requestFullscreen ||
+        elem.webkitRequestFullscreen ||
+        elem.mozRequestFullScreen ||
+        elem.msRequestFullscreen;
+
       if (requestMethod) {
         requestMethod.call(elem).then(() => {
           if (stageEl) stageEl.classList.add("fullscreen-mode");
+
           if (toggleBtn) {
             toggleBtn.textContent = "✕";
             toggleBtn.style.fontSize = "26px";
           }
+
           setFullscreenFlag(true);
         }).catch(err => {
           console.log("Error al entrar en fullscreen:", err);
@@ -1028,14 +1214,21 @@ html = """
     }
 
     function exitFullscreen() {
-      const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+      const exitMethod =
+        document.exitFullscreen ||
+        document.webkitExitFullscreen ||
+        document.mozCancelFullScreen ||
+        document.msExitFullscreen;
+
       if (exitMethod) {
         exitMethod.call(document).then(() => {
           if (stageEl) stageEl.classList.remove("fullscreen-mode");
+
           if (toggleBtn) {
             toggleBtn.textContent = "⤢";
             toggleBtn.style.fontSize = "28px";
           }
+
           setFullscreenFlag(false);
         }).catch(err => {
           console.log("Error al salir de fullscreen:", err);
@@ -1044,7 +1237,13 @@ html = """
     }
 
     function toggleFullscreen() {
-      const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+      const isFull = !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+
       if (isFull) {
         exitFullscreen();
       } else {
@@ -1053,34 +1252,50 @@ html = """
     }
 
     function onFullscreenChange() {
-      const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+      const isFull = !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+
       if (isFull) {
         if (stageEl) stageEl.classList.add("fullscreen-mode");
+
         if (toggleBtn) {
           toggleBtn.textContent = "✕";
           toggleBtn.style.fontSize = "26px";
         }
+
         setFullscreenFlag(true);
       } else {
         if (stageEl) stageEl.classList.remove("fullscreen-mode");
+
         if (toggleBtn) {
           toggleBtn.textContent = "⤢";
           toggleBtn.style.fontSize = "28px";
         }
+
         setFullscreenFlag(false);
       }
     }
 
-    // Restaurar fullscreen si estaba activo (solo móvil)
     if (isMobile) {
       const savedFlag = localStorage.getItem("fullscreenActive");
+
       if (savedFlag === "true") {
-        const isCurrentlyFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+        const isCurrentlyFull = !!(
+          document.fullscreenElement ||
+          document.webkitFullscreenElement ||
+          document.mozFullScreenElement ||
+          document.msFullscreenElement
+        );
+
         if (!isCurrentlyFull) {
           enterFullscreen();
         } else {
-          // Asegurar UI
           if (stageEl) stageEl.classList.add("fullscreen-mode");
+
           if (toggleBtn) {
             toggleBtn.textContent = "✕";
             toggleBtn.style.fontSize = "26px";
@@ -1101,7 +1316,6 @@ html = """
     document.addEventListener("mozfullscreenchange", onFullscreenChange);
     document.addEventListener("MSFullscreenChange", onFullscreenChange);
   })();
-  // ==================== FIN FULLSCREEN PERSISTENCE ====================
 </script>
 </body>
 </html>
