@@ -52,71 +52,6 @@ WORDPRESS_CHAT_TARGET_JSON = json.dumps(WORDPRESS_CHAT_TARGET, ensure_ascii=Fals
 
 st.markdown(
     f"""
-    <style>
-      #mobile-chat-redirect-cover{{
-        display:none;
-      }}
-
-      @media (max-width:768px), (pointer:coarse) and (max-width:1024px){{
-        #mobile-chat-redirect-cover{{
-          position:fixed !important;
-          inset:0 !important;
-          z-index:2147483647 !important;
-          display:grid !important;
-          place-items:center !important;
-          padding:22px !important;
-          background:
-            radial-gradient(900px 520px at 50% -10%, rgba(255,255,255,.16), transparent 60%),
-            linear-gradient(180deg,#020614,#040e31) !important;
-          color:#fff !important;
-          font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif !important;
-        }}
-
-        #mobile-chat-redirect-cover .box{{
-          width:min(420px,94vw);
-          border:1px solid rgba(255,255,255,.14);
-          border-radius:26px;
-          padding:22px;
-          text-align:center;
-          background:rgba(255,255,255,.07);
-          box-shadow:0 22px 55px rgba(0,0,0,.52);
-        }}
-
-        #mobile-chat-redirect-cover .title{{
-          font-size:18px;
-          font-weight:900;
-          margin-bottom:8px;
-        }}
-
-        #mobile-chat-redirect-cover .txt{{
-          font-size:13px;
-          color:rgba(255,255,255,.68);
-          margin-bottom:16px;
-        }}
-
-        #mobile-chat-redirect-cover .btn{{
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          width:100%;
-          height:46px;
-          border-radius:999px;
-          background:#008069;
-          color:#fff !important;
-          text-decoration:none !important;
-          font-weight:900;
-        }}
-      }}
-    </style>
-
-    <div id="mobile-chat-redirect-cover">
-      <div class="box">
-        <div class="title">Abriendo chat móvil</div>
-        <div class="txt">Redirección segura a WordPress con la sesión actual.</div>
-        <a class="btn" href="{WORDPRESS_CHAT_TARGET}" target="_top" rel="noopener">Abrir chat móvil</a>
-      </div>
-    </div>
-
     <script>
       (function(){{
         var target = {WORDPRESS_CHAT_TARGET_JSON};
@@ -135,15 +70,15 @@ st.markdown(
         if(!(mobileUA || mobileWidth || touchMobile)) return;
 
         function go(){{
-          try{{ window.top.location.href = target; return; }}catch(e){{}}
-          try{{ window.parent.location.href = target; return; }}catch(e){{}}
-          try{{ window.location.href = target; return; }}catch(e){{}}
+          try{{ window.top.location.replace(target); return; }}catch(e){{}}
+          try{{ window.parent.location.replace(target); return; }}catch(e){{}}
+          try{{ window.location.replace(target); return; }}catch(e){{}}
         }}
 
         go();
-        setTimeout(go, 80);
-        setTimeout(go, 300);
-        setTimeout(go, 900);
+        setTimeout(go, 50);
+        setTimeout(go, 150);
+        setTimeout(go, 400);
       }})();
     </script>
     """,
@@ -170,9 +105,9 @@ components.html(
         if(!(mobileUA || mobileWidth || touchMobile)) return;
 
         function go(){{
-          try{{ window.top.location.href = target; return; }}catch(e){{}}
-          try{{ window.parent.location.href = target; return; }}catch(e){{}}
-          try{{ window.location.href = target; return; }}catch(e){{}}
+          try{{ window.top.location.replace(target); return; }}catch(e){{}}
+          try{{ window.parent.location.replace(target); return; }}catch(e){{}}
+          try{{ window.location.replace(target); return; }}catch(e){{}}
         }}
 
         go();
