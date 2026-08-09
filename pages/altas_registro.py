@@ -1,1040 +1,323 @@
-# github_altas_registro.py
+# pages/altas_registro.py
+import json
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", page_title="Registro de Personal")
+
+query_params = st.query_params
+AUTH_USER = query_params.get("usuario") or query_params.get("user") or ""
+AUTH_ROLE = query_params.get("rol") or query_params.get("role") or ""
+AUTH_DNI = query_params.get("dni") or ""
+NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
+
+if not AUTH_USER or not AUTH_ROLE:
+        st.markdown(
+                    """
+                            <script>
+                                      window.location.href="/admin";
+                                              </script>
+                                                      """,
+                    unsafe_allow_html=True,
+        )
+        st.stop()
+
+if NORMALIZED_ROLE != "administrador":
+        st.markdown(
+                    """
+                            <script>
+                                      window.location.href="/?auth=ok";
+                                              </script>
+                                                      """,
+                    unsafe_allow_html=True,
+        )
+        st.stop()
+
+API_BASE = "https://camilo27.pythonanywhere.com"
+LOGO_URL = "https://files.catbox.moe/056m6v.jpg"
 
 st.markdown(
-    """
-    <style>
-      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
-      section.main > div{padding:0 !important;margin:0 !important;}
-      header, footer{display:none !important;}
-      iframe{display:block !important;}
-      [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
-    </style>
-    """,
-    unsafe_allow_html=True,
+        """
+            <style>
+                  .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
+                        section.main > div{padding:0 !important;margin:0 !important;}
+                              header, footer{display:none !important;}
+                                    iframe{display:block;}
+                                        </style>
+                                            """,
+        unsafe_allow_html=True,
 )
 
-API_URL = "https://camilo27.pythonanywhere.com/api/altas/registro"
 
-html = rf"""
+def _js_str(value) -> str:
+        return json.dumps("" if value is None else str(value), ensure_ascii=False)
+
+
+html = """
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root{{
-      --baseBlue: #040e31;
-      --bgTop:  #0a1a55;
-      --bgMid:  #061240;
-      --bgDeep: #02071c;
-
-      --overlay1: rgba(40, 120, 255, .16);
-      --overlay2: rgba(0,  10,  40, .62);
-
-      --ink: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.62);
-
-      --pill: rgba(238, 245, 255, .92);
-      --pill2: rgba(255,255,255,.86);
-
-      --btn1:#2f7de1;
-      --btn2:#1e5fc4;
-
-      --shadow1: 0 22px 55px rgba(0,0,0,.55);
-      --shadow2: 0 10px 22px rgba(0,0,0,.40);
-      --blur: 14px;
-
-      --border:2px;
-      --borderColor:#111;
-      --outerPad:10px;
-      --radiusDesk:52px;
-      --radiusMob:44px;
-      --hdrHDesk:54px;
-      --hdrHMob:42px;
-      --labelMin:140px;
-      --labelMinSmall:110px;
-      --rowGap:4px;
-      --colGap:26px;
-      --inputHDesk:40px;
-      --inputHMob:38px;
-    }}
-
-    html, body{{
-      margin:0; padding:0;
-      width:100%; height:100%;
-      background:var(--baseBlue);
-      overflow:hidden;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--ink);
-    }}
-
-    #stage{{
-      position:fixed; inset:0;
-      width:100vw; height:100vh;
-      background:
-        radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.14), transparent 60%),
-        radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
-        linear-gradient(180deg, #020614 0%, var(--baseBlue) 100%);
-    }}
-
-    #plan{{
-      position:absolute;
-      left:10px; right:10px;
-      top:10px; bottom:0;
-      overflow:hidden;
-      border-radius: 34px;
-      box-shadow: var(--shadow1);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 22%),
-        linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #05164d 58%, var(--bgDeep) 100%);
-    }}
-
-    #plan::before{{
-      content:"";
-      position:absolute;
-      inset:-10%;
-      background:
-        linear-gradient(135deg,
-          transparent 0%,
-          transparent 32%,
-          var(--overlay1) 32%,
-          var(--overlay2) 66%,
-          transparent 66%);
-      transform: rotate(-10deg);
-      opacity:.95;
-      pointer-events:none;
-    }}
-
-    #plan::after{{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:
-        radial-gradient(50% 60% at 50% 25%, rgba(255,255,255,.06), transparent 55%),
-        radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
-        linear-gradient(180deg, transparent 55%, rgba(0,0,0,.65) 100%);
-      pointer-events:none;
-    }}
-
-    #frame{{
-      position:absolute;
-      left:9px; right:9px;
-      top:10px; bottom:0;
-      border-left: 2px solid rgba(255,255,255,.14);
-      border-right:2px solid rgba(255,255,255,.14);
-      border-top:  2px solid rgba(255,255,255,.14);
-      box-sizing:border-box;
-      pointer-events:none;
-      border-radius: 34px;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
-      z-index:5;
-    }}
-
-    #outer{{
-      position:absolute;
-      left:var(--outerPad); right:var(--outerPad);
-      top:var(--outerPad); bottom:var(--outerPad);
-      border:1px solid rgba(255,255,255,.10);
-      box-sizing:border-box;
-      background:transparent;
-      border-radius:34px;
-      backdrop-filter:blur(var(--blur));
-      -webkit-backdrop-filter:blur(var(--blur));
-      z-index:10;
-    }}
-
-    #wrap{{
-      position:absolute;
-      left:var(--outerPad); right:var(--outerPad);
-      top:var(--outerPad); bottom:var(--outerPad);
-      box-sizing:border-box;
-      padding:10px;
-      display:flex;
-      justify-content:center;
-      align-items:stretch;
-      z-index:20;
-    }}
-
-    #app{{
-      width:100%;
-      height:100%;
-      max-width:1280px;
-      display:flex;
-      gap:22px;
-      box-sizing:border-box;
-    }}
-
-    .col-left{{
-      flex:0 0 32%;
-      display:flex;
-      flex-direction:column;
-      gap:18px;
-      min-width:260px;
-    }}
-
-    .col-right{{
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      min-width:420px;
-    }}
-
-    .logo, .mobile-logo {{
-      border: none !important;
-      background: transparent !important;
-      box-shadow: none !important;
-      backdrop-filter: none !important;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }}
-
-    .logo {{ height: 180px; }}
-
-    .logo img, .mobile-logo img {{
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
-      border-radius: 10px;
-    }}
-
-    .mobile-logo {{
-      display: none;
-      height: 140px;
-      margin: 5px 10px 0 10px;
-      padding: 5px;
-      box-sizing: border-box;
-    }}
-
-    .blk{{
-      border:1px solid rgba(255,255,255,.10);
-      box-sizing:border-box;
-      background:rgba(255,255,255,.04);
-      backdrop-filter:blur(calc(var(--blur) - 6px));
-      border-radius:24px;
-      box-shadow:var(--shadow2), inset 0 1px 0 rgba(255,255,255,.08);
-      color:var(--ink);
-    }}
-
-    .desc {{
-      flex:1;
-      min-height:260px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 20px;
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.5;
-      gap: 12px;
-    }}
-
-    .desc p {{ margin: 0; max-width: 90%; }}
-    .desc p:first-child {{ font-weight: 600; color: var(--ink); }}
-
-    .hdr{{
-      height:var(--hdrHDesk);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:700;
-      font-size:18px;
-      position:relative;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:24px;
-      backdrop-filter:blur(calc(var(--blur) - 6px));
-      color:var(--ink);
-      text-shadow: 0 8px 18px rgba(0,0,0,.35);
-    }}
-
-    .hdr::after{{
-      content:"";
-      position:absolute;
-      left:14px; right:14px;
-      bottom:10px;
-      height:2px;
-      background:linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
-    }}
-
-    .form-shell{{
-      flex:1;
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:var(--radiusDesk);
-      box-sizing:border-box;
-      padding:18px;
-      position:relative;
-      overflow:hidden;
-      background:rgba(255,255,255,.02);
-      backdrop-filter:blur(calc(var(--blur) - 6px));
-      box-shadow:var(--shadow2), inset 0 1px 0 rgba(255,255,255,.08);
-    }}
-
-    .form-scroll{{
-      position:absolute;
-      left:18px; right:18px; top:18px; bottom:18px;
-      overflow:auto;
-      padding-right:8px;
-      box-sizing:border-box;
-    }}
-
-    .row-top{{
-      width:100%;
-      display:flex;
-      justify-content:center;
-      margin-bottom:16px;
-    }}
-
-    .pill-input {{
-      width: 210px;
-      height: 34px;
-      background: linear-gradient(180deg, var(--pill) 0%, var(--pill2) 100%);
-      border: 1px solid rgba(255,255,255,.55);
-      border-radius: 999px;
-      color: rgba(30,40,55,.92);
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      box-sizing: border-box;
-      text-align: center;
-      font-size: 16px;
-      outline: none;
-      cursor: default;
-      box-shadow: 0 15px 18px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.55);
-    }}
-
-    .grid-2{{
-      display:grid;
-      grid-template-columns: 1fr 0.95fr;
-      gap:18px var(--colGap);
-      align-items:start;
-    }}
-
-    .stack, .stack-right{{
-      display:flex;
-      flex-direction:column;
-      gap:var(--rowGap);
-    }}
-
-    .qrow{{
-      display:grid;
-      grid-template-columns: auto 1fr;
-      column-gap:0;
-      align-items:stretch;
-    }}
-
-    .label{{
-      height:var(--inputHDesk);
-      min-width:var(--labelMin);
-      padding:0 12px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.15);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:700;
-      box-sizing:border-box;
-      font-size:16px;
-      white-space:nowrap;
-      color:var(--ink);
-      text-shadow: 0 6px 14px rgba(0,0,0,.30);
-      border-right:none;
-      border-radius: 8px 0 0 8px;
-    }}
-
-    .label.small{{ min-width:var(--labelMinSmall); }}
-
-    .input{{
-      height:var(--inputHDesk);
-      border:1px solid rgba(255,255,255,.15);
-      background:rgba(0,0,0,.2);
-      box-sizing:border-box;
-      border-left:none;
-      padding:0 10px;
-      font-size:15px;
-      outline:none;
-      width:100%;
-      color:var(--ink);
-      transition:border 0.2s;
-      border-radius: 0 8px 8px 0;
-    }}
-
-    .input:focus{{
-      border-color:rgba(255,255,255,.4);
-      box-shadow:0 0 10px rgba(255,255,255,.1);
-    }}
-
-    .pink-block{{
-      border:1px solid rgba(255,255,255,.15);
-      background:rgba(255,255,255,.04);
-      padding:10px 12px 12px 12px;
-      box-sizing:border-box;
-      border-radius:18px;
-      backdrop-filter:blur(calc(var(--blur) - 10px));
-    }}
-
-    .pink-title{{
-      font-weight:800;
-      text-align:center;
-      margin:0 0 10px 0;
-      font-size:16px;
-      letter-spacing:0.5px;
-      color:var(--ink);
-      text-shadow:0 0 8px rgba(255,255,255,.2);
-    }}
-
-    .pink-input{{
-      width:100%;
-      height:40px;
-      border:1px solid rgba(255,255,255,.15);
-      background:rgba(0,0,0,.3);
-      box-sizing:border-box;
-      padding:0 10px;
-      font-size:15px;
-      outline:none;
-      border-radius:8px;
-      color:var(--ink);
-    }}
-
-    .pink-input:focus{{
-      border-color:rgba(255,255,255,.4);
-      box-shadow:0 0 10px rgba(255,255,255,.1);
-    }}
-
-    .date-row{{
-      display:flex;
-      gap:8px;
-      align-items:center;
-    }}
-
-    .date-input{{ flex:1; }}
-
-    .cal-ico{{
-      width:44px;
-      height:40px;
-      border:1px solid rgba(255,255,255,.15);
-      background:rgba(255,255,255,.04);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      box-sizing:border-box;
-      border-radius:8px;
-      font-size:18px;
-      user-select:none;
-      color:var(--muted);
-    }}
-
-    .terms-inside{{
-      margin-top:16px;
-      padding-top:12px;
-      border-top:1px solid rgba(255,255,255,.1);
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-size:18px;
-      color:var(--muted);
-      background: rgba(0,0,0,0.2);
-      border-radius: 8px;
-      padding: 8px 12px;
-    }}
-
-    .terms-inside input[type="checkbox"]{{
-      width:18px; height:18px;
-      accent-color: #2f7de1;
-      cursor:pointer;
-    }}
-
-    .desktop-register {{
-      margin-top: 24px;
-      display: flex;
-      justify-content: center;
-    }}
-
-    .register-btn {{
-      background: linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
-      border: 1px solid rgba(255,255,255,.1);
-      color: var(--ink);
-      font-weight: 800;
-      font-size: 18px;
-      padding: 12px 40px;
-      border-radius: 999px;
-      box-shadow: 0 22px 26px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.22);
-      cursor: pointer;
-      transition: transform .12s ease, filter .12s ease;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }}
-
-    .register-btn:hover {{ filter: brightness(1.05); }}
-    .register-btn:active {{ transform: scale(.985); }}
-    .register-btn[disabled] {{ opacity:.55; cursor:not-allowed; }}
-
-    .mobile-next{{ display:none; }}
-
-    /* ===== MOBILE LAYOUT ===== */
-    @media (max-width: 768px){{
-      #wrap{{ padding:0; }}
-      #app{{
-        max-width:none;
-        gap:0;
-        flex-direction:column;
-      }}
-
-      .col-left{{ display:none; }}
-
-      .mobile-logo {{
-        display: flex;
-      }}
-
-      .col-right{{
-        width:100%;
-        flex:1;
-        gap:6px;
-        min-width:0;
-      }}
-
-      .hdr{{
-        margin:0 10px;
-        height:var(--hdrHMob);
-        font-size:20px;
-        border:none;
-      }}
-
-      .hdr::after{{
-        left:18px; right:18px;
-        bottom:6px;
-        height:2px;
-      }}
-
-      .form-shell{{
-        margin:0 10px;
-        border-radius:var(--radiusMob);
-        padding:8px;
-      }}
-
-      .form-scroll{{
-        left:8px; right:8px; top:8px; bottom:8px;
-      }}
-
-      .row-top {{
-        margin-bottom: 12px;
-      }}
-
-      .pill-input {{
-        width: 100%;
-        max-width: 480px;
-        height: 38px;
-        font-size: 18px;
-      }}
-
-      .grid-2{{ display:block; }}
-      .stack-right{{ display:block; }}
-
-      .stack{{ gap:4px; }}
-      .stack-right{{ gap:4px; margin-top:10px; }}
-
-      .qrow{{
-        grid-template-columns: minmax(100px, 35%) 1fr;
-      }}
-
-      .label{{
-        height:var(--inputHMob);
-        min-width:0;
-        font-size:15px;
-        justify-content:flex-start;
-        padding-left:8px;
-        border-right:1px solid rgba(255,255,255,.15);
-      }}
-
-      .input{{
-        height:var(--inputHMob);
-        font-size:14px;
-      }}
-
-      @media (max-width: 520px){{
-        .qrow{{ grid-template-columns: 1fr; row-gap:0; }}
-        .label{{
-          justify-content:flex-start;
-          padding-left:8px;
-          border-right:1px solid rgba(255,255,255,.15);
-          border-bottom:none;
-          border-radius: 8px 8px 0 0;
-        }}
-        .input{{
-          border-left:1px solid rgba(255,255,255,.15);
-          border-top:none;
-          border-radius: 0 0 8px 8px;
-        }}
-      }}
-
-      .terms-inside{{
-        margin-top:8px;
-        padding-top:6px;
-        font-size:14px;
-        background: rgba(0,0,0,0.3);
-      }}
-
-      .terms-inside input[type="checkbox"]{{
-        width:14px; height:14px;
-      }}
-
-      .mobile-next{{
-        margin:6px 10px 8px 10px;
-        height:42px;
-        border:1px solid rgba(255,255,255,.15);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-weight:800;
-        background:rgba(255,255,255,.04);
-        box-sizing:border-box;
-        font-size:18px;
-        border-radius:999px;
-        backdrop-filter:blur(calc(var(--blur) - 6px));
-        color: var(--ink);
-        text-transform: uppercase;
-        cursor:pointer;
-      }}
-
-      .desktop-register {{ display: none; }}
-    }}
-
-    @media (min-width: 769px) {{
-      .mobile-next {{ display: none; }}
-    }}
-
-    /* Estilos para el botón de fullscreen (idéntico a admin.py) */
-    .fullscreen-toggle {{
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 48px;
-      height: 48px;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(12px);
-      border-radius: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      color: white;
-      cursor: pointer;
-      z-index: 10000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      transition: all 0.2s ease;
-      border: 1px solid rgba(255,255,255,0.2);
-      font-weight: bold;
-      user-select: none;
-      touch-action: manipulation;
-    }}
-    .fullscreen-toggle:active {{
-      transform: scale(0.92);
-      background: rgba(0,0,0,0.8);
-    }}
-    @media (min-width: 769px) {{
-      .fullscreen-toggle {{
-        display: none;
-      }}
-    }}
-    @media (max-width: 768px) {{
-      .fullscreen-toggle {{
-        display: flex;
-      }}
-    }}
-    html:fullscreen #stage.fullscreen-mode #plan,
-    html:-webkit-full-screen #stage.fullscreen-mode #plan,
-    html:-moz-full-screen #stage.fullscreen-mode #plan {{
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      border-radius: 0;
-      box-shadow: none;
-    }}
-    html:fullscreen #stage.fullscreen-mode #frame,
-    html:-webkit-full-screen #stage.fullscreen-mode #frame,
-    html:-moz-full-screen #stage.fullscreen-mode #frame {{
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      border-radius: 0;
-    }}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+:root{
+--navy1:#0a1a55;--navy2:#040e31;--navy3:#02071c;--blue:#2f6fe0;
+--bg:#f3f5f9;--card-bg:#ffffff;--ink:#0f1b3d;--muted:#6b7688;--border:#e7eaf1;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;width:100%;font-family:"Segoe UI",Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);}
+#app{display:flex;min-height:100vh;width:100%;}
+#sidebar{
+width:250px;flex:0 0 250px;
+background:linear-gradient(180deg,var(--navy1) 0%,var(--navy2) 60%,var(--navy3) 100%);
+color:#eaf2ff;display:flex;flex-direction:column;padding:26px 18px;min-height:100vh;
+}
+.logo-row{display:flex;align-items:center;gap:10px;margin-bottom:34px;padding:0 4px;}
+.logo-row img{width:34px;height:34px;object-fit:contain;border-radius:6px;}
+.logo-row span{font-weight:800;letter-spacing:2px;font-size:19px;}
+.nav-item{
+display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;margin-bottom:4px;
+color:rgba(234,242,255,.82);font-size:14.5px;font-weight:600;cursor:pointer;position:relative;
+}
+.nav-item:hover{background:rgba(255,255,255,.06);}
+.nav-item.active{background:var(--blue);color:#fff;}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:700;background:rgba(255,255,255,.14);padding:2px 7px;border-radius:20px;white-space:nowrap;}
+.nav-sep{height:1px;background:rgba(255,255,255,.10);margin:14px 4px;}
+.nav-bottom{margin-top:auto;}
+#main{flex:1;min-width:0;display:flex;flex-direction:column;}
+#topbar{background:#fff;border-bottom:1px solid var(--border);padding:18px 30px;display:flex;align-items:center;justify-content:space-between;}
+#topbar h1{font-size:20px;margin:0;font-weight:700;}
+.hamburger{display:none;font-size:20px;background:none;border:none;cursor:pointer;color:var(--ink);}
+.mobile-logo{display:none;align-items:center;gap:8px;font-weight:800;letter-spacing:1px;}
+.mobile-logo img{width:26px;height:26px;border-radius:6px;object-fit:contain;}
+.save-btn{background:var(--blue);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13.5px;font-weight:700;cursor:pointer;}
+.save-btn:hover{background:#1e4fb8;}
+.save-btn[disabled]{opacity:.6;cursor:not-allowed;}
+#content{padding:26px 30px 90px 30px;max-width:900px;}
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:26px 28px;}
+.card h2{font-size:16px;margin:0 0 18px 0;font-weight:700;}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px;margin-bottom:22px;}
+.field-grid.full{grid-template-columns:1fr;}
+.field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px;font-weight:600;}
+.field input, .field select{
+width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;
+font-size:13.5px;color:var(--ink);background:#fbfcfe;
+}
+.field input:focus, .field select:focus{outline:none;border-color:var(--blue);}
+.section-title{font-size:12.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:0 0 12px 0;}
+.actions-row{display:flex;justify-content:flex-end;gap:10px;margin-top:6px;}
+.cancel-btn{background:#fff;color:var(--ink);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:13.5px;font-weight:700;cursor:pointer;}
+.msg{font-size:13px;margin-top:14px;padding:10px 14px;border-radius:10px;display:none;}
+.msg.ok{background:#e6f7ee;color:#1a7f4f;display:block;}
+.msg.err{background:#fde8e8;color:#b02a2a;display:block;}
+
+@media (max-width:768px){
+#sidebar{display:none;}
+.hamburger{display:block;}
+.mobile-logo{display:flex;}
+#topbar h1{display:none;}
+#topbar{padding:14px 16px;}
+#content{padding:16px 14px 90px 14px;}
+.field-grid{grid-template-columns:1fr;}
+.card{padding:18px 16px;}
+}
+
+.mobile-drawer{display:none;position:fixed;inset:0;z-index:100;}
+.mobile-drawer.open{display:block;}
+.mobile-drawer .overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);}
+.mobile-drawer .panel{
+position:absolute;left:0;top:0;bottom:0;width:250px;
+background:linear-gradient(180deg,var(--navy1) 0%,var(--navy2) 60%,var(--navy3) 100%);
+padding:26px 18px;color:#eaf2ff;overflow-y:auto;
+}
+</style>
 </head>
-
 <body>
-  <div id="stage">
-    <div id="frame"></div>
-    <div id="plan">
-      <div id="outer"></div>
+<div id="app">
+<div id="sidebar"><div class="logo-row"><img src="__LOGO_URL__"/><span>SYNTRA</span></div><div id="navList"></div></div>
+<div class="mobile-drawer" id="drawer">
+<div class="overlay" id="drawerOverlay"></div>
+<div class="panel"><div class="logo-row"><img src="__LOGO_URL__"/><span>SYNTRA</span></div><div id="navListMobile"></div></div>
+</div>
+<div id="main">
+<div id="topbar">
+<button class="hamburger" id="hamburgerBtn">&#9776;</button>
+<h1>Registro de Personal</h1>
+<div class="mobile-logo"><img src="__LOGO_URL__"/>SYNTRA</div>
+<button class="save-btn" id="saveBtn">Guardar</button>
+</div>
+<div id="content">
+<div class="card">
+<p class="section-title">Datos personales</p>
+<div class="field-grid">
+<div class="field"><label>Nombre completo</label><input id="f_nombre" placeholder="Mar&iacute;a Fern&aacute;ndez L&oacute;pez"/></div>
+<div class="field"><label>DNI</label><input id="f_dni" placeholder="12345678B"/></div>
+<div class="field"><label>Correo electr&oacute;nico</label><input id="f_correo" placeholder="maria.fernandez@syntra.com"/></div>
+<div class="field"><label>Tel&eacute;fono</label><input id="f_telefono" placeholder="600 123 456"/></div>
+<div class="field"><label>Fecha de nacimiento</label><input id="f_nacimiento" type="date"/></div>
+</div>
+<p class="section-title">Informaci&oacute;n laboral</p>
+<div class="field-grid">
+<div class="field"><label>Instalaci&oacute;n</label>
+<select id="f_instalacion">
+<option value="">Selecciona...</option>
+<option>Playa Norte</option>
+<option>Playa Sur</option>
+<option>Piscina Municipal</option>
+<option>Centro Deportivo</option>
+</select>
+</div>
+<div class="field"><label>Tipo de contrato</label>
+<select id="f_contrato">
+<option value="">Selecciona...</option>
+<option>Fijo</option>
+<option>Temporal</option>
+<option>Media jornada</option>
+</select>
+</div>
+<div class="field"><label>Fecha de inicio</label><input id="f_fecha_inicio" type="date"/></div>
+<div class="field"><label>Rol</label>
+<select id="f_rol">
+<option value="">Selecciona...</option>
+<option value="Socorrista">Socorrista</option>
+<option value="Directivo">Directivo</option>
+<option value="Administrador">Administrador</option>
+</select>
+</div>
+</div>
+<div class="msg" id="formMsg"></div>
+<div class="actions-row">
+<button class="cancel-btn" id="cancelBtn">Cancelar</button>
+<button class="save-btn" id="saveBtn2">Guardar</button>
+</div>
+</div>
+</div>
+</div>
+</div>
 
-      <div id="wrap">
-        <div id="app">
+<script>
+(function(){
+var API_BASE = __API_BASE__;
+var AUTH_USER = __AUTH_USER__;
+var AUTH_ROLE = __AUTH_ROLE__;
+var AUTH_DNI = __AUTH_DNI__;
 
-          <!-- IZQUIERDA (DESKTOP) -->
-          <div class="col-left">
-            <div class="logo">
-              <img src="https://files.catbox.moe/056m6v.jpg" alt="Logo">
-            </div>
-            <div class="blk desc">
-              <p>Bienvenido al portal oficial de registro de SYNTRA.</p>
-              <p>Aquí los socorristas podrán completar su inscripción de forma segura y acceder posteriormente a sus horarios e instalaciones asignadas de manera organizada.</p>
-              <p>La información proporcionada será tratada con estricta confidencialidad y utilizada únicamente para fines administrativos y de coordinación interna relacionados con su participación en SYNTRA. Sus datos no serán compartidos con terceros sin su autorización, salvo obligación legal.</p>
-              <p>Al registrarse, usted autoriza a SYNTRA a almacenar y procesar su información conforme a la normativa vigente de protección de datos, garantizando seguridad, privacidad y uso responsable.</p>
-            </div>
-          </div>
+function qs(){
+var p = new URLSearchParams();
+p.set("usuario", AUTH_USER);
+p.set("rol", AUTH_ROLE);
+p.set("dni", AUTH_DNI);
+return "?" + p.toString();
+}
+function goToPage(path){ window.top.location.href = path + qs(); }
 
-          <!-- DERECHA -->
-          <div class="col-right">
-            <!-- Logo para móvil -->
-            <div class="mobile-logo">
-              <img src="https://files.catbox.moe/056m6v.jpg" alt="Logo">
-            </div>
+var NAV_ITEMS = [
+{label:"Inicio", icon:"&#8962;", go:"/"},
+{label:"Horarios", icon:"&#128197;", go:"/calendario"},
+{label:"Incidencias y Comunicados", icon:"&#128172;", go:"/chat_interfaz"},
+{sep:true},
+{label:"Registro", icon:"&#128100;+", go:"/altas_registro", active:true, badge:"Solo admin"},
+{label:"Gesti&oacute;n de Horarios", icon:"&#9881;", go:"/editar_horarios", badge:"Solo admin"}
+];
 
-            <div class="blk hdr">Formulario</div>
+function renderNav(containerId){
+var el = document.getElementById(containerId);
+var parts = [];
+NAV_ITEMS.forEach(function(item){
+if (item.sep){ parts.push('<div class="nav-sep"></div>'); return; }
+var cls = "nav-item" + (item.active ? " active" : "");
+var badge = item.badge ? '<span class="nav-badge">' + item.badge + '</span>' : "";
+parts.push('<div class="' + cls + '" data-go="' + item.go + '"><span>' + item.icon + '</span><span>' + item.label + '</span>' + badge + '</div>');
+});
+parts.push('<div class="nav-bottom"><div class="nav-item" id="logout_' + containerId + '"><span>&#8630;</span><span>Cerrar sesi&oacute;n</span></div></div>');
+el.innerHTML = parts.join("");
+el.querySelectorAll(".nav-item[data-go]").forEach(function(node){
+node.addEventListener("click", function(){ goToPage(node.getAttribute("data-go")); });
+});
+var lo = document.getElementById("logout_" + containerId);
+if (lo) lo.addEventListener("click", function(){ window.top.location.href = "/admin"; });
+}
+renderNav("navList");
+renderNav("navListMobile");
 
-            <div class="form-shell">
-              <div class="form-scroll">
+var drawer = document.getElementById("drawer");
+document.getElementById("hamburgerBtn").addEventListener("click", function(){ drawer.classList.add("open"); });
+document.getElementById("drawerOverlay").addEventListener("click", function(){ drawer.classList.remove("open"); });
 
-                <div class="row-top">
-                  <!-- FOMUL -->
-                  <input type="text" id="fomul" class="pill-input" readonly>
-                </div>
+document.getElementById("cancelBtn").addEventListener("click", function(){ goToPage("/"); });
 
-                <div class="grid-2">
+function showMsg(text, ok){
+var el = document.getElementById("formMsg");
+el.textContent = text;
+el.className = "msg " + (ok ? "ok" : "err");
+}
 
-                  <!-- IZQUIERDA -->
-                  <div class="stack">
-                    <div class="qrow"><div class="label">NOMBRE:</div><input id="nombre" class="input" type="text" autocomplete="name"/></div>
-                    <div class="qrow"><div class="label">DNI:</div><input id="dni" class="input" type="text" /></div>
-                    <div class="qrow"><div class="label">NACION:</div><input id="nacion" class="input" type="text" /></div>
-                    <div class="qrow"><div class="label">NAFF:</div><input id="naff" class="input" type="text" /></div>
-                    <div class="qrow"><div class="label">CALLE:</div><input id="calle" class="input" type="text" /></div>
-                    <div class="qrow"><div class="label">POBL:</div><input id="pobl" class="input" type="text" /></div>
-                    <div class="qrow"><div class="label">COMARCA:</div><input id="comarca" class="input" type="text" /></div>
-                    <div class="qrow"><div class="label">C.P:</div><input id="cp" class="input" type="text" /></div>
-                  </div>
+function submitForm(){
+var nombre = document.getElementById("f_nombre").value.trim();
+var dni = document.getElementById("f_dni").value.trim();
+var correo = document.getElementById("f_correo").value.trim();
+var telefono = document.getElementById("f_telefono").value.trim();
+var nacimiento = document.getElementById("f_nacimiento").value;
+var instalacion = document.getElementById("f_instalacion").value;
+var contrato = document.getElementById("f_contrato").value;
+var fecha_inicio = document.getElementById("f_fecha_inicio").value;
+var rol = document.getElementById("f_rol").value;
 
-                  <!-- DERECHA -->
-                  <div class="stack-right">
-                    <div class="qrow"><div class="label small">TLF:</div><input id="tlf" class="input" type="text" inputmode="tel" /></div>
-                    <div class="qrow"><div class="label small">CORREO:</div><input id="correo" class="input" type="email" autocomplete="email"/></div>
-                    <div class="qrow"><div class="label">NACIMIENTO:</div><input id="nacimiento" class="input" type="text" placeholder="dd/mm/aaaa"/></div>
-                    <div class="qrow"><div class="label">ESTADO CIV:</div><input id="estado_civ" class="input" type="text" /></div>
-                    <div class="qrow"><div class="label small">IBAN:</div><input id="iban" class="input" type="text" /></div>
+if (!nombre || !dni){
+showMsg("Nombre y DNI son obligatorios.", false);
+return;
+}
 
-                    <div class="pink-block">
-                      <div class="pink-title">INSTALACION:</div>
-                      <input id="instalacion" class="pink-input" type="text" />
-                    </div>
+var payload = {
+nombre: nombre,
+dni: dni,
+correo: correo,
+tlf: telefono,
+nacimiento: nacimiento,
+instalacion: instalacion,
+contrato: contrato,
+fecha_inicio: fecha_inicio,
+rol: rol
+};
 
-                    <div class="pink-block">
-                      <div class="pink-title">FECHA FIN:</div>
-                      <div class="date-row">
-                        <input id="fecha_fin" class="pink-input date-input" type="text" placeholder="dd/mm/aaaa" />
-                        <div class="cal-ico">🗓️</div>
-                      </div>
-                    </div>
+var btns = document.querySelectorAll(".save-btn");
+btns.forEach(function(b){ b.disabled = true; b.textContent = "Guardando..."; });
 
-                    <div class="qrow"><div class="label">HORAS:</div><input id="horas" class="input" type="text" /></div>
-                  </div>
+fetch(API_BASE + "/api/altas/registro", {
+method: "POST",
+headers: {"Content-Type": "application/json"},
+body: JSON.stringify(payload)
+})
+.then(function(r){ return r.json(); })
+.then(function(d){
+btns.forEach(function(b){ b.disabled = false; b.textContent = "Guardar"; });
+if (d && d.ok){
+showMsg("Personal registrado correctamente.", true);
+setTimeout(function(){ goToPage("/"); }, 1200);
+} else {
+showMsg((d && d.error) || "Error al guardar.", false);
+}
+})
+.catch(function(){
+btns.forEach(function(b){ b.disabled = false; b.textContent = "Guardar"; });
+showMsg("Error de conexi&oacute;n con el servidor.", false);
+});
+}
 
-                </div>
-
-                <!-- Términos (obligatorio) -->
-                <div class="terms-inside" style="margin-top: 20px;">
-                  <input id="terms" type="checkbox" />
-                  <span>Acepta términos y condiciones</span>
-                </div>
-
-                <!-- Botón escritorio -->
-                <div class="desktop-register">
-                  <button id="btnDesktop" class="register-btn">Registro</button>
-                </div>
-
-              </div>
-            </div>
-
-            <!-- Botón móvil -->
-            <div id="btnMobile" class="mobile-next">Registro</div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Botón de pantalla completa (solo móvil) -->
-  <div id="fullscreenToggleBtn" class="fullscreen-toggle">⤢</div>
-
-  <script>
-    (function() {{
-      var fe = window.frameElement;
-      if (fe){{
-        fe.style.position = "fixed";
-        fe.style.inset = "0";
-        fe.style.width = "100vw";
-        fe.style.height = "100vh";
-        fe.style.border = "0";
-        fe.style.margin = "0";
-        fe.style.padding = "0";
-        fe.style.zIndex = "999999";
-        fe.style.background = "transparent";
-      }}
-
-      function ddmmyyyy(d) {{
-        const dia = String(d.getDate()).padStart(2, '0');
-        const mes = String(d.getMonth() + 1).padStart(2, '0');
-        const ano = d.getFullYear();
-        return `${{dia}}/${{mes}}/${{ano}}`;
-      }}
-
-      function setFomulHoy() {{
-        const hoy = new Date();
-        const v = ddmmyyyy(hoy);
-        const el = document.getElementById('fomul');
-        if (el) el.value = v;
-      }}
-
-      function getVal(id) {{
-        const el = document.getElementById(id);
-        return el ? (el.value || '').trim() : '';
-      }}
-
-      function setDisabled(disabled) {{
-        const bd = document.getElementById('btnDesktop');
-        if (bd) bd.disabled = disabled;
-
-        const bm = document.getElementById('btnMobile');
-        if (bm) {{
-          bm.style.pointerEvents = disabled ? 'none' : 'auto';
-          bm.style.opacity = disabled ? '0.55' : '1';
-        }}
-      }}
-
-      function validateAll() {{
-        const requiredIds = [
-          'fomul','nombre','dni','nacion','naff','calle','pobl','comarca','cp',
-          'tlf','correo','nacimiento','estado_civ','iban','instalacion','fecha_fin','horas'
-        ];
-
-        for (const id of requiredIds) {{
-          const v = getVal(id);
-          if (!v) {{
-            return {{ ok:false, msg:`Completa el campo: ${{id.toUpperCase()}}` }};
-          }}
-        }}
-
-        const terms = document.getElementById('terms');
-        if (!terms || !terms.checked) {{
-          return {{ ok:false, msg:'Debes aceptar términos y condiciones' }};
-        }}
-
-        return {{ ok:true }};
-      }}
-
-      async function enviarRegistro() {{
-        const v = validateAll();
-        if (!v.ok) {{
-          alert(v.msg);
-          return;
-        }}
-
-        setDisabled(true);
-
-        const payload = {{
-          "FOMUL": getVal('fomul'),
-          "NOMBRE": getVal('nombre'),
-          "DNI": getVal('dni'),
-          "NACION": getVal('nacion'),
-          "NAFF": getVal('naff'),
-          "CALLE": getVal('calle'),
-          "POBL": getVal('pobl'),
-          "COMARCA": getVal('comarca'),
-          "C.P": getVal('cp'),
-          "TLF": getVal('tlf'),
-          "CORREO": getVal('correo'),
-          "NACIMIENTO": getVal('nacimiento'),
-          "ESTADO CIV": getVal('estado_civ'),
-          "IBAN": getVal('iban'),
-          "INSTALACION": getVal('instalacion'),
-          "FECHA FIN": getVal('fecha_fin'),
-          "HORAS": getVal('horas')
-        }};
-
-        try {{
-          const resp = await fetch("{API_URL}", {{
-            method: "POST",
-            headers: {{
-              "Content-Type": "application/json"
-            }},
-            body: JSON.stringify(payload)
-          }});
-
-          const data = await resp.json().catch(() => ({{}}));
-
-          if (data && data.ok) {{
-            alert("Registro guardado");
-            // limpiar (mantiene FOMUL en hoy)
-            document.getElementById('nombre').value = '';
-            document.getElementById('dni').value = '';
-            document.getElementById('nacion').value = '';
-            document.getElementById('naff').value = '';
-            document.getElementById('calle').value = '';
-            document.getElementById('pobl').value = '';
-            document.getElementById('comarca').value = '';
-            document.getElementById('cp').value = '';
-            document.getElementById('tlf').value = '';
-            document.getElementById('correo').value = '';
-            document.getElementById('nacimiento').value = '';
-            document.getElementById('estado_civ').value = '';
-            document.getElementById('iban').value = '';
-            document.getElementById('instalacion').value = '';
-            document.getElementById('fecha_fin').value = '';
-            document.getElementById('horas').value = '';
-            document.getElementById('terms').checked = false;
-            setFomulHoy();
-            // Redirigir a la página admin después del registro exitoso
-            window.location.href = '/admin';
-          }} else {{
-            const err = (data && (data.error || data.detail)) ? (data.error || data.detail) : "Error al guardar";
-            alert(err);
-          }}
-        }} catch (e) {{
-          alert("Error de conexión");
-        }} finally {{
-          setDisabled(false);
-        }}
-      }}
-
-      function bind() {{
-        const bd = document.getElementById('btnDesktop');
-        if (bd) bd.addEventListener('click', enviarRegistro);
-
-        const bm = document.getElementById('btnMobile');
-        if (bm) bm.addEventListener('click', enviarRegistro);
-      }}
-
-      setFomulHoy();
-      bind();
-
-      // ==================== FULLSCREEN PERSISTENCE (solo móvil) ====================
-      const stageEl = document.getElementById("stage");
-      const toggleBtn = document.getElementById("fullscreenToggleBtn");
-      const isMobile = window.innerWidth <= 768;
-
-      function setFullscreenFlag(active) {{
-        if (active) {{
-          localStorage.setItem("fullscreenActive", "true");
-        }} else {{
-          localStorage.removeItem("fullscreenActive");
-        }}
-      }}
-
-      function enterFullscreen() {{
-        const elem = document.documentElement;
-        const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
-        if (requestMethod) {{
-          requestMethod.call(elem).then(() => {{
-            if (stageEl) stageEl.classList.add("fullscreen-mode");
-            if (toggleBtn) {{
-              toggleBtn.textContent = "✕";
-              toggleBtn.style.fontSize = "26px";
-            }}
-            setFullscreenFlag(true);
-          }}).catch(err => {{
-            console.log("Error al entrar en fullscreen:", err);
-          }});
-        }}
-      }}
-
-      function exitFullscreen() {{
-        const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
-        if (exitMethod) {{
-          exitMethod.call(document).then(() => {{
-            if (stageEl) stageEl.classList.remove("fullscreen-mode");
-            if (toggleBtn) {{
-              toggleBtn.textContent = "⤢";
-              toggleBtn.style.fontSize = "28px";
-            }}
-            setFullscreenFlag(false);
-          }}).catch(err => {{
-            console.log("Error al salir de fullscreen:", err);
-          }});
-        }}
-      }}
-
-      function toggleFullscreen() {{
-        const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-        if (isFull) {{
-          exitFullscreen();
-        }} else {{
-          enterFullscreen();
-        }}
-      }}
-
-      function onFullscreenChange() {{
-        const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-        if (isFull) {{
-          if (stageEl) stageEl.classList.add("fullscreen-mode");
-          if (toggleBtn) {{
-            toggleBtn.textContent = "✕";
-            toggleBtn.style.fontSize = "26px";
-          }}
-          setFullscreenFlag(true);
-        }} else {{
-          if (stageEl) stageEl.classList.remove("fullscreen-mode");
-          if (toggleBtn) {{
-            toggleBtn.textContent = "⤢";
-            toggleBtn.style.fontSize = "28px";
-          }}
-          setFullscreenFlag(false);
-        }}
-      }}
-
-      // Restaurar fullscreen si estaba activo (solo móvil)
-      if (isMobile) {{
-        const savedFlag = localStorage.getItem("fullscreenActive");
-        if (savedFlag === "true") {{
-          const isCurrentlyFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-          if (!isCurrentlyFull) {{
-            enterFullscreen();
-          }} else {{
-            // Asegurar UI
-            if (stageEl) stageEl.classList.add("fullscreen-mode");
-            if (toggleBtn) {{
-              toggleBtn.textContent = "✕";
-              toggleBtn.style.fontSize = "26px";
-            }}
-          }}
-        }}
-      }}
-
-      if (toggleBtn) {{
-        toggleBtn.addEventListener("click", function(e) {{
-          e.preventDefault();
-          toggleFullscreen();
-        }});
-      }}
-
-      document.addEventListener("fullscreenchange", onFullscreenChange);
-      document.addEventListener("webkitfullscreenchange", onFullscreenChange);
-      document.addEventListener("mozfullscreenchange", onFullscreenChange);
-      document.addEventListener("MSFullscreenChange", onFullscreenChange);
-      // ==================== FIN FULLSCREEN PERSISTENCE ====================
-    }})();
-  </script>
+document.getElementById("saveBtn").addEventListener("click", submitForm);
+document.getElementById("saveBtn2").addEventListener("click", submitForm);
+})();
+</script>
 </body>
 </html>
 """
 
-components.html(html, height=10, scrolling=False)
+html = (
+        html.replace("__LOGO_URL__", LOGO_URL)
+            .replace("__API_BASE__", _js_str(API_BASE))
+            .replace("__AUTH_USER__", _js_str(AUTH_USER))
+            .replace("__AUTH_ROLE__", _js_str(AUTH_ROLE))
+            .replace("__AUTH_DNI__", _js_str(AUTH_DNI))
+)
+
+components.html(html, height=980, scrolling=True)
