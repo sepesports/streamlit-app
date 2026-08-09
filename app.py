@@ -254,7 +254,7 @@ p.set("dni", USER_DNI);
 return "?" + p.toString();
 }
 function goToPage(path){
-window.top.location.href = path + qs();
+window.parent.location.href = path + qs();
 }
 var NAV_ITEMS = [
 {label:"Inicio", icon:"&#8962;", active:true},
@@ -288,7 +288,7 @@ if (go) goToPage(go);
 });
 });
 var lo = document.getElementById("logoutBtn_" + containerId);
-if (lo) lo.addEventListener("click", function(){ window.top.location.href = "/admin"; });
+if (lo) lo.addEventListener("click", function(){ window.parent.location.href = "/admin"; });
 }
 renderNav("navList");
 renderNav("navListMobile");
