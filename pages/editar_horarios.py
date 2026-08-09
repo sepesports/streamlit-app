@@ -381,8 +381,8 @@ return "<tr>" +
 "<td>" + (r["Ingreso"]||"") + "</td>" +
 "<td>" + (r["Salida"]||"") + "</td>" +
 "<td>" + estadoPill(r["estado"]) + "</td>" +
-"<td><button class=\"icon-btn edit\" data-llave=\"" + llave + "\" data-action=\"edit\">&#9998;</button>" +
-"<button class=\"icon-btn del\" data-llave=\"" + llave + "\" data-action=\"del\">&#128465;</button></td>" +
+'<td><button class="icon-btn edit" data-llave="' + llave + '" data-action="edit">&#9998;</button>' +
+'<button class="icon-btn del" data-llave="' + llave + '" data-action="del">&#128465;</button></td>' +
 "</tr>";
 }).join("");
 }
