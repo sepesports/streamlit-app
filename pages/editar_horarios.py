@@ -1,10 +1,10 @@
-# pages/admin.py
+# pages/editar_horarios.py
+import json
 import streamlit as st
 import streamlit.components.v1 as components
-import json
-from html import escape as html_escape
 
-# --- Gate de autenticacion y rol (solo administradores) ---
+st.set_page_config(page_title="Gestion de Horarios", layout="wide")
+
 query_params = st.query_params
 AUTH_USER = query_params.get("usuario") or query_params.get("user") or ""
 AUTH_ROLE = query_params.get("rol") or query_params.get("role") or ""
@@ -12,1640 +12,524 @@ AUTH_DNI = query_params.get("dni") or ""
 NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
 
 if not AUTH_USER or not AUTH_ROLE:
-      st.markdown(
-                """
-                        <script>
-                                  window.location.href="/admin";
-                                          </script>
-                                                  """,
-                unsafe_allow_html=True,
-      )
-      st.stop()
+          st.markdown(
+                        """
+                                <script>
+                                          window.location.href="/admin";
+                                                  </script>
+                                                          """,
+                        unsafe_allow_html=True,
+          )
+          st.stop()
 
 if NORMALIZED_ROLE != "administrador":
-      st.markdown(
-                """
-                        <script>
-                                  window.location.href="/?auth=ok";
-                                          </script>
-                                                  """,
-                unsafe_allow_html=True,
-      )
-      st.stop()
-  
+          st.markdown(
+                        """
+                                <script>
+                                          window.location.href="/?auth=ok";
+                                                  </script>
+                                                          """,
+                        unsafe_allow_html=True,
+          )
+          st.stop()
 
-# =========================
-# CONFIG
-# =========================
-st.set_page_config(page_title="Asignacion Horarios Socorristas", layout="wide")
+API_BASE = "https://camilo27.pythonanywhere.com"
+LOGO_URL = "https://files.catbox.moe/056m6v.jpg"
 
-# =========================
-# HTML UI (RESPONSIVE) con diseño aplicado
-# =========================
+st.markdown(
+          """
+              <style>
+                    .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
+                          section.main > div{padding:0 !important;margin:0 !important;}
+                                header, footer{display:none !important;}
+                                      iframe{display:block;}
+                                          </style>
+                                              """,
+          unsafe_allow_html=True,
+)
+
+
+def _js_str(value) -> str:
+          return json.dumps("" if value is None else str(value), ensure_ascii=False)
+
+
 html = """
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root {
-      --baseBlue: #040e31;
-      --bgTop:  #0a1a55;
-      --bgMid:  #061240;
-      --bgDeep: #02071c;
-
-      --overlay1: rgba(40, 120, 255, .16);
-      --overlay2: rgba(0,  10,  40, .62);
-
-      --ink: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.62);
-
-      --pill: rgba(238, 245, 255, .92);
-      --pill2: rgba(255,255,255,.86);
-
-      --btn1:#2f7de1;
-      --btn2:#1e5fc4;
-      --btn-red1:#d43d3d;
-      --btn-red2:#a92a2a;
-      --btn-green1:#2f7d32;
-      --btn-green2:#256528;
-
-      --shadow1: 0 22px 55px rgba(0,0,0,.55);
-      --shadow2: 0 10px 22px rgba(0,0,0,.40);
-      --blur: 14px;
-
-      --outerPad:10px;
-      --radiusDesk:34px;
-      --radiusMob:26px;
-
-      --lineSoft: rgba(255,255,255,.12);
-      --lineSoft2: rgba(255,255,255,.08);
-      --panelBg: rgba(255,255,255,.04);
-      --panelBg2: rgba(255,255,255,.03);
-      --inputBg: rgba(0,0,0,.24);
-      --modalOverlay: rgba(0,0,0,.58);
-
-      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
-    }
-
-    html, body {
-      margin:0;
-      padding:0;
-      width:100%;
-      height:100%;
-      background:var(--baseBlue);
-      overflow:hidden;
-      font-family:var(--font);
-      color:var(--ink);
-    }
-
-    * { box-sizing:border-box; }
-
-    #stage{
-      position:fixed;
-      inset:0;
-      width:100vw;
-      height:100vh;
-      background:
-        radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.14), transparent 60%),
-        radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
-        linear-gradient(180deg, #020614 0%, var(--baseBlue) 100%);
-    }
-
-    #plan{
-      position:absolute;
-      left:10px;
-      right:10px;
-      top:10px;
-      bottom:10px;
-      overflow:hidden;
-      border-radius:34px;
-      box-shadow:var(--shadow1);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 22%),
-        linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 34%, #05164d 58%, var(--bgDeep) 100%);
-    }
-
-    #plan::before{
-      content:"";
-      position:absolute;
-      inset:-10%;
-      background:
-        linear-gradient(135deg,
-          transparent 0%,
-          transparent 32%,
-          var(--overlay1) 32%,
-          var(--overlay2) 66%,
-          transparent 66%);
-      transform:rotate(-10deg);
-      opacity:.95;
-      pointer-events:none;
-    }
-
-    #plan::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:
-        radial-gradient(50% 60% at 50% 25%, rgba(255,255,255,.06), transparent 55%),
-        radial-gradient(120% 90% at 50% 95%, rgba(0,0,0,.55), transparent 55%),
-        linear-gradient(180deg, transparent 55%, rgba(0,0,0,.65) 100%);
-      pointer-events:none;
-    }
-
-    #frame{
-      position:absolute;
-      left:9px;
-      right:9px;
-      top:10px;
-      bottom:10px;
-      border-left:2px solid rgba(255,255,255,.14);
-      border-right:2px solid rgba(255,255,255,.14);
-      border-top:2px solid rgba(255,255,255,.14);
-      box-sizing:border-box;
-      pointer-events:none;
-      border-radius:34px;
-      box-shadow:inset 0 0 0 1px rgba(0,0,0,.55);
-      z-index:5;
-    }
-
-    #outer{
-      position:absolute;
-      left:var(--outerPad);
-      right:var(--outerPad);
-      top:var(--outerPad);
-      bottom:var(--outerPad);
-      border:1px solid rgba(255,255,255,.10);
-      background:transparent;
-      border-radius:34px;
-      backdrop-filter:blur(var(--blur));
-      -webkit-backdrop-filter:blur(var(--blur));
-      z-index:10;
-    }
-
-    #wrap{
-      position:absolute;
-      left:var(--outerPad);
-      right:var(--outerPad);
-      top:var(--outerPad);
-      bottom:var(--outerPad);
-      padding:12px;
-      z-index:20;
-      overflow:auto;
-    }
-
-    .app{
-      width:100%;
-      max-width:1320px;
-      min-height:100%;
-      margin:0 auto;
-    }
-
-    .blk{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.04);
-      backdrop-filter:blur(calc(var(--blur) - 6px));
-      -webkit-backdrop-filter:blur(calc(var(--blur) - 6px));
-      border-radius:24px;
-      box-shadow:var(--shadow2), inset 0 1px 0 rgba(255,255,255,.08);
-      color:var(--ink);
-    }
-
-    .title{
-      min-height:56px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:12px 18px;
-      text-align:center;
-      font-weight:800;
-      font-size:20px;
-      letter-spacing:.2px;
-      position:relative;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:24px;
-      backdrop-filter:blur(calc(var(--blur) - 6px));
-      color:var(--ink);
-      text-shadow:0 8px 18px rgba(0,0,0,.35);
-      margin-bottom:14px;
-    }
-
-    .title::after{
-      content:"";
-      position:absolute;
-      left:14px;
-      right:14px;
-      bottom:10px;
-      height:2px;
-      background:linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
-    }
-
-    .top-actions{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      margin-bottom:14px;
-    }
-
-    .btn{
-      min-height:52px;
-      border:1px solid rgba(255,255,255,.10);
-      color:var(--ink);
-      font-weight:800;
-      font-size:16px;
-      border-radius:999px;
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      width:100%;
-      box-shadow:0 22px 26px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.22);
-      transition:transform .12s ease, filter .12s ease;
-      text-transform:uppercase;
-      letter-spacing:.6px;
-      padding:12px 20px;
-    }
-
-    .btn:hover{ filter:brightness(1.05); }
-    .btn:active{ transform:scale(.985); }
-
-    .btn.green{
-      background:linear-gradient(180deg, var(--btn-green1) 0%, var(--btn-green2) 100%);
-    }
-
-    .btn.red{
-      background:linear-gradient(180deg, var(--btn-red1) 0%, var(--btn-red2) 100%);
-    }
-
-    .btn .ico{
-      width:18px;
-      height:18px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      filter:drop-shadow(0 2px 2px rgba(0,0,0,.15));
-    }
-
-    .panel{
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:28px;
-      padding:16px;
-      position:relative;
-      overflow:hidden;
-      background:rgba(255,255,255,.03);
-      backdrop-filter:blur(calc(var(--blur) - 6px));
-      -webkit-backdrop-filter:blur(calc(var(--blur) - 6px));
-      box-shadow:var(--shadow2), inset 0 1px 0 rgba(255,255,255,.08);
-      margin-bottom:14px;
-    }
-
-    .agregar-title,
-    .subtitle,
-    .table-title{
-      font-weight:800;
-      color:var(--ink);
-      text-shadow:0 6px 14px rgba(0,0,0,.30);
-    }
-
-    .agregar-title{
-      font-size:18px;
-      margin-bottom:12px;
-    }
-
-    .agregar-row{
-      display:flex;
-      gap:12px;
-      align-items:flex-end;
-      flex-wrap:wrap;
-    }
-
-    .agregar-field{
-      flex:1 1 180px;
-      min-width:160px;
-    }
-
-    .agregar-field label,
-    .field label,
-    .modal-field label{
-      display:block;
-      font-size:12px;
-      font-weight:800;
-      color:var(--ink);
-      margin:0 0 6px;
-      letter-spacing:.3px;
-    }
-
-    .agregar-field input,
-    select,
-    .searchbtn,
-    .modal-field input{
-      width:100%;
-      min-height:42px;
-      border:1px solid rgba(255,255,255,.15);
-      background:rgba(0,0,0,.24);
-      box-sizing:border-box;
-      padding:0 12px;
-      font-size:14px;
-      outline:none;
-      color:var(--ink);
-      border-radius:10px;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
-    }
-
-    .agregar-field input::placeholder,
-    .modal-field input::placeholder{
-      color:rgba(255,255,255,.42);
-    }
-
-    .agregar-field input:focus,
-    select:focus,
-    .modal-field input:focus{
-      border-color:rgba(255,255,255,.4);
-      box-shadow:0 0 10px rgba(255,255,255,.08);
-    }
-
-    select{
-      appearance:none;
-      -webkit-appearance:none;
-      -moz-appearance:none;
-      font-weight:700;
-      background-image:
-        linear-gradient(45deg, transparent 50%, rgba(255,255,255,.7) 50%),
-        linear-gradient(135deg, rgba(255,255,255,.7) 50%, transparent 50%);
-      background-position:
-        calc(100% - 18px) calc(50% - 3px),
-        calc(100% - 12px) calc(50% - 3px);
-      background-size:6px 6px, 6px 6px;
-      background-repeat:no-repeat;
-      padding-right:34px;
-    }
-
-    .agregar-btn,
-    .searchbtn,
-    .modal-actions button{
-      border:1px solid rgba(255,255,255,.10);
-      color:var(--ink);
-      font-weight:800;
-      border-radius:999px;
-      cursor:pointer;
-      transition:transform .12s ease, filter .12s ease, opacity .12s ease;
-      box-shadow:0 16px 20px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.18);
-    }
-
-    .agregar-btn:hover,
-    .searchbtn:hover,
-    .modal-actions button:hover{
-      filter:brightness(1.05);
-    }
-
-    .agregar-btn:active,
-    .searchbtn:active,
-    .modal-actions button:active{
-      transform:scale(.985);
-    }
-
-    .agregar-btn{
-      min-width:150px;
-      min-height:42px;
-      padding:10px 22px;
-      background:linear-gradient(180deg, var(--btn-green1) 0%, var(--btn-green2) 100%);
-    }
-
-    .rango-opciones{
-      display:flex;
-      gap:10px;
-      margin-top:12px;
-      flex-wrap:wrap;
-    }
-
-    .rango-btn{
-      min-height:38px;
-      padding:8px 14px;
-      font-weight:700;
-      cursor:pointer;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.06);
-      color:var(--ink);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
-      transition:transform .12s ease, filter .12s ease, background .12s ease;
-    }
-
-    .rango-btn:hover{ filter:brightness(1.05); }
-    .rango-btn:active{ transform:scale(.985); }
-
-    .rango-btn.activo{
-      background:linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
-      color:#fff;
-    }
-
-    .rangohint{
-      display:block;
-      margin-top:10px;
-      color:var(--muted);
-      font-size:12px;
-    }
-
-    .section-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:12px;
-    }
-
-    .subtitle{
-      font-size:20px;
-      min-width:0;
-    }
-
-    .filters{
-      display:grid;
-      grid-template-columns:260px 1fr 1fr 170px;
-      gap:12px;
-      align-items:end;
-      margin-bottom:14px;
-    }
-
-    .searchbtn{
-      min-height:42px;
-      background:linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
-      text-transform:uppercase;
-      letter-spacing:.5px;
-    }
-
-    .tablewrap{
-      border:1px solid rgba(255,255,255,.10);
-      padding:12px;
-      margin-top:10px;
-      width:100%;
-      overflow-x:auto;
-      background:rgba(255,255,255,.03);
-      border-radius:22px;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
-    }
-
-    .table-title{
-      font-size:15px;
-      margin-bottom:10px;
-    }
-
-    table{
-      width:100%;
-      border-collapse:collapse;
-      font-size:13px;
-      min-width:760px;
-    }
-
-    thead th{
-      text-align:left;
-      padding:10px 8px;
-      border-bottom:1px solid rgba(255,255,255,.12);
-      font-weight:900;
-      white-space:nowrap;
-      color:var(--ink);
-      background:rgba(255,255,255,.04);
-    }
-
-    tbody tr{
-      transition:background .12s ease;
-    }
-
-    tbody tr:hover{
-      background:rgba(255,255,255,.03);
-    }
-
-    tbody td{
-      padding:11px 8px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      vertical-align:middle;
-      font-weight:600;
-      white-space:nowrap;
-      color:rgba(255,255,255,.88);
-    }
-
-    .actions{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:flex-start;
-    }
-
-    .iconbtn{
-      width:32px;
-      height:32px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.05);
-      border-radius:10px;
-      cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      flex:0 0 auto;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
-      transition:transform .12s ease, filter .12s ease, background .12s ease;
-    }
-
-    .iconbtn:hover{
-      filter:brightness(1.08);
-      background:rgba(255,255,255,.08);
-    }
-
-    .iconbtn:active{
-      transform:scale(.97);
-    }
-
-    .icon{
-      width:16px;
-      height:16px;
-      display:block;
-    }
-
-    .pagerbar{
-      width:100%;
-      display:flex;
-      align-items:center;
-      justify-content:flex-end;
-      gap:12px;
-      margin-top:12px;
-      padding-right:2px;
-      overflow:hidden;
-    }
-
-    .showing{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:800;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:55%;
-    }
-
-    .pager{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      flex:0 0 auto;
-      max-width:45%;
-    }
-
-    .pgbtn{
-      height:32px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.05);
-      color:var(--ink);
-      border-radius:10px;
-      cursor:pointer;
-      font-weight:900;
-      padding:0 12px;
-      white-space:nowrap;
-      min-width:38px;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
-      transition:transform .12s ease, filter .12s ease, opacity .12s ease;
-    }
-
-    .pgbtn:hover{ filter:brightness(1.08); }
-    .pgbtn:active{ transform:scale(.985); }
-    .pgbtn:disabled{
-      opacity:.45;
-      cursor:not-allowed;
-    }
-
-    .pgbtn.prev{
-      padding:0;
-      width:32px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .pgcur{
-      width:32px;
-      height:32px;
-      border-radius:10px;
-      background:linear-gradient(180deg, var(--btn1) 0%, var(--btn2) 100%);
-      color:#fff;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:900;
-      font-size:12px;
-      flex:0 0 auto;
-      box-shadow:0 12px 18px rgba(0,0,0,.22);
-    }
-
-    .modal-overlay{
-      display:none;
-      position:fixed;
-      inset:0;
-      background:var(--modalOverlay);
-      align-items:center;
-      justify-content:center;
-      z-index:1000;
-      padding:18px;
-      backdrop-filter:blur(4px);
-      -webkit-backdrop-filter:blur(4px);
-    }
-
-    .modal{
-      width:min(440px, 100%);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:26px;
-      padding:22px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.04) 100%);
-      box-shadow:var(--shadow1), inset 0 1px 0 rgba(255,255,255,.10);
-      color:var(--ink);
-    }
-
-    .modal h3{
-      margin:0 0 18px 0;
-      font-weight:800;
-      font-size:22px;
-      text-align:center;
-      text-shadow:0 8px 18px rgba(0,0,0,.35);
-    }
-
-    .modal-field{
-      margin-bottom:14px;
-    }
-
-    .modal-actions{
-      display:flex;
-      justify-content:flex-end;
-      gap:12px;
-      margin-top:20px;
-      flex-wrap:wrap;
-    }
-
-    .modal-actions .cancel{
-      background:rgba(255,255,255,.10);
-    }
-
-    .modal-actions .save{
-      background:linear-gradient(180deg, var(--btn-green1) 0%, var(--btn-green2) 100%);
-    }
-
-    /* ===== AJUSTES MÓVIL ===== */
-    @media (max-width: 900px){
-      #wrap{ padding:8px; }
-      .filters{ grid-template-columns:1fr 1fr; }
-    }
-
-    @media (max-width: 768px){
-      #plan, #frame, #outer{
-        border-radius:24px;
-      }
-
-      #wrap{
-        padding:8px;
-      }
-
-      .app{
-        max-width:none;
-      }
-
-      .title{
-        min-height:48px;
-        font-size:18px;
-        margin-bottom:10px;
-      }
-
-      .top-actions{
-        grid-template-columns:1fr;
-        gap:10px;
-      }
-
-      .btn{
-        min-height:46px;
-        font-size:14px;
-        padding:10px 16px;
-      }
-
-      .panel{
-        padding:10px;
-        border-radius:20px;
-        margin-bottom:10px;
-      }
-
-      .agregar-title{
-        font-size:16px;
-        margin-bottom:8px;
-      }
-
-      .agregar-row{
-        display:block;
-      }
-
-      .agregar-field{
-        margin-bottom:8px;
-        min-width:0;
-      }
-
-      .agregar-field input,
-      select,
-      .searchbtn,
-      .modal-field input{
-        min-height:40px;
-        font-size:14px;
-      }
-
-      .agregar-btn{
-        width:100%;
-        margin-top:4px;
-      }
-
-      .rango-opciones{
-        gap:6px;
-        margin-top:8px;
-      }
-
-      .rango-btn{
-        min-height:34px;
-        padding:6px 10px;
-        font-size:12px;
-      }
-
-      .filters{
-        grid-template-columns:1fr;
-        gap:10px;
-      }
-
-      .subtitle{
-        font-size:18px;
-      }
-
-      .col-instalacion, .col-socorrista, .col-horas{
-        display:none;
-      }
-
-      .col-dia, .col-inicio, .col-finaliza, .col-estado{
-        display:table-cell;
-      }
-
-      table{
-        table-layout:fixed;
-        min-width:0;
-      }
-
-      .col-dia{ width:30%; }
-      .col-inicio{ width:23%; }
-      .col-finaliza{ width:23%; }
-      .col-estado{ width:24%; }
-
-      td.col-estado .actions{
-        justify-content:flex-start;
-        gap:4px;
-      }
-
-      .iconbtn{
-        width:24px;
-        height:24px;
-      }
-
-      .iconbtn .icon{
-        width:12px;
-        height:12px;
-      }
-
-      .table-title{
-        display:none;
-      }
-
-      .pagerbar{
-        gap:8px;
-      }
-
-      .showing{
-        max-width:60%;
-      }
-
-      .pager{
-        max-width:40%;
-      }
-
-      .modal{
-        padding:18px;
-        border-radius:20px;
-      }
-
-      .modal h3{
-        font-size:18px;
-      }
-
-      .modal-actions{
-        justify-content:stretch;
-      }
-
-      .modal-actions button{
-        flex:1 1 100%;
-        min-height:42px;
-      }
-    }
-
-    /* ========== FULLSCREEN TOGGLE STYLES (solo móvil) ========== */
-    .fullscreen-toggle {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 48px;
-      height: 48px;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(12px);
-      border-radius: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      color: white;
-      cursor: pointer;
-      z-index: 10000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      transition: all 0.2s ease;
-      border: 1px solid rgba(255,255,255,0.2);
-      font-weight: bold;
-      user-select: none;
-      touch-action: manipulation;
-    }
-    .fullscreen-toggle:active {
-      transform: scale(0.92);
-      background: rgba(0,0,0,0.8);
-    }
-    @media (min-width: 769px) {
-      .fullscreen-toggle {
-        display: none;
-      }
-    }
-    @media (max-width: 768px) {
-      .fullscreen-toggle {
-        display: flex;
-      }
-    }
-    html:fullscreen #stage.fullscreen-mode #plan,
-    html:-webkit-full-screen #stage.fullscreen-mode #plan,
-    html:-moz-full-screen #stage.fullscreen-mode #plan {
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      border-radius: 0;
-      box-shadow: none;
-    }
-    html:fullscreen #stage.fullscreen-mode #frame,
-    html:-webkit-full-screen #stage.fullscreen-mode #frame,
-    html:-moz-full-screen #stage.fullscreen-mode #frame {
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      border-radius: 0;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+:root{
+--navy1:#0a1a55;--navy2:#040e31;--navy3:#02071c;--blue:#2f6fe0;
+--bg:#f3f5f9;--card-bg:#ffffff;--ink:#0f1b3d;--muted:#6b7688;--border:#e7eaf1;
+--red:#d43d3d;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;width:100%;font-family:"Segoe UI",Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);}
+#app{display:flex;min-height:100vh;width:100%;}
+#sidebar{
+width:250px;flex:0 0 250px;
+background:linear-gradient(180deg,var(--navy1) 0%,var(--navy2) 60%,var(--navy3) 100%);
+color:#eaf2ff;display:flex;flex-direction:column;padding:26px 18px;min-height:100vh;
+}
+.logo-row{display:flex;align-items:center;gap:10px;margin-bottom:34px;padding:0 4px;}
+.logo-row img{width:34px;height:34px;object-fit:contain;border-radius:6px;}
+.logo-row span{font-weight:800;letter-spacing:2px;font-size:19px;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;margin-bottom:4px;color:rgba(234,242,255,.82);font-size:14.5px;font-weight:600;cursor:pointer;}
+.nav-item:hover{background:rgba(255,255,255,.06);}
+.nav-item.active{background:var(--blue);color:#fff;}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:700;background:rgba(255,255,255,.14);padding:2px 7px;border-radius:20px;white-space:nowrap;}
+.nav-sep{height:1px;background:rgba(255,255,255,.10);margin:14px 4px;}
+.nav-bottom{margin-top:auto;}
+#main{flex:1;min-width:0;display:flex;flex-direction:column;}
+#topbar{background:#fff;border-bottom:1px solid var(--border);padding:18px 30px;display:flex;align-items:center;justify-content:space-between;}
+#topbar h1{font-size:20px;margin:0;font-weight:700;}
+.hamburger{display:none;font-size:20px;background:none;border:none;cursor:pointer;color:var(--ink);}
+.mobile-logo{display:none;align-items:center;gap:8px;font-weight:800;letter-spacing:1px;}
+.mobile-logo img{width:26px;height:26px;border-radius:6px;object-fit:contain;}
+.primary-btn{background:var(--blue);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;}
+.primary-btn:hover{background:#1e4fb8;}
+#content{padding:22px 30px 90px 30px;}
+.tabbar{display:flex;gap:6px;border-bottom:1px solid var(--border);margin-bottom:18px;}
+.tabbtn{padding:10px 4px;margin-right:22px;background:none;border:none;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;}
+.tabbtn.active{color:var(--blue);border-bottom-color:var(--blue);}
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:0;overflow:hidden;}
+.info-bar{background:#eef4ff;color:#2f5fc4;font-size:12.5px;padding:12px 20px;border-top:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{text-align:left;padding:12px 18px;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);}
+tbody td{padding:12px 18px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;}
+.pill.ok{background:#e6f7ee;color:#1a7f4f;}
+.pill.warn{background:#fff4e0;color:#a3690a;}
+.pill.off{background:#f1f2f5;color:#6b7688;}
+.icon-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:4px 6px;border-radius:6px;}
+.icon-btn.edit{color:var(--blue);}
+.icon-btn.del{color:var(--red);}
+.icon-btn:hover{background:#f1f4fb;}
+.empty-row td{text-align:center;color:var(--muted);padding:30px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,20,50,.45);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;padding:24px;width:420px;max-width:92vw;}
+.modal h3{margin:0 0 16px 0;font-size:16px;}
+.modal .field{margin-bottom:12px;}
+.modal .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;}
+.modal .field input, .modal .field select{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:9px;font-size:13px;}
+.modal .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+.btn-cancel{background:#fff;border:1px solid var(--border);border-radius:9px;padding:9px 14px;font-size:12.5px;font-weight:700;cursor:pointer;}
+.msg{font-size:12.5px;margin-top:10px;padding:8px 12px;border-radius:9px;display:none;}
+.msg.ok{background:#e6f7ee;color:#1a7f4f;display:block;}
+.msg.err{background:#fde8e8;color:#b02a2a;display:block;}
+.loading-row td{text-align:center;color:var(--muted);padding:24px;}
+
+@media (max-width:768px){
+#sidebar{display:none;}
+.hamburger{display:block;}
+.mobile-logo{display:flex;}
+#topbar h1{display:none;}
+#topbar{padding:14px 16px;}
+#content{padding:14px 12px 90px 12px;}
+table{font-size:12px;}
+thead th, tbody td{padding:9px 10px;}
+}
+
+.mobile-drawer{display:none;position:fixed;inset:0;z-index:100;}
+.mobile-drawer.open{display:block;}
+.mobile-drawer .overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);}
+.mobile-drawer .panel{
+position:absolute;left:0;top:0;bottom:0;width:250px;
+background:linear-gradient(180deg,var(--navy1) 0%,var(--navy2) 60%,var(--navy3) 100%);
+padding:26px 18px;color:#eaf2ff;overflow-y:auto;
+}
+</style>
 </head>
 <body>
-  <div id="stage">
-    <div id="frame"></div>
-    <div id="plan">
-      <div id="outer"></div>
-
-      <div id="wrap">
-        <div class="app">
-
-          <div class="title blk">Asignacion Horarios Socorristas</div>
-
-          <div class="top-actions">
-            <button class="btn green" id="btnPlantillas" type="button">
-              <span class="ico">⬇️</span>
-              <span>Descargar Plantilla</span>
-            </button>
-
-            <button class="btn red" id="btnSubir" type="button">
-              <span class="ico">⬆️</span>
-              <span>Subir Horarios Masivos</span>
-            </button>
-          </div>
-
-          <div class="panel">
-            <div class="agregar-title">➕ Agregar desde bloque</div>
-            <div class="agregar-row">
-              <div class="agregar-field">
-                <label for="fechaInicio">Fecha inicio (dd/mm/aaaa)</label>
-                <input type="text" id="fechaInicio" placeholder="ej. 17/01/2025" value="">
-              </div>
-              <div class="agregar-field">
-                <label for="fechaFin">Fecha fin (dd/mm/aaaa)</label>
-                <input type="text" id="fechaFin" placeholder="ej. 23/01/2025" value="">
-              </div>
-              <div class="agregar-field">
-                <label for="bloqueInput">Número de bloque</label>
-                <input type="number" id="bloqueInput" placeholder="ej. 1" min="1" value="">
-              </div>
-              <button class="agregar-btn" id="btnAgregarRango">Agregar rango</button>
-            </div>
-
-            <div class="rango-opciones">
-              <button class="rango-btn" data-rango="dia">Día</button>
-              <button class="rango-btn" data-rango="semana">Semana</button>
-              <button class="rango-btn" data-rango="mes">Mes</button>
-            </div>
-
-            <small class="rangohint">Seleccione un rango o ingrese las fechas manualmente.</small>
-          </div>
-
-          <div class="panel">
-            <div class="section-head">
-              <div class="subtitle">Horarios de Socorristas</div>
-            </div>
-
-            <div class="filters">
-              <div class="field">
-                <label for="modeSel">Modo</label>
-                <select id="modeSel">
-                  <option value="Individual">Individual</option>
-                  <option value="Cargar Plantilla">Cargar Plantilla</option>
-                </select>
-              </div>
-
-              <div class="field">
-                <label for="instSel">Instalación</label>
-                <select id="instSel"></select>
-              </div>
-
-              <div class="field">
-                <label for="socSel">Socorrista</label>
-                <select id="socSel"></select>
-              </div>
-
-              <div class="field">
-                <label>&nbsp;</label>
-                <button class="searchbtn" id="btnBuscar" type="button">Buscar</button>
-              </div>
-            </div>
-
-            <div class="tablewrap">
-              <div class="table-title">Tabla Horarios</div>
-
-              <table id="data-table">
-                <thead>
-                  <tr>
-                    <th class="col-instalacion">Instalacion</th>
-                    <th class="col-socorrista">Socorrista</th>
-                    <th class="col-dia">Día</th>
-                    <th class="col-inicio">Inicio</th>
-                    <th class="col-finaliza">Finaliza</th>
-                    <th class="col-horas">Horas</th>
-                    <th class="col-estado">Estado</th>
-                    <th style="display:none;">llave</th>
-                  </tr>
-                </thead>
-                <tbody id="tbody"></tbody>
-              </table>
-            </div>
-
-            <div class="pagerbar">
-              <span class="showing" id="showingTxt">Mostrando 0 a 0 de 0</span>
-              <div class="pager">
-                <button class="pgbtn prev" id="pgPrev" type="button">‹</button>
-                <span class="pgcur" id="pgCur">1</span>
-                <button class="pgbtn" id="pgNext" type="button">Siguiente</button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="editModal">
-    <div class="modal">
-      <h3>Editar turno</h3>
-
-      <div class="modal-field">
-        <label for="editSocorrista">Socorrista</label>
-        <input type="text" id="editSocorrista">
-      </div>
-
-      <div class="modal-field">
-        <label for="editInstalacion">Instalacion</label>
-        <input type="text" id="editInstalacion">
-      </div>
-
-      <div class="modal-field">
-        <label for="editIngreso">Ingreso</label>
-        <input type="text" id="editIngreso" placeholder="HH:MM">
-      </div>
-
-      <div class="modal-field">
-        <label for="editSalida">Salida</label>
-        <input type="text" id="editSalida" placeholder="HH:MM">
-      </div>
-
-      <div class="modal-actions">
-        <button class="cancel" id="modalCancel">Cancelar</button>
-        <button class="save" id="modalSave">Guardar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Botón de pantalla completa (solo móvil) -->
-  <div id="fullscreenToggleBtn" class="fullscreen-toggle">⤢</div>
-
-  <script>
-    const API_BASE = "https://camilo27.pythonanywhere.com";
-    const ENDPOINT_MALLAS = API_BASE + "/api/mallas";
-    const ENDPOINT_AGREGAR = API_BASE + "/api/horarios/agregar";
-    const ENDPOINT_EDITAR = API_BASE + "/api/horarios/editar";
-    const ENDPOINT_ELIMINAR = API_BASE + "/api/horarios/eliminar";
-
-    (function() {
-      var fe = window.frameElement;
-      if (fe){
-        fe.style.position = "fixed";
-        fe.style.inset = "0";
-        fe.style.width = "100vw";
-        fe.style.height = "100vh";
-        fe.style.border = "0";
-        fe.style.margin = "0";
-        fe.style.padding = "0";
-        fe.style.zIndex = "999999";
-        fe.style.background = "transparent";
-      }
-    })();
-
-    function getField(row, key) {
-      if (!row) return "";
-      if (row[key] !== undefined && row[key] !== null) return row[key];
-      const lowerKey = key.toLowerCase();
-      for (let k in row) {
-        if (k.toLowerCase() === lowerKey) return row[k];
-      }
-      return "";
-    }
-
-    function formatTime(timeStr) {
-      if (!timeStr) return "";
-      const str = String(timeStr);
-      const parts = str.split(':');
-      if (parts.length >= 2) {
-        return parts[0] + ':' + parts[1];
-      }
-      return str;
-    }
-
-    let allRows = [];
-    let filtered = [];
-    let page = 1;
-    const pageSize = 14;
-
-    const instSel = document.getElementById("instSel");
-    const socSel = document.getElementById("socSel");
-    const tbody = document.getElementById("tbody");
-    const showingTxt = document.getElementById("showingTxt");
-    const pgCur = document.getElementById("pgCur");
-    const pgPrev = document.getElementById("pgPrev");
-    const pgNext = document.getElementById("pgNext");
-    const btnBuscar = document.getElementById("btnBuscar");
-
-    const fechaInicio = document.getElementById("fechaInicio");
-    const fechaFin = document.getElementById("fechaFin");
-    const bloqueInput = document.getElementById("bloqueInput");
-    const btnAgregarRango = document.getElementById("btnAgregarRango");
-    const rangoBtns = document.querySelectorAll(".rango-btn");
-
-    const editModal = document.getElementById("editModal");
-    const editSocorrista = document.getElementById("editSocorrista");
-    const editInstalacion = document.getElementById("editInstalacion");
-    const editIngreso = document.getElementById("editIngreso");
-    const editSalida = document.getElementById("editSalida");
-    const modalCancel = document.getElementById("modalCancel");
-    const modalSave = document.getElementById("modalSave");
-
-    let currentEditLlave = null;
-
-    function svgEdit() {
-      return `<svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5Z" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-    }
-
-    function svgTrash() {
-      return `<svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M3 6h18" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round"/><path d="M8 6V4h8v2" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round"/><path d="M19 6l-1 14H6L5 6" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round"/><path d="M14 11v6" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round"/></svg>`;
-    }
-
-    function parseFechaDDMMYYYY(fechaStr) {
-      if (!/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(fechaStr)) return null;
-      const [dd, mm, yyyy] = fechaStr.split('/').map(Number);
-      return new Date(yyyy, mm - 1, dd);
-    }
-
-    function formatDateToDDMMYYYY(date) {
-      const d = date.getDate().toString().padStart(2,'0');
-      const m = (date.getMonth() + 1).toString().padStart(2,'0');
-      const y = date.getFullYear();
-      return `${d}/${m}/${y}`;
-    }
-
-    function getDatesInRange(startStr, endStr) {
-      const start = parseFechaDDMMYYYY(startStr);
-      const end = parseFechaDDMMYYYY(endStr);
-      if (!start || !end) return [];
-      const dates = [];
-      let current = new Date(start);
-      while (current <= end) {
-        dates.push(formatDateToDDMMYYYY(current));
-        current.setDate(current.getDate() + 1);
-      }
-      return dates;
-    }
-
-    function resetRangoActivo() {
-      rangoBtns.forEach(btn => btn.classList.remove("activo"));
-    }
-
-    async function loadMallas() {
-      try {
-        const res = await fetch(ENDPOINT_MALLAS);
-        if (!res.ok) throw new Error("Error HTTP " + res.status);
-        const data = await res.json();
-        if (!data.ok) throw new Error("Respuesta no ok");
-
-        allRows = data.rows || [];
-
-        const instalacionesSet = new Set();
-        const socorristasSet = new Set();
-
-        allRows.forEach(r => {
-          const inst = getField(r, "Instalacion") || getField(r, "instalacion");
-          if (inst) instalacionesSet.add(inst);
-
-          const soc = getField(r, "Socorrista") || getField(r, "socorrista");
-          if (soc) socorristasSet.add(soc);
-        });
-
-        const instalaciones = Array.from(instalacionesSet).sort();
-        const socorristas = Array.from(socorristasSet).sort();
-
-        fillSelect(instSel, ["Todas", ...instalaciones]);
-        fillSelect(socSel, ["Todos", ...socorristas]);
-        applyFilters();
-      } catch (e) {
-        console.error("Error cargando mallas:", e);
-        allRows = [];
-        fillSelect(instSel, ["Todas"]);
-        fillSelect(socSel, ["Todos"]);
-        applyFilters();
-      }
-    }
-
-    function fillSelect(sel, items) {
-      sel.innerHTML = "";
-      items.forEach(v => {
-        const opt = document.createElement("option");
-        opt.value = v;
-        opt.textContent = v;
-        sel.appendChild(opt);
-      });
-    }
-
-    function applyFilters() {
-      const inst = instSel.value || "Todas";
-      const soc = socSel.value || "Todos";
-
-      filtered = allRows.filter(r => {
-        const rInst = getField(r, "Instalacion") || getField(r, "instalacion");
-        const rSoc = getField(r, "Socorrista") || getField(r, "socorrista");
-        const okInst = (inst === "Todas") || (rInst === inst);
-        const okSoc = (soc === "Todos") || (rSoc === soc);
-        return okInst && okSoc;
-      });
-
-      page = 1;
-      render();
-    }
-
-    function render() {
-      const total = filtered.length;
-      const pages = Math.max(1, Math.ceil(total / pageSize));
-      page = Math.min(page, pages);
-
-      const startIdx = (page - 1) * pageSize;
-      const endIdx = Math.min(startIdx + pageSize, total);
-
-      tbody.innerHTML = "";
-      const slice = filtered.slice(startIdx, endIdx);
-
-      slice.forEach((r) => {
-        const tr = document.createElement("tr");
-        tr.dataset.llave = r.llave || "";
-
-        const instalacion = r.Instalacion || r.instalacion || "";
-        const socorrista = r.Socorrista || r.socorrista || "";
-        const dia = r.Dia || r.dia || "";
-        const inicioRaw = r.Ingreso || r.ingreso || r.Inicio || r.inicio || "";
-        const salidaRaw = r.Salida || r.salida || r.Finaliza || r.finaliza || "";
-        const horas = r.Intensidad_horaria || r.intensidad_horaria || r.Horas || r.horas || "";
-
-        const inicio = formatTime(inicioRaw);
-        const salida = formatTime(salidaRaw);
-
-        const tdInst = document.createElement("td");
-        tdInst.className = "col-instalacion";
-        tdInst.textContent = instalacion;
-
-        const tdSoc = document.createElement("td");
-        tdSoc.className = "col-socorrista";
-        tdSoc.textContent = socorrista;
-
-        const tdDia = document.createElement("td");
-        tdDia.className = "col-dia";
-        tdDia.textContent = dia;
-
-        const tdInicio = document.createElement("td");
-        tdInicio.className = "col-inicio";
-        tdInicio.textContent = inicio;
-
-        const tdFinaliza = document.createElement("td");
-        tdFinaliza.className = "col-finaliza";
-        tdFinaliza.textContent = salida;
-
-        const tdHoras = document.createElement("td");
-        tdHoras.className = "col-horas";
-        tdHoras.textContent = horas;
-
-        const tdEstado = document.createElement("td");
-        tdEstado.className = "col-estado";
-
-        const wrap = document.createElement("div");
-        wrap.className = "actions";
-
-        const b1 = document.createElement("button");
-        b1.className = "iconbtn";
-        b1.type = "button";
-        b1.innerHTML = svgEdit();
-        b1.addEventListener("click", (e) => {
-          e.stopPropagation();
-          if (!r.llave) {
-            alert("Este turno no tiene una llave válida. No se puede editar.");
-            return;
-          }
-          openEditModal(r);
-        });
-
-        const b2 = document.createElement("button");
-        b2.className = "iconbtn";
-        b2.type = "button";
-        b2.innerHTML = svgTrash();
-        b2.addEventListener("click", (e) => {
-          e.stopPropagation();
-          if (!r.llave) {
-            alert("Este turno no tiene una llave válida. No se puede eliminar.");
-            return;
-          }
-          if (confirm("¿Está seguro de eliminar este turno?")) {
-            eliminarTurno(r.llave);
-          }
-        });
-
-        wrap.appendChild(b1);
-        wrap.appendChild(b2);
-        tdEstado.appendChild(wrap);
-
-        const tdLlave = document.createElement("td");
-        tdLlave.style.display = "none";
-        tdLlave.textContent = r.llave || "";
-
-        tr.appendChild(tdInst);
-        tr.appendChild(tdSoc);
-        tr.appendChild(tdDia);
-        tr.appendChild(tdInicio);
-        tr.appendChild(tdFinaliza);
-        tr.appendChild(tdHoras);
-        tr.appendChild(tdEstado);
-        tr.appendChild(tdLlave);
-
-        tbody.appendChild(tr);
-      });
-
-      const showingA = total === 0 ? 0 : (startIdx + 1);
-      const showingB = endIdx;
-      showingTxt.textContent = `Mostrando ${showingA} a ${showingB} de ${total}`;
-      pgCur.textContent = String(page);
-      pgPrev.disabled = page <= 1;
-      pgNext.disabled = page >= pages;
-    }
-
-    function openEditModal(row) {
-      currentEditLlave = row.llave;
-      editSocorrista.value = row.Socorrista || row.socorrista || "";
-      editInstalacion.value = row.Instalacion || row.instalacion || "";
-      editIngreso.value = row.Ingreso || row.ingreso || row.Inicio || row.inicio || "";
-      editSalida.value = row.Salida || row.salida || row.Finaliza || row.finaliza || "";
-      editModal.style.display = "flex";
-    }
-
-    function closeModal() {
-      editModal.style.display = "none";
-      currentEditLlave = null;
-    }
-
-    async function guardarEdicion() {
-      if (!currentEditLlave) return;
-
-      const payload = {
-        llave: currentEditLlave,
-        Socorrista: editSocorrista.value.trim(),
-        Instalacion: editInstalacion.value.trim(),
-        Ingreso: editIngreso.value.trim(),
-        Salida: editSalida.value.trim()
-      };
-
-      try {
-        const res = await fetch(ENDPOINT_EDITAR, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-
-        if (data.ok) {
-          closeModal();
-          loadMallas();
-        } else {
-          alert("Error al editar: " + (data.error || "desconocido"));
-        }
-      } catch (e) {
-        alert("Error de red al editar");
-      }
-    }
-
-    async function eliminarTurno(llave) {
-      try {
-        const res = await fetch(ENDPOINT_ELIMINAR, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ llave: llave })
-        });
-
-        const data = await res.json();
-
-        if (data.ok) {
-          loadMallas();
-        } else {
-          alert("Error al eliminar: " + (data.error || "desconocido"));
-        }
-      } catch (e) {
-        alert("Error de red al eliminar");
-      }
-    }
-
-    async function agregarRango() {
-      const inicio = fechaInicio.value.trim();
-      const fin = fechaFin.value.trim();
-      const bloque = bloqueInput.value.trim();
-
-      if (!inicio || !fin || !bloque) {
-        alert("Debe ingresar fecha inicio, fecha fin y bloque");
-        return;
-      }
-
-      if (!/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(inicio) || !/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(fin)) {
-        alert("Las fechas deben tener formato dd/mm/aaaa");
-        return;
-      }
-
-      const fechas = getDatesInRange(inicio, fin);
-      if (fechas.length === 0) {
-        alert("Rango de fechas inválido");
-        return;
-      }
-
-      let exitos = 0;
-      let errores = 0;
-
-      for (let i = 0; i < fechas.length; i++) {
-        const fecha = fechas[i];
-        try {
-          const res = await fetch(ENDPOINT_AGREGAR, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ fecha: fecha, bloque: bloque })
-          });
-
-          const data = await res.json();
-          if (data.ok) exitos++;
-          else errores++;
-        } catch (e) {
-          errores++;
-        }
-
-        await new Promise(r => setTimeout(r, 200));
-      }
-
-      alert(`Proceso completado: ${exitos} exitosos, ${errores} errores.`);
-
-      if (exitos > 0) {
-        fechaInicio.value = "";
-        fechaFin.value = "";
-        bloqueInput.value = "";
-        resetRangoActivo();
-        loadMallas();
-      }
-    }
-
-    function setRango(tipo) {
-      const hoy = new Date();
-      let inicio, fin;
-
-      if (tipo === 'dia') {
-        inicio = fin = formatDateToDDMMYYYY(hoy);
-      } else if (tipo === 'semana') {
-        const diaSem = hoy.getDay();
-        const diffLunes = (diaSem === 0 ? 6 : diaSem - 1);
-        const lunes = new Date(hoy);
-        lunes.setDate(hoy.getDate() - diffLunes);
-        const domingo = new Date(lunes);
-        domingo.setDate(lunes.getDate() + 6);
-        inicio = formatDateToDDMMYYYY(lunes);
-        fin = formatDateToDDMMYYYY(domingo);
-      } else if (tipo === 'mes') {
-        const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-        const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
-        inicio = formatDateToDDMMYYYY(primerDia);
-        fin = formatDateToDDMMYYYY(ultimoDia);
-      }
-
-      fechaInicio.value = inicio;
-      fechaFin.value = fin;
-
-      resetRangoActivo();
-      const activeBtn = document.querySelector(`.rango-btn[data-rango="${tipo}"]`);
-      if (activeBtn) activeBtn.classList.add("activo");
-    }
-
-    btnBuscar.addEventListener("click", applyFilters);
-    pgPrev.addEventListener("click", () => {
-      if (page > 1) {
-        page--;
-        render();
-      }
-    });
-
-    pgNext.addEventListener("click", () => {
-      if (!pgNext.disabled) {
-        page++;
-        render();
-      }
-    });
-
-    btnAgregarRango.addEventListener("click", agregarRango);
-
-    rangoBtns.forEach(btn => {
-      btn.addEventListener("click", () => setRango(btn.dataset.rango));
-    });
-
-    modalCancel.addEventListener("click", closeModal);
-    modalSave.addEventListener("click", guardarEdicion);
-    editModal.addEventListener("click", (e) => {
-      if (e.target === editModal) closeModal();
-    });
-
-    document.getElementById("btnPlantillas").addEventListener("click", () => alert("Descargar Plantilla (pendiente integrar)"));
-    document.getElementById("btnSubir").addEventListener("click", () => alert("Subir Horarios Masivos (pendiente integrar)"));
-
-    loadMallas();
-
-    // ==================== FULLSCREEN PERSISTENCE (solo móvil) ====================
-    (function() {
-      const stageEl = document.getElementById("stage");
-      const toggleBtn = document.getElementById("fullscreenToggleBtn");
-      const isMobile = window.innerWidth <= 768;
-
-      function setFullscreenFlag(active) {
-        if (active) {
-          localStorage.setItem("fullscreenActive", "true");
-        } else {
-          localStorage.removeItem("fullscreenActive");
-        }
-      }
-
-      function enterFullscreen() {
-        const elem = document.documentElement;
-        const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
-        if (requestMethod) {
-          requestMethod.call(elem).then(() => {
-            if (stageEl) stageEl.classList.add("fullscreen-mode");
-            if (toggleBtn) {
-              toggleBtn.textContent = "✕";
-              toggleBtn.style.fontSize = "26px";
-            }
-            setFullscreenFlag(true);
-          }).catch(err => {
-            console.log("Error al entrar en fullscreen:", err);
-          });
-        }
-      }
-
-      function exitFullscreen() {
-        const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
-        if (exitMethod) {
-          exitMethod.call(document).then(() => {
-            if (stageEl) stageEl.classList.remove("fullscreen-mode");
-            if (toggleBtn) {
-              toggleBtn.textContent = "⤢";
-              toggleBtn.style.fontSize = "28px";
-            }
-            setFullscreenFlag(false);
-          }).catch(err => {
-            console.log("Error al salir de fullscreen:", err);
-          });
-        }
-      }
-
-      function toggleFullscreen() {
-        const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-        if (isFull) {
-          exitFullscreen();
-        } else {
-          enterFullscreen();
-        }
-      }
-
-      function onFullscreenChange() {
-        const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-        if (isFull) {
-          if (stageEl) stageEl.classList.add("fullscreen-mode");
-          if (toggleBtn) {
-            toggleBtn.textContent = "✕";
-            toggleBtn.style.fontSize = "26px";
-          }
-          setFullscreenFlag(true);
-        } else {
-          if (stageEl) stageEl.classList.remove("fullscreen-mode");
-          if (toggleBtn) {
-            toggleBtn.textContent = "⤢";
-            toggleBtn.style.fontSize = "28px";
-          }
-          setFullscreenFlag(false);
-        }
-      }
-
-      // Restaurar fullscreen si estaba activo (solo móvil)
-      if (isMobile) {
-        const savedFlag = localStorage.getItem("fullscreenActive");
-        if (savedFlag === "true") {
-          const isCurrentlyFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-          if (!isCurrentlyFull) {
-            enterFullscreen();
-          } else {
-            // Asegurar UI
-            if (stageEl) stageEl.classList.add("fullscreen-mode");
-            if (toggleBtn) {
-              toggleBtn.textContent = "✕";
-              toggleBtn.style.fontSize = "26px";
-            }
-          }
-        }
-      }
-
-      if (toggleBtn) {
-        toggleBtn.addEventListener("click", function(e) {
-          e.preventDefault();
-          toggleFullscreen();
-        });
-      }
-
-      document.addEventListener("fullscreenchange", onFullscreenChange);
-      document.addEventListener("webkitfullscreenchange", onFullscreenChange);
-      document.addEventListener("mozfullscreenchange", onFullscreenChange);
-      document.addEventListener("MSFullscreenChange", onFullscreenChange);
-    })();
-    // ==================== FIN FULLSCREEN PERSISTENCE ====================
-  </script>
+<div id="app">
+<div id="sidebar"><div class="logo-row"><img src="__LOGO_URL__"/><span>SYNTRA</span></div><div id="navList"></div></div>
+<div class="mobile-drawer" id="drawer">
+<div class="overlay" id="drawerOverlay"></div>
+<div class="panel"><div class="logo-row"><img src="__LOGO_URL__"/><span>SYNTRA</span></div><div id="navListMobile"></div></div>
+</div>
+<div id="main">
+<div id="topbar">
+<button class="hamburger" id="hamburgerBtn">&#9776;</button>
+<h1>Gesti&oacute;n de Horarios</h1>
+<div class="mobile-logo"><img src="__LOGO_URL__"/>SYNTRA</div>
+<button class="primary-btn" id="addBtn">+ Nueva Asignaci&oacute;n</button>
+</div>
+<div id="content">
+<div class="tabbar">
+<button class="tabbtn active" data-tab="bloques">Bloques</button>
+<button class="tabbtn" data-tab="asignaciones">Asignaciones</button>
+<button class="tabbtn" data-tab="historial">Historial</button>
+</div>
+
+<div class="card" id="panel-bloques">
+<table>
+<thead><tr><th>Instalaci&oacute;n</th><th>Bloque</th><th>D&iacute;a</th><th>Horario</th><th>Socorristas</th></tr></thead>
+<tbody id="bloquesBody"><tr class="loading-row"><td colspan="5">Cargando...</td></tr></tbody>
+</table>
+<div class="info-bar">Datos reales de la hoja Bloques, agrupados por instalaci&oacute;n + bloque + d&iacute;a. Solo lectura.</div>
+</div>
+
+<div class="card" id="panel-asignaciones" style="display:none;">
+<table>
+<thead><tr><th>Fecha</th><th>Instalaci&oacute;n</th><th>Socorrista</th><th>Ingreso</th><th>Salida</th><th>Estado</th><th></th></tr></thead>
+<tbody id="asigBody"><tr class="loading-row"><td colspan="7">Cargando...</td></tr></tbody>
+</table>
+<div class="info-bar">Turnos desde hoy en adelante. Edita o elimina cada asignaci&oacute;n.</div>
+</div>
+
+<div class="card" id="panel-historial" style="display:none;">
+<table>
+<thead><tr><th>Fecha</th><th>Instalaci&oacute;n</th><th>Socorrista</th><th>Ingreso</th><th>Salida</th><th>Estado</th></tr></thead>
+<tbody id="histBody"><tr class="loading-row"><td colspan="6">Cargando...</td></tr></tbody>
+</table>
+<div class="info-bar">Turnos anteriores a hoy. Solo lectura.</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="editModal">
+<div class="modal">
+<h3>Editar asignaci&oacute;n</h3>
+<div class="field"><label>Socorrista</label><input id="edit_socorrista"/></div>
+<div class="field"><label>Instalaci&oacute;n</label><input id="edit_instalacion"/></div>
+<div class="field"><label>Ingreso</label><input id="edit_ingreso" placeholder="08:00"/></div>
+<div class="field"><label>Salida</label><input id="edit_salida" placeholder="16:00"/></div>
+<div class="msg" id="editMsg"></div>
+<div class="actions">
+<button class="btn-cancel" id="editCancelBtn">Cancelar</button>
+<button class="primary-btn" id="editSaveBtn">Guardar</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="addModal">
+<div class="modal">
+<h3>Nueva asignaci&oacute;n desde bloque</h3>
+<div class="field"><label>Fecha</label><input id="add_fecha" type="date"/></div>
+<div class="field"><label>Bloque</label>
+<select id="add_bloque"><option value="">Selecciona...</option></select>
+</div>
+<div class="msg" id="addMsg"></div>
+<div class="actions">
+<button class="btn-cancel" id="addCancelBtn">Cancelar</button>
+<button class="primary-btn" id="addSaveBtn">Agregar</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+var API_BASE = __API_BASE__;
+var AUTH_USER = __AUTH_USER__;
+var AUTH_ROLE = __AUTH_ROLE__;
+var AUTH_DNI = __AUTH_DNI__;
+
+function qs(){
+var p = new URLSearchParams();
+p.set("usuario", AUTH_USER);
+p.set("rol", AUTH_ROLE);
+p.set("dni", AUTH_DNI);
+return "?" + p.toString();
+}
+function goToPage(path){ window.top.location.href = path + qs(); }
+
+var NAV_ITEMS = [
+{label:"Inicio", icon:"&#8962;", go:"/"},
+{label:"Horarios", icon:"&#128197;", go:"/calendario"},
+{label:"Incidencias y Comunicados", icon:"&#128172;", go:"/chat_interfaz"},
+{sep:true},
+{label:"Registro", icon:"&#128100;+", go:"/altas_registro", badge:"Solo admin"},
+{label:"Gesti&oacute;n de Horarios", icon:"&#9881;", go:"/editar_horarios", active:true, badge:"Solo admin"}
+];
+
+function renderNav(containerId){
+var el = document.getElementById(containerId);
+var parts = [];
+NAV_ITEMS.forEach(function(item){
+if (item.sep){ parts.push('<div class="nav-sep"></div>'); return; }
+var cls = "nav-item" + (item.active ? " active" : "");
+var badge = item.badge ? '<span class="nav-badge">' + item.badge + '</span>' : "";
+parts.push('<div class="' + cls + '" data-go="' + item.go + '"><span>' + item.icon + '</span><span>' + item.label + '</span>' + badge + '</div>');
+});
+parts.push('<div class="nav-bottom"><div class="nav-item" id="logout_' + containerId + '"><span>&#8630;</span><span>Cerrar sesi&oacute;n</span></div></div>');
+el.innerHTML = parts.join("");
+el.querySelectorAll(".nav-item[data-go]").forEach(function(node){
+node.addEventListener("click", function(){ goToPage(node.getAttribute("data-go")); });
+});
+var lo = document.getElementById("logout_" + containerId);
+if (lo) lo.addEventListener("click", function(){ window.top.location.href = "/admin"; });
+}
+renderNav("navList");
+renderNav("navListMobile");
+
+var drawer = document.getElementById("drawer");
+document.getElementById("hamburgerBtn").addEventListener("click", function(){ drawer.classList.add("open"); });
+document.getElementById("drawerOverlay").addEventListener("click", function(){ drawer.classList.remove("open"); });
+
+var tabbtns = document.querySelectorAll(".tabbtn");
+tabbtns.forEach(function(btn){
+btn.addEventListener("click", function(){
+tabbtns.forEach(function(b){ b.classList.remove("active"); });
+btn.classList.add("active");
+["bloques","asignaciones","historial"].forEach(function(name){
+document.getElementById("panel-" + name).style.display = (name === btn.getAttribute("data-tab")) ? "" : "none";
+});
+});
+});
+
+function todayStr(){
+var d = new Date();
+var m = String(d.getMonth()+1).padStart(2,"0");
+var day = String(d.getDate()).padStart(2,"0");
+return d.getFullYear() + "-" + m + "-" + day;
+}
+
+function parseFecha(str){
+str = (str || "").trim();
+if (!str) return null;
+var parts = str.split("/");
+if (parts.length === 3){
+return parts[2] + "-" + parts[1].padStart(2,"0") + "-" + parts[0].padStart(2,"0");
+}
+return str;
+}
+
+function estadoPill(estado){
+var e = (estado || "").trim().toLowerCase();
+if (e === "programado") return '<span class="pill ok">Programado</span>';
+if (e === "disponible") return '<span class="pill warn">Disponible</span>';
+if (!e) return '<span class="pill off">-</span>';
+return '<span class="pill off">' + estado + '</span>';
+}
+
+fetch(API_BASE + "/api/bloques")
+.then(function(r){ return r.json(); })
+.then(function(d){
+var tbody = document.getElementById("bloquesBody");
+if (!d || !d.ok || !d.rows || !d.rows.length){
+tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Sin datos de bloques.</td></tr>';
+return;
+}
+var groups = {};
+d.rows.forEach(function(r){
+var inst = (r["Instalacion"] || "").trim();
+var bloque = (r["bloque"] || "").trim();
+var dia = (r["Dia"] || "").trim();
+var ingreso = (r["Ingreso"] || "").trim();
+var key = inst + "|" + bloque + "|" + dia;
+if (!groups[key]) groups[key] = {inst:inst, bloque:bloque, dia:dia, horas:[], count:0};
+if (ingreso) groups[key].horas.push(ingreso);
+groups[key].count += 1;
+});
+var rows = Object.keys(groups).map(function(k){ return groups[k]; });
+rows.sort(function(a,b){
+if (a.inst !== b.inst) return a.inst.localeCompare(b.inst);
+return a.bloque.localeCompare(b.bloque);
+});
+tbody.innerHTML = rows.map(function(g){
+var horas = g.horas.slice().sort();
+var rango = horas.length ? (horas[0] + " - " + horas[horas.length-1]) : "-";
+return "<tr><td>" + g.inst + "</td><td>Bloque " + g.bloque + "</td><td>" + g.dia + "</td><td>" + rango + "</td><td>" + g.count + "</td></tr>";
+}).join("");
+
+var sel = document.getElementById("add_bloque");
+var bloqueSet = {};
+d.rows.forEach(function(r){ bloqueSet[(r["bloque"]||"").trim()] = true; });
+Object.keys(bloqueSet).sort().forEach(function(b){
+if (!b) return;
+var opt = document.createElement("option");
+opt.value = b;
+opt.textContent = "Bloque " + b;
+sel.appendChild(opt);
+});
+})
+.catch(function(){
+document.getElementById("bloquesBody").innerHTML = '<tr class="empty-row"><td colspan="5">Error al cargar bloques.</td></tr>';
+});
+
+var mallasCache = [];
+
+function renderMallas(){
+var today = todayStr();
+var futuras = [];
+var pasadas = [];
+mallasCache.forEach(function(r){
+var fechaISO = parseFecha(r["Fecha"]);
+var inst = (r["Instalacion"] || "").trim();
+if (!inst || inst.toLowerCase() === "descanso") return;
+if (fechaISO && fechaISO >= today) futuras.push(r);
+else pasadas.push(r);
+});
+futuras.sort(function(a,b){ return (parseFecha(a["Fecha"])||"").localeCompare(parseFecha(b["Fecha"])||""); });
+pasadas.sort(function(a,b){ return (parseFecha(b["Fecha"])||"").localeCompare(parseFecha(a["Fecha"])||""); });
+
+var asigBody = document.getElementById("asigBody");
+if (!futuras.length){
+asigBody.innerHTML = '<tr class="empty-row"><td colspan="7">No hay asignaciones futuras.</td></tr>';
+} else {
+asigBody.innerHTML = futuras.map(function(r){
+var llave = (r["llave"] || "").replace(/"/g, "&quot;");
+return "<tr>" +
+"<td>" + (r["Fecha"]||"") + "</td>" +
+"<td>" + (r["Instalacion"]||"") + "</td>" +
+"<td>" + (r["Socorrista"]||"") + "</td>" +
+"<td>" + (r["Ingreso"]||"") + "</td>" +
+"<td>" + (r["Salida"]||"") + "</td>" +
+"<td>" + estadoPill(r["estado"]) + "</td>" +
+"<td><button class=\"icon-btn edit\" data-llave=\"" + llave + "\" data-action=\"edit\">&#9998;</button>" +
+"<button class=\"icon-btn del\" data-llave=\"" + llave + "\" data-action=\"del\">&#128465;</button></td>" +
+"</tr>";
+}).join("");
+}
+
+var histBody = document.getElementById("histBody");
+if (!pasadas.length){
+histBody.innerHTML = '<tr class="empty-row"><td colspan="6">Sin historial.</td></tr>';
+} else {
+histBody.innerHTML = pasadas.slice(0, 200).map(function(r){
+return "<tr>" +
+"<td>" + (r["Fecha"]||"") + "</td>" +
+"<td>" + (r["Instalacion"]||"") + "</td>" +
+"<td>" + (r["Socorrista"]||"") + "</td>" +
+"<td>" + (r["Ingreso"]||"") + "</td>" +
+"<td>" + (r["Salida"]||"") + "</td>" +
+"<td>" + estadoPill(r["estado"]) + "</td>" +
+"</tr>";
+}).join("");
+}
+
+asigBody.querySelectorAll(".icon-btn").forEach(function(btn){
+btn.addEventListener("click", function(){
+var llave = btn.getAttribute("data-llave");
+var action = btn.getAttribute("data-action");
+if (action === "edit") openEditModal(llave);
+else if (action === "del") deleteAsignacion(llave);
+});
+});
+}
+
+function loadMallas(){
+fetch(API_BASE + "/api/mallas")
+.then(function(r){ return r.json(); })
+.then(function(d){
+mallasCache = (d && d.ok && d.rows) ? d.rows : [];
+renderMallas();
+})
+.catch(function(){
+document.getElementById("asigBody").innerHTML = '<tr class="empty-row"><td colspan="7">Error al cargar.</td></tr>';
+document.getElementById("histBody").innerHTML = '<tr class="empty-row"><td colspan="6">Error al cargar.</td></tr>';
+});
+}
+loadMallas();
+
+var editModal = document.getElementById("editModal");
+var currentLlave = null;
+
+function openEditModal(llave){
+var row = mallasCache.find(function(r){ return r["llave"] === llave; });
+if (!row) return;
+currentLlave = llave;
+document.getElementById("edit_socorrista").value = row["Socorrista"] || "";
+document.getElementById("edit_instalacion").value = row["Instalacion"] || "";
+document.getElementById("edit_ingreso").value = row["Ingreso"] || "";
+document.getElementById("edit_salida").value = row["Salida"] || "";
+document.getElementById("editMsg").className = "msg";
+document.getElementById("editMsg").textContent = "";
+editModal.classList.add("open");
+}
+document.getElementById("editCancelBtn").addEventListener("click", function(){ editModal.classList.remove("open"); });
+
+document.getElementById("editSaveBtn").addEventListener("click", function(){
+var payload = {
+llave: currentLlave,
+Socorrista: document.getElementById("edit_socorrista").value.trim(),
+Instalacion: document.getElementById("edit_instalacion").value.trim(),
+Ingreso: document.getElementById("edit_ingreso").value.trim(),
+Salida: document.getElementById("edit_salida").value.trim()
+};
+var msgEl = document.getElementById("editMsg");
+fetch(API_BASE + "/api/horarios/editar", {
+method: "POST",
+headers: {"Content-Type": "application/json"},
+body: JSON.stringify(payload)
+})
+.then(function(r){ return r.json(); })
+.then(function(d){
+if (d && d.ok){
+msgEl.className = "msg ok"; msgEl.textContent = "Actualizado.";
+setTimeout(function(){ editModal.classList.remove("open"); loadMallas(); }, 700);
+} else {
+msgEl.className = "msg err"; msgEl.textContent = (d && d.error) || "Error al actualizar.";
+}
+})
+.catch(function(){ msgEl.className = "msg err"; msgEl.textContent = "Error de conexi&oacute;n."; });
+});
+
+function deleteAsignacion(llave){
+if (!window.confirm("&#191;Eliminar esta asignaci&oacute;n?")) return;
+fetch(API_BASE + "/api/horarios/eliminar", {
+method: "POST",
+headers: {"Content-Type": "application/json"},
+body: JSON.stringify({llave: llave})
+})
+.then(function(r){ return r.json(); })
+.then(function(d){ if (d && d.ok) loadMallas(); else alert((d && d.error) || "Error al eliminar."); })
+.catch(function(){ alert("Error de conexi&oacute;n."); });
+}
+
+var addModal = document.getElementById("addModal");
+document.getElementById("addBtn").addEventListener("click", function(){
+document.getElementById("add_fecha").value = "";
+document.getElementById("add_bloque").value = "";
+document.getElementById("addMsg").className = "msg";
+document.getElementById("addMsg").textContent = "";
+addModal.classList.add("open");
+});
+document.getElementById("addCancelBtn").addEventListener("click", function(){ addModal.classList.remove("open"); });
+
+document.getElementById("addSaveBtn").addEventListener("click", function(){
+var fechaVal = document.getElementById("add_fecha").value;
+var bloqueVal = document.getElementById("add_bloque").value;
+var msgEl = document.getElementById("addMsg");
+if (!fechaVal || !bloqueVal){
+msgEl.className = "msg err"; msgEl.textContent = "Selecciona fecha y bloque.";
+return;
+}
+var parts = fechaVal.split("-");
+var fechaDMY = parts[2] + "/" + parts[1] + "/" + parts[0];
+fetch(API_BASE + "/api/horarios/agregar", {
+method: "POST",
+headers: {"Content-Type": "application/json"},
+body: JSON.stringify({fecha: fechaDMY, bloque: bloqueVal})
+})
+.then(function(r){ return r.json(); })
+.then(function(d){
+if (d && d.ok){
+msgEl.className = "msg ok"; msgEl.textContent = d.mensaje || "Agregado.";
+setTimeout(function(){ addModal.classList.remove("open"); loadMallas(); }, 800);
+} else {
+msgEl.className = "msg err"; msgEl.textContent = (d && d.error) || "Error al agregar.";
+}
+})
+.catch(function(){ msgEl.className = "msg err"; msgEl.textContent = "Error de conexi&oacute;n."; });
+});
+})();
+</script>
 </body>
 </html>
 """
 
-# =========================
-# STREAMLIT SHELL
-# =========================
-st.markdown(
-    """
-    <style>
-      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
-      section.main > div{padding:0 !important;margin:0 !important;}
-      header, footer{display:none !important;}
-      iframe{
-        display:block !important;
-        border:0 !important;
-      }
-      [data-testid="stSidebar"], [data-testid="collapsedControl"]{display:none !important;}
-    </style>
-    """,
-    unsafe_allow_html=True,
+html = (
+          html.replace("__LOGO_URL__", LOGO_URL)
+              .replace("__API_BASE__", _js_str(API_BASE))
+              .replace("__AUTH_USER__", _js_str(AUTH_USER))
+              .replace("__AUTH_ROLE__", _js_str(AUTH_ROLE))
+              .replace("__AUTH_DNI__", _js_str(AUTH_DNI))
 )
 
-components.html(html, height=1200, scrolling=True)
+components.html(html, height=1000, scrolling=True)
