@@ -3,76 +3,21 @@ import json
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", page_title="SYNTRA")
 
-# 🔒 GATE: solo entra con ?auth=ok
+# GATE: solo entra con ?auth=ok
 if st.query_params.get("auth") != "ok":
-    st.markdown(
-        """
-        <script>
-          window.location.href="/admin";
-        </script>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.stop()
+        st.markdown(
+                    """
+                            <script>
+                                      window.location.href="/admin";
+                                              </script>
+                                                      """,
+                    unsafe_allow_html=True,
+        )
+        st.stop()
 
-# ===================== BASE (NO CAMBIAR ESTRUCTURA) =====================
-
-PAD_X_PX = 8
-PAD_TOP_PX = 8
-
-BORDER_PX = 1
-BORDER_COLOR = "rgba(255,255,255,.12)"
-
-BG_COLOR = "#020a1a"
-HEADER_BG = "transparent"
-IMG_BG = "transparent"
-BTN_BG = "transparent"
-FOOTER_BG = "transparent"
-
-IMG_LEFT = 0
-IMG_RIGHT = 0
-IMG_TOP = 10
-IMG_HEIGHT = 44
-
-HEADER_TOP = 0
-HEADER_HEIGHT = 10
-
-BTN_AREA_TOP = 55
-BTN_H = 23
-BTN_GAP_X = 2
-BTN_GAP_Y = 2
-BTN_LEFT = 5
-BTN_RIGHT = 5
-
-BTN_TEXTS = [
-    "Horarios",
-    "Control de\nAsistencia",
-    "Control de\nHoras",
-    "Incidencias y Comunicados",
-    "Registro",
-    "Gestión de\nHorarios"
-]
-
-FOOTER_H = 18
-FOOTER_BOTTOM = 5
-FOOTER_LEFT = 6
-FOOTER_RIGHT = 6
-
-MIN_BTN_W_PX = 130
-MOBILE_MAX_W_PX = 500
-
-# ===================== CONTENIDO =====================
-
-LOGO_URL = "https://files.catbox.moe/056m6v.jpg"
-FOOTER_TEXT = "2026 Socorrista ProVersión 1.0. Todos los derechos reservados"
-
-HERO_BG_IMAGE_URL = "https://files.catbox.moe/16109j.jpeg"
-HERO_BG_IMAGE_FIT = "cover"
-HERO_BG_IMAGE_POS = "center"
-
-USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or "Login"
+USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or "Usuario"
 USER_ROLE = st.query_params.get("rol") or st.query_params.get("role") or ""
 USER_DNI = st.query_params.get("dni") or ""
 NORMALIZED_ROLE = USER_ROLE.strip().lower()
@@ -80,828 +25,348 @@ NORMALIZED_ROLE = USER_ROLE.strip().lower()
 CAN_MANAGE_SCHEDULES = NORMALIZED_ROLE == "administrador"
 CAN_REGISTER_USERS = NORMALIZED_ROLE == "administrador"
 
-# ===================== AJUSTES EDITABLES =====================
-HERO_FONT_SIZE_DESKTOP_PX = 44
-HERO_FONT_SIZE_MOBILE_PX = 13
+ROLE_LABELS = {
+        "administrador": "Administrador",
+        "directivo": "Directivo",
+        "socorrista": "Socorrista",
+}
+ROLE_DISPLAY = ROLE_LABELS.get(NORMALIZED_ROLE, USER_ROLE or "Usuario")
 
-HEADER_FONT_SIZE_DESKTOP_PX = 40
-HEADER_FONT_SIZE_MOBILE_PX = 23
-
-BTN_FONT_SIZE_DESKTOP_PX = 17
-BTN_FONT_SIZE_MOBILE_PX = 17
-
-FOOTER_FONT_SIZE_DESKTOP_PX = 13
-FOOTER_FONT_SIZE_MOBILE_PX = 13
-
-BTN_FONT_OVERRIDES_DESKTOP_PX = {}
-BTN_FONT_OVERRIDES_MOBILE_PX = {}
-
-LOGO_PADDING_PX_DESKTOP = 0
-LOGO_PADDING_PX_MOBILE = 0
-LOGO_BORDER_RADIUS_PX = 0
-LOGO_OBJECT_FIT = "cover"
-LOGO_BORDER = "0px solid rgba(255,255,255,.0)"
+API_BASE = "https://camilo27.pythonanywhere.com"
 
 st.markdown(
-    """
-    <style>
-      .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
-      section.main > div{padding:0 !important;margin:0 !important;}
-      header, footer{display:none !important;}
-    </style>
-    """,
-    unsafe_allow_html=True,
+        """
+            <style>
+                  .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
+                        section.main > div{padding:0 !important;margin:0 !important;}
+                              header, footer{display:none !important;}
+                                    iframe{display:block;}
+                                        </style>
+                                            """,
+        unsafe_allow_html=True,
 )
 
 
-def _dict_to_js_obj(d: dict) -> str:
-    parts = []
-    for k, v in d.items():
-        try:
-            ik = int(k)
-            fv = float(v)
-        except Exception:
-            continue
-        if fv <= 0:
-            continue
-        parts.append(f'"{ik}":{fv}')
-    return "{" + ",".join(parts) + "}"
-
-
 def _js_str(value) -> str:
-    return json.dumps("" if value is None else str(value), ensure_ascii=False)
+        return json.dumps("" if value is None else str(value), ensure_ascii=False)
 
+
+LOGO_URL = "https://files.catbox.moe/056m6v.jpg"
 
 html = """
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root{
-      --padx: __PADX__px;
-      --padtop: __PADTOP__px;
-
-      --b: __B__px;
-      --bc: __BC__;
-
-      --bg: __BG__;
-      --headerbg: __HEADERBG__;
-      --imgbg: __IMGBG__;
-      --btnbg: __BTNBG__;
-      --footerbg: __FOOTERBG__;
-
-      --txt: #eaf2ff;
-      --txt2: rgba(234,242,255,.85);
-
-      --shadow0: 0 18px 40px rgba(0,0,0,.60);
-      --shadow1: 0 12px 26px rgba(0,0,0,.55);
-      --shadow2: 0 10px 18px rgba(0,0,0,.45);
-
-      --heroFs: __HERO_FS_D__px;
-      --hdrFs: __HDR_FS_D__px;
-      --btnFs: __BTN_FS_D__px;
-      --footFs: __FOOT_FS_D__px;
-
-      --logoPad: __LOGO_PAD_D__px;
-      --logoRad: __LOGO_RAD__px;
-    }
-
-    html, body{
-      margin:0;
-      padding:0;
-      width:100%;
-      height:100%;
-      overflow:hidden;
-      background: var(--bg);
-      font-family: "Segoe UI", Arial, Helvetica, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    #stage{
-      position:fixed;
-      inset:0;
-      width:100vw;
-      height:100vh;
-      background:
-        radial-gradient(1200px 700px at 50% 18%, rgba(40,130,255,.22) 0%, rgba(8,35,95,.15) 35%, rgba(2,10,26,0) 70%),
-        linear-gradient(280deg, #03102a 0%, #020a1a 70%, #010612 100%);
-    }
-
-    #frame{
-      position:absolute;
-      left:var(--padx);
-      right:var(--padx);
-      top:var(--padtop);
-      bottom:0;
-      border-left:var(--b) solid var(--bc);
-      border-right:var(--b) solid var(--bc);
-      border-top:var(--b) solid var(--bc);
-      box-sizing:border-box;
-      pointer-events:none;
-      background: transparent;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.35);
-    }
-
-    #plan{
-      position:absolute;
-      left:var(--padx);
-      right:var(--padx);
-      top:var(--padtop);
-      bottom:0;
-      overflow:hidden;
-    }
-
-    #hdr{
-      position:absolute;
-      left:0;
-      right:0;
-      top: __HDR_TOP__%;
-      height: __HDR_H__%;
-      border: var(--b) solid var(--bc);
-      box-sizing:border-box;
-      display:flex;
-      gap:0;
-      overflow:hidden;
-      box-shadow: var(--shadow2);
-      border-radius: 0;
-      background:
-        linear-gradient(180deg, rgba(22,48,110,.82) 0%, rgba(7,22,62,.86) 58%, rgba(2,10,26,.92) 100%);
-    }
-
-    .hdr-cell{
-      border-right: var(--b) solid rgba(255,255,255,.10);
-      box-sizing:border-box;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size: var(--hdrFs);
-      font-weight: 700;
-      color: var(--txt2);
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-      background: transparent;
-      text-shadow: 0 2px 10px rgba(0,0,0,.55);
-      padding: 0 10px;
-    }
-
-    .hdr-cell.white{
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.07) 55%, rgba(255,255,255,.05) 100%);
-      color: var(--txt);
-      border-left: 1px solid rgba(255,255,255,.06);
-      border-right: 1px solid rgba(255,255,255,.06);
-    }
-
-    .hdr-cell:last-child{
-      border-right: none;
-    }
-
-    .hdr-logo{
-      padding: var(--logoPad) !important;
-    }
-
-    .hdr-logo img{
-      width: 100%;
-      height: 100%;
-      display:block;
-      object-fit: __LOGO_FIT__;
-      border-radius: var(--logoRad);
-      border: __LOGO_BORDER__;
-      background: rgba(0,0,0,.10);
-    }
-
-    #img{
-      position:absolute;
-      left: __IMG_L__%;
-      right: __IMG_R__%;
-      top: __IMG_T__%;
-      height: __IMG_H__%;
-      border: 1px solid rgba(255,255,255,.10);
-      box-sizing:border-box;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size: var(--heroFs);
-      font-weight: 800;
-      letter-spacing: 1px;
-      color: var(--txt);
-      text-transform: uppercase;
-      text-shadow: 0 2px 0 rgba(0,0,0,.20), 0 10px 28px rgba(0,0,0,.55);
-      border-radius: 14px;
-      box-shadow: var(--shadow0);
-      overflow:hidden;
-      background-image:
-        linear-gradient(180deg, rgba(0,0,0,.22) 0%, rgba(0,0,0,.12) 55%, rgba(0,0,0,.18) 100%),
-        radial-gradient(900px 220px at 50% 35%, rgba(100,190,255,.22) 0%, rgba(35,120,255,.10) 32%, rgba(2,10,26,0) 68%),
-        url("__HERO_BG_URL__");
-      background-size:
-        100% 100%,
-        100% 100%,
-        __HERO_BG_FIT__;
-      background-position:
-        center,
-        center,
-        __HERO_BG_POS__;
-      background-repeat:
-        no-repeat,
-        no-repeat,
-        no-repeat;
-    }
-
-    #img::before{
-      content:"";
-      position:absolute;
-      inset:-40px -60px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 40%),
-        radial-gradient(600px 240px at 30% 50%, rgba(120,210,255,.14) 0%, rgba(120,210,255,0) 70%),
-        radial-gradient(700px 260px at 70% 60%, rgba(60,140,255,.10) 0%, rgba(60,140,255,0) 70%);
-      opacity:.9;
-      pointer-events:none;
-    }
-
-    #img::after{
-      content:"";
-      position:absolute;
-      left:-18%;
-      right:-18%;
-      bottom:-40%;
-      height:120%;
-      background:
-        radial-gradient(closest-side at 50% 50%, rgba(140,220,255,.18), rgba(140,220,255,0) 65%),
-        linear-gradient(90deg, rgba(120,210,255,.22), rgba(120,210,255,0) 55%, rgba(120,210,255,.18));
-      transform:skewY(-6deg);
-      opacity:.75;
-      pointer-events:none;
-    }
-
-    #btn-area{
-      position:absolute;
-      left:0;
-      right:0;
-      top: __BTN_AREA_TOP__%;
-      bottom: 0;
-      background: transparent;
-      box-sizing:border-box;
-    }
-
-    #btn-grid{
-      position:absolute;
-      left: __BTN_L__%;
-      right: __BTN_R__%;
-      top: 0;
-      bottom: 0;
-    }
-
-    .btn{
-      position:absolute;
-      border: 1px solid rgba(255,255,255,.12);
-      box-sizing:border-box;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      padding: 8px 10px;
-      font-size: var(--btnFs);
-      font-weight: 700;
-      color: var(--txt);
-      overflow:hidden;
-      border-radius: 12px;
-      box-shadow: var(--shadow1);
-      background:
-        radial-gradient(220px 80px at 24% 50%, rgba(255,255,255,.25) 0%, rgba(255,255,255,0) 68%),
-        linear-gradient(180deg, #ff9a52 0%, #ff7c2c 55%, #d95f12 100%);
-      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, filter .12s ease;
-      cursor:pointer;
-      user-select:none;
-    }
-
-    .btn::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      border-radius:12px;
-      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 45%);
-      opacity:.85;
-      pointer-events:none;
-    }
-
-    .btn:hover{
-      transform: translateY(-2px);
-      box-shadow: 0 16px 34px rgba(0,0,0,.62);
-      border-color: rgba(170,230,255,.22);
-      filter: saturate(1.06);
-    }
-
-    .btn:active{
-      transform: translateY(0px);
-      box-shadow: var(--shadow1);
-    }
-
-    .btn.disabled{
-      opacity:.42;
-      cursor:not-allowed;
-      pointer-events:none;
-      filter: grayscale(.28) saturate(.72);
-      box-shadow: 0 8px 18px rgba(0,0,0,.42);
-    }
-
-    .btn.disabled:hover{
-      transform:none;
-      box-shadow: 0 8px 18px rgba(0,0,0,.42);
-      border-color: rgba(255,255,255,.12);
-      filter: grayscale(.28) saturate(.72);
-    }
-
-    .btn span{
-      position:relative;
-      display:block;
-      line-height:1.05;
-      white-space: pre-line;
-      text-shadow: 0 1px 0 rgba(0,0,0,.25);
-    }
-
-    #footer{
-      position:absolute;
-      left: __FOOT_L__%;
-      right: __FOOT_R__%;
-      height: __FOOT_H__%;
-      bottom: __FOOT_BOTTOM__%;
-      border: 1px solid rgba(255,255,255,.10);
-      box-sizing:border-box;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size: var(--footFs);
-      font-weight: 700;
-      color: rgba(234,242,255,.72);
-      border-radius: 12px;
-      box-shadow: var(--shadow2);
-      background:
-        linear-gradient(180deg, rgba(22,48,110,.60) 0%, rgba(7,22,62,.78) 58%, rgba(2,10,26,.88) 100%);
-      padding: 0 14px;
-      text-align:center;
-    }
-
-    @media (max-width: __MOBILE_MAX_W_PX__px){
-      :root{
-        --heroFs: __HERO_FS_M__px;
-        --hdrFs: __HDR_FS_M__px;
-        --btnFs: __BTN_FS_M__px;
-        --footFs: __FOOT_FS_M__px;
-        --logoPad: __LOGO_PAD_M__px;
-      }
-      #img{ border-radius: 10px; }
-      .btn{ border-radius: 10px; }
-      #footer{ border-radius: 10px; }
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+:root{
+--navy1: #0a1a55;
+--navy2: #040e31;
+--navy3: #02071c;
+--blue: #2f6fe0;
+--blue-dark: #1e4fb8;
+--bg: #f3f5f9;
+--card-bg: #ffffff;
+--ink: #0f1b3d;
+--muted: #6b7688;
+--border: #e7eaf1;
+--pill-bg: #e8f0fe;
+--pill-ink: #2f6fe0;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;width:100%;font-family:"Segoe UI",Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);}
+#app{display:flex;min-height:100vh;width:100%;}
+#sidebar{
+width:250px;flex:0 0 250px;
+background:linear-gradient(180deg,var(--navy1) 0%,var(--navy2) 60%,var(--navy3) 100%);
+color:#eaf2ff;display:flex;flex-direction:column;
+padding:26px 18px;min-height:100vh;
+}
+.logo-row{display:flex;align-items:center;gap:10px;margin-bottom:34px;padding:0 4px;}
+.logo-row img{width:34px;height:34px;object-fit:contain;border-radius:6px;}
+.logo-row span{font-weight:800;letter-spacing:2px;font-size:19px;}
+.nav-item{
+display:flex;align-items:center;gap:12px;
+padding:11px 12px;border-radius:10px;margin-bottom:4px;
+color:rgba(234,242,255,.82);font-size:14.5px;font-weight:600;
+cursor:pointer;text-decoration:none;transition:background .15s;
+position:relative;
+}
+.nav-item:hover{background:rgba(255,255,255,.06);}
+.nav-item.active{background:var(--blue);color:#fff;}
+.nav-item.disabled{opacity:.5;cursor:not-allowed;}
+.nav-badge{
+margin-left:auto;font-size:10px;font-weight:700;background:rgba(255,255,255,.14);
+padding:2px 7px;border-radius:20px;white-space:nowrap;
+}
+.nav-sep{height:1px;background:rgba(255,255,255,.10);margin:14px 4px;}
+.nav-bottom{margin-top:auto;}
+#main{flex:1;min-width:0;display:flex;flex-direction:column;}
+#topbar{
+background:#fff;border-bottom:1px solid var(--border);
+padding:18px 30px;display:flex;align-items:center;justify-content:space-between;
+}
+#topbar .greet h1{font-size:22px;margin:0 0 4px 0;font-weight:700;}
+#topbar .greet p{margin:0;color:var(--muted);font-size:13.5px;}
+#topbar .right{display:flex;align-items:center;gap:14px;}
+.bell{position:relative;font-size:20px;color:var(--ink);cursor:pointer;}
+.bell .dot{
+position:absolute;top:-4px;right:-6px;background:#e0433f;color:#fff;
+font-size:10px;font-weight:800;border-radius:20px;padding:1px 5px;
+}
+.mobile-logo{display:none;align-items:center;gap:8px;font-weight:800;letter-spacing:1px;}
+.mobile-logo img{width:26px;height:26px;border-radius:6px;object-fit:contain;}
+.hamburger{display:none;font-size:20px;background:none;border:none;cursor:pointer;color:var(--ink);}
+#content{padding:26px 30px 100px 30px;}
+#content h2{font-size:16px;margin:0 0 16px 0;font-weight:700;color:var(--ink);}
+.cards-grid{
+display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;
+}
+.qa-card{
+background:var(--card-bg);border:1px solid var(--border);border-radius:16px;
+padding:20px 18px;display:flex;flex-direction:column;gap:10px;
+box-shadow:0 1px 3px rgba(20,30,60,.04);
+}
+.qa-icon{
+width:44px;height:44px;border-radius:12px;background:var(--pill-bg);
+display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--blue);
+}
+.qa-card h3{margin:2px 0 0 0;font-size:15px;font-weight:700;color:var(--ink);}
+.qa-card p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.4;min-height:32px;}
+.qa-pill{
+align-self:flex-start;background:var(--pill-bg);color:var(--pill-ink);
+font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;
+}
+.qa-btn{
+margin-top:auto;background:var(--navy2);color:#fff;border:none;border-radius:10px;
+padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;
+display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.qa-btn:hover{background:var(--navy1);}
+.qa-btn[disabled]{background:#c7cbd6;cursor:not-allowed;}
+.kpi-row{
+background:var(--card-bg);border:1px solid var(--border);border-radius:16px;
+display:grid;grid-template-columns:repeat(4,1fr);padding:18px 10px;
+}
+.kpi-item{display:flex;align-items:center;gap:12px;padding:0 16px;}
+.kpi-item + .kpi-item{border-left:1px solid var(--border);}
+.kpi-icon{font-size:20px;color:var(--blue);width:26px;text-align:center;}
+.kpi-item .lab{font-size:11.5px;color:var(--muted);margin:0 0 2px 0;}
+.kpi-item .val{font-size:20px;font-weight:800;color:var(--ink);margin:0;}
+#bottomnav{display:none;}
+@media (max-width: 900px){
+.cards-grid{grid-template-columns:repeat(2,1fr);}
+.kpi-row{grid-template-columns:repeat(2,1fr);row-gap:14px;}
+.kpi-item:nth-child(3){border-left:none;}
+}
+@media (max-width: 768px){
+#sidebar{display:none;}
+.hamburger{display:block;}
+.mobile-logo{display:flex;}
+#topbar .greet{display:none;}
+#topbar{padding:14px 16px;}
+#content{padding:16px 14px 90px 14px;}
+.cards-grid{grid-template-columns:1fr 1fr;gap:10px;}
+.qa-card{padding:14px 12px;}
+.qa-card p{min-height:0;}
+.kpi-row{grid-template-columns:repeat(2,1fr);gap:12px;padding:14px 10px;}
+.kpi-item:nth-child(3){border-left:none;}
+#bottomnav{
+display:flex;position:fixed;left:0;right:0;bottom:0;height:60px;
+background:#fff;border-top:1px solid var(--border);z-index:50;
+}
+#bottomnav .bn-item{
+flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+gap:3px;font-size:10.5px;color:var(--muted);cursor:pointer;font-weight:600;
+}
+#bottomnav .bn-item.active{color:var(--blue);}
+#bottomnav .bn-item .ic{font-size:18px;}
+}
+.mobile-drawer{
+display:none;position:fixed;inset:0;z-index:100;
+}
+.mobile-drawer.open{display:block;}
+.mobile-drawer .overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);}
+.mobile-drawer .panel{
+position:absolute;left:0;top:0;bottom:0;width:250px;
+background:linear-gradient(180deg,var(--navy1) 0%,var(--navy2) 60%,var(--navy3) 100%);
+padding:26px 18px;color:#eaf2ff;overflow-y:auto;
+}
+</style>
 </head>
 <body>
-  <div id="stage">
-    <div id="frame"></div>
-
-    <div id="plan">
-      <div id="hdr"></div>
-      <div id="img">¡BIENVENIDO!</div>
-
-      <div id="btn-area">
-        <div id="btn-grid"></div>
-        <div id="footer">__FOOTER_TEXT__</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- BOTÓN DE PANTALLA COMPLETA (solo móvil) -->
-  <div id="fullscreenToggleBtn" class="fullscreen-toggle">⤢</div>
-
-  <style>
-    .fullscreen-toggle {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 48px;
-      height: 48px;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(12px);
-      border-radius: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      color: white;
-      cursor: pointer;
-      z-index: 10000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      transition: all 0.2s ease;
-      border: 1px solid rgba(255,255,255,0.2);
-      font-weight: bold;
-      user-select: none;
-      touch-action: manipulation;
-    }
-    .fullscreen-toggle:active {
-      transform: scale(0.92);
-      background: rgba(0,0,0,0.8);
-    }
-    @media (min-width: 769px) {
-      .fullscreen-toggle {
-        display: none;
-      }
-    }
-    @media (max-width: 768px) {
-      .fullscreen-toggle {
-        display: flex;
-      }
-    }
-    html:fullscreen #stage.fullscreen-mode #plan,
-    html:-webkit-full-screen #stage.fullscreen-mode #plan,
-    html:-moz-full-screen #stage.fullscreen-mode #plan {
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      border-radius: 0;
-      box-shadow: none;
-    }
-    html:fullscreen #stage.fullscreen-mode #frame,
-    html:-webkit-full-screen #stage.fullscreen-mode #frame,
-    html:-moz-full-screen #stage.fullscreen-mode #frame {
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      border-radius: 0;
-    }
-  </style>
-
-  <script>
-    (function(){
-      var fe = window.frameElement;
-      if (fe){
-        fe.style.position = "fixed";
-        fe.style.inset = "0";
-        fe.style.width = "100vw";
-        fe.style.height = "100vh";
-        fe.style.border = "0";
-        fe.style.margin = "0";
-        fe.style.padding = "0";
-        fe.style.zIndex = "999999";
-        fe.style.background = "transparent";
-      }
-
-      var BTN_TEXTS = __BTN_TEXTS__;
-      var MIN_BTN_W_PX = __MIN_BTN_W_PX__;
-      var MOBILE_MAX_W_PX = __MOBILE_MAX_W_PX__;
-      var LOGO_URL = __LOGO_URL__;
-      var USER_NAME = __USER_NAME__;
-      var USER_ROLE = __USER_ROLE__;
-      var USER_DNI = __USER_DNI__;
-      var CAN_MANAGE_SCHEDULES = __CAN_MANAGE_SCHEDULES__;
-      var CAN_REGISTER_USERS = __CAN_REGISTER_USERS__;
-
-      var BTN_OVR_D = __BTN_OVR_D__;
-      var BTN_OVR_M = __BTN_OVR_M__;
-
-      var hdr = document.getElementById("hdr");
-      hdr.innerHTML = "";
-
-      var cells = [
-        {w: 6,  t:"",       white:false, kind:"blank"},
-        {w: 22, t:"",       white:true,  kind:"logo"},
-        {w: 44, t:"SYNTRA", white:false, kind:"text"},
-        {w: 22, t:"",       white:true,  kind:"user"},
-        {w: 6,  t:"",       white:false, kind:"blank"}
-      ];
-
-      cells.forEach(function(c){
-        var d = document.createElement("div");
-        d.className = "hdr-cell" + (c.white ? " white" : "");
-        d.style.width = c.w + "%";
-
-        if (c.kind === "logo"){
-          d.className += " hdr-logo";
-          var img = document.createElement("img");
-          img.src = LOGO_URL;
-          img.alt = "Logo";
-          img.loading = "eager";
-          img.decoding = "async";
-          d.appendChild(img);
-        } else if (c.kind === "user"){
-          d.textContent = USER_NAME || "";
-        } else {
-          d.textContent = c.t;
-        }
-
-        hdr.appendChild(d);
-      });
-
-      var grid = document.getElementById("btn-grid");
-      var plan = document.getElementById("plan");
-
-      function overrideFs(i){
-        var vw = window.innerWidth;
-        if (vw <= MOBILE_MAX_W_PX){
-          if (BTN_OVR_M && BTN_OVR_M[i] != null) return BTN_OVR_M[i];
-          return null;
-        } else {
-          if (BTN_OVR_D && BTN_OVR_D[i] != null) return BTN_OVR_D[i];
-          return null;
-        }
-      }
-
-      function buildAppParams(){
-        var params = new URLSearchParams();
-        params.set("auth", "ok");
-
-        if (USER_NAME && USER_NAME !== "Login") {
-          params.set("usuario", USER_NAME);
-        }
-
-        if (USER_ROLE) {
-          params.set("rol", USER_ROLE);
-        }
-
-        if (USER_DNI) {
-          params.set("dni", USER_DNI);
-        }
-
-        return params.toString();
-      }
-
-      function goToPage(path){
-        var qs = buildAppParams();
-        window.location.href = path + "?" + qs;
-      }
-
-      function buildButtons(){
-        grid.innerHTML = "";
-
-        var vw = window.innerWidth;
-        var r = plan.getBoundingClientRect();
-        var planW = r.width;
-
-        var left = __BTN_L__;
-        var right = __BTN_R__;
-        var gapX = __BTN_GAP_X__;
-        var gapY = __BTN_GAP_Y__;
-        var btnH = __BTN_H__;
-
-        if (vw <= MOBILE_MAX_W_PX){
-          if (gapX < 2) gapX = 2;
-          if (gapY < 3) gapY = 3;
-        }
-
-        var count = BTN_TEXTS.length;
-        var cols = 3;
-        var usable = 100 - left - right;
-
-        while (cols > 1){
-          var wPctTry = (usable - (gapX * (cols - 1))) / cols;
-          var wPxTry = (wPctTry / 100) * planW;
-          if (wPctTry > 0 && wPxTry >= MIN_BTN_W_PX) break;
-          cols -= 1;
-        }
-
-        var w = (usable - (gapX * (cols - 1))) / cols;
-        if (w < 0) w = 0;
-
-        for (var i = 0; i < count; i++){
-          var row = Math.floor(i / cols);
-          var col = i % cols;
-
-          var x = left + col * (w + gapX);
-          var y = row * (btnH + gapY);
-
-          var d = document.createElement("div");
-          d.className = "btn";
-          d.style.left = x + "%";
-          d.style.top = y + "%";
-          d.style.width = w + "%";
-          d.style.height = btnH + "%";
-
-          var sp = document.createElement("span");
-          sp.textContent = BTN_TEXTS[i];
-
-          var fs = overrideFs(i);
-          if (fs != null) sp.style.fontSize = fs + "px";
-
-          d.appendChild(sp);
-
-          if (BTN_TEXTS[i] === "Horarios") {
-            d.addEventListener("click", function(){
-              goToPage("/calendario");
-            });
-          }
-
-          if (BTN_TEXTS[i] === "Incidencias y Comunicados") {
-            d.addEventListener("click", function(){
-              goToPage("/chat_interfaz");
-            });
-          }
-
-          if (BTN_TEXTS[i] === "Registro") {
-            if (CAN_REGISTER_USERS) {
-              d.addEventListener("click", function(){
-                goToPage("/altas_registro");
-              });
-            } else {
-              d.classList.add("disabled");
-              d.setAttribute("aria-disabled", "true");
-              d.title = "Disponible solo para Administrador";
-            }
-          }
-
-          if (BTN_TEXTS[i] === "Gestión de\\nHorarios") {
-            if (CAN_MANAGE_SCHEDULES) {
-              d.addEventListener("click", function(){
-                goToPage("/editar_horarios");
-              });
-            } else {
-              d.classList.add("disabled");
-              d.setAttribute("aria-disabled", "true");
-              d.title = "Disponible solo para Administrador";
-            }
-          }
-
-          grid.appendChild(d);
-        }
-      }
-
-      function update(){
-        buildButtons();
-      }
-
-      window.addEventListener("resize", update);
-      update();
-
-      // ==================== FULLSCREEN PERSISTENCE (solo móvil) ====================
-      var stageEl = document.getElementById("stage");
-      var toggleBtn = document.getElementById("fullscreenToggleBtn");
-      var isMobile = window.innerWidth <= 768;
-
-      function setFullscreenFlag(active) {
-        if (active) {
-          localStorage.setItem("fullscreenActive", "true");
-        } else {
-          localStorage.removeItem("fullscreenActive");
-        }
-      }
-
-      function enterFullscreen() {
-        var elem = document.documentElement;
-        var requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
-        if (requestMethod) {
-          requestMethod.call(elem).then(function() {
-            if (stageEl) stageEl.classList.add("fullscreen-mode");
-            if (toggleBtn) {
-              toggleBtn.textContent = "✕";
-              toggleBtn.style.fontSize = "26px";
-            }
-            setFullscreenFlag(true);
-          }).catch(function(err) {
-            console.log("Error al entrar en fullscreen:", err);
-          });
-        }
-      }
-
-      function exitFullscreen() {
-        var exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
-        if (exitMethod) {
-          exitMethod.call(document).then(function() {
-            if (stageEl) stageEl.classList.remove("fullscreen-mode");
-            if (toggleBtn) {
-              toggleBtn.textContent = "⤢";
-              toggleBtn.style.fontSize = "28px";
-            }
-            setFullscreenFlag(false);
-          }).catch(function(err) {
-            console.log("Error al salir de fullscreen:", err);
-          });
-        }
-      }
-
-      function toggleFullscreen() {
-        var isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-        if (isFull) {
-          exitFullscreen();
-        } else {
-          enterFullscreen();
-        }
-      }
-
-      function onFullscreenChange() {
-        var isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-        if (isFull) {
-          if (stageEl) stageEl.classList.add("fullscreen-mode");
-          if (toggleBtn) {
-            toggleBtn.textContent = "✕";
-            toggleBtn.style.fontSize = "26px";
-          }
-          setFullscreenFlag(true);
-        } else {
-          if (stageEl) stageEl.classList.remove("fullscreen-mode");
-          if (toggleBtn) {
-            toggleBtn.textContent = "⤢";
-            toggleBtn.style.fontSize = "28px";
-          }
-          setFullscreenFlag(false);
-        }
-      }
-
-      // Restaurar fullscreen si estaba activo (solo móvil)
-      if (isMobile) {
-        var savedFlag = localStorage.getItem("fullscreenActive");
-        if (savedFlag === "true") {
-          var isCurrentlyFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-          if (!isCurrentlyFull) {
-            enterFullscreen();
-          } else {
-            // Si ya está en fullscreen, asegurar la clase y el botón
-            if (stageEl) stageEl.classList.add("fullscreen-mode");
-            if (toggleBtn) {
-              toggleBtn.textContent = "✕";
-              toggleBtn.style.fontSize = "26px";
-            }
-          }
-        }
-      }
-
-      if (toggleBtn) {
-        toggleBtn.addEventListener("click", function(e) {
-          e.preventDefault();
-          toggleFullscreen();
-        });
-      }
-
-      document.addEventListener("fullscreenchange", onFullscreenChange);
-      document.addEventListener("webkitfullscreenchange", onFullscreenChange);
-      document.addEventListener("mozfullscreenchange", onFullscreenChange);
-      document.addEventListener("MSFullscreenChange", onFullscreenChange);
-      // ==================== FIN FULLSCREEN PERSISTENCE ====================
-    })();
-  </script>
+<div id="app">
+<div id="sidebar">
+<div class="logo-row"><img src="__LOGO_URL__" alt="logo"/><span>SYNTRA</span></div>
+<div id="navList"></div>
+</div>
+<div class="mobile-drawer" id="drawer">
+<div class="overlay" id="drawerOverlay"></div>
+<div class="panel">
+<div class="logo-row"><img src="__LOGO_URL__" alt="logo"/><span>SYNTRA</span></div>
+<div id="navListMobile"></div>
+</div>
+</div>
+<div id="main">
+<div id="topbar">
+<button class="hamburger" id="hamburgerBtn">&#9776;</button>
+<div class="greet">
+<h1>&iexcl;Bienvenido, __USER_NAME__!</h1>
+<p>Rol: __ROLE_DISPLAY__ &bull; DNI: __USER_DNI__</p>
+</div>
+<div class="mobile-logo"><img src="__LOGO_URL__" alt="logo"/>SYNTRA</div>
+<div class="right">
+<div class="bell">&#128276;<span class="dot" id="bellDot" style="display:none;">0</span></div>
+</div>
+</div>
+<div id="content">
+<h2>Accesos r&aacute;pidos</h2>
+<div class="cards-grid" id="cardsGrid"></div>
+<div class="kpi-row" id="kpiRow">
+<div class="kpi-item"><div class="kpi-icon">&#128101;</div><div><p class="lab">Socorristas</p><p class="val" id="kpiSocorristas">&ndash;</p></div></div>
+<div class="kpi-item"><div class="kpi-icon">&#128197;</div><div><p class="lab">Turnos esta semana</p><p class="val" id="kpiTurnos">&ndash;</p></div></div>
+<div class="kpi-item"><div class="kpi-icon">&#127970;</div><div><p class="lab">Instalaciones activas</p><p class="val" id="kpiInstalaciones">&ndash;</p></div></div>
+<div class="kpi-item"><div class="kpi-icon">&#128172;</div><div><p class="lab">Mensajes no le&iacute;dos</p><p class="val" id="kpiMensajes">&ndash;</p></div></div>
+</div>
+</div>
+</div>
+<div id="bottomnav">
+<div class="bn-item active"><span class="ic">&#8962;</span>Inicio</div>
+<div class="bn-item" data-goto="/calendario"><span class="ic">&#128197;</span>Horarios</div>
+<div class="bn-item" data-goto="/chat_interfaz"><span class="ic">&#128172;</span>Chat</div>
+<div class="bn-item" id="masBtn"><span class="ic">&#8942;</span>M&aacute;s</div>
+</div>
+</div>
+<script>
+(function(){
+var API_BASE = __API_BASE__;
+var USER_NAME = __USER_NAME_JS__;
+var USER_ROLE = __USER_ROLE_JS__;
+var USER_DNI = __USER_DNI_JS__;
+var CAN_MANAGE_SCHEDULES = __CAN_MANAGE_SCHEDULES__;
+var CAN_REGISTER_USERS = __CAN_REGISTER_USERS__;
+function qs(params){
+var p = new URLSearchParams();
+p.set("usuario", USER_NAME);
+p.set("rol", USER_ROLE);
+p.set("dni", USER_DNI);
+return "?" + p.toString();
+}
+function goToPage(path){
+window.top.location.href = path + qs();
+}
+var NAV_ITEMS = [
+{label:"Inicio", icon:"&#8962;", active:true},
+{label:"Horarios", icon:"&#128197;", go:"/calendario"},
+{label:"Incidencias y Comunicados", icon:"&#128172;", go:"/chat_interfaz"},
+{sep:true},
+{label:"Registro", icon:"&#128100;+", go:"/altas_registro", adminOnly:true, badge:"Solo admin"},
+{label:"Gesti&oacute;n de Horarios", icon:"&#9881;", go:"/editar_horarios", adminOnly:true, badge:"Solo admin"}
+];
+function renderNav(containerId){
+var el = document.getElementById(containerId);
+var htmlParts = [];
+NAV_ITEMS.forEach(function(item){
+if (item.sep){ htmlParts.push('<div class="nav-sep"></div>'); return; }
+var locked = item.adminOnly && !CAN_MANAGE_SCHEDULES && !(item.label === "Registro" && CAN_REGISTER_USERS);
+var cls = "nav-item" + (item.active ? " active" : "") + (locked ? " disabled" : "");
+var badge = item.badge ? '<span class="nav-badge">' + item.badge + '</span>' : "";
+htmlParts.push(
+'<div class="' + cls + '" data-go="' + (item.go || "") + '" data-locked="' + (locked ? "1":"0") + '">' +
+'<span>' + item.icon + '</span><span>' + item.label + '</span>' + badge +
+'</div>'
+);
+});
+htmlParts.push('<div class="nav-bottom"><div class="nav-item" id="logoutBtn_' + containerId + '"><span>&#8630;</span><span>Cerrar sesi&oacute;n</span></div></div>');
+el.innerHTML = htmlParts.join("");
+el.querySelectorAll(".nav-item[data-go]").forEach(function(node){
+node.addEventListener("click", function(){
+if (node.getAttribute("data-locked") === "1") return;
+var go = node.getAttribute("data-go");
+if (go) goToPage(go);
+});
+});
+var lo = document.getElementById("logoutBtn_" + containerId);
+if (lo) lo.addEventListener("click", function(){ window.top.location.href = "/admin"; });
+}
+renderNav("navList");
+renderNav("navListMobile");
+var CARDS = [
+{
+icon:"&#128197;", title:"Horarios", desc:"Consulta tus turnos y horarios asignados.",
+btn:"Ver horarios &rarr;", go:"/calendario", locked:false
+},
+{
+icon:"&#128172;", title:"Incidencias y Comunicados", desc:"Comun&iacute;cate con tu equipo o por instalaciones.",
+btn:"Abrir chat &rarr;", go:"/chat_interfaz", locked:false
+},
+{
+icon:"&#128100;+", title:"Registro de Personal", desc:"Registra nuevos socorristas y personal.",
+btn:"Ir al registro &rarr;", go:"/altas_registro", locked:!CAN_REGISTER_USERS, pill:"Solo administradores"
+},
+{
+icon:"&#9881;", title:"Gesti&oacute;n de Horarios", desc:"Crear, editar o eliminar bloques de turnos.",
+btn:"Gestionar &rarr;", go:"/editar_horarios", locked:!CAN_MANAGE_SCHEDULES, pill:"Solo administradores"
+}
+];
+var grid = document.getElementById("cardsGrid");
+CARDS.forEach(function(c){
+var div = document.createElement("div");
+div.className = "qa-card";
+div.innerHTML =
+'<div class="qa-icon">' + c.icon + '</div>' +
+'<h3>' + c.title + '</h3>' +
+'<p>' + c.desc + '</p>' +
+(c.pill ? '<span class="qa-pill">' + c.pill + '</span>' : '') +
+'<button class="qa-btn"' + (c.locked ? ' disabled' : '') + '>' + c.btn + '</button>';
+if (!c.locked){
+div.querySelector(".qa-btn").addEventListener("click", function(){ goToPage(c.go); });
+}
+grid.appendChild(div);
+});
+var drawer = document.getElementById("drawer");
+var hamburgerBtn = document.getElementById("hamburgerBtn");
+var drawerOverlay = document.getElementById("drawerOverlay");
+if (hamburgerBtn) hamburgerBtn.addEventListener("click", function(){ drawer.classList.add("open"); });
+if (drawerOverlay) drawerOverlay.addEventListener("click", function(){ drawer.classList.remove("open"); });
+document.querySelectorAll("#bottomnav .bn-item[data-goto]").forEach(function(node){
+node.addEventListener("click", function(){ goToPage(node.getAttribute("data-goto")); });
+});
+var masBtn = document.getElementById("masBtn");
+if (masBtn) masBtn.addEventListener("click", function(){ drawer.classList.add("open"); });
+fetch(API_BASE + "/api/dashboard?dni=" + encodeURIComponent(USER_DNI))
+.then(function(r){ return r.json(); })
+.then(function(d){
+if (!d || !d.ok) return;
+document.getElementById("kpiSocorristas").textContent = d.total_socorristas;
+document.getElementById("kpiTurnos").textContent = d.turnos_semana;
+document.getElementById("kpiInstalaciones").textContent = d.instalaciones_activas;
+document.getElementById("kpiMensajes").textContent = d.mensajes_no_leidos;
+if (d.mensajes_no_leidos > 0){
+var dot = document.getElementById("bellDot");
+dot.style.display = "inline-block";
+dot.textContent = d.mensajes_no_leidos;
+}
+})
+.catch(function(){});
+})();
+</script>
 </body>
 </html>
 """
 
 html = (
-    html.replace("__PADX__", str(PAD_X_PX))
-        .replace("__PADTOP__", str(PAD_TOP_PX))
-        .replace("__B__", str(BORDER_PX))
-        .replace("__BC__", BORDER_COLOR)
-        .replace("__BG__", BG_COLOR)
-        .replace("__HEADERBG__", HEADER_BG)
-        .replace("__IMGBG__", IMG_BG)
-        .replace("__BTNBG__", BTN_BG)
-        .replace("__FOOTERBG__", FOOTER_BG)
-        .replace("__HDR_TOP__", str(HEADER_TOP))
-        .replace("__HDR_H__", str(HEADER_HEIGHT))
-        .replace("__IMG_L__", str(IMG_LEFT))
-        .replace("__IMG_R__", str(IMG_RIGHT))
-        .replace("__IMG_T__", str(IMG_TOP))
-        .replace("__IMG_H__", str(IMG_HEIGHT))
-        .replace("__BTN_AREA_TOP__", str(BTN_AREA_TOP))
-        .replace("__BTN_L__", str(BTN_LEFT))
-        .replace("__BTN_R__", str(BTN_RIGHT))
-        .replace("__BTN_H__", str(BTN_H))
-        .replace("__BTN_GAP_X__", str(BTN_GAP_X))
-        .replace("__BTN_GAP_Y__", str(BTN_GAP_Y))
-        .replace("__FOOT_L__", str(FOOTER_LEFT))
-        .replace("__FOOT_R__", str(FOOTER_RIGHT))
-        .replace("__FOOT_H__", str(FOOTER_H))
-        .replace("__FOOT_BOTTOM__", str(FOOTER_BOTTOM))
-        .replace("__BTN_TEXTS__", json.dumps(BTN_TEXTS, ensure_ascii=False))
-        .replace("__MIN_BTN_W_PX__", str(MIN_BTN_W_PX))
-        .replace("__MOBILE_MAX_W_PX__", str(MOBILE_MAX_W_PX))
-        .replace("__LOGO_URL__", _js_str(LOGO_URL))
-        .replace("__USER_NAME__", _js_str(USER_NAME))
-        .replace("__USER_ROLE__", _js_str(USER_ROLE))
-        .replace("__USER_DNI__", _js_str(USER_DNI))
-        .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
-        .replace("__CAN_REGISTER_USERS__", "true" if CAN_REGISTER_USERS else "false")
-        .replace("__FOOTER_TEXT__", FOOTER_TEXT)
-        .replace("__HERO_FS_D__", str(HERO_FONT_SIZE_DESKTOP_PX))
-        .replace("__HERO_FS_M__", str(HERO_FONT_SIZE_MOBILE_PX))
-        .replace("__HDR_FS_D__", str(HEADER_FONT_SIZE_DESKTOP_PX))
-        .replace("__HDR_FS_M__", str(HEADER_FONT_SIZE_MOBILE_PX))
-        .replace("__BTN_FS_D__", str(BTN_FONT_SIZE_DESKTOP_PX))
-        .replace("__BTN_FS_M__", str(BTN_FONT_SIZE_MOBILE_PX))
-        .replace("__FOOT_FS_D__", str(FOOTER_FONT_SIZE_DESKTOP_PX))
-        .replace("__FOOT_FS_M__", str(FOOTER_FONT_SIZE_MOBILE_PX))
-        .replace("__LOGO_PAD_D__", str(LOGO_PADDING_PX_DESKTOP))
-        .replace("__LOGO_PAD_M__", str(LOGO_PADDING_PX_MOBILE))
-        .replace("__LOGO_RAD__", str(LOGO_BORDER_RADIUS_PX))
-        .replace("__LOGO_FIT__", LOGO_OBJECT_FIT)
-        .replace("__LOGO_BORDER__", LOGO_BORDER)
-        .replace("__BTN_OVR_D__", _dict_to_js_obj(BTN_FONT_OVERRIDES_DESKTOP_PX))
-        .replace("__BTN_OVR_M__", _dict_to_js_obj(BTN_FONT_OVERRIDES_MOBILE_PX))
-        .replace("__HERO_BG_URL__", HERO_BG_IMAGE_URL)
-        .replace("__HERO_BG_FIT__", HERO_BG_IMAGE_FIT)
-        .replace("__HERO_BG_POS__", HERO_BG_IMAGE_POS)
+        html.replace("__LOGO_URL__", LOGO_URL)
+            .replace("__USER_NAME__", USER_NAME)
+            .replace("__ROLE_DISPLAY__", ROLE_DISPLAY)
+            .replace("__USER_DNI__", USER_DNI or "-")
+            .replace("__API_BASE__", _js_str(API_BASE))
+            .replace("__USER_NAME_JS__", _js_str(USER_NAME))
+            .replace("__USER_ROLE_JS__", _js_str(USER_ROLE))
+            .replace("__USER_DNI_JS__", _js_str(USER_DNI))
+            .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
+            .replace("__CAN_REGISTER_USERS__", "true" if CAN_REGISTER_USERS else "false")
 )
 
-components.html(html, height=10, scrolling=False)
+components.html(html, height=980, scrolling=True)
