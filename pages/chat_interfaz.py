@@ -365,8 +365,8 @@ fetch(API_BASE + "/api/chat/users")
 .then(function(users){
 var others = (users || []).filter(function(u){ return u.dni !== AUTH_DNI; });
 if (!others.length){ alert("No hay usuarios disponibles."); return; }
-var names = others.map(function(u, idx){ return (idx+1) + ". " + (u.alias || u.nombre || u.dni); }).join("\n");
-var pick = window.prompt("Elige un numero para iniciar chat privado:\n" + names);
+var names = others.map(function(u, idx){ return (idx+1) + ". " + (u.alias || u.nombre || u.dni); }).join(String.fromCharCode(10));
+var pick = window.prompt("Elige un numero para iniciar chat privado:" + String.fromCharCode(10) + names);
 var idx = parseInt(pick, 10) - 1;
 if (isNaN(idx) || !others[idx]) return;
 var target = others[idx];
