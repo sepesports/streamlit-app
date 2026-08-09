@@ -388,7 +388,7 @@ chatBody.classList.add("thread-open");
 renderThreadList(document.getElementById("searchBox").value);
 loadThreadPanel(threadId);
 if (pollTimer) clearInterval(pollTimer);
-pollTimer = setInterval(function(){ loadThreadPanel(threadId, true); }, 5000);
+pollTimer = setInterval(function(){ loadThreadPanel(threadId, true); }, 20000);
 }
 
 function esc(s){
