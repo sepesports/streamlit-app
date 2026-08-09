@@ -1,1336 +1,496 @@
 # pages/chat_interfaz.py
 import json
-from urllib.parse import urlencode
-
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="Incidencias y Comunicados", layout="wide")
 
-# ==========================================================
-# GATE DE AUTENTICACIÓN
-# ==========================================================
-if st.query_params.get("auth") != "ok":
-    st.markdown(
-        """
-        <script>
-          window.location.href="/admin";
-        </script>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.stop()
+query_params = st.query_params
+AUTH_USER = query_params.get("usuario") or query_params.get("user") or ""
+AUTH_ROLE = query_params.get("rol") or query_params.get("role") or ""
+AUTH_DNI = query_params.get("dni") or ""
 
-USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or ""
-USER_ROLE = st.query_params.get("rol") or st.query_params.get("role") or ""
-USER_DNI = st.query_params.get("dni") or ""
+if not AUTH_USER or not AUTH_ROLE:
+        st.markdown(
+                    """
+                            <script>
+                                      window.location.href="/admin";
+                                              </script>
+                                                      """,
+                    unsafe_allow_html=True,
+        )
+        st.stop()
 
-if not USER_DNI:
-    st.error("No se pudo identificar al usuario. Por favor, vuelve a iniciar sesión.")
-    st.stop()
+NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
+CAN_MANAGE_SCHEDULES = NORMALIZED_ROLE == "administrador"
+CAN_REGISTER_USERS = NORMALIZED_ROLE == "administrador"
 
-WORDPRESS_CHAT_URL = "https://www.meditaciondelyosoy.com/chat/"
-WORDPRESS_CHAT_TARGET = WORDPRESS_CHAT_URL + "?" + urlencode(
-    {
-        "auth": "ok",
-        "usuario": USER_NAME,
-        "rol": USER_ROLE,
-        "dni": USER_DNI,
-    }
-)
+API_BASE = "https://camilo27.pythonanywhere.com"
+LOGO_URL = "https://files.catbox.moe/056m6v.jpg"
 
-# ==========================================================
-# CSS BASE + REDIRECCIÓN MÓVIL TEMPRANA
-# ==========================================================
 st.markdown(
-    f"""
-    <style>
-      .block-container{{padding:0 !important;margin:0 !important;max-width:100% !important;}}
-      section.main > div{{padding:0 !important;margin:0 !important;}}
-      header, footer{{display:none !important;}}
-      [data-testid="stSidebar"], [data-testid="collapsedControl"]{{display:none !important;}}
-      iframe{{border:0 !important;}}
-
-      @media (max-width: 900px){{
-        .stApp{{
-          opacity:0 !important;
-          pointer-events:none !important;
-          background:#020614 !important;
-        }}
-        html, body{{
-          background:#020614 !important;
-          overflow:hidden !important;
-        }}
-      }}
-    </style>
-
-    <script>
-      (function(){{
-        var target = {json.dumps(WORDPRESS_CHAT_TARGET, ensure_ascii=False)};
-        var ua = navigator.userAgent || "";
-        var isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
-        var isMobileWidth = window.innerWidth <= 900;
-        var isTouchMobile = (navigator.maxTouchPoints || 0) > 1 && window.innerWidth <= 1024;
-
-        if (isMobileUA || isMobileWidth || isTouchMobile) {{
-          try {{
-            window.location.replace(target);
-          }} catch(e) {{
-            window.location.href = target;
-          }}
-
-          setTimeout(function(){{
-            try {{
-              window.top.location.replace(target);
-            }} catch(e) {{
-              window.location.href = target;
-            }}
-          }}, 250);
-        }}
-      }})();
-    </script>
-    """,
-    unsafe_allow_html=True,
+        """
+            <style>
+                  .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
+                        section.main > div{padding:0 !important;margin:0 !important;}
+                              header, footer{display:none !important;}
+                                    iframe{display:block;}
+                                        </style>
+                                            """,
+        unsafe_allow_html=True,
 )
 
-# ==========================================================
-# CHAT DE ESCRITORIO STREAMLIT
-# ==========================================================
-html = r"""
+
+def _js_str(value) -> str:
+        return json.dumps("" if value is None else str(value), ensure_ascii=False)
+
+
+html = """
 <!doctype html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title>Chat</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+:root{
+--navy1:#0a1a55;--navy2:#040e31;--navy3:#02071c;--blue:#2f6fe0;
+--bg:#f3f5f9;--card-bg:#ffffff;--ink:#0f1b3d;--muted:#6b7688;--border:#e7eaf1;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;width:100%;height:100%;font-family:"Segoe UI",Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);}
+#app{display:flex;height:100vh;width:100%;}
+#sidebar{
+width:250px;flex:0 0 250px;
+background:linear-gradient(180deg,var(--navy1) 0%,var(--navy2) 60%,var(--navy3) 100%);
+color:#eaf2ff;display:flex;flex-direction:column;padding:26px 18px;height:100vh;overflow-y:auto;
+}
+.logo-row{display:flex;align-items:center;gap:10px;margin-bottom:34px;padding:0 4px;}
+.logo-row img{width:34px;height:34px;object-fit:contain;border-radius:6px;}
+.logo-row span{font-weight:800;letter-spacing:2px;font-size:19px;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;margin-bottom:4px;color:rgba(234,242,255,.82);font-size:14.5px;font-weight:600;cursor:pointer;}
+.nav-item:hover{background:rgba(255,255,255,.06);}
+.nav-item.active{background:var(--blue);color:#fff;}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:700;background:rgba(255,255,255,.14);padding:2px 7px;border-radius:20px;white-space:nowrap;}
+.nav-sep{height:1px;background:rgba(255,255,255,.10);margin:14px 4px;}
+.nav-bottom{margin-top:auto;}
 
-  <style>
-    :root{
-      --baseBlue:#040e31;
-      --bgTop:#0a1a55;
-      --bgMid:#061240;
-      --bgDeep:#02071c;
-      --overlay1:rgba(40,120,255,.16);
-      --overlay2:rgba(0,10,40,.62);
-      --ink:rgba(255,255,255,.92);
-      --muted:rgba(255,255,255,.62);
-      --line:rgba(255,255,255,.12);
-      --green:#008069;
-      --shadow1:0 22px 55px rgba(0,0,0,.55);
-      --font-main:15px;
-      --font-title:16px;
-      --font-body:14px;
-    }
+#main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;}
+#topbar{background:#fff;border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex:0 0 auto;}
+#topbar h1{font-size:18px;margin:0;font-weight:700;}
+.hamburger{display:none;font-size:20px;background:none;border:none;cursor:pointer;color:var(--ink);}
+.mobile-logo{display:none;align-items:center;gap:8px;font-weight:800;letter-spacing:1px;}
+.mobile-logo img{width:26px;height:26px;border-radius:6px;object-fit:contain;}
 
-    *{
-      box-sizing:border-box;
-      margin:0;
-      padding:0;
-    }
+#chatBody{flex:1;min-height:0;display:flex;}
 
-    html,
-    body{
-      width:100%;
-      height:100%;
-      overflow:hidden;
-      background:var(--baseBlue);
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    }
+#listPanel{width:340px;flex:0 0 340px;border-right:1px solid var(--border);background:#fff;display:flex;flex-direction:column;}
+.list-tabs{display:flex;gap:18px;padding:14px 18px 0 18px;border-bottom:1px solid var(--border);}
+.list-tab{padding:0 0 12px 0;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;}
+.list-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+.new-btn{margin-left:auto;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;align-self:flex-start;}
+.search-box{margin:12px 16px;padding:8px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;width:calc(100% - 32px);}
+#threadList, #instList{flex:1;overflow-y:auto;padding:0 8px 8px 8px;}
+.thread-item{display:flex;gap:10px;align-items:flex-start;padding:12px 10px;border-radius:12px;cursor:pointer;}
+.thread-item:hover{background:#f5f7fb;}
+.thread-item.active{background:#eaf1ff;}
+.thread-avatar{width:38px;height:38px;border-radius:10px;background:var(--navy2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 38px;}
+.thread-info{flex:1;min-width:0;}
+.thread-title{font-size:13.5px;font-weight:700;display:flex;justify-content:space-between;gap:6px;}
+.thread-sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.thread-time{font-size:10.5px;color:var(--muted);white-space:nowrap;}
+.unread-dot{background:var(--blue);color:#fff;border-radius:20px;font-size:10.5px;font-weight:700;padding:1px 7px;flex:0 0 auto;}
+.inst-item{display:flex;align-items:center;gap:10px;padding:12px 12px;border-radius:12px;cursor:pointer;}
+.inst-item:hover{background:#f5f7fb;}
+.inst-icon{width:38px;height:38px;border-radius:10px;background:#eef4ff;color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 38px;}
+.inst-name{font-size:13.5px;font-weight:700;}
+.inst-count{font-size:11.5px;color:var(--muted);}
+.empty-note{padding:24px;color:var(--muted);font-size:13px;text-align:center;}
 
-    #stage{
-      position:fixed;
-      inset:0;
-      width:100vw;
-      height:100vh;
-      background:
-        radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.14), transparent 60%),
-        radial-gradient(900px 700px at 20% 120%, rgba(40,120,255,.12), transparent 60%),
-        linear-gradient(180deg,#020614 0%,var(--baseBlue) 100%);
-    }
+#threadPanel{flex:1;min-width:0;display:flex;flex-direction:column;background:#fbfcfe;}
+#threadHeader{padding:14px 22px;border-bottom:1px solid var(--border);background:#fff;display:flex;align-items:center;gap:12px;flex:0 0 auto;}
+.back-btn{display:none;background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink);}
+#threadHeaderTitle{font-size:15px;font-weight:700;}
+#threadHeaderSub{font-size:11.5px;color:var(--muted);}
+#messagesWrap{flex:1;min-height:0;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:12px;}
+.msg-row{display:flex;flex-direction:column;max-width:70%;}
+.msg-row.mine{align-self:flex-end;align-items:flex-end;}
+.msg-sender{font-size:11px;color:var(--muted);margin-bottom:3px;padding:0 4px;}
+.msg-bubble{background:#fff;border:1px solid var(--border);border-radius:14px 14px 14px 4px;padding:10px 14px;font-size:13.5px;line-height:1.4;}
+.msg-row.mine .msg-bubble{background:var(--blue);color:#fff;border-color:var(--blue);border-radius:14px 14px 4px 14px;}
+.msg-time{font-size:10px;color:var(--muted);margin-top:3px;padding:0 4px;}
+#composer{padding:14px 22px;border-top:1px solid var(--border);background:#fff;display:flex;align-items:center;gap:10px;flex:0 0 auto;}
+#msgInput{flex:1;padding:11px 14px;border:1px solid var(--border);border-radius:24px;font-size:13.5px;}
+#msgInput:focus{outline:none;border-color:var(--blue);}
+.send-btn{width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;cursor:pointer;font-size:16px;flex:0 0 40px;}
+.send-btn:disabled{opacity:.5;cursor:not-allowed;}
+.placeholder-panel{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13.5px;}
 
-    #plan{
-      position:absolute;
-      left:10px;
-      right:10px;
-      top:10px;
-      bottom:0;
-      overflow:hidden;
-      border-radius:34px;
-      box-shadow:var(--shadow1);
-      background:
-        linear-gradient(180deg,rgba(255,255,255,.16) 0%,transparent 22%),
-        linear-gradient(180deg,var(--bgTop) 0%,var(--bgMid) 34%,#05164d 58%,var(--bgDeep) 100%);
-    }
+.mobile-drawer{display:none;position:fixed;inset:0;z-index:100;}
+.mobile-drawer.open{display:block;}
+.mobile-drawer .overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);}
+.mobile-drawer .panel{
+position:absolute;left:0;top:0;bottom:0;width:250px;
+background:linear-gradient(180deg,var(--navy1) 0%,var(--navy2) 60%,var(--navy3) 100%);
+padding:26px 18px;color:#eaf2ff;overflow-y:auto;
+}
 
-    #plan::before{
-      content:"";
-      position:absolute;
-      inset:-10%;
-      background:
-        linear-gradient(135deg,
-          transparent 0%,
-          transparent 32%,
-          var(--overlay1) 32%,
-          var(--overlay2) 66%,
-          transparent 66%);
-      transform:rotate(-10deg);
-      opacity:.95;
-      pointer-events:none;
-    }
-
-    #plan::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:
-        radial-gradient(50% 60% at 50% 25%,rgba(255,255,255,.06),transparent 55%),
-        radial-gradient(120% 90% at 50% 95%,rgba(0,0,0,.55),transparent 55%),
-        linear-gradient(180deg,transparent 55%,rgba(0,0,0,.65) 100%);
-      pointer-events:none;
-    }
-
-    #frame{
-      position:absolute;
-      left:9px;
-      right:9px;
-      top:10px;
-      bottom:0;
-      border-left:2px solid rgba(255,255,255,.14);
-      border-right:2px solid rgba(255,255,255,.14);
-      border-top:2px solid rgba(255,255,255,.14);
-      pointer-events:none;
-      border-radius:34px;
-      box-shadow:inset 0 0 0 1px rgba(0,0,0,.55);
-      z-index:2;
-    }
-
-    #card{
-      position:absolute;
-      left:6%;
-      right:6%;
-      top:2%;
-      bottom:6%;
-      z-index:5;
-    }
-
-    #hud{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      background:
-        radial-gradient(60% 45% at 50% 18%,rgba(255,255,255,.12),transparent 60%),
-        linear-gradient(180deg,transparent 62%,rgba(0,0,0,.30) 100%);
-      z-index:4;
-    }
-
-    .inner{
-      width:100%;
-      height:100%;
-      display:flex;
-      flex-direction:column;
-      justify-content:flex-start;
-      align-items:center;
-      gap:16px;
-      padding-top:16px;
-      position:relative;
-      z-index:7;
-    }
-
-    .top-buttons{
-      display:flex;
-      gap:8px;
-      background:rgba(0,0,0,.2);
-      backdrop-filter:blur(8px);
-      -webkit-backdrop-filter:blur(8px);
-      border-radius:40px;
-      padding:4px;
-      flex-shrink:0;
-    }
-
-    .top-btn{
-      background:transparent;
-      border:none;
-      padding:8px 20px;
-      border-radius:32px;
-      font-size:var(--font-main);
-      font-weight:500;
-      color:rgba(255,255,255,.85);
-      cursor:pointer;
-      transition:all .2s;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .top-btn.active{
-      background:var(--green);
-      color:white;
-      box-shadow:0 2px 6px rgba(0,0,0,.2);
-    }
-
-    .btn-stack{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:2px;
-    }
-
-    .btn-topline{
-      font-size:10px;
-      opacity:.7;
-    }
-
-    .btn-mainline{
-      font-size:14px;
-      font-weight:600;
-    }
-
-    .chat-shell{
-      width:min(900px,90%);
-      height:70vh;
-      background:#efeae2;
-      background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.03"><path fill="none" d="M0 0h100v100H0z"/><path fill="%23000" d="M10 10h80v80H10z"/></svg>');
-      background-repeat:repeat;
-      border-radius:28px;
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-      box-shadow:0 8px 20px rgba(0,0,0,.2);
-      backdrop-filter:blur(2px);
-    }
-
-    .chat-header{
-      background:#f0f2f5;
-      padding:12px 20px;
-      font-size:var(--font-title);
-      font-weight:500;
-      color:#111b21;
-      border-bottom:1px solid #e9edef;
-      flex-shrink:0;
-    }
-
-    .messages-area{
-      flex:1;
-      overflow-y:auto;
-      padding:16px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .message{
-      max-width:70%;
-      padding:8px 12px;
-      border-radius:18px;
-      font-size:var(--font-body);
-      line-height:1.4;
-      background:#fff;
-      color:#111b21;
-      box-shadow:0 1px .5px rgba(0,0,0,.13);
-      align-self:flex-start;
-      overflow-wrap:anywhere;
-    }
-
-    .message.out{
-      background:#d9f0c3;
-      align-self:flex-end;
-    }
-
-    .message.pending{
-      opacity:.65;
-    }
-
-    .message strong{
-      display:block;
-      font-size:11px;
-      font-weight:500;
-      margin-bottom:4px;
-      color:#54656f;
-    }
-
-    .input-area{
-      background:#f0f2f5;
-      padding:8px 16px;
-      display:flex;
-      gap:12px;
-      align-items:center;
-      border-top:1px solid #e9edef;
-      flex-shrink:0;
-    }
-
-    #chatInput{
-      flex:1;
-      border:none;
-      border-radius:24px;
-      padding:10px 16px;
-      font-size:var(--font-body);
-      background:white;
-      outline:none;
-      min-width:0;
-    }
-
-    #chatInput::placeholder{
-      color:#8696a0;
-    }
-
-    #sendBtn{
-      background:var(--green);
-      border:none;
-      color:white;
-      font-weight:600;
-      padding:8px 20px;
-      border-radius:24px;
-      cursor:pointer;
-      transition:background .2s;
-    }
-
-    #sendBtn:active{
-      background:#006b56;
-    }
-
-    #sendBtn:disabled{
-      opacity:.55;
-      cursor:not-allowed;
-    }
-
-    #functionalLayer{
-      display:none !important;
-    }
-
-    .selector-modal{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.5);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:2000;
-    }
-
-    .selector-modal.show{
-      display:flex;
-    }
-
-    .selector-card{
-      width:min(500px,90%);
-      max-height:80vh;
-      background:#fff;
-      border-radius:28px;
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-      box-shadow:0 12px 28px rgba(0,0,0,.2);
-    }
-
-    .selector-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:16px;
-      border-bottom:1px solid #e9edef;
-    }
-
-    .selector-title{
-      font-size:18px;
-      font-weight:600;
-      color:#111b21;
-    }
-
-    .selector-close{
-      background:transparent;
-      border:none;
-      font-size:24px;
-      cursor:pointer;
-      color:#54656f;
-    }
-
-    .selector-search-wrap{
-      padding:12px 16px;
-      border-bottom:1px solid #e9edef;
-    }
-
-    .selector-search{
-      width:100%;
-      padding:10px 12px;
-      border-radius:24px;
-      border:none;
-      background:#f0f2f5;
-      font-size:14px;
-      outline:none;
-    }
-
-    .selector-list{
-      flex:1;
-      overflow-y:auto;
-    }
-
-    .selector-item,
-    .selector-action{
-      display:block;
-      width:100%;
-      text-align:left;
-      padding:12px 16px;
-      border:none;
-      background:transparent;
-      cursor:pointer;
-      font-size:15px;
-      border-bottom:1px solid #f0f2f5;
-    }
-
-    .selector-item:hover,
-    .selector-action:hover{
-      background:#f5f6f6;
-    }
-
-    .selector-item.active{
-      background:#e9f0e8;
-    }
-
-    .selector-item-title{
-      font-weight:500;
-      color:#111b21;
-    }
-
-    .selector-item-sub{
-      font-size:13px;
-      color:#667781;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .section-label{
-      padding:12px 16px 4px;
-      font-size:12px;
-      font-weight:500;
-      color:#667781;
-      text-transform:uppercase;
-    }
-
-    .selector-empty{
-      padding:14px 16px;
-      color:#667781;
-      font-size:14px;
-    }
-
-    .user-search-modal{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.5);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      z-index:2100;
-    }
-
-    .modal-content{
-      background:#fff;
-      width:90%;
-      max-width:400px;
-      border-radius:28px;
-      padding:20px;
-      color:#111b21;
-    }
-
-    .modal-content h3{
-      margin-bottom:16px;
-      font-size:18px;
-    }
-
-    .modal-content input{
-      width:100%;
-      padding:12px;
-      border-radius:24px;
-      border:1px solid #e9edef;
-      margin-bottom:16px;
-      font-size:15px;
-    }
-
-    .user-list{
-      max-height:300px;
-      overflow-y:auto;
-    }
-
-    .user-item{
-      padding:12px;
-      cursor:pointer;
-      border-bottom:1px solid #f0f2f5;
-    }
-
-    .user-item:hover{
-      background:#f5f6f6;
-    }
-
-    .close-modal{
-      float:right;
-      font-size:24px;
-      cursor:pointer;
-    }
-
-    .loading,
-    .error{
-      padding:14px;
-      color:#667781;
-      font-size:14px;
-      text-align:center;
-    }
-
-    .fullscreen-toggle{
-      position:fixed;
-      bottom:20px;
-      right:20px;
-      width:48px;
-      height:48px;
-      background:rgba(0,0,0,.6);
-      backdrop-filter:blur(12px);
-      border-radius:40px;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      font-size:28px;
-      color:white;
-      cursor:pointer;
-      z-index:10000;
-      box-shadow:0 4px 12px rgba(0,0,0,.3);
-      transition:all .2s ease;
-      border:1px solid rgba(255,255,255,.2);
-      font-weight:bold;
-      user-select:none;
-      touch-action:manipulation;
-    }
-
-    .fullscreen-toggle:active{
-      transform:scale(.92);
-      background:rgba(0,0,0,.8);
-    }
-
-    @media (max-width:768px){
-      .fullscreen-toggle{
-        display:flex;
-      }
-
-      .chat-shell{
-        width:96%;
-        height:62vh;
-      }
-
-      .top-btn{
-        padding:4px 12px;
-      }
-
-      .message{
-        max-width:85%;
-      }
-
-      .inner{
-        padding-top:8px;
-        gap:12px;
-      }
-    }
-  </style>
+@media (max-width:768px){
+#sidebar{display:none;}
+.hamburger{display:block;}
+.mobile-logo{display:flex;}
+#topbar{padding:12px 14px;}
+#topbar h1{display:none;}
+#listPanel{width:100%;flex:1 1 auto;border-right:none;}
+#threadPanel{display:none;}
+#chatBody.thread-open #listPanel{display:none;}
+#chatBody.thread-open #threadPanel{display:flex;}
+.back-btn{display:block;}
+}
+</style>
 </head>
-
 <body>
-  <div id="stage">
-    <div id="plan">
-      <div id="frame"></div>
-
-      <div id="card">
-        <div class="inner">
-
-          <div class="top-buttons">
-            <button class="top-btn" id="btnSocorristas" type="button">
-              <div class="btn-stack">
-                <span class="btn-topline">selecciona</span>
-                <span class="btn-mainline">Socorristas</span>
-              </div>
-            </button>
-
-            <button class="top-btn" id="btnInstalacion" type="button">
-              <div class="btn-stack">
-                <span class="btn-topline">selecciona</span>
-                <span class="btn-mainline">Instalación</span>
-              </div>
-            </button>
-
-            <button class="top-btn" id="btnNotificaciones" type="button">
-              <div class="btn-center">Notificaciones</div>
-            </button>
-          </div>
-
-          <div class="chat-shell">
-            <div class="chat-header" id="chatHeader">Nombre del socorrista o Grupo de instalación</div>
-
-            <div class="messages-area" id="messagesArea">
-              <div class="loading">Cargando conversaciones...</div>
-            </div>
-
-            <div class="input-area" id="inputArea">
-              <input type="text" id="chatInput" placeholder="Mensaje" autocomplete="off">
-              <button id="sendBtn" type="button">Enviar</button>
-            </div>
-          </div>
-
-          <div id="functionalLayer">
-            <div class="threads-panel">
-              <div class="threads-header">
-                <span>Conversaciones</span>
-                <button class="new-chat-btn" id="newChatBtn" type="button">+ Nuevo</button>
-              </div>
-
-              <div class="thread-list" id="threadList">
-                <div class="loading">Cargando conversaciones...</div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <div id="hud"></div>
-    </div>
-  </div>
-
-  <div class="selector-modal" id="selectorModal">
-    <div class="selector-card">
-      <div class="selector-head">
-        <div class="selector-title" id="selectorTitle">Selección</div>
-        <button class="selector-close" id="selectorClose" type="button">×</button>
-      </div>
-
-      <div class="selector-search-wrap">
-        <input id="selectorSearch" class="selector-search" type="text" autocomplete="off" placeholder="Buscar">
-      </div>
-
-      <div class="selector-list" id="selectorList">
-        <div class="loading">Cargando...</div>
-      </div>
-    </div>
-  </div>
-
-  <div id="fullscreenToggleBtn" class="fullscreen-toggle">⤢</div>
-
-  <script>
-    const API_BASE = "https://camilo27.pythonanywhere.com/api/chat";
-    const currentUserId = __CURRENT_USER_ID__;
-
-    let currentThreadId = null;
-    let threads = [];
-    let pollingInterval = null;
-    let threadsPollingInterval = null;
-    let lastRenderedMessageId = null;
-    let selectorMode = null;
-    let isSending = false;
-
-    function escapeHtml(text){
-      return String(text ?? "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    async function fetchJSON(url, options = {}){
-      const response = await fetch(url, Object.assign({ cache:"no-store" }, options));
-      const data = await response.json().catch(function(){ return {}; });
-
-      if(!response.ok){
-        throw new Error(data.error || data.detail || ("HTTP " + response.status));
-      }
-
-      return data;
-    }
-
-    async function loadThreads(){
-      const listDiv = document.getElementById("threadList");
-
-      try{
-        const data = await fetchJSON(API_BASE + "/threads?user_id=" + encodeURIComponent(currentUserId) + "&_=" + Date.now());
-        threads = Array.isArray(data.threads) ? data.threads : [];
-
-        renderThreadList();
-
-        if(threads.length > 0 && !currentThreadId){
-          setActiveThread(threads[0].id);
-        }
-
-        syncTopButtonsFromThread();
-
-        if(selectorMode){
-          renderSelector();
-        }
-      }catch(error){
-        console.error("Error loading threads:", error);
-        listDiv.innerHTML = '<div class="error">Error al cargar conversaciones.<br>' + escapeHtml(error.message) + '</div>';
-
-        const messagesArea = document.getElementById("messagesArea");
-        if(!currentThreadId){
-          messagesArea.innerHTML = '<div class="error">Error al cargar conversaciones.<br>' + escapeHtml(error.message) + '</div>';
-        }
-      }
-    }
-
-    function renderThreadList(){
-      const container = document.getElementById("threadList");
-
-      if(!threads.length){
-        container.innerHTML = '<div style="padding:12px;text-align:center;">No hay conversaciones</div>';
-        return;
-      }
-
-      container.innerHTML = threads.map(function(t){
-        return '' +
-          '<div class="thread-item' + (String(currentThreadId) === String(t.id) ? ' active' : '') + '" data-id="' + escapeHtml(t.id) + '">' +
-            '<div class="thread-title">' + escapeHtml(t.title || (t.type === "private" ? "Privado" : "Grupo")) + '</div>' +
-            '<div class="thread-preview">' + escapeHtml(t.last_message || '') + '</div>' +
-          '</div>';
-      }).join("");
-
-      document.querySelectorAll(".thread-item").forEach(function(el){
-        el.addEventListener("click", function(){
-          setActiveThread(el.getAttribute("data-id"));
-        });
-      });
-    }
-
-    async function loadMessages(threadId, poll = false){
-      const limit = poll ? 40 : 500;
-      const url = API_BASE + "/threads/" + encodeURIComponent(threadId) + "/messages?user_id=" + encodeURIComponent(currentUserId) + "&limit=" + limit + "&_=" + Date.now();
-
-      try{
-        const data = await fetchJSON(url);
-        let messages = Array.isArray(data.messages) ? data.messages : [];
-
-        if(poll && lastRenderedMessageId !== null){
-          messages = messages.filter(function(m){
-            return Number(m.id || 0) > Number(lastRenderedMessageId || 0);
-          });
-        }
-
-        const container = document.getElementById("messagesArea");
-
-        if(!poll){
-          container.innerHTML = "";
-          lastRenderedMessageId = null;
-        }
-
-        if(!messages.length && !poll){
-          container.innerHTML = '<div style="text-align:center;margin-top:20px;color:#667781;">No hay mensajes</div>';
-          lastRenderedMessageId = null;
-          return;
-        }
-
-        messages.forEach(function(msg){
-          const id = String(msg.id || "");
-          const div = document.createElement("div");
-          const mine = String(msg.sender_id) === String(currentUserId);
-
-          div.className = "message" + (mine ? " out" : "");
-          div.setAttribute("data-id", id);
-          div.innerHTML =
-            '<strong>' + escapeHtml(mine ? "Tú" : (msg.sender_alias || "Usuario")) + '</strong>' +
-            escapeHtml(msg.body || "");
-
-          container.appendChild(div);
-
-          if(id){
-            lastRenderedMessageId = Number(id) || lastRenderedMessageId;
-          }
-        });
-
-        container.scrollTop = container.scrollHeight;
-        await markThreadRead(threadId);
-      }catch(error){
-        console.error("Error loading messages:", error);
-
-        if(!poll){
-          document.getElementById("messagesArea").innerHTML =
-            '<div class="error">Error al cargar mensajes<br>' + escapeHtml(error.message) + '</div>';
-        }
-      }
-    }
-
-    async function markThreadRead(threadId){
-      const messagesDiv = document.getElementById("messagesArea");
-      const lastMsg = messagesDiv.querySelector(".message:last-child");
-
-      if(!lastMsg) return;
-
-      const lastId = lastMsg.getAttribute("data-id");
-
-      if(!lastId) return;
-
-      try{
-        await fetch(API_BASE + "/threads/" + encodeURIComponent(threadId) + "/read", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body:JSON.stringify({
-            user_id:currentUserId,
-            last_read_message_id:lastId
-          })
-        });
-      }catch(error){
-        console.error("Error marking read:", error);
-      }
-    }
-
-    async function sendMessage(){
-      if(isSending) return;
-      if(!currentThreadId) return;
-
-      const input = document.getElementById("chatInput");
-      const text = input.value.trim();
-
-      if(!text) return;
-
-      isSending = true;
-
-      const sendBtn = document.getElementById("sendBtn");
-      sendBtn.disabled = true;
-      sendBtn.textContent = "Enviando";
-
-      input.value = "";
-
-      const container = document.getElementById("messagesArea");
-      const pending = document.createElement("div");
-      pending.className = "message out pending";
-      pending.innerHTML = '<strong>Tú</strong>' + escapeHtml(text);
-      container.appendChild(pending);
-      container.scrollTop = container.scrollHeight;
-
-      try{
-        const data = await fetchJSON(API_BASE + "/threads/" + encodeURIComponent(currentThreadId) + "/messages", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body:JSON.stringify({
-            sender_id:currentUserId,
-            body:text
-          })
-        });
-
-        await loadMessages(currentThreadId, false);
-        await loadThreads();
-      }catch(error){
-        console.error("Error sending message:", error);
-        alert("Error al enviar mensaje: " + error.message);
-        await loadMessages(currentThreadId, false);
-      }finally{
-        isSending = false;
-        sendBtn.disabled = false;
-        sendBtn.textContent = "Enviar";
-      }
-    }
-
-    function setActiveThread(threadId){
-      currentThreadId = String(threadId || "");
-
-      const thread = threads.find(function(t){
-        return String(t.id) === String(currentThreadId);
-      });
-
-      document.getElementById("chatHeader").innerText = thread
-        ? (thread.title || (thread.type === "private" ? "Privado" : "Grupo"))
-        : "Conversación";
-
-      document.getElementById("inputArea").style.display = "flex";
-
-      lastRenderedMessageId = null;
-      loadMessages(currentThreadId, false);
-      renderThreadList();
-      syncTopButtonsFromThread();
-
-      if(selectorMode){
-        renderSelector();
-      }
-
-      if(pollingInterval){
-        clearInterval(pollingInterval);
-      }
-
-      pollingInterval = setInterval(function(){
-        if(currentThreadId){
-          loadMessages(currentThreadId, true);
-        }
-      }, 10000);
-    }
-
-    function setTopActive(mode){
-      document.getElementById("btnSocorristas").classList.remove("active");
-      document.getElementById("btnInstalacion").classList.remove("active");
-      document.getElementById("btnNotificaciones").classList.remove("active");
-
-      if(mode === "socorristas"){
-        document.getElementById("btnSocorristas").classList.add("active");
-      }
-
-      if(mode === "instalacion"){
-        document.getElementById("btnInstalacion").classList.add("active");
-      }
-
-      if(mode === "notificaciones"){
-        document.getElementById("btnNotificaciones").classList.add("active");
-      }
-    }
-
-    function syncTopButtonsFromThread(){
-      const thread = threads.find(function(t){
-        return String(t.id) === String(currentThreadId);
-      });
-
-      if(!thread){
-        setTopActive(null);
-        return;
-      }
-
-      if(thread.type === "private"){
-        setTopActive("socorristas");
-      }else{
-        setTopActive("instalacion");
-      }
-    }
-
-    function openSelector(mode){
-      selectorMode = mode;
-      document.getElementById("selectorModal").classList.add("show");
-      renderSelector();
-
-      setTimeout(function(){
-        const input = document.getElementById("selectorSearch");
-        if(input) input.focus();
-      }, 10);
-    }
-
-    function closeSelector(){
-      document.getElementById("selectorModal").classList.remove("show");
-      document.getElementById("selectorSearch").value = "";
-      selectorMode = null;
-      syncTopButtonsFromThread();
-    }
-
-    function getFilteredThreads(){
-      const query = document.getElementById("selectorSearch").value.trim().toLowerCase();
-      let list = threads.slice();
-
-      if(selectorMode === "socorristas"){
-        list = list.filter(function(t){
-          return t.type === "private";
-        });
-      }else if(selectorMode === "instalacion"){
-        list = list.filter(function(t){
-          return t.type !== "private";
-        });
-      }
-
-      if(!query) return list;
-
-      return list.filter(function(t){
-        const title = String(t.title || (t.type === "private" ? "Privado" : "Grupo")).toLowerCase();
-        const preview = String(t.last_message || "").toLowerCase();
-        return title.includes(query) || preview.includes(query);
-      });
-    }
-
-    function renderSelector(){
-      if(!selectorMode) return;
-
-      const selectorTitle = document.getElementById("selectorTitle");
-      const selectorSearch = document.getElementById("selectorSearch");
-      const selectorList = document.getElementById("selectorList");
-
-      if(selectorMode === "socorristas"){
-        selectorTitle.innerText = "Socorristas";
-        selectorSearch.placeholder = "Buscar conversación";
-        setTopActive("socorristas");
-      }else if(selectorMode === "instalacion"){
-        selectorTitle.innerText = "Instalación";
-        selectorSearch.placeholder = "Buscar conversación";
-        setTopActive("instalacion");
-      }else{
-        selectorTitle.innerText = "Notificaciones";
-        selectorSearch.placeholder = "Buscar conversación";
-        setTopActive("notificaciones");
-      }
-
-      let html = "";
-
-      if(selectorMode === "socorristas"){
-        html += '<button class="selector-action" id="selectorNewChat">+ Nuevo chat</button>';
-      }
-
-      const list = getFilteredThreads();
-
-      html += '<div class="section-label">Conversaciones</div>';
-
-      if(!list.length){
-        html += '<div class="selector-empty">No hay conversaciones</div>';
-      }else{
-        html += list.map(function(t){
-          return '' +
-            '<button class="selector-item selector-thread' + (String(currentThreadId) === String(t.id) ? ' active' : '') + '" data-id="' + escapeHtml(t.id) + '">' +
-              '<div class="selector-item-title">' + escapeHtml(t.title || (t.type === "private" ? "Privado" : "Grupo")) + '</div>' +
-              '<div class="selector-item-sub">' + escapeHtml(t.last_message || "") + '</div>' +
-            '</button>';
-        }).join("");
-      }
-
-      selectorList.innerHTML = html;
-
-      const selectorNewChat = document.getElementById("selectorNewChat");
-
-      if(selectorNewChat){
-        selectorNewChat.addEventListener("click", function(){
-          closeSelector();
-          showNewChatModal();
-        });
-      }
-
-      document.querySelectorAll(".selector-thread").forEach(function(el){
-        el.addEventListener("click", function(){
-          setActiveThread(el.getAttribute("data-id"));
-          closeSelector();
-        });
-      });
-    }
-
-    function showNewChatModal(){
-      const modal = document.createElement("div");
-      modal.className = "user-search-modal";
-
-      modal.innerHTML = `
-        <div class="modal-content">
-          <span class="close-modal">&times;</span>
-          <h3>Nuevo chat</h3>
-          <input type="text" id="userSearch" placeholder="Buscar por alias o DNI">
-          <div id="userSearchResults" class="user-list">Escribe al menos 2 caracteres</div>
-        </div>
-      `;
-
-      document.body.appendChild(modal);
-
-      const closeBtn = modal.querySelector(".close-modal");
-      closeBtn.onclick = function(){
-        modal.remove();
-      };
-
-      const searchInput = modal.querySelector("#userSearch");
-      const resultsDiv = modal.querySelector("#userSearchResults");
-
-      async function searchUsers(){
-        const query = searchInput.value.trim().toLowerCase();
-
-        if(query.length < 2){
-          resultsDiv.innerHTML = '<div>Escribe al menos 2 caracteres</div>';
-          return;
-        }
-
-        try{
-          const users = await fetchJSON(API_BASE + "/users?_=" + Date.now());
-
-          const filtered = users.filter(function(u){
-            return String(u.alias || "").toLowerCase().includes(query) ||
-                   String(u.dni || "").toLowerCase().includes(query);
-          });
-
-          if(!filtered.length){
-            resultsDiv.innerHTML = '<div>No se encontraron usuarios</div>';
-            return;
-          }
-
-          resultsDiv.innerHTML = filtered.map(function(u){
-            return '<div class="user-item" data-dni="' + escapeHtml(u.dni) + '">@' + escapeHtml(u.alias || "socorrista") + ' (' + escapeHtml(u.dni) + ')</div>';
-          }).join("");
-
-          resultsDiv.querySelectorAll(".user-item").forEach(function(el){
-            el.addEventListener("click", async function(){
-              const otherDni = el.getAttribute("data-dni");
-
-              if(String(otherDni) === String(currentUserId)){
-                alert("No puedes chatear contigo mismo");
-                return;
-              }
-
-              try{
-                const data = await fetchJSON(
-                  API_BASE + "/private/" + encodeURIComponent(otherDni) +
-                  "?user_id=" + encodeURIComponent(currentUserId) +
-                  "&_=" + Date.now()
-                );
-
-                if(data.thread_id){
-                  modal.remove();
-                  await loadThreads();
-                  setActiveThread(data.thread_id);
-                }
-              }catch(error){
-                alert("Error al crear el chat: " + error.message);
-              }
-            });
-          });
-        }catch(error){
-          resultsDiv.innerHTML = '<div class="error">Error al cargar usuarios<br>' + escapeHtml(error.message) + '</div>';
-        }
-      }
-
-      searchInput.addEventListener("input", searchUsers);
-      searchUsers();
-    }
-
-    document.getElementById("sendBtn").addEventListener("click", sendMessage);
-
-    document.getElementById("chatInput").addEventListener("keydown", function(e){
-      if(e.key === "Enter"){
-        e.preventDefault();
-        sendMessage();
-      }
-    });
-
-    document.getElementById("btnSocorristas").addEventListener("click", function(){
-      openSelector("socorristas");
-    });
-
-    document.getElementById("btnInstalacion").addEventListener("click", function(){
-      openSelector("instalacion");
-    });
-
-    document.getElementById("btnNotificaciones").addEventListener("click", function(){
-      openSelector("notificaciones");
-    });
-
-    document.getElementById("selectorClose").addEventListener("click", closeSelector);
-
-    document.getElementById("selectorModal").addEventListener("click", function(e){
-      if(e.target === document.getElementById("selectorModal")){
-        closeSelector();
-      }
-    });
-
-    document.getElementById("selectorSearch").addEventListener("input", renderSelector);
-
-    loadThreads();
-
-    threadsPollingInterval = setInterval(loadThreads, 15000);
-
-    (function(){
-      const stageEl = document.getElementById("stage");
-      const toggleBtn = document.getElementById("fullscreenToggleBtn");
-
-      function setFullscreenFlag(active){
-        if(active){
-          localStorage.setItem("fullscreenActive","true");
-        }else{
-          localStorage.removeItem("fullscreenActive");
-        }
-      }
-
-      function enterFullscreen(){
-        const elem = document.documentElement;
-        const requestMethod =
-          elem.requestFullscreen ||
-          elem.webkitRequestFullscreen ||
-          elem.mozRequestFullScreen ||
-          elem.msRequestFullscreen;
-
-        if(requestMethod){
-          requestMethod.call(elem).then(function(){
-            if(stageEl) stageEl.classList.add("fullscreen-mode");
-
-            if(toggleBtn){
-              toggleBtn.textContent = "✕";
-              toggleBtn.style.fontSize = "26px";
-            }
-
-            setFullscreenFlag(true);
-          }).catch(function(err){
-            console.log("Error al entrar en fullscreen:", err);
-          });
-        }
-      }
-
-      function exitFullscreen(){
-        const exitMethod =
-          document.exitFullscreen ||
-          document.webkitExitFullscreen ||
-          document.mozCancelFullScreen ||
-          document.msExitFullscreen;
-
-        if(exitMethod){
-          exitMethod.call(document).then(function(){
-            if(stageEl) stageEl.classList.remove("fullscreen-mode");
-
-            if(toggleBtn){
-              toggleBtn.textContent = "⤢";
-              toggleBtn.style.fontSize = "28px";
-            }
-
-            setFullscreenFlag(false);
-          }).catch(function(err){
-            console.log("Error al salir de fullscreen:", err);
-          });
-        }
-      }
-
-      function toggleFullscreen(){
-        const isFull = !!(
-          document.fullscreenElement ||
-          document.webkitFullscreenElement ||
-          document.mozFullScreenElement ||
-          document.msFullscreenElement
-        );
-
-        if(isFull){
-          exitFullscreen();
-        }else{
-          enterFullscreen();
-        }
-      }
-
-      function onFullscreenChange(){
-        const isFull = !!(
-          document.fullscreenElement ||
-          document.webkitFullscreenElement ||
-          document.mozFullScreenElement ||
-          document.msFullscreenElement
-        );
-
-        if(isFull){
-          if(stageEl) stageEl.classList.add("fullscreen-mode");
-
-          if(toggleBtn){
-            toggleBtn.textContent = "✕";
-            toggleBtn.style.fontSize = "26px";
-          }
-
-          setFullscreenFlag(true);
-        }else{
-          if(stageEl) stageEl.classList.remove("fullscreen-mode");
-
-          if(toggleBtn){
-            toggleBtn.textContent = "⤢";
-            toggleBtn.style.fontSize = "28px";
-          }
-
-          setFullscreenFlag(false);
-        }
-      }
-
-      if(toggleBtn){
-        toggleBtn.addEventListener("click", function(e){
-          e.preventDefault();
-          toggleFullscreen();
-        });
-      }
-
-      document.addEventListener("fullscreenchange", onFullscreenChange);
-      document.addEventListener("webkitfullscreenchange", onFullscreenChange);
-      document.addEventListener("mozfullscreenchange", onFullscreenChange);
-      document.addEventListener("MSFullscreenChange", onFullscreenChange);
-    })();
-  </script>
+<div id="app">
+<div id="sidebar"><div class="logo-row"><img src="__LOGO_URL__"/><span>SYNTRA</span></div><div id="navList"></div></div>
+<div class="mobile-drawer" id="drawer">
+<div class="overlay" id="drawerOverlay"></div>
+<div class="panel"><div class="logo-row"><img src="__LOGO_URL__"/><span>SYNTRA</span></div><div id="navListMobile"></div></div>
+</div>
+<div id="main">
+<div id="topbar">
+<button class="hamburger" id="hamburgerBtn">&#9776;</button>
+<h1>Incidencias y Comunicados</h1>
+<div class="mobile-logo"><img src="__LOGO_URL__"/>SYNTRA</div>
+<div></div>
+</div>
+
+<div id="chatBody">
+<div id="listPanel">
+<div class="list-tabs">
+<div class="list-tab active" data-tab="conversaciones">Conversaciones</div>
+<div class="list-tab" data-tab="instalaciones">Instalaciones</div>
+<button class="new-btn" id="newBtn">+ Nueva</button>
+</div>
+<input class="search-box" id="searchBox" placeholder="Buscar conversaciones..." />
+<div id="threadList"></div>
+<div id="instList" style="display:none;"></div>
+</div>
+
+<div id="threadPanel">
+<div class="placeholder-panel" id="placeholderPanel">Selecciona una conversaci&oacute;n para empezar.</div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+var API_BASE = __API_BASE__;
+var AUTH_USER = __AUTH_USER__;
+var AUTH_ROLE = __AUTH_ROLE__;
+var AUTH_DNI = __AUTH_DNI__;
+var CAN_MANAGE_SCHEDULES = __CAN_MANAGE_SCHEDULES__;
+var CAN_REGISTER_USERS = __CAN_REGISTER_USERS__;
+
+function qs(){
+var p = new URLSearchParams();
+p.set("usuario", AUTH_USER);
+p.set("rol", AUTH_ROLE);
+p.set("dni", AUTH_DNI);
+return "?" + p.toString();
+}
+function goToPage(path){ window.top.location.href = path + qs(); }
+
+var NAV_ITEMS = [
+{label:"Inicio", icon:"&#8962;", go:"/"},
+{label:"Horarios", icon:"&#128197;", go:"/calendario"},
+{label:"Incidencias y Comunicados", icon:"&#128172;", go:"/chat_interfaz", active:true},
+{sep:true},
+{label:"Registro", icon:"&#128100;+", go:"/altas_registro", badge:"Solo admin"},
+{label:"Gesti&oacute;n de Horarios", icon:"&#9881;", go:"/editar_horarios", badge:"Solo admin"}
+];
+
+function renderNav(containerId){
+var el = document.getElementById(containerId);
+var parts = [];
+NAV_ITEMS.forEach(function(item){
+if (item.sep){ parts.push('<div class="nav-sep"></div>'); return; }
+var cls = "nav-item" + (item.active ? " active" : "");
+var badge = item.badge ? '<span class="nav-badge">' + item.badge + '</span>' : "";
+parts.push('<div class="' + cls + '" data-go="' + item.go + '"><span>' + item.icon + '</span><span>' + item.label + '</span>' + badge + '</div>');
+});
+parts.push('<div class="nav-bottom"><div class="nav-item" id="logout_' + containerId + '"><span>&#8630;</span><span>Cerrar sesi&oacute;n</span></div></div>');
+el.innerHTML = parts.join("");
+el.querySelectorAll(".nav-item[data-go]").forEach(function(node){
+node.addEventListener("click", function(){ goToPage(node.getAttribute("data-go")); });
+});
+var lo = document.getElementById("logout_" + containerId);
+if (lo) lo.addEventListener("click", function(){ window.top.location.href = "/admin"; });
+}
+renderNav("navList");
+renderNav("navListMobile");
+
+var drawer = document.getElementById("drawer");
+document.getElementById("hamburgerBtn").addEventListener("click", function(){ drawer.classList.add("open"); });
+document.getElementById("drawerOverlay").addEventListener("click", function(){ drawer.classList.remove("open"); });
+
+var threadListEl = document.getElementById("threadList");
+var instListEl = document.getElementById("instList");
+var chatBody = document.getElementById("chatBody");
+var threadPanel = document.getElementById("threadPanel");
+
+var threadsCache = [];
+var currentThreadId = null;
+var pollTimer = null;
+
+function timeAgo(iso){
+if (!iso) return "";
+try{
+var d = new Date(iso);
+var now = new Date();
+var diffMs = now - d;
+var mins = Math.floor(diffMs / 60000);
+if (mins < 1) return "ahora";
+if (mins < 60) return mins + "m";
+var hrs = Math.floor(mins / 60);
+if (hrs < 24) return hrs + "h";
+var days = Math.floor(hrs / 24);
+return days + "d";
+}catch(e){ return ""; }
+}
+
+function initials(name){
+name = (name || "?").trim();
+return name.charAt(0).toUpperCase();
+}
+
+function renderThreadList(filter){
+filter = (filter || "").toLowerCase();
+var filtered = threadsCache.filter(function(t){
+return !filter || (t.title || "").toLowerCase().indexOf(filter) !== -1;
+});
+if (!filtered.length){
+threadListEl.innerHTML = '<div class="empty-note">No hay conversaciones.</div>';
+return;
+}
+threadListEl.innerHTML = filtered.map(function(t){
+var cls = "thread-item" + (t.id === currentThreadId ? " active" : "");
+var unread = t.unread_count > 0 ? '<span class="unread-dot">' + t.unread_count + '</span>' : "";
+var sub = t.last_message || (t.type === "installation" ? "Instalaci&oacute;n" : "Privado");
+return '<div class="' + cls + '" data-id="' + t.id + '">' +
+'<div class="thread-avatar">' + (t.type === "installation" ? "&#127970;" : initials(t.title)) + '</div>' +
+'<div class="thread-info">' +
+'<div class="thread-title"><span>' + t.title + '</span><span class="thread-time">' + timeAgo(t.last_message_at) + '</span></div>' +
+'<div style="display:flex;justify-content:space-between;gap:6px;align-items:center;">' +
+'<span class="thread-sub">' + sub + '</span>' + unread +
+'</div>' +
+'</div>' +
+'</div>';
+}).join("");
+threadListEl.querySelectorAll(".thread-item").forEach(function(node){
+node.addEventListener("click", function(){ openThread(node.getAttribute("data-id")); });
+});
+}
+
+function loadThreads(){
+fetch(API_BASE + "/api/chat/threads?user_id=" + encodeURIComponent(AUTH_DNI))
+.then(function(r){ return r.json(); })
+.then(function(d){
+threadsCache = (d && d.ok && d.threads) ? d.threads : [];
+renderThreadList(document.getElementById("searchBox").value);
+})
+.catch(function(){
+threadListEl.innerHTML = '<div class="empty-note">Error al cargar conversaciones.</div>';
+});
+}
+loadThreads();
+
+function loadInstallations(){
+fetch(API_BASE + "/api/chat/installations?user_id=" + encodeURIComponent(AUTH_DNI))
+.then(function(r){ return r.json(); })
+.then(function(d){
+var list = (d && d.ok && d.installations) ? d.installations : [];
+if (!list.length){
+instListEl.innerHTML = '<div class="empty-note">Sin instalaciones.</div>';
+return;
+}
+instListEl.innerHTML = list.map(function(i){
+return '<div class="inst-item" data-name="' + i.instalacion.replace(/"/g,"&quot;") + '">' +
+'<div class="inst-icon">&#127970;</div>' +
+'<div><div class="inst-name">' + i.instalacion + '</div><div class="inst-count">' + i.total + ' socorristas</div></div>' +
+'</div>';
+}).join("");
+instListEl.querySelectorAll(".inst-item").forEach(function(node){
+node.addEventListener("click", function(){
+var name = node.getAttribute("data-name");
+fetch(API_BASE + "/api/chat/installation/" + encodeURIComponent(name) + "?user_id=" + encodeURIComponent(AUTH_DNI))
+.then(function(r){ return r.json(); })
+.then(function(d2){
+if (d2 && d2.ok && d2.thread_id){
+loadThreads();
+setTimeout(function(){ openThread(d2.thread_id); }, 300);
+}
+});
+});
+});
+})
+.catch(function(){
+instListEl.innerHTML = '<div class="empty-note">Error al cargar.</div>';
+});
+}
+
+var tabs = document.querySelectorAll(".list-tab");
+tabs.forEach(function(tab){
+tab.addEventListener("click", function(){
+tabs.forEach(function(t){ t.classList.remove("active"); });
+tab.classList.add("active");
+var name = tab.getAttribute("data-tab");
+if (name === "conversaciones"){
+threadListEl.style.display = "";
+instListEl.style.display = "none";
+} else {
+threadListEl.style.display = "none";
+instListEl.style.display = "";
+loadInstallations();
+}
+});
+});
+
+document.getElementById("searchBox").addEventListener("input", function(e){
+renderThreadList(e.target.value);
+});
+
+document.getElementById("newBtn").addEventListener("click", function(){
+fetch(API_BASE + "/api/chat/users")
+.then(function(r){ return r.json(); })
+.then(function(users){
+var others = (users || []).filter(function(u){ return u.dni !== AUTH_DNI; });
+if (!others.length){ alert("No hay usuarios disponibles."); return; }
+var names = others.map(function(u, idx){ return (idx+1) + ". " + (u.alias || u.nombre || u.dni); }).join("\n");
+var pick = window.prompt("Elige un numero para iniciar chat privado:\n" + names);
+var idx = parseInt(pick, 10) - 1;
+if (isNaN(idx) || !others[idx]) return;
+var target = others[idx];
+fetch(API_BASE + "/api/chat/private/" + encodeURIComponent(target.dni) + "?user_id=" + encodeURIComponent(AUTH_DNI))
+.then(function(r){ return r.json(); })
+.then(function(d){
+if (d && d.ok && d.thread_id){
+loadThreads();
+setTimeout(function(){ openThread(d.thread_id); }, 300);
+}
+});
+})
+.catch(function(){ alert("Error al cargar usuarios."); });
+});
+
+function openThread(threadId){
+currentThreadId = threadId;
+chatBody.classList.add("thread-open");
+renderThreadList(document.getElementById("searchBox").value);
+loadThreadPanel(threadId);
+if (pollTimer) clearInterval(pollTimer);
+pollTimer = setInterval(function(){ loadThreadPanel(threadId, true); }, 5000);
+}
+
+function esc(s){
+return (s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function loadThreadPanel(threadId, silent){
+var meta = threadsCache.find(function(t){ return t.id === threadId; });
+fetch(API_BASE + "/api/chat/threads/" + encodeURIComponent(threadId) + "/messages?user_id=" + encodeURIComponent(AUTH_DNI))
+.then(function(r){ return r.json(); })
+.then(function(d){
+var messages = (d && d.ok && d.messages) ? d.messages : [];
+renderThreadPanel(meta, messages);
+if (messages.length){
+var lastId = messages[messages.length - 1].id;
+fetch(API_BASE + "/api/chat/threads/" + encodeURIComponent(threadId) + "/read", {
+method: "POST",
+headers: {"Content-Type": "application/json"},
+body: JSON.stringify({user_id: AUTH_DNI, last_read_message_id: lastId})
+}).catch(function(){});
+}
+})
+.catch(function(){
+if (!silent) threadPanel.innerHTML = '<div class="placeholder-panel">Error al cargar mensajes.</div>';
+});
+}
+
+function renderThreadPanel(meta, messages){
+var title = meta ? meta.title : "Conversaci&oacute;n";
+var sub = meta && meta.type === "installation" ? "Instalaci&oacute;n" : "Privado";
+threadPanel.innerHTML =
+'<div id="threadHeader">' +
+'<button class="back-btn" id="backBtn">&#8592;</button>' +
+'<div><div id="threadHeaderTitle">' + esc(title) + '</div><div id="threadHeaderSub">' + sub + '</div></div>' +
+'</div>' +
+'<div id="messagesWrap"></div>' +
+'<div id="composer">' +
+'<input id="msgInput" placeholder="Escribe un mensaje..." />' +
+'<button class="send-btn" id="sendBtn">&#10148;</button>' +
+'</div>';
+
+var wrap = document.getElementById("messagesWrap");
+if (!messages.length){
+wrap.innerHTML = '<div class="empty-note">Aun no hay mensajes. Envia el primero.</div>';
+} else {
+wrap.innerHTML = messages.map(function(m){
+var mine = m.sender_id === AUTH_DNI;
+return '<div class="msg-row' + (mine ? ' mine' : '') + '">' +
+(mine ? '' : '<div class="msg-sender">' + esc(m.sender_alias) + '</div>') +
+'<div class="msg-bubble">' + esc(m.body) + '</div>' +
+'<div class="msg-time">' + timeAgo(m.created_at) + '</div>' +
+'</div>';
+}).join("");
+}
+wrap.scrollTop = wrap.scrollHeight;
+
+document.getElementById("backBtn").addEventListener("click", function(){
+chatBody.classList.remove("thread-open");
+if (pollTimer) clearInterval(pollTimer);
+});
+
+function doSend(){
+var input = document.getElementById("msgInput");
+var body = input.value.trim();
+if (!body || !currentThreadId) return;
+var btn = document.getElementById("sendBtn");
+btn.disabled = true;
+fetch(API_BASE + "/api/chat/threads/" + encodeURIComponent(currentThreadId) + "/messages", {
+method: "POST",
+headers: {"Content-Type": "application/json"},
+body: JSON.stringify({sender_id: AUTH_DNI, body: body})
+})
+.then(function(r){ return r.json(); })
+.then(function(d){
+btn.disabled = false;
+if (d && d.ok){
+input.value = "";
+loadThreadPanel(currentThreadId, true);
+loadThreads();
+}
+})
+.catch(function(){ btn.disabled = false; });
+}
+document.getElementById("sendBtn").addEventListener("click", doSend);
+document.getElementById("msgInput").addEventListener("keydown", function(e){
+if (e.key === "Enter") doSend();
+});
+}
+})();
+</script>
 </body>
 </html>
 """
 
-html = html.replace("__CURRENT_USER_ID__", json.dumps(str(USER_DNI)))
+html = (
+        html.replace("__LOGO_URL__", LOGO_URL)
+            .replace("__API_BASE__", _js_str(API_BASE))
+            .replace("__AUTH_USER__", _js_str(AUTH_USER))
+            .replace("__AUTH_ROLE__", _js_str(AUTH_ROLE))
+            .replace("__AUTH_DNI__", _js_str(AUTH_DNI))
+            .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
+            .replace("__CAN_REGISTER_USERS__", "true" if CAN_REGISTER_USERS else "false")
+)
 
-components.html(html, height=800, scrolling=False)
+components.html(html, height=850, scrolling=False)
