@@ -254,7 +254,7 @@ p.set("dni", USER_DNI);
 return "?" + p.toString();
 }
 function goToPage(path){
-window.parent.location.href = path + qs();
+window.open(path + qs(), "_blank") + qs();
 }
 var NAV_ITEMS = [
 {label:"Inicio", icon:"&#8962;", active:true},
