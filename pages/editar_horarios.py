@@ -1,6 +1,38 @@
 # pages/admin.py
 import streamlit as st
 import streamlit.components.v1 as components
+import json
+from html import escape as html_escape
+
+# --- Gate de autenticacion y rol (solo administradores) ---
+query_params = st.query_params
+AUTH_USER = query_params.get("usuario") or query_params.get("user") or ""
+AUTH_ROLE = query_params.get("rol") or query_params.get("role") or ""
+AUTH_DNI = query_params.get("dni") or ""
+NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
+
+if not AUTH_USER or not AUTH_ROLE:
+      st.markdown(
+                """
+                        <script>
+                                  window.location.href="/admin";
+                                          </script>
+                                                  """,
+                unsafe_allow_html=True,
+      )
+      st.stop()
+
+if NORMALIZED_ROLE != "administrador":
+      st.markdown(
+                """
+                        <script>
+                                  window.location.href="/?auth=ok";
+                                          </script>
+                                                  """,
+                unsafe_allow_html=True,
+      )
+      st.stop()
+  
 
 # =========================
 # CONFIG
