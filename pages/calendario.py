@@ -1,1718 +1,459 @@
+# pages/calendario.py
 import json
-from html import escape as html_escape
-
 import streamlit as st
 import streamlit.components.v1 as components
 
-# ==============================================================================
-# PLANTILLA "CALENDARIO" — TEMA HUD NARANJA
-# Versión final: con detección automática de columna DNI y depuración en consola
-# ==============================================================================
+st.set_page_config(page_title="Horarios", layout="wide")
 
-# Obtener parámetros de autenticación
 query_params = st.query_params
 AUTH_USER = query_params.get("usuario") or query_params.get("user") or ""
 AUTH_ROLE = query_params.get("rol") or query_params.get("role") or ""
 AUTH_DNI = query_params.get("dni") or ""
 
-# Normalizar rol
-NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
-IS_SOCORRISTA = NORMALIZED_ROLE == "socorrista"
-IS_ADMIN_OR_DIRECTIVO = NORMALIZED_ROLE in ["administrador", "directivo"]
-
-# Si no hay autenticación, redirigir
 if not AUTH_USER or not AUTH_ROLE:
-    st.markdown(
-        """
-        <script>
-          window.location.href="/admin";
-        </script>
-        """,
+        st.markdown(
+                    """
+                            <script>
+                                      window.location.href="/admin";
+                                              </script>
+                                                      """,
         unsafe_allow_html=True,
-    )
-    st.stop()
+        )
+        st.stop()
 
-PAD_X_PX = 10
-PAD_TOP_PX = 10
+NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
+CAN_MANAGE_SCHEDULES = NORMALIZED_ROLE == "administrador"
+CAN_REGISTER_USERS = NORMALIZED_ROLE == "administrador"
+IS_SOCORRISTA = NORMALIZED_ROLE == "socorrista"
 
-BORDER_PX = 2
-BORDER_COLOR = "rgba(255,255,255,.12)"
-BG_COLOR = "#081a3a"
-PANEL_BG = "rgba(255,255,255,.06)"
-CARD_BG = "rgba(255,255,255,.07)"
-TEXT_COLOR = "#eaf2ff"
-MUTED_TEXT = "rgba(234,242,255,.75)"
-
-FONT_BASE_PX = 14
-TITLE_PX = 18
-H2_PX = 16
-SMALL_PX = 12
-
-TOPBAR_H = 8
-MONTHBAR_H = 10
-CAL_GRID_H = 24
-FILTERS_H = 9
-AGENDA_H = 34
-BOTTOMBAR_H = 10
-
-INNER_L = 4
-INNER_R = 4
-INNER_TOP_GAP = 0.7
-
-CAL_COLS = 7
-CAL_ROWS = 6
-DAY_CELL_GAP_PX = 6
-
-AGENDA_ROWS = 5
-
-st.set_page_config(layout="wide")
+API_BASE = "https://camilo27.pythonanywhere.com"
+LOGO_URL = "https://files.catbox.moe/056m6v.jpg"
 
 st.markdown(
-    """
-    <style>
-      .block-container{padding:0!important;margin:0!important;max-width:100%!important;}
-      section.main > div{padding:0!important;margin:0!important;}
-      header, footer{display:none!important;}
-    </style>
-    """,
-    unsafe_allow_html=True,
+        """
+            <style>
+                  .block-container{padding:0 !important;margin:0 !important;max-width:100% !important;}
+                        section.main > div{padding:0 !important;margin:0 !important;}
+                              header, footer{display:none !important;}
+                                    iframe{display:block;}
+                                        </style>
+                                            """,
+        unsafe_allow_html=True,
 )
 
-AUTH_PAYLOAD = {
-    "user": str(AUTH_USER or ""),
-    "role": str(AUTH_ROLE or ""),
-    "dni": str(AUTH_DNI or ""),
-}
-AUTH_JSON = json.dumps(AUTH_PAYLOAD, ensure_ascii=False)
-AUTH_USER_HTML = html_escape(AUTH_PAYLOAD["user"])
-AUTH_ROLE_HTML = html_escape(AUTH_PAYLOAD["role"])
 
-html = r"""
+def _js_str(value) -> str:
+        return json.dumps("" if value is None else str(value), ensure_ascii=False)
+
+
+html = """
 <!doctype html>
 <html>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-  :root {
-    --bg-0:#070b12;
-    --bg-1:#0b1320;
-    --bg-2:#0f1c2a;
-    --glass: rgba(255,255,255,.06);
-    --glass-2: rgba(255,255,255,.08);
-    --stroke: rgba(255,255,255,.10);
-    --stroke-2: rgba(255,255,255,.14);
-    --glow-blue: rgba(96, 196, 255, .45);
-    --glow-blue-2: rgba(96, 196, 255, .22);
-    --glow-orange: rgba(255, 142, 64, .50);
-    --glow-orange-2: rgba(255, 142, 64, .22);
-    --txt-0: rgba(255,255,255,.95);
-    --txt-1: rgba(255,255,255,.78);
-    --txt-2: rgba(255,255,255,.55);
-    --txt-3: rgba(255,255,255,.35);
-    --free:#4fe38c;
-    --busy:#ff4b4b;
-    --other:#ff7c2c;
-    --radius-outer: 26px;
-    --radius-card: 18px;
-    --radius-pill: 999px;
-    --radius-cell: 12px;
-    --shadow-soft: 0 18px 40px rgba(0,0,0,.45);
-    --shadow-inner: inset 0 1px 0 rgba(255,255,255,.08);
-    --blur: 18px;
-    --fs-top: 14px;
-    --fs-title: 28px;
-    --fs-sub: 12px;
-    --fs-day: 11px;
-    --fs-cell: 14px;
-    --fs-h3: 18px;
-    --fs-table: 13px;
-    --fs-btn: 14px;
-    --pad-outer: 16px;
-    --pad-block: 14px;
-  }
+:root{
+--navy1:#0a1a55;--navy2:#040e31;--navy3:#02071c;--blue:#2f6fe0;
+--bg:#f3f5f9;--card-bg:#ffffff;--ink:#0f1b3d;--muted:#6b7688;--border:#e7eaf1;
+--manana:#c9f0d8;--tarde:#cfe2ff;--noche:#ffd7d7;--libre:#e9ecf3;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;width:100%;font-family:"Segoe UI",Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);}
+#app{display:flex;min-height:100vh;width:100%;}
+#sidebar{
+width:250px;flex:0 0 250px;
+background:linear-gradient(180deg,var(--navy1) 0%,var(--navy2) 60%,var(--navy3) 100%);
+color:#eaf2ff;display:flex;flex-direction:column;padding:26px 18px;min-height:100vh;
+}
+.logo-row{display:flex;align-items:center;gap:10px;margin-bottom:34px;padding:0 4px;}
+.logo-row img{width:34px;height:34px;object-fit:contain;border-radius:6px;}
+.logo-row span{font-weight:800;letter-spacing:2px;font-size:19px;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;margin-bottom:4px;color:rgba(234,242,255,.82);font-size:14.5px;font-weight:600;cursor:pointer;}
+.nav-item:hover{background:rgba(255,255,255,.06);}
+.nav-item.active{background:var(--blue);color:#fff;}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:700;background:rgba(255,255,255,.14);padding:2px 7px;border-radius:20px;white-space:nowrap;}
+.nav-sep{height:1px;background:rgba(255,255,255,.10);margin:14px 4px;}
+.nav-bottom{margin-top:auto;}
 
-  *{box-sizing:border-box;}
-  html,body{height:100%;margin:0;padding:0;}
-  body{
-    font-family: "Inter", system-ui, -apple-system, "SF Pro Display", Segoe UI, Roboto, Arial, sans-serif;
-    color:var(--txt-0);
-    background: none;
-  }
-  #stage{
-    position:fixed;
-    inset:0;
-    background:
-      radial-gradient(1100px 700px at 10% 10%, rgba(255,124,44,.22), transparent 55%),
-      radial-gradient(900px 650px at 90% 18%, rgba(96,196,255,.22), transparent 55%),
-      radial-gradient(900px 750px at 50% 95%, rgba(96,196,255,.12), transparent 60%),
-      linear-gradient(180deg, var(--bg-2), var(--bg-0));
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-  }
+#main{flex:1;min-width:0;display:flex;flex-direction:column;}
+#topbar{background:#fff;border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;}
+#topbar h1{font-size:18px;margin:0;font-weight:700;}
+.hamburger{display:none;font-size:20px;background:none;border:none;cursor:pointer;color:var(--ink);}
+.mobile-logo{display:none;align-items:center;gap:8px;font-weight:800;letter-spacing:1px;}
+.mobile-logo img{width:26px;height:26px;border-radius:6px;object-fit:contain;}
 
-  #frame{display:none;}
+#content{padding:20px 24px 90px 24px;}
+.filters-row{display:flex;gap:18px;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap;}
+.filter-field label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:5px;font-weight:600;}
+.filter-field select{padding:8px 12px;border:1px solid var(--border);border-radius:9px;font-size:13px;min-width:160px;}
+.date-nav{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.date-nav button{background:#fff;border:1px solid var(--border);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:14px;}
+.date-nav .date-label{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:6px;}
 
-  #wrap{
-    position: relative;
-    width: min(420px, 92vw);
-    margin: 0 auto;
-    padding: var(--pad-outer);
-    border-radius: var(--radius-outer);
-    background: rgba(10, 16, 26, .58);
-    border:1px solid var(--stroke);
-    box-shadow:var(--shadow-soft);
-    backdrop-filter:blur(var(--blur));
-    -webkit-backdrop-filter:blur(var(--blur));
-    overflow: hidden;
-    display:flex;
-    flex-direction:column;
-    max-height: 95vh;
-  }
-  #wrap::before{
-    content:"";
-    position:absolute; inset:0;
-    border-radius:inherit;
-    pointer-events:none;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.10), transparent 30%),
-      radial-gradient(800px 500px at 85% 20%, rgba(96,196,255,.18), transparent 60%),
-      radial-gradient(700px 500px at 20% 20%, rgba(255,124,44,.12), transparent 65%);
-    mix-blend-mode: screen;
-  }
+.day-tabs{display:none;}
 
-  @media (min-width: 1400px) {
-    #wrap {
-      width: min(1200px, 80vw);
-      max-width: 1400px;
-    }
-  }
+.grid-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;overflow:auto;}
+table.cal{width:100%;border-collapse:collapse;min-width:760px;}
+table.cal th{background:#fafbfd;padding:10px 12px;font-size:12px;color:var(--muted);text-align:center;border-bottom:1px solid var(--border);border-right:1px solid var(--border);position:sticky;top:0;}
+table.cal th:first-child{text-align:left;position:sticky;left:0;z-index:2;background:#fafbfd;}
+table.cal td{padding:8px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);vertical-align:top;min-width:110px;}
+table.cal td.inst-cell{font-weight:700;font-size:13px;background:#fafbfd;position:sticky;left:0;white-space:nowrap;}
+.turno-chip{border-radius:8px;padding:5px 8px;font-size:11px;margin-bottom:4px;line-height:1.3;}
+.turno-chip .t{font-weight:700;}
+.turno-chip.manana{background:var(--manana);}
+.turno-chip.tarde{background:var(--tarde);}
+.turno-chip.noche{background:var(--noche);}
 
-  /* Month block */
-  .monthBlock{
-    margin-top:0;
-    padding:12px 8px 6px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-  }
-  .monthBlock .nav{
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
-  .monthNav__btn{
-    width:38px; height:38px;
-    border-radius:14px;
-    background:rgba(255,255,255,.05);
-    border:1px solid var(--stroke);
-    box-shadow:0 0 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.08);
-    display:grid;
-    place-items:center;
-  }
-  .monthNav__title{
-    font-size:var(--fs-title);
-    font-weight:800;
-    letter-spacing:1px;
-    text-transform:uppercase;
-    color:rgba(255,255,255,.92);
-    text-shadow:0 0 18px var(--glow-blue-2);
-    line-height:1.05;
-    text-align:center;
-    flex:1;
-  }
+.legend{display:flex;gap:18px;margin-top:14px;font-size:12px;color:var(--muted);flex-wrap:wrap;}
+.legend span{display:inline-flex;align-items:center;gap:6px;}
+.legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+.dot.manana{background:#3fbf76;}
+.dot.tarde{background:#3f7fd6;}
+.dot.noche{background:#d64f4f;}
+.dot.libre{background:#9aa3b5;}
 
-  /* Calendar card */
-  .calendarCard{
-    margin-top:8px;
-    padding:var(--pad-block);
-    border-radius:var(--radius-card);
-    background:var(--glass-2);
-    border:1px solid var(--stroke);
-    box-shadow:0 0 34px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
-    backdrop-filter:blur(calc(var(--blur) - 6px));
-  }
-  .calendarCard__labelRow{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:10px;
-  }
-  .calendarCard__label{
-    font-size:var(--fs-sub);
-    font-weight:700;
-    letter-spacing:.8px;
-    color:var(--txt-1);
-  }
-  .weekdays{
-    display:grid;
-    grid-template-columns:repeat(7,1fr);
-    gap:8px;
-    margin:10px 0 10px;
-  }
-  .weekdays span{
-    font-size:var(--fs-day);
-    color:var(--txt-3);
-    text-align:center;
-    letter-spacing:.6px;
-  }
-  .calendarGrid{
-    display:grid;
-    grid-template-columns:repeat(7,1fr);
-    gap:10px;
-  }
-  .day{
-    height:38px;
-    border-radius:var(--radius-cell);
-    background:rgba(255,255,255,.04);
-    border:1px solid rgba(255,255,255,.09);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
-    display:grid;
-    place-items:center;
-    font-size:var(--fs-cell);
-    font-weight:700;
-    color:var(--txt-1);
-    position:relative;
-  }
-  .day.dim{
-    color:var(--txt-3);
-    background:rgba(255,255,255,.03);
-    border-color:rgba(255,255,255,.07);
-  }
-  .day.sel{
-    border:2px solid var(--glow-orange);
-    box-shadow:0 0 0 2px rgba(255,124,44,.10), 0 0 18px var(--glow-orange-2), inset 0 1px 0 rgba(255,255,255,.08);
-    color:var(--txt-0);
-  }
-  .day.past{
-    opacity:.22;
-    cursor:default;
-    pointer-events:none;
-    filter:grayscale(35%);
-  }
-  .day.hasdata::after{
-    content:"";
-    position:absolute;
-    width:7px; height:7px;
-    border-radius:50%;
-    right:7px; bottom:7px;
-    background:var(--free);
-    box-shadow:0 0 10px var(--free);
-  }
+.mobile-list{display:none;}
+.mobile-day-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:12px;}
+.mobile-day-card .inst-name{font-size:13px;font-weight:700;margin-bottom:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;}
+.mobile-turno{border-radius:10px;padding:9px 12px;margin-bottom:6px;}
+.mobile-turno .t{font-weight:700;font-size:13px;}
+.mobile-turno .n{font-size:13px;}
 
-  /* Legend */
-  .legend{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    margin-top:12px;
-    padding-top:8px;
-  }
-  .legend__item{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    color:var(--txt-2);
-    font-size:11px;
-    letter-spacing:.2px;
-  }
-  .legend__dot{
-    width:8px; height:8px;
-    border-radius:99px;
-    background:rgba(255,255,255,.30);
-    box-shadow:0 0 14px rgba(255,255,255,.10);
-  }
-  .legend__dot.on{
-    background:var(--free);
-    box-shadow:0 0 14px var(--free);
-  }
+.empty-note{padding:30px;text-align:center;color:var(--muted);font-size:13px;}
 
-  /* Controls row */
-  .controlsRow{
-    display:grid;
-    grid-template-columns:1fr 1fr auto;
-    gap:10px;
-    margin-top:14px;
-    align-items:center;
-  }
-  .selectPill{
-    height:40px;
-    border-radius:var(--radius-pill);
-    padding:0 14px;
-    background:var(--glass);
-    border:1px solid var(--stroke);
-    color:var(--txt-1);
-    font-size:13px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
-    backdrop-filter:blur(calc(var(--blur) - 6px));
-  }
-  .selectPill select{
-    background:transparent;
-    border:none;
-    color:inherit;
-    font:inherit;
-    outline:none;
-    width:100%;
-    appearance:none;
-    -webkit-appearance:none;
-    cursor:pointer;
-  }
-  .selectPill select option {
-    background: var(--bg-1);
-    color: var(--txt-0);
-  }
-  .selectPill .caret{
-    font-weight:900;
-    pointer-events:none;
-  }
-  .applyBtn{
-    height:40px;
-    min-width:92px;
-    border-radius:14px;
-    padding:0 16px;
-    background:rgba(255,124,44,.06);
-    border:1px solid rgba(255,124,44,.75);
-    color:rgba(255,124,44,.95);
-    font-weight:800;
-    font-size:var(--fs-btn);
-    letter-spacing:.3px;
-    box-shadow:0 0 18px var(--glow-orange-2), inset 0 1px 0 rgba(255,255,255,.10);
-  }
+.mobile-drawer{display:none;position:fixed;inset:0;z-index:100;}
+.mobile-drawer.open{display:block;}
+.mobile-drawer .overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);}
+.mobile-drawer .panel{
+position:absolute;left:0;top:0;bottom:0;width:250px;
+background:linear-gradient(180deg,var(--navy1) 0%,var(--navy2) 60%,var(--navy3) 100%);
+padding:26px 18px;color:#eaf2ff;overflow-y:auto;
+}
 
-  /* Agenda block */
-  .agendaBlock{
-    margin-top:16px;
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    min-height:0;
-  }
-  .agendaTitle{
-    font-size:var(--fs-h3);
-    font-weight:800;
-    color:var(--txt-0);
-    margin:0 0 10px 0;
-    text-shadow:0 0 18px var(--glow-blue-2);
-  }
-  .agendaMeta{
-    display:flex;
-    justify-content:space-between;
-    gap:10px;
-    color:var(--txt-2);
-    font-size:12px;
-    margin-bottom:10px;
-  }
-  .tableCard{
-    border-radius:var(--radius-card);
-    background:var(--glass-2);
-    border:1px solid var(--stroke);
-    box-shadow:0 0 34px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
-    overflow: hidden;
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    min-height:0;
-  }
-
-  /* Estilos para desktop (6 columnas) */
-  .tableHeader, .trow.desktop {
-    display: grid;
-    grid-template-columns: 26px 1fr 92px 92px 86px auto;
-    gap: 10px;
-    align-items: center;
-  }
-  .tableHeader{
-    padding:12px 14px;
-    font-size:12px;
-    font-weight:700;
-    color:var(--txt-2);
-    background:rgba(255,255,255,.03);
-    border-bottom:1px solid rgba(255,255,255,.08);
-  }
-  .trow.desktop{
-    padding:11px 14px;
-    border-bottom:1px solid rgba(255,255,255,.06);
-  }
-  .trow.desktop:last-child{border-bottom:none;}
-  .trow.desktop div:nth-child(1){
-    font-size:var(--fs-table);
-    color:var(--txt-0);
-    font-weight:650;
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  .chk{
-    width:16px; height:16px;
-    border-radius:4px;
-    border:1px solid rgba(255,255,255,.22);
-    background:rgba(255,255,255,.04);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
-    display:inline-block;
-  }
-  .status{
-    height:22px;
-    padding:0 10px;
-    border-radius:var(--radius-pill);
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    font-size:11px;
-    font-weight:800;
-    letter-spacing:.3px;
-    color:rgba(0,0,0,.78);
-  }
-  .status.free{
-    background:linear-gradient(180deg, rgba(79,227,140,1), rgba(46,196,118,1));
-    box-shadow:0 0 14px rgba(79,227,140,.22);
-  }
-  .status.busy{
-    background:linear-gradient(180deg, rgba(255,90,90,1), rgba(230,55,55,1));
-    box-shadow:0 0 14px rgba(255,75,75,.22);
-    color:rgba(255,255,255,.92);
-  }
-  .status.other{
-    background:rgba(255,255,255,.1);
-    border:1px solid rgba(255,255,255,.2);
-    color:var(--txt-1);
-  }
-
-  /* Estilos para móvil (filas expandibles) */
-  .mobile-header {
-    display: none;
-    padding: 10px 12px;
-    background: rgba(255,255,255,.03);
-    border-bottom: 1px solid rgba(255,255,255,.08);
-    font-weight: 700;
-    color: var(--txt-2);
-    font-size: 12px;
-  }
-  .mobile-header .horas {
-    display: flex;
-    gap: 8px;
-    flex: 1;
-  }
-  .mobile-header .horas span:first-child { width: 70px; }
-  .mobile-header .horas span:nth-child(2) { width: 70px; }
-  .mobile-header .horas span:last-child { width: 60px; text-align: right; }
-
-  .trow.mobile {
-    display: block;
-    border-bottom: 1px solid rgba(255,255,255,.06);
-    padding: 0;
-  }
-  .row-main {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 12px;
-    cursor: pointer;
-    background: rgba(255,255,255,.02);
-  }
-  .row-main .horas {
-    display: flex;
-    gap: 8px;
-    flex: 1;
-    font-size: 13px;
-  }
-  .row-main .horas span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .row-main .horas span:first-child { width: 70px; }
-  .row-main .horas span:nth-child(2) { width: 70px; }
-  .row-main .horas span:last-child { width: 60px; text-align: right; }
-  .expand-icon {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    background: var(--glass);
-    border: 1px solid var(--stroke);
-    font-size: 16px;
-    font-weight: bold;
-    color: var(--txt-1);
-    transition: transform 0.2s;
-  }
-  .row-detail {
-    display: none;
-    padding: 8px 12px 12px;
-    background: rgba(0,0,0,.2);
-    border-top: 1px solid rgba(255,255,255,.05);
-    font-size: 13px;
-    grid-template-columns: 1fr auto;
-    gap: 8px;
-  }
-  .row-detail .instalacion {
-    color: var(--txt-0);
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .row-detail .estado {
-    justify-self: end;
-  }
-  .trow.mobile.expanded .row-detail {
-    display: grid;
-  }
-  .trow.mobile.expanded .expand-icon {
-    transform: rotate(45deg);
-  }
-
-  /* Footer block */
-  .footerBlock{
-    margin-top:14px;
-    padding-top:12px;
-    border-top:1px solid rgba(255,255,255,.08);
-  }
-  .footerActions{
-    margin-top:12px;
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    gap:10px;
-  }
-  .btn{
-    height:42px;
-    border-radius:14px;
-    border:1px solid var(--stroke);
-    background:var(--glass);
-    color:var(--txt-1);
-    font-weight:750;
-    font-size:var(--fs-btn);
-    letter-spacing:.2px;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    transition: opacity 0.2s;
-  }
-  .btn:disabled, .btn.disabled {
-    opacity: 0.4;
-    pointer-events: none;
-  }
-  .btn--primary, .btn.primary{
-    border-color:rgba(255,124,44,.75);
-    background:rgba(255,124,44,.06);
-    color:rgba(255,124,44,.95);
-    box-shadow:0 0 18px var(--glow-orange-2), inset 0 1px 0 rgba(255,255,255,.10);
-  }
-
-  /* Modal */
-  .modal-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(5px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  .modal {
-    background: var(--bg-1);
-    border: 1px solid var(--stroke);
-    border-radius: var(--radius-card);
-    padding: 24px;
-    max-width: 400px;
-    width: 90%;
-    box-shadow: var(--shadow-soft);
-    color: var(--txt-0);
-  }
-  .modal h3 {
-    margin-top: 0;
-  }
-  .modal-option {
-    margin: 12px 0;
-  }
-  .modal-option label {
-    margin-left: 8px;
-  }
-  .modal-input {
-    margin-top: 8px;
-    margin-left: 24px;
-  }
-  .modal-input input {
-    width: 100%;
-    padding: 8px;
-    border-radius: 8px;
-    border: 1px solid var(--stroke);
-    background: var(--glass);
-    color: var(--txt-0);
-  }
-  .modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 24px;
-  }
-  .modal-actions .btn {
-    width: auto;
-    padding: 0 20px;
-  }
-
-  /* Responsive */
-  @media (min-width: 1400px) {
-    .controlsRow {
-      grid-template-columns: repeat(4, 1fr) auto;
-    }
-    .tableHeader, .trow.desktop {
-      grid-template-columns: 26px 2fr 1fr 1fr 1fr 1fr;
-    }
-  }
-
-  /* Ajustes para móvil: scroll general */
-  @media (max-width:520px){
-    #wrap {
-      width: 98vw;
-      padding: 12px;
-      overflow-y: auto;
-      display: block;
-      max-height: 95vh;
-      height: 95vh;
-    }
-
-    .controlsRow{
-      grid-template-columns:1fr 1fr;
-      grid-auto-rows:min-content;
-    }
-    .controlsRow .applyBtn{
-      grid-column:1/-1;
-    }
-
-    .tableHeader {
-      display: none;
-    }
-
-    .mobile-header {
-      display: block;
-    }
-
-    .trow.desktop {
-      display: none;
-    }
-    .trow.mobile {
-      display: block;
-    }
-
-    .tableCard {
-      max-height: none;
-      height: auto;
-      min-height: 0;
-    }
-
-    .agendaBlock {
-      margin-top: 12px;
-    }
-    .agendaTitle {
-      margin-bottom: 5px;
-    }
-    .agendaMeta {
-      margin-bottom: 5px;
-    }
-  }
-
-  @media (max-width:380px){
-    :root{
-      --fs-title:24px;
-    }
-    .calendarGrid{gap:8px;}
-    .day{height:34px;}
-  }
-
-  /* ========== FULLSCREEN TOGGLE STYLES (solo móvil) ========== */
-  .fullscreen-toggle {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 48px;
-    height: 48px;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(12px);
-    border-radius: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    color: white;
-    cursor: pointer;
-    z-index: 10000;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    transition: all 0.2s ease;
-    border: 1px solid rgba(255,255,255,0.2);
-    font-weight: bold;
-    user-select: none;
-    touch-action: manipulation;
-  }
-  .fullscreen-toggle:active {
-    transform: scale(0.92);
-    background: rgba(0,0,0,0.8);
-  }
-  @media (min-width: 769px) {
-    .fullscreen-toggle {
-      display: none;
-    }
-  }
-  @media (max-width: 768px) {
-    .fullscreen-toggle {
-      display: flex;
-    }
-  }
-  html:fullscreen #stage.fullscreen-mode #plan,
-  html:-webkit-full-screen #stage.fullscreen-mode #plan,
-  html:-moz-full-screen #stage.fullscreen-mode #plan {
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    border-radius: 0;
-    box-shadow: none;
-  }
-  html:fullscreen #stage.fullscreen-mode #frame,
-  html:-webkit-full-screen #stage.fullscreen-mode #frame,
-  html:-moz-full-screen #stage.fullscreen-mode #frame {
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    border-radius: 0;
-  }
+@media (max-width:900px){
+#sidebar{display:none;}
+.hamburger{display:block;}
+.mobile-logo{display:flex;}
+#topbar h1{display:none;}
+#topbar{padding:12px 14px;}
+#content{padding:14px 12px 90px 12px;}
+.filters-row{gap:10px;}
+.filter-field select{min-width:0;flex:1;}
+.date-nav{width:100%;margin-left:0;justify-content:space-between;}
+.day-tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;}
+.day-tab{flex:0 0 auto;padding:8px 14px;border-radius:10px;background:#fff;border:1px solid var(--border);font-size:12.5px;font-weight:700;cursor:pointer;color:var(--muted);}
+.day-tab.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+.grid-wrap{display:none;}
+.mobile-list{display:block;}
+}
 </style>
 </head>
 <body>
-  <div id="stage">
-    <div id="frame"></div>
-    <div id="plan">
-      <div id="wrap">
-        <!-- Topbar eliminado -->
-        <div id="monthbar" class="panel monthBlock">
-          <div class="nav"><div class="iconbtn monthNav__btn" id="prevMonth">‹</div></div>
-          <div class="month monthNav__title" id="monthDisplay">—</div>
-          <div class="nav"><div class="iconbtn monthNav__btn" id="nextMonth">›</div></div>
-        </div>
-
-        <div id="calgrid" class="panel calendarCard">
-          <div class="head calendarCard__labelRow">
-            <div class="label calendarCard__label">
-              <span>CALENDARIO</span>
-              <span id="syncBadge">SYNC…</span>
-            </div>
-          </div>
-          <div class="weekheads weekdays" aria-hidden="true">
-            <div class="w">L</div><div class="w">M</div><div class="w">X</div><div class="w">J</div><div class="w">V</div><div class="w">S</div><div class="w">D</div>
-          </div>
-          <div class="days calendarGrid" id="days"></div>
-          <div id="legend" class="legend">
-            <span class="legend__item"><i class="dot on legend__dot"></i>HAY DATOS</span>
-            <span class="legend__item"><i class="dot legend__dot"></i>SIN DATOS</span>
-          </div>
-        </div>
-
-        <div id="filters" class="panel controlsRow">
-          <div class="select selectPill">
-            <select id="monthSelect">
-              <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
-            </select>
-            <span class="caret">▾</span>
-          </div>
-          <div class="select selectPill">
-            <select id="yearSelect"></select>
-            <span class="caret">▾</span>
-          </div>
-          <div class="select selectPill" id="socorristaSelectContainer">
-            <select id="socorristaSelect">
-              <option value="">Todos los socorristas</option>
-            </select>
-            <span class="caret">▾</span>
-          </div>
-          <div class="select selectPill">
-            <select id="modeSelect">
-              <option value="dia">Por día</option>
-              <option value="todo">Ver todo (desde hoy)</option>
-            </select>
-            <span class="caret">▾</span>
-          </div>
-          <div class="btn primary applyBtn" id="applyFilters">Aplicar</div>
-        </div>
-
-        <div id="agenda" class="panel agendaBlock">
-          <h3 class="agendaTitle">Agenda del día</h3>
-          <div class="meta agendaMeta" id="agendaMeta">
-            <div><b>Fecha:</b> <span id="fechaDisplay">—</span></div>
-            <div><b>Usuario:</b> <span id="userDisplay">__AUTH_USER_HTML__</span> (<span id="roleDisplay">__AUTH_ROLE_HTML__</span>)</div>
-          </div>
-          <div id="table" class="tableCard">
-            <!-- Cabecera para móvil -->
-            <div class="mobile-header">
-              <div style="width:26px;"></div> <!-- checkbox placeholder -->
-              <div class="horas">
-                <span>Inicio</span>
-                <span>Finaliza</span>
-                <span>Horas</span>
-              </div>
-              <div style="width:24px;"></div>
-            </div>
-            <!-- Cabecera para desktop -->
-            <div id="thead" class="tableHeader">
-              <div></div><div>Instalación</div><div>Inicio</div><div>Finaliza</div><div>Horas</div><div>Estado</div>
-            </div>
-            <div id="tbody"></div>
-          </div>
-        </div>
-
-        <div id="bottom" class="panel footerBlock">
-          <div class="actions footerActions">
-            <button class="btn" id="btnAplicar">Aplicar</button>
-            <button class="btn" id="btnModificar">Modificar</button>
-            <button class="btn primary btn--primary" id="btnEnviar">Enviar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal para Modificar -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal" id="modal">
-      <h3>Modificar turno</h3>
-      <div class="modal-option">
-        <input type="radio" name="modalOption" id="optLiberar" value="liberar" checked>
-        <label for="optLiberar">Liberar Turno</label>
-      </div>
-      <div class="modal-option">
-        <input type="radio" name="modalOption" id="optNovedad" value="novedad">
-        <label for="optNovedad">Novedad</label>
-        <div class="modal-input" id="novedadInput" style="display:none;">
-          <input type="text" placeholder="Escriba la novedad...">
-        </div>
-      </div>
-      <div class="modal-option">
-        <input type="radio" name="modalOption" id="optCalamidad" value="calamidad">
-        <label for="optCalamidad">Calamidad</label>
-      </div>
-      <div class="modal-actions">
-        <button class="btn" id="modalCancel">Cancelar</button>
-        <button class="btn primary" id="modalSend">Enviar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Botón de pantalla completa (solo móvil) -->
-  <div id="fullscreenToggleBtn" class="fullscreen-toggle">⤢</div>
+<div id="app">
+<div id="sidebar"><div class="logo-row"><img src="__LOGO_URL__"/><span>SYNTRA</span></div><div id="navList"></div></div>
+<div class="mobile-drawer" id="drawer">
+<div class="overlay" id="drawerOverlay"></div>
+<div class="panel"><div class="logo-row"><img src="__LOGO_URL__"/><span>SYNTRA</span></div><div id="navListMobile"></div></div>
+</div>
+<div id="main">
+<div id="topbar">
+<button class="hamburger" id="hamburgerBtn">&#9776;</button>
+<h1>Horarios</h1>
+<div class="mobile-logo"><img src="__LOGO_URL__"/>SYNTRA</div>
+<div></div>
+</div>
+<div id="content">
+<div class="filters-row">
+<div class="filter-field"><label>Instalaci&oacute;n</label>
+<select id="instFilter"><option value="">Todas</option></select>
+</div>
+<div class="date-nav">
+<button id="prevWeek">&#8249;</button>
+<span class="date-label" id="weekLabel">&#128197; Cargando...</span>
+<button id="nextWeek">&#8250;</button>
+</div>
+</div>
+<div class="day-tabs" id="dayTabs"></div>
+<div class="grid-wrap"><table class="cal"><thead><tr id="calHeadRow"></tr></thead><tbody id="calBody"></tbody></table></div>
+<div class="mobile-list" id="mobileList"></div>
+<div class="legend">
+<span><span class="dot manana"></span>Ma&ntilde;ana</span>
+<span><span class="dot tarde"></span>Tarde</span>
+<span><span class="dot noche"></span>Noche</span>
+<span><span class="dot libre"></span>Libre</span>
+</div>
+</div>
+</div>
+</div>
 
 <script>
 (function(){
-  const API_BASE = "https://camilo27.pythonanywhere.com";
-  const ENDPOINT_MALLAS = API_BASE + "/api/mallas";
-
-  // Usuario autenticado (desde parámetros URL)
-  const AUTH = __AUTH_JSON__;
-  const CURRENT_USER = String(AUTH.user || "");
-  const CURRENT_ROLE = String(AUTH.role || "").toLowerCase();
-  const CURRENT_DNI = String(AUTH.dni || "");
-
-
-  const IS_SOCORRISTA = CURRENT_ROLE === "socorrista";
-  const IS_ADMIN_OR_DIRECTIVO = CURRENT_ROLE === "administrador" || CURRENT_ROLE === "directivo";
-
-  let currentDate = new Date();
-  currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-
-  let selectedDate = new Date(currentDate);
-  let currentMonth = selectedDate.getMonth();
-  let currentYear = selectedDate.getFullYear();
-
-  let ALL_ROWS = [];
-  let AVAILABLE_DATES = new Set();
-  let SOCORRISTAS = [];
-
-  let FILTER_SOCORRISTA = "";
-  let FILTER_MODE = "dia";
-
-  let selectedRows = new Set();
-  let currentFilteredRows = [];
-
-  // Variable para almacenar el nombre de la columna DNI detectada
-  let DNI_COLUMN_NAME = null;
-
-  // Si es socorrista, ocultar el filtro de socorristas
-  if (IS_SOCORRISTA) {
-    document.addEventListener('DOMContentLoaded', function() {
-      const container = document.getElementById('socorristaSelectContainer');
-      if (container) container.style.display = 'none';
-    });
-  }
-
-  function pad2(n){ return String(n).padStart(2,'0'); }
-
-  function toKeyYMD(y,m,d){
-    return `${y}-${pad2(m)}-${pad2(d)}`;
-  }
-
-  function formatDateKey(date) {
-    return toKeyYMD(date.getFullYear(), date.getMonth()+1, date.getDate());
-  }
-
-  function formatDisplayDate(date) {
-    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
-  }
-
-  // Función mejorada para parsear fechas
-  function parseSheetDateToKey(fechaStr) {
-    const s = (fechaStr || "").trim();
-    if (!s) return "";
-    
-    const parts = s.split('/');
-    if (parts.length === 3) {
-      let dd = parts[0].padStart(2, '0');
-      let mm = parts[1].padStart(2, '0');
-      let yyyy = parts[2];
-      if (yyyy.length === 4 && mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) {
-        return `${yyyy}-${mm}-${dd}`;
-      }
-    }
-    
-    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-      return s;
-    }
-    
-    const d = new Date(s);
-    if (!isNaN(d.getTime())) {
-      return d.getFullYear() + '-' + 
-             pad2(d.getMonth() + 1) + '-' + 
-             pad2(d.getDate());
-    }
-    
-    return "";
-  }
-
-  function getField(row, keys){
-    for(const k of keys){
-      if(row && Object.prototype.hasOwnProperty.call(row, k)) return row[k];
-    }
-    return "";
-  }
-
-  // Función para detectar automáticamente la columna DNI
-  function detectDNIColumn(row) {
-    const possibleNames = [
-      "DNI", "dni", "Cédula", "cedula", "Documento", "documento",
-      "Cedula de ciudadania", "Numero documento", "Número documento",
-      "Identificación", "identificacion", "ID", "id"
-    ];
-    for (let name of possibleNames) {
-      if (row.hasOwnProperty(name)) {
-        return name;
-      }
-    }
-    return null;
-  }
-
-  function normalizeEstado(s){
-    const v = String(s || "").trim().toLowerCase();
-    if(!v) return {label:"OTRO", cls:"other"};
-    if(v.includes("libre")) return {label:"LIBRE", cls:"free"};
-    if(v.includes("ocup")) return {label:"OCUPADO", cls:"busy"};
-    return {label:String(s).toUpperCase(), cls:"other"};
-  }
-
-  function getDisplayStatus(row) {
-    const rawEstado = getField(row, ["estado","Estado","estado "]).toLowerCase().trim();
-    const socorrista = getField(row, ["Socorrista","socorrista"]).trim();
-    if (rawEstado.includes("disponible")) {
-      return { label: "Disponible", cls: "free" };
-    } else if (rawEstado.includes("programado")) {
-      if (socorrista.toLowerCase() === CURRENT_USER.toLowerCase()) {
-        return { label: "Programado", cls: "free" };
-      } else {
-        return { label: "Cerrado", cls: "busy" };
-      }
-    } else {
-      return normalizeEstado(rawEstado);
-    }
-  }
-
-  function formatTime(t) {
-    if (!t) return '-';
-    const str = String(t);
-    return str.replace(/(\d{1,2}:\d{2}):\d{2}$/, '$1');
-  }
-
-  function setSyncBadge(ok, text){
-    const el = document.getElementById("syncBadge");
-    el.textContent = text;
-    el.className = ok ? "ok" : "err";
-  }
-
-  function daysInMonth(year, month) {
-    return new Date(year, month + 1, 0).getDate();
-  }
-
-  function getFirstDayOfMonth(year, month) {
-    let day = new Date(year, month, 1).getDay();
-    return day === 0 ? 7 : day;
-  }
-
-  function getMonthDays(year, month) {
-    const firstDay = getFirstDayOfMonth(year, month);
-    const totalDays = daysInMonth(year, month);
-    const days = [];
-    const prevMonthDays = firstDay - 1;
-    if (prevMonthDays > 0) {
-      const prevMonth = month === 0 ? 11 : month - 1;
-      const prevYear = month === 0 ? year - 1 : year;
-      const daysPrev = daysInMonth(prevYear, prevMonth);
-      for (let i = prevMonthDays; i > 0; i--) {
-        days.push({ date: new Date(prevYear, prevMonth, daysPrev - i + 1), currentMonth: false });
-      }
-    }
-    for (let d = 1; d <= totalDays; d++) {
-      days.push({ date: new Date(year, month, d), currentMonth: true });
-    }
-    const remaining = 7 - (days.length % 7);
-    if (remaining < 7) {
-      const nextMonth = month === 11 ? 0 : month + 1;
-      const nextYear = month === 11 ? year + 1 : year;
-      for (let i = 1; i <= remaining; i++) {
-        days.push({ date: new Date(nextYear, nextMonth, i), currentMonth: false });
-      }
-    }
-    while (days.length < 42) {
-      const last = days[days.length - 1].date;
-      const nd = new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1);
-      days.push({ date: nd, currentMonth: false });
-    }
-    if (days.length > 42) days.length = 42;
-    return days;
-  }
-
-  function updateMonthYearDisplay(year, month) {
-    document.getElementById('monthSelect').value = month;
-    document.getElementById('yearSelect').value = year;
-  }
-
-  function renderCalendar(year, month) {
-    const daysEl = document.getElementById('days');
-    daysEl.innerHTML = '';
-    const days = getMonthDays(year, month);
-    days.forEach(dayInfo => {
-      const date = dayInfo.date;
-      const cell = document.createElement('div');
-      cell.className = 'day';
-      cell.textContent = date.getDate();
-      if (!dayInfo.currentMonth) cell.classList.add('dim');
-      const isPast = date < currentDate;
-      if(isPast) cell.classList.add('past');
-      const key = formatDateKey(date);
-      if(AVAILABLE_DATES.has(key)) cell.classList.add('hasdata');
-      if (date.getFullYear() === selectedDate.getFullYear() &&
-          date.getMonth() === selectedDate.getMonth() &&
-          date.getDate() === selectedDate.getDate()) {
-        cell.classList.add('sel');
-      }
-      cell.addEventListener('click', function() {
-        if(date < currentDate) return;
-        selectedDate = new Date(date);
-        if (date.getMonth() !== month || date.getFullYear() !== year) {
-          currentMonth = date.getMonth();
-          currentYear = date.getFullYear();
-          renderCalendar(currentYear, currentMonth);
-          updateMonthYearDisplay(currentYear, currentMonth);
-        } else {
-          renderCalendar(year, month);
-        }
-        updateAgenda();
-        updateBottomBar();
-      });
-      daysEl.appendChild(cell);
-    });
-    document.getElementById('monthDisplay').textContent =
-      new Date(year, month, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
-  }
-
-  function getFilteredRows(){
-    const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
-    const keySel = formatDateKey(selectedDate);
-    
-    return ALL_ROWS.filter(r => {
-      const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
-      if(!fechaKey) return false;
-      if(fechaKey < formatDateKey(currentDate)) return false;
-      
-      // 🔥 FILTRO POR DNI PARA SOCORRISTA
-      if (IS_SOCORRISTA && CURRENT_DNI) {
-        // Usar la columna DNI detectada
-        let rowDNI = "";
-        if (DNI_COLUMN_NAME) {
-          rowDNI = String(r[DNI_COLUMN_NAME] || "").trim();
-        } else {
-          // Fallback: buscar en posibles nombres
-          rowDNI = String(getField(r, ["DNI", "dni", "Cédula", "cedula", "Documento", "documento", "Cedula de ciudadania", "Numero documento"])).trim();
-        }
-        // Comparación exacta, insensible a mayúsculas/minúsculas
-        if (rowDNI.toLowerCase() !== CURRENT_DNI.toLowerCase()) return false;
-      }
-      
-      // Para ADMIN/DIRECTIVO, aplicar filtro por socorrista si está seleccionado
-      if (!IS_SOCORRISTA && soc) {
-        const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
-        if(rs !== soc) return false;
-      }
-      
-      if(FILTER_MODE === "dia"){
-        return fechaKey === keySel;
-      }
-      return true;
-    });
-  }
-
-  function isMobile() {
-    return window.innerWidth <= 520;
-  }
-
-  function updateButtons() {
-    const aplicarBtn = document.getElementById('btnAplicar');
-    const modificarBtn = document.getElementById('btnModificar');
-    if (!aplicarBtn || !modificarBtn) return;
-
-    const selectedIndices = Array.from(selectedRows);
-    if (selectedIndices.length === 0) {
-      aplicarBtn.disabled = true;
-      modificarBtn.disabled = true;
-      return;
-    }
-
-    let allDisponible = true;
-    let allProgramado = true;
-
-    for (let idx of selectedIndices) {
-      const row = currentFilteredRows[idx];
-      if (!row) continue;
-      const status = getDisplayStatus(row).label;
-      if (status !== 'Disponible') allDisponible = false;
-      if (status !== 'Programado') allProgramado = false;
-    }
-
-    aplicarBtn.disabled = !allDisponible;
-    modificarBtn.disabled = !allProgramado;
-  }
-
-  function buildDesktopRow(r, idx) {
-    const inst = getField(r, ["Instalacion","Instalación","instalacion"]);
-    const ini  = formatTime(getField(r, ["Ingreso","Inicio","ingreso","inicio"]));
-    const fin  = formatTime(getField(r, ["Salida","Finaliza","finaliza","salida"]));
-    const hrs  = formatTime(getField(r, ["Intensidad_horaria","Intensidad_ho","Horas","horas"]));
-    const est = getDisplayStatus(r);
-
-    const row = document.createElement('div');
-    row.className = 'trow desktop';
-    row.dataset.index = idx;
-
-    const col0 = document.createElement('div');
-    const chk = document.createElement('input');
-    chk.type = 'checkbox';
-    chk.className = 'row-checkbox';
-    chk.dataset.index = idx;
-    chk.checked = selectedRows.has(idx);
-    chk.addEventListener('click', (e) => e.stopPropagation());
-    chk.addEventListener('change', (e) => {
-      if (e.target.checked) {
-        selectedRows.add(idx);
-      } else {
-        selectedRows.delete(idx);
-      }
-      updateButtons();
-    });
-    col0.appendChild(chk);
-
-    const col1 = document.createElement('div'); col1.textContent = inst || '-';
-    const col2 = document.createElement('div'); col2.textContent = ini;
-    const col3 = document.createElement('div'); col3.textContent = fin;
-    const col4 = document.createElement('div'); col4.textContent = hrs;
-    const col5 = document.createElement('div');
-    const statusSpan = document.createElement('span');
-    statusSpan.className = 'status ' + est.cls;
-    statusSpan.textContent = est.label;
-    col5.appendChild(statusSpan);
-
-    row.appendChild(col0);
-    row.appendChild(col1);
-    row.appendChild(col2);
-    row.appendChild(col3);
-    row.appendChild(col4);
-    row.appendChild(col5);
-
-    return row;
-  }
-
-  function buildMobileRow(r, idx) {
-    const inst = getField(r, ["Instalacion","Instalación","instalacion"]) || '-';
-    const ini  = formatTime(getField(r, ["Ingreso","Inicio","ingreso","inicio"]));
-    const fin  = formatTime(getField(r, ["Salida","Finaliza","finaliza","salida"]));
-    const hrs  = formatTime(getField(r, ["Intensidad_horaria","Intensidad_ho","Horas","horas"]));
-    const est = getDisplayStatus(r);
-
-    const row = document.createElement('div');
-    row.className = 'trow mobile';
-    row.dataset.index = idx;
-
-    const main = document.createElement('div');
-    main.className = 'row-main';
-
-    const chk = document.createElement('input');
-    chk.type = 'checkbox';
-    chk.className = 'row-checkbox';
-    chk.dataset.index = idx;
-    chk.checked = selectedRows.has(idx);
-    chk.addEventListener('click', (e) => e.stopPropagation());
-    chk.addEventListener('change', (e) => {
-      if (e.target.checked) {
-        selectedRows.add(idx);
-      } else {
-        selectedRows.delete(idx);
-      }
-      updateButtons();
-    });
-    main.appendChild(chk);
-
-    const horasDiv = document.createElement('div');
-    horasDiv.className = 'horas';
-    const spanIni = document.createElement('span'); spanIni.textContent = ini;
-    const spanFin = document.createElement('span'); spanFin.textContent = fin;
-    const spanHrs = document.createElement('span'); spanHrs.textContent = hrs;
-    horasDiv.appendChild(spanIni);
-    horasDiv.appendChild(spanFin);
-    horasDiv.appendChild(spanHrs);
-
-    const expandIcon = document.createElement('div');
-    expandIcon.className = 'expand-icon';
-    expandIcon.textContent = '+';
-
-    main.appendChild(horasDiv);
-    main.appendChild(expandIcon);
-
-    const detail = document.createElement('div');
-    detail.className = 'row-detail';
-
-    const instDiv = document.createElement('div');
-    instDiv.className = 'instalacion';
-    instDiv.textContent = inst;
-
-    const estadoDiv = document.createElement('div');
-    estadoDiv.className = 'estado';
-    const statusSpan = document.createElement('span');
-    statusSpan.className = 'status ' + est.cls;
-    statusSpan.textContent = est.label;
-    estadoDiv.appendChild(statusSpan);
-
-    detail.appendChild(instDiv);
-    detail.appendChild(estadoDiv);
-
-    row.appendChild(main);
-    row.appendChild(detail);
-
-    main.addEventListener('click', function(e) {
-      if (e.target.type === 'checkbox') return;
-      e.stopPropagation();
-      row.classList.toggle('expanded');
-      expandIcon.textContent = row.classList.contains('expanded') ? '−' : '+';
-    });
-
-    return row;
-  }
-
-  function updateAgenda(){
-    const tbody = document.getElementById('tbody');
-    tbody.innerHTML = '';
-
-    if(FILTER_MODE === "dia"){
-      document.getElementById('fechaDisplay').textContent = formatDisplayDate(selectedDate);
-    }else{
-      document.getElementById('fechaDisplay').textContent = "Desde hoy";
-    }
-
-    const rows = getFilteredRows();
-    currentFilteredRows = rows;
-    selectedRows.clear();
-
-    if(rows.length === 0){
-      const empty = document.createElement('div');
-      empty.className = isMobile() ? 'trow mobile' : 'trow desktop';
-      empty.style.textAlign = 'center';
-      empty.style.padding = '20px';
-      empty.innerHTML = '<div class="muted">Sin registros para el filtro actual</div>';
-      tbody.appendChild(empty);
-      updateButtons();
-      return;
-    }
-
-    const mobile = isMobile();
-    rows.forEach((r, idx) => {
-      const row = mobile ? buildMobileRow(r, idx) : buildDesktopRow(r, idx);
-      tbody.appendChild(row);
-    });
-
-    updateButtons();
-  }
-
-  function updateBottomBar(){}
-
-  function changeMonth(delta) {
-    let newMonth = currentMonth + delta;
-    let newYear = currentYear;
-    if (newMonth < 0) { newMonth = 11; newYear--; }
-    else if (newMonth > 11) { newMonth = 0; newYear++; }
-    currentMonth = newMonth;
-    currentYear = newYear;
-    let newSelectedDay = selectedDate.getDate();
-    const dim = daysInMonth(newYear, newMonth);
-    if (newSelectedDay > dim) newSelectedDay = dim;
-    selectedDate = new Date(newYear, newMonth, newSelectedDay);
-    renderCalendar(currentYear, currentMonth);
-    updateAgenda();
-    updateMonthYearDisplay(currentYear, currentMonth);
-  }
-
-  function fillSocorristaSelect(){
-    const sel = document.getElementById("socorristaSelect");
-    sel.innerHTML = '<option value="">Todos los socorristas</option>';
-    SOCORRISTAS.forEach(name => {
-      const opt = document.createElement("option");
-      opt.value = name;
-      opt.textContent = name;
-      sel.appendChild(opt);
-    });
-    sel.value = FILTER_SOCORRISTA || "";
-  }
-
-  function rebuildAvailability(){
-    AVAILABLE_DATES = new Set();
-    const soc = (FILTER_SOCORRISTA || "").trim().toLowerCase();
-    
-    ALL_ROWS.forEach(r => {
-      const fechaKey = parseSheetDateToKey(getField(r, ["Fecha","fecha"]));
-      if(!fechaKey) return;
-      if(fechaKey < formatDateKey(currentDate)) return;
-      
-      if (IS_SOCORRISTA && CURRENT_DNI) {
-        let rowDNI = "";
-        if (DNI_COLUMN_NAME) {
-          rowDNI = String(r[DNI_COLUMN_NAME] || "").trim();
-        } else {
-          rowDNI = String(getField(r, ["DNI", "dni", "Cédula", "cedula", "Documento", "documento", "Cedula de ciudadania", "Numero documento"])).trim();
-        }
-        if (rowDNI.toLowerCase() !== CURRENT_DNI.toLowerCase()) return;
-      } else if (!IS_SOCORRISTA && soc) {
-        const rs = String(getField(r, ["Socorrista","socorrista"])).trim().toLowerCase();
-        if(rs !== soc) return;
-      }
-      
-      AVAILABLE_DATES.add(fechaKey);
-    });
-  }
-
-  async function loadMallas(){
-    setSyncBadge(false, "SYNC…");
-    try{
-      const res = await fetch(ENDPOINT_MALLAS, {method:"GET"});
-      if(!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
-      if(!data || data.ok !== true || !Array.isArray(data.rows)) throw new Error("JSON inválido");
-
-      ALL_ROWS = data.rows;
-      if (ALL_ROWS.length > 0) {
-        DNI_COLUMN_NAME = detectDNIColumn(ALL_ROWS[0]);
-      } else {
-        DNI_COLUMN_NAME = null;
-      }
-      
-      // Construir lista de socorristas según el rol
-      if (IS_SOCORRISTA) {
-        const setS = new Set();
-        ALL_ROWS.forEach(r => {
-          // Filtro por DNI para incluir solo sus propios registros en la lista
-          let rowDNI = "";
-          if (DNI_COLUMN_NAME) {
-            rowDNI = String(r[DNI_COLUMN_NAME] || "").trim();
-          } else {
-            rowDNI = String(getField(r, ["DNI", "dni", "Cédula", "cedula", "Documento", "documento", "Cedula de ciudadania", "Numero documento"])).trim();
-          }
-          if (rowDNI.toLowerCase() === CURRENT_DNI.toLowerCase()) {
-            const s = String(getField(r, ["Socorrista","socorrista"])).trim();
-            if (s) setS.add(s);
-          }
-        });
-        SOCORRISTAS = Array.from(setS).sort((a,b)=>a.localeCompare(b, 'es', {sensitivity:'base'}));
-      } else {
-        const setS = new Set();
-        ALL_ROWS.forEach(r => {
-          const s = String(getField(r, ["Socorrista","socorrista"])).trim();
-          if(s) setS.add(s);
-        });
-        SOCORRISTAS = Array.from(setS).sort((a,b)=>a.localeCompare(b, 'es', {sensitivity:'base'}));
-      }
-      
-      fillSocorristaSelect();
-      rebuildAvailability();
-      setSyncBadge(true, "SYNC OK");
-      renderCalendar(currentYear, currentMonth);
-      updateAgenda();
-    }catch(e){
-      ALL_ROWS = [];
-      SOCORRISTAS = [];
-      AVAILABLE_DATES = new Set();
-      setSyncBadge(false, "SYNC ERROR");
-      renderCalendar(currentYear, currentMonth);
-      updateAgenda();
-    }
-  }
-
-  // Modal logic
-  const modalOverlay = document.getElementById('modalOverlay');
-  const modalCancel = document.getElementById('modalCancel');
-  const modalSend = document.getElementById('modalSend');
-  const optNovedad = document.getElementById('optNovedad');
-  const novedadInput = document.getElementById('novedadInput');
-
-  function showModal() {
-    modalOverlay.style.display = 'flex';
-  }
-
-  function hideModal() {
-    modalOverlay.style.display = 'none';
-  }
-
-  if (optNovedad) {
-    optNovedad.addEventListener('change', function(e) {
-      novedadInput.style.display = e.target.checked ? 'block' : 'none';
-    });
-  }
-
-  if (modalCancel) modalCancel.addEventListener('click', hideModal);
-  if (modalSend) {
-    modalSend.addEventListener('click', function() {
-      hideModal();
-    });
-  }
-
-  if (modalOverlay) {
-    modalOverlay.addEventListener('click', function(e) {
-      if (e.target === modalOverlay) hideModal();
-    });
-  }
-
-  function init() {
-    const yearSelect = document.getElementById('yearSelect');
-    const y0 = new Date().getFullYear();
-    for (let y = y0 - 5; y <= y0 + 5; y++) {
-      const opt = document.createElement('option');
-      opt.value = y;
-      opt.textContent = y;
-      yearSelect.appendChild(opt);
-    }
-    updateMonthYearDisplay(currentYear, currentMonth);
-
-    document.getElementById('prevMonth').addEventListener('click', () => changeMonth(-1));
-    document.getElementById('nextMonth').addEventListener('click', () => changeMonth(1));
-
-    document.getElementById('applyFilters').addEventListener('click', () => {
-      const newMonth = parseInt(document.getElementById('monthSelect').value);
-      const newYear = parseInt(document.getElementById('yearSelect').value);
-      
-      if (!IS_SOCORRISTA) {
-        FILTER_SOCORRISTA = document.getElementById('socorristaSelect').value || "";
-      }
-      
-      FILTER_MODE = document.getElementById('modeSelect').value || "dia";
-      currentMonth = newMonth;
-      currentYear = newYear;
-      let newSelectedDay = selectedDate.getDate();
-      const dim = daysInMonth(newYear, newMonth);
-      if (newSelectedDay > dim) newSelectedDay = dim;
-      selectedDate = new Date(newYear, newMonth, newSelectedDay);
-      rebuildAvailability();
-      renderCalendar(currentYear, currentMonth);
-      updateAgenda();
-      updateMonthYearDisplay(currentYear, currentMonth);
-    });
-
-    window.addEventListener('resize', function() {
-      updateAgenda();
-    });
-
-    const btnModificar = document.getElementById('btnModificar');
-    if (btnModificar) {
-      btnModificar.addEventListener('click', function() {
-        if (!this.disabled) {
-          showModal();
-        }
-      });
-    }
-
-    const btnAplicar = document.getElementById('btnAplicar');
-    const btnModificarEl = document.getElementById('btnModificar');
-    if (btnAplicar) btnAplicar.disabled = true;
-    if (btnModificarEl) btnModificarEl.disabled = true;
-
-    renderCalendar(currentYear, currentMonth);
-    updateAgenda();
-    loadMallas();
-  }
-
-  init();
+var API_BASE = __API_BASE__;
+var AUTH_USER = __AUTH_USER__;
+var AUTH_ROLE = __AUTH_ROLE__;
+var AUTH_DNI = __AUTH_DNI__;
+var CAN_MANAGE_SCHEDULES = __CAN_MANAGE_SCHEDULES__;
+var CAN_REGISTER_USERS = __CAN_REGISTER_USERS__;
+var IS_SOCORRISTA = __IS_SOCORRISTA__;
+
+function qs(){
+var p = new URLSearchParams();
+p.set("usuario", AUTH_USER);
+p.set("rol", AUTH_ROLE);
+p.set("dni", AUTH_DNI);
+return "?" + p.toString();
+}
+function goToPage(path){ window.open(path + qs(), "_blank"); }
+
+var NAV_ITEMS = [
+{label:"Inicio", icon:"&#8962;", go:"/"},
+{label:"Horarios", icon:"&#128197;", go:"/calendario", active:true},
+{label:"Incidencias y Comunicados", icon:"&#128172;", go:"/chat_interfaz"},
+{sep:true},
+{label:"Registro", icon:"&#128100;+", go:"/altas_registro", badge:"Solo admin"},
+{label:"Gesti&oacute;n de Horarios", icon:"&#9881;", go:"/editar_horarios", badge:"Solo admin"}
+];
+
+function renderNav(containerId){
+var el = document.getElementById(containerId);
+var parts = [];
+NAV_ITEMS.forEach(function(item){
+if (item.sep){ parts.push('<div class="nav-sep"></div>'); return; }
+var cls = "nav-item" + (item.active ? " active" : "");
+var badge = item.badge ? '<span class="nav-badge">' + item.badge + '</span>' : "";
+parts.push('<div class="' + cls + '" data-go="' + item.go + '"><span>' + item.icon + '</span><span>' + item.label + '</span>' + badge + '</div>');
+});
+parts.push('<div class="nav-bottom"><div class="nav-item" id="logout_' + containerId + '"><span>&#8630;</span><span>Cerrar sesi&oacute;n</span></div></div>');
+el.innerHTML = parts.join("");
+el.querySelectorAll(".nav-item[data-go]").forEach(function(node){
+node.addEventListener("click", function(){ goToPage(node.getAttribute("data-go")); });
+});
+var lo = document.getElementById("logout_" + containerId);
+if (lo) lo.addEventListener("click", function(){ window.open("/admin" + qs(), "_blank"); });
+}
+renderNav("navList");
+renderNav("navListMobile");
+
+var drawer = document.getElementById("drawer");
+document.getElementById("hamburgerBtn").addEventListener("click", function(){ drawer.classList.add("open"); });
+document.getElementById("drawerOverlay").addEventListener("click", function(){ drawer.classList.remove("open"); });
+
+var DIAS_ES = ["Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sabado"];
+var DIAS_CORTO = ["Dom","Lun","Mar","Mie","Jue","Vie","Sab"];
+
+function pad2(n){ return String(n).padStart(2,"0"); }
+function ymd(d){ return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate()); }
+
+function parseFecha(str){
+str = (str || "").trim();
+if (!str) return null;
+var parts = str.split("/");
+if (parts.length === 3){
+var d = parseInt(parts[0],10), m = parseInt(parts[1],10)-1, y = parseInt(parts[2],10);
+return new Date(y, m, d);
+}
+var dt = new Date(str);
+return isNaN(dt.getTime()) ? null : dt;
+}
+
+function startOfWeek(d){
+var day = d.getDay();
+var diff = (day === 0 ? -6 : 1) - day;
+var res = new Date(d);
+res.setDate(d.getDate() + diff);
+res.setHours(0,0,0,0);
+return res;
+}
+
+var mallasCache = [];
+var weekStart = startOfWeek(new Date());
+var activeDayIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+
+function turnoClass(ingreso){
+var h = parseInt((ingreso || "0").split(":")[0], 10);
+if (h < 13) return "manana";
+if (h < 19) return "tarde";
+return "noche";
+}
+
+function getWeekDays(){
+var days = [];
+for (var i = 0; i < 7; i++){
+var d = new Date(weekStart);
+d.setDate(weekStart.getDate() + i);
+days.push(d);
+}
+return days;
+}
+
+function updateWeekLabel(){
+var days = getWeekDays();
+var first = days[0], last = days[6];
+var monthsEs = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+var label = "&#128197; " + first.getDate() + " - " + last.getDate() + " " + monthsEs[last.getMonth()] + " " + last.getFullYear();
+document.getElementById("weekLabel").innerHTML = label;
+}
+
+function populateInstFilter(){
+var sel = document.getElementById("instFilter");
+var seen = {};
+mallasCache.forEach(function(r){
+var inst = (r["Instalacion"] || "").trim();
+if (inst && inst.toLowerCase() !== "descanso") seen[inst] = true;
+});
+var names = Object.keys(seen).sort();
+names.forEach(function(n){
+var opt = document.createElement("option");
+opt.value = n; opt.textContent = n;
+sel.appendChild(opt);
+});
+}
+
+function filteredRows(){
+var instFilter = document.getElementById("instFilter").value;
+return mallasCache.filter(function(r){
+var inst = (r["Instalacion"] || "").trim();
+if (!inst || inst.toLowerCase() === "descanso") return false;
+if (instFilter && inst !== instFilter) return false;
+return true;
+});
+}
+
+function renderDesktopGrid(){
+var days = getWeekDays();
+var rows = filteredRows();
+
+var instSet = {};
+rows.forEach(function(r){
+var d = parseFecha(r["Fecha"]);
+if (!d) return;
+var key = ymd(d);
+var weekKeys = days.map(ymd);
+if (weekKeys.indexOf(key) === -1) return;
+instSet[r["Instalacion"]] = true;
+});
+var instalaciones = Object.keys(instSet).sort();
+
+var headRow = document.getElementById("calHeadRow");
+headRow.innerHTML = "<th>Instalaci&oacute;n</th>" + days.map(function(d,i){
+return "<th>" + DIAS_CORTO[d.getDay()] + " " + d.getDate() + "</th>";
+}).join("");
+
+var body = document.getElementById("calBody");
+if (!instalaciones.length){
+body.innerHTML = "<tr><td colspan='8' class='empty-note'>Sin turnos para esta semana.</td></tr>";
+return;
+}
+body.innerHTML = instalaciones.map(function(inst){
+var cells = days.map(function(d){
+var key = ymd(d);
+var matches = rows.filter(function(r){
+var rd = parseFecha(r["Fecha"]);
+return r["Instalacion"] === inst && rd && ymd(rd) === key;
+});
+if (!matches.length) return "<td></td>";
+var chips = matches.map(function(r){
+var cls = turnoClass(r["Ingreso"]);
+return "<div class='turno-chip " + cls + "'><div class='t'>" + (r["Ingreso"]||"") + " - " + (r["Salida"]||"") + "</div><div>" + (r["Socorrista"]||"") + "</div></div>";
+}).join("");
+return "<td>" + chips + "</td>";
+}).join("");
+return "<tr><td class='inst-cell'>" + inst + "</td>" + cells + "</tr>";
+}).join("");
+}
+
+function renderMobileList(){
+var days = getWeekDays();
+var activeDay = days[activeDayIndex];
+var key = ymd(activeDay);
+var rows = filteredRows().filter(function(r){
+var rd = parseFecha(r["Fecha"]);
+return rd && ymd(rd) === key;
+});
+
+var grouped = {};
+rows.forEach(function(r){
+var inst = r["Instalacion"];
+if (!grouped[inst]) grouped[inst] = [];
+grouped[inst].push(r);
+});
+
+var instNames = Object.keys(grouped).sort();
+var wrap = document.getElementById("mobileList");
+if (!instNames.length){
+wrap.innerHTML = "<div class='empty-note'>Sin turnos para este d&iacute;a.</div>";
+return;
+}
+wrap.innerHTML = instNames.map(function(inst){
+var turnos = grouped[inst].map(function(r){
+var cls = turnoClass(r["Ingreso"]);
+var bg = cls === "manana" ? "var(--manana)" : cls === "tarde" ? "var(--tarde)" : "var(--noche)";
+return "<div class='mobile-turno' style='background:" + bg + ";'><div class='t'>" + (r["Ingreso"]||"") + " - " + (r["Salida"]||"") + "</div><div class='n'>" + (r["Socorrista"]||"") + "</div></div>";
+}).join("");
+return "<div class='mobile-day-card'><div class='inst-name'>" + inst + "</div>" + turnos + "</div>";
+}).join("");
+}
+
+function renderDayTabs(){
+var days = getWeekDays();
+var tabsEl = document.getElementById("dayTabs");
+tabsEl.innerHTML = days.map(function(d, i){
+var cls = "day-tab" + (i === activeDayIndex ? " active" : "");
+return "<div class='" + cls + "' data-idx='" + i + "'>" + DIAS_CORTO[d.getDay()] + " " + d.getDate() + "</div>";
+}).join("");
+tabsEl.querySelectorAll(".day-tab").forEach(function(node){
+node.addEventListener("click", function(){
+activeDayIndex = parseInt(node.getAttribute("data-idx"), 10);
+renderDayTabs();
+renderMobileList();
+});
+});
+}
+
+function renderAll(){
+updateWeekLabel();
+renderDesktopGrid();
+renderDayTabs();
+renderMobileList();
+}
+
+document.getElementById("prevWeek").addEventListener("click", function(){
+weekStart.setDate(weekStart.getDate() - 7);
+renderAll();
+});
+document.getElementById("nextWeek").addEventListener("click", function(){
+weekStart.setDate(weekStart.getDate() + 7);
+renderAll();
+});
+document.getElementById("instFilter").addEventListener("change", renderAll);
+
+fetch(API_BASE + "/api/mallas")
+.then(function(r){ return r.json(); })
+.then(function(d){
+mallasCache = (d && d.ok && d.rows) ? d.rows : [];
+populateInstFilter();
+renderAll();
+})
+.catch(function(){
+document.getElementById("calBody").innerHTML = "<tr><td colspan='8' class='empty-note'>Error al cargar horarios.</td></tr>";
+document.getElementById("mobileList").innerHTML = "<div class='empty-note'>Error al cargar horarios.</div>";
+});
 })();
-
-// ==================== FULLSCREEN PERSISTENCE (solo móvil) ====================
-(function() {
-  const stageEl = document.getElementById("stage");
-  const toggleBtn = document.getElementById("fullscreenToggleBtn");
-  const isMobile = window.innerWidth <= 768;
-
-  function setFullscreenFlag(active) {
-    if (active) {
-      localStorage.setItem("fullscreenActive", "true");
-    } else {
-      localStorage.removeItem("fullscreenActive");
-    }
-  }
-
-  function enterFullscreen() {
-    const elem = document.documentElement;
-    const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
-    if (requestMethod) {
-      requestMethod.call(elem).then(() => {
-        if (stageEl) stageEl.classList.add("fullscreen-mode");
-        if (toggleBtn) {
-          toggleBtn.textContent = "✕";
-          toggleBtn.style.fontSize = "26px";
-        }
-        setFullscreenFlag(true);
-      }).catch(err => {
-        console.log("Error al entrar en fullscreen:", err);
-      });
-    }
-  }
-
-  function exitFullscreen() {
-    const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
-    if (exitMethod) {
-      exitMethod.call(document).then(() => {
-        if (stageEl) stageEl.classList.remove("fullscreen-mode");
-        if (toggleBtn) {
-          toggleBtn.textContent = "⤢";
-          toggleBtn.style.fontSize = "28px";
-        }
-        setFullscreenFlag(false);
-      }).catch(err => {
-        console.log("Error al salir de fullscreen:", err);
-      });
-    }
-  }
-
-  function toggleFullscreen() {
-    const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-    if (isFull) {
-      exitFullscreen();
-    } else {
-      enterFullscreen();
-    }
-  }
-
-  function onFullscreenChange() {
-    const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-    if (isFull) {
-      if (stageEl) stageEl.classList.add("fullscreen-mode");
-      if (toggleBtn) {
-        toggleBtn.textContent = "✕";
-        toggleBtn.style.fontSize = "26px";
-      }
-      setFullscreenFlag(true);
-    } else {
-      if (stageEl) stageEl.classList.remove("fullscreen-mode");
-      if (toggleBtn) {
-        toggleBtn.textContent = "⤢";
-        toggleBtn.style.fontSize = "28px";
-      }
-      setFullscreenFlag(false);
-    }
-  }
-
-  // Restaurar fullscreen si estaba activo (solo móvil)
-  if (isMobile) {
-    const savedFlag = localStorage.getItem("fullscreenActive");
-    if (savedFlag === "true") {
-      const isCurrentlyFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-      if (!isCurrentlyFull) {
-        enterFullscreen();
-      } else {
-        // Asegurar UI
-        if (stageEl) stageEl.classList.add("fullscreen-mode");
-        if (toggleBtn) {
-          toggleBtn.textContent = "✕";
-          toggleBtn.style.fontSize = "26px";
-        }
-      }
-    }
-  }
-
-  if (toggleBtn) {
-    toggleBtn.addEventListener("click", function(e) {
-      e.preventDefault();
-      toggleFullscreen();
-    });
-  }
-
-  document.addEventListener("fullscreenchange", onFullscreenChange);
-  document.addEventListener("webkitfullscreenchange", onFullscreenChange);
-  document.addEventListener("mozfullscreenchange", onFullscreenChange);
-  document.addEventListener("MSFullscreenChange", onFullscreenChange);
-})();
-// ==================== FIN FULLSCREEN PERSISTENCE ====================
 </script>
-
 </body>
 </html>
 """
 
-# Reemplazar placeholders (los mismos que antes)
-html = (html.replace("__PADX__", str(PAD_X_PX))
-        .replace("__PADTOP__", str(PAD_TOP_PX))
-        .replace("__B__", str(BORDER_PX))
-        .replace("__BC__", BORDER_COLOR)
-        .replace("__BG__", BG_COLOR)
-        .replace("__PANEL__", PANEL_BG)
-        .replace("__CARD__", CARD_BG)
-        .replace("__TXT__", TEXT_COLOR)
-        .replace("__MUTED__", MUTED_TEXT)
-        .replace("__FBASE__", str(FONT_BASE_PX))
-        .replace("__TITLE__", str(TITLE_PX))
-        .replace("__H2__", str(H2_PX))
-        .replace("__SMALL__", str(SMALL_PX))
-        .replace("__INNERL__", str(INNER_L))
-        .replace("__INNERR__", str(INNER_R))
-        .replace("__GAPY__", str(INNER_TOP_GAP))
-        .replace("__TOPBARH__", str(TOPBAR_H))
-        .replace("__MONTHBARH__", str(MONTHBAR_H))
-        .replace("__CALGRIDH__", str(CAL_GRID_H))
-        .replace("__FILTERSH__", str(FILTERS_H))
-        .replace("__AGENDAH__", str(AGENDA_H))
-        .replace("__BOTTOMH__", str(BOTTOMBAR_H))
-        .replace("__CELLGAP__", str(DAY_CELL_GAP_PX))
-        .replace("__CALCOLS__", str(CAL_COLS))
-        .replace("__CALROWS__", str(CAL_ROWS))
-        .replace("__AGENDAROWS__", str(AGENDA_ROWS))
-        .replace("__AUTH_JSON__", AUTH_JSON)
-        .replace("__AUTH_USER_HTML__", AUTH_USER_HTML)
-        .replace("__AUTH_ROLE_HTML__", AUTH_ROLE_HTML)
+html = (
+        html.replace("__LOGO_URL__", LOGO_URL)
+            .replace("__API_BASE__", _js_str(API_BASE))
+            .replace("__AUTH_USER__", _js_str(AUTH_USER))
+            .replace("__AUTH_ROLE__", _js_str(AUTH_ROLE))
+            .replace("__AUTH_DNI__", _js_str(AUTH_DNI))
+            .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
+            .replace("__CAN_REGISTER_USERS__", "true" if CAN_REGISTER_USERS else "false")
+            .replace("__IS_SOCORRISTA__", "true" if IS_SOCORRISTA else "false")
 )
 
-components.html(html, height=1100, scrolling=False)
+components.html(html, height=900, scrolling=True)
