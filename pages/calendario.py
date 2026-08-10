@@ -199,7 +199,7 @@ var IS_SOCORRISTA = __IS_SOCORRISTA__;
 
 function qs(){
 var p = new URLSearchParams();
-p.set("usuario", AUTH_USER);
+p.set("auth", "ok"); p.set("usuario", AUTH_USER);
 p.set("rol", AUTH_ROLE);
 p.set("dni", AUTH_DNI);
 return "?" + p.toString();
