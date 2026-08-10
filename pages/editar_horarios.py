@@ -236,7 +236,7 @@ p.set("rol", AUTH_ROLE);
 p.set("dni", AUTH_DNI);
 return "?" + p.toString();
 }
-function goToPage(path){ window.parent.location.href = path + qs(); }
+function goToPage(path){ window.open(path + qs(), "syntra_main"); }
 
 var NAV_ITEMS = [
 {label:"Inicio", icon:"&#8962;", go:"/"},
@@ -262,7 +262,7 @@ el.querySelectorAll(".nav-item[data-go]").forEach(function(node){
 node.addEventListener("click", function(){ goToPage(node.getAttribute("data-go")); });
 });
 var lo = document.getElementById("logout_" + containerId);
-if (lo) lo.addEventListener("click", function(){ window.parent.location.href = "/admin"; });
+if (lo) lo.addEventListener("click", function(){ window.open("/admin", "syntra_main"); });
 }
 renderNav("navList");
 renderNav("navListMobile");
