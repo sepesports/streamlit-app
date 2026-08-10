@@ -231,7 +231,7 @@ var AUTH_DNI = __AUTH_DNI__;
 
 function qs(){
 var p = new URLSearchParams();
-p.set("usuario", AUTH_USER);
+p.set("auth", "ok"); p.set("usuario", AUTH_USER);
 p.set("rol", AUTH_ROLE);
 p.set("dni", AUTH_DNI);
 return "?" + p.toString();
