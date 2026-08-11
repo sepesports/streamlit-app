@@ -84,9 +84,10 @@ html,body{margin:0;padding:0;height:100%;width:100%;font-family:"Inter","Segoe U
 flex:55 1 0;min-height:0;
 display:grid;grid-template-columns:230px 1fr;gap:16px;
 }
-/* Contenedor 2 = sidebar (fondo navy, integrado en la hoja) */
+/* Contenedor 2 = sidebar (fondo navy con borde externo) */
 #sidebar{
-min-height:0;display:flex;flex-direction:column;color:#eaf2ff;padding:18px 8px;
+min-height:0;display:flex;flex-direction:column;color:#eaf2ff;padding:18px 14px;
+border:1px solid rgba(255,255,255,.16);border-radius:12px;
 }
 .logo-row{display:flex;align-items:center;gap:10px;margin-bottom:26px;padding:0 4px;}
 .logo-row img{width:32px;height:32px;object-fit:contain;border-radius:6px;}
@@ -134,9 +135,11 @@ background:#fff;border:1px solid var(--border);border-radius:12px;
 padding:14px 14px;display:flex;flex-direction:column;gap:8px;
 box-shadow:0 4px 12px rgba(27,42,74,.06);min-height:0;
 }
+.qa-top{display:flex;align-items:flex-start;gap:12px;}
+.qa-textcol{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
 .qa-icon{
-width:40px;height:40px;border-radius:10px;background:var(--blue-soft);
-display:flex;align-items:center;justify-content:center;font-size:19px;color:var(--blue);flex:0 0 auto;
+width:60px;height:60px;border-radius:14px;background:var(--blue-soft);
+display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--blue);flex:0 0 auto;
 }
 .qa-card h3{margin:0;font-size:14px;font-weight:700;color:var(--navy);}
 .qa-card p{margin:0;font-size:12px;color:var(--muted);line-height:1.35;}
@@ -459,9 +462,9 @@ CARDS.forEach(function(c){
 var div = document.createElement("div");
 div.className = "qa-card";
 div.innerHTML =
-'<div class="qa-icon">' + c.icon + '</div>' +
-'<h3>' + c.title + '</h3>' +
-'<p>' + c.desc + '</p>' +
+'<div class="qa-top"><div class="qa-icon">' + c.icon + '</div>' +
+'<div class="qa-textcol"><h3>' + c.title + '</h3>' +
+'<p>' + c.desc + '</p></div></div>' +
 (c.pill ? '<span class="qa-pill">' + c.pill + '</span>' : '') +
 '<button class="qa-btn"' + (c.locked ? ' disabled' : '') + '>' + c.btn + '</button>';
 if (!c.locked){
