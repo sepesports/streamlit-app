@@ -107,13 +107,14 @@ padding:2px 8px;border-radius:999px;white-space:nowrap;
 .nav-sep{height:1px;background:rgba(255,255,255,.12);margin:12px 6px;}
 .nav-bottom{margin-top:auto;}
 
-/* main panel (white surface) */
+/* main panel: transparent so navy container shows between white surfaces */
 #mainpanel{
-min-width:0;min-height:0;background:#fff;border-radius:12px;
-display:flex;flex-direction:column;padding:18px 20px;gap:14px;
-box-shadow:0 4px 12px rgba(27,42,74,.08);overflow:hidden;
+min-width:0;min-height:0;display:flex;flex-direction:column;gap:14px;overflow:hidden;
 }
-.mp-header{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border);padding-bottom:12px;}
+.mp-header{
+background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(27,42,74,.08);
+padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex:0 0 auto;
+}
 .mp-header .greet h1{font-size:20px;margin:0 0 3px 0;font-weight:800;color:var(--navy);}
 .mp-header .greet p{margin:0;color:var(--muted);font-size:13px;}
 .mp-right{display:flex;align-items:center;gap:16px;}
@@ -123,7 +124,7 @@ box-shadow:0 4px 12px rgba(27,42,74,.08);overflow:hidden;
 .bell .dot{position:absolute;top:-5px;right:-7px;background:var(--red);color:#fff;font-size:10px;font-weight:800;border-radius:999px;padding:1px 5px;}
 .hamburger{display:none;font-size:20px;background:none;border:none;cursor:pointer;color:var(--navy);}
 
-.mp-qa{flex:1;min-height:0;display:flex;flex-direction:column;}
+.mp-qa{flex:1;min-height:0;display:flex;flex-direction:column;background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(27,42,74,.08);padding:14px 18px;}
 .mp-qa h2{font-size:14px;margin:0 0 10px 0;font-weight:800;color:var(--navy);}
 .cards-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
 .qa-card{
@@ -172,6 +173,7 @@ padding:12px 16px;border-bottom:1px solid var(--border);
 display:flex;align-items:center;justify-content:space-between;flex:0 0 auto;
 }
 .preview-head .t{font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px;}
+.preview-head .t .ph-ic{color:var(--blue);font-size:15px;line-height:1;}
 .preview-head .more{font-size:11.5px;color:var(--blue);font-weight:700;cursor:pointer;background:none;border:none;}
 .preview-body{padding:12px 16px;flex:1;min-height:0;overflow:auto;}
 
@@ -310,7 +312,7 @@ gap:3px;font-size:10.5px;color:var(--muted);cursor:pointer;font-weight:600;
 <div id="franjaB">
 <div class="preview-card">
 <div class="preview-head">
-<div class="t">&#128197; Calendario de Turnos</div>
+<div class="t"><span class="ph-ic">&#9776;</span> Calendario de Turnos</div>
 <button class="more" data-go="/calendario">Ver m&aacute;s &rarr;</button>
 </div>
 <div class="preview-body" id="previewCalendario" style="padding:0;">
@@ -320,7 +322,7 @@ gap:3px;font-size:10.5px;color:var(--muted);cursor:pointer;font-weight:600;
 
 <div class="preview-card">
 <div class="preview-head">
-<div class="t">&#128172; Incidencias y Comunicados</div>
+<div class="t"><span class="ph-ic">&#9776;</span> Incidencias y Comunicados</div>
 <button class="more" data-go="/chat_interfaz">Ver m&aacute;s &rarr;</button>
 </div>
 <div class="preview-body" id="previewChat">
@@ -330,7 +332,7 @@ gap:3px;font-size:10.5px;color:var(--muted);cursor:pointer;font-weight:600;
 
 <div class="preview-card">
 <div class="preview-head">
-<div class="t">&#9881; Gesti&oacute;n de Horarios</div>
+<div class="t"><span class="ph-ic">&#9776;</span> Gesti&oacute;n de Horarios</div>
 <button class="more" data-go="/editar_horarios">Ver m&aacute;s &rarr;</button>
 </div>
 <div class="mini-tabs" id="horariosMiniTabs" style="display:none;">
@@ -345,7 +347,7 @@ gap:3px;font-size:10.5px;color:var(--muted);cursor:pointer;font-weight:600;
 
 <div class="preview-card">
 <div class="preview-head">
-<div class="t">&#128100;+ Registro de Personal</div>
+<div class="t"><span class="ph-ic">&#9776;</span> Registro de Personal</div>
 <button class="more" data-go="/altas_registro">Ver m&aacute;s &rarr;</button>
 </div>
 <div class="preview-body" id="previewRegistro">
