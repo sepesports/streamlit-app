@@ -82,8 +82,7 @@ html = """
                                                                 #app{display:grid;grid-template-columns:250px 1fr;flex:1;width:100%;}
 
                                                                   #sidebar{
-                                                                      #app{display:grid;grid-template-columns:250px 1fr;flex:1;width:100%;}
-                                                                          background:linear-gradient(180deg,var(--navy1) 0%,var(--navy2) 60%,var(--navy3) 100%);
+                                                                      background:linear-gradient(180deg,var(--navy1) 0%,var(--navy2) 60%,var(--navy3) 100%);
                                                                               color:#eaf2ff;display:flex;flex-direction:column;
                                                                                   padding:26px 18px;
                                                                                     }
