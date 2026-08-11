@@ -79,10 +79,10 @@ html = """
                                                             html,body{margin:0;padding:0;width:100%;font-family:"Segoe UI",Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);}
 
                                                               #pagewrap{display:flex;flex-direction:column;min-height:100vh;}
-                                                                #app{display:flex;flex:1;width:100%;}
+                                                                #app{display:grid;grid-template-columns:250px 1fr;flex:1;width:100%;}
 
                                                                   #sidebar{
-                                                                      width:250px;flex:0 0 250px;
+                                                                      #app{display:grid;grid-template-columns:250px 1fr;flex:1;width:100%;}
                                                                           background:linear-gradient(180deg,var(--navy1) 0%,var(--navy2) 60%,var(--navy3) 100%);
                                                                               color:#eaf2ff;display:flex;flex-direction:column;
                                                                                   padding:26px 18px;
