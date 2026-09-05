@@ -1,6 +1,5 @@
 # app.py
 import json
-from urllib.parse import urlencode
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -248,13 +247,11 @@ padding:0 26px;display:flex;align-items:center;justify-content:space-between;fle
 
 /* ===== MOBILE ===== */
 @media (max-width: 768px){
-#pagewrap{height:auto;min-height:100vh;overflow:visible;padding:64px 12px 84px 12px;gap:12px;}
+#pagewrap{height:auto;min-height:100vh;overflow:visible;padding:12px 12px 84px 12px;gap:12px;}
 #franjaA{flex:none;grid-template-columns:1fr;padding:12px;}
 #sidebar{display:none;}
 #mainpanel{padding:14px 14px;}
-.hamburger{display:none;}
-.mp-header .desktop-brand,.mp-header .bell{display:none;}
-.mp-header .greet{display:block;}
+.hamburger{display:block;}
 .mp-header .greet h1{font-size:17px;}
 .mp-qa{flex:none;}
 .cards-grid{grid-template-columns:1fr 1fr;gap:10px;}
@@ -263,8 +260,16 @@ padding:0 26px;display:flex;align-items:center;justify-content:space-between;fle
 #franjaB{flex:none;grid-template-columns:1fr;}
 .preview-body{max-height:320px;}
 #franjaC{flex:none;padding:16px 18px;}
-/* in-iframe bottomnav se reemplaza por barras externas fijas (ver st.markdown) */
-#bottomnav{display:none !important;}
+#bottomnav{
+display:flex;position:fixed;left:0;right:0;bottom:0;height:60px;
+background:#fff;border-top:1px solid var(--border);z-index:50;
+}
+#bottomnav .bn-item{
+flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+gap:3px;font-size:10.5px;color:var(--muted);cursor:pointer;font-weight:600;
+}
+#bottomnav .bn-item.active{color:var(--blue);}
+#bottomnav .bn-item .ic{font-size:18px;}
 }
 </style>
 </head>
@@ -719,35 +724,3 @@ html = (
 )
 
 components.html(html, height=860, scrolling=True)
-
-# ===== Barras fijas de movil (fuera del iframe, solo <=768px) =====
-_nav_qs = "?" + urlencode({"auth": "ok", "usuario": USER_NAME, "rol": USER_ROLE, "dni": USER_DNI})
-_mobile_bars = """
-<style>
-#syx-mtop,#syx-mbot{display:none;}
-@media (max-width:768px){
-#syx-mtop{display:flex;position:fixed;top:0;left:0;right:0;height:52px;z-index:2147483000;
-background:#1B2A4A;color:#fff;align-items:center;justify-content:space-between;padding:0 16px;
-font-family:'Inter','Segoe UI',Arial,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.25);}
-#syx-mtop .b{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:1.5px;font-size:15px;}
-#syx-mtop .b img{width:26px;height:26px;border-radius:6px;object-fit:contain;}
-#syx-mtop .bell{font-size:18px;}
-#syx-mbot{display:flex;position:fixed;bottom:0;left:0;right:0;height:60px;z-index:2147483000;
-background:#fff;border-top:1px solid #E5E7EB;box-shadow:0 -2px 8px rgba(0,0,0,.10);
-font-family:'Inter','Segoe UI',Arial,sans-serif;}
-#syx-mbot a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-text-decoration:none;color:#6B7280;font-size:10.5px;font-weight:600;}
-#syx-mbot a .ic{font-size:18px;line-height:1;}
-#syx-mbot a.active{color:#1F4FD8;}
-}
-</style>
-<div id="syx-mtop"><div class="b"><img src="__LOGO_URL__"/>SYNTRA</div><div class="bell">&#128276;</div></div>
-<div id="syx-mbot">
-<a class="active" href="/__QS__"><span class="ic">&#8962;</span>Inicio</a>
-<a href="/calendario__QS__"><span class="ic">&#128197;</span>Horarios</a>
-<a href="/chat_interfaz__QS__"><span class="ic">&#128172;</span>Chat</a>
-<a href="/altas_registro__QS__"><span class="ic">&#128100;</span>Registro</a>
-</div>
-"""
-_mobile_bars = _mobile_bars.replace("__LOGO_URL__", LOGO_URL).replace("__QS__", _nav_qs)
-st.markdown(_mobile_bars, unsafe_allow_html=True)
