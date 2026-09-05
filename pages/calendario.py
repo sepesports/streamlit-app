@@ -147,6 +147,16 @@ padding:26px 18px;color:#eaf2ff;overflow-y:auto;
 .grid-wrap{display:none;}
 .mobile-list{display:block;}
 }
+
+/* ===== SYNTRA reskin: hoja azul + cajas blancas (consistente con Inicio) ===== */
+html,body{background:#1B2A4A !important;}
+#app{min-height:100vh;gap:14px !important;padding:14px !important;box-sizing:border-box !important;align-items:stretch !important;}
+#sidebar{background:#1B2A4A !important;border:1px solid rgba(255,255,255,.16) !important;border-radius:12px !important;min-height:0 !important;}
+#main{gap:14px !important;}
+#topbar{background:#fff !important;border-bottom:none !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;flex:0 0 auto !important;}
+#content{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;padding-bottom:22px !important;}
+#chatBody{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;overflow:hidden !important;}
+@media (max-width:900px){#app{padding:10px !important;gap:10px !important;}}
 </style>
 </head>
 <body>
