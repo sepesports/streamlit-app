@@ -247,14 +247,16 @@ padding:0 26px;display:flex;align-items:center;justify-content:space-between;fle
 
 /* ===== MOBILE ===== */
 @media (max-width: 768px){
-#pagewrap{height:auto;min-height:100vh;overflow:visible;padding:12px 12px 84px 12px;gap:12px;}
+#pagewrap{height:auto;min-height:100vh;overflow-x:hidden;padding:12px 12px 84px 12px;gap:12px;}
 #franjaA{flex:none;grid-template-columns:1fr;padding:12px;}
 #sidebar{display:none;}
 #mainpanel{padding:14px 14px;}
 .hamburger{display:block;}
+.mp-header .desktop-brand{display:none;}
 .mp-header .greet h1{font-size:17px;}
 .mp-qa{flex:none;}
-.cards-grid{grid-template-columns:1fr 1fr;gap:10px;}
+.cards-grid{grid-template-columns:1fr;gap:10px;}
+.qa-card p{min-height:0;}
 .kpi-row{grid-template-columns:repeat(2,1fr);gap:12px;}
 .kpi-item:nth-child(3){border-left:none;}
 #franjaB{flex:none;grid-template-columns:1fr;}
