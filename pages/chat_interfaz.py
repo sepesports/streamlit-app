@@ -156,6 +156,24 @@ html,body{background:#1B2A4A !important;}
 #content{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;padding-bottom:22px !important;}
 #chatBody{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;overflow:hidden !important;}
 @media (max-width:900px){#app{padding:10px !important;gap:10px !important;}}
+/* ===== Asistente IA (overlay aislado) ===== */
+#iaFab{position:fixed;right:18px;bottom:18px;width:56px;height:56px;border-radius:50%;background:#1B2A4A;color:#fff;border:none;box-shadow:0 6px 18px rgba(27,42,74,.35);font-size:24px;cursor:pointer;z-index:9999;display:flex;align-items:center;justify-content:center;}
+#iaFab:hover{background:#25366b;}
+#iaPanel{position:fixed;right:18px;bottom:84px;width:340px;max-width:calc(100vw - 36px);height:460px;max-height:calc(100vh - 110px);background:#fff;border-radius:14px;box-shadow:0 12px 40px rgba(27,42,74,.28);z-index:9999;display:none;flex-direction:column;overflow:hidden;}
+#iaPanel.open{display:flex;}
+#iaHead{background:#1B2A4A;color:#fff;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:15px;}
+#iaClose{background:transparent;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;}
+#iaBody{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f4f6fb;}
+.ia-msg{max-width:82%;padding:8px 11px;border-radius:12px;font-size:14px;line-height:1.35;white-space:pre-wrap;word-wrap:break-word;}
+.ia-user{align-self:flex-end;background:#1B2A4A;color:#fff;border-bottom-right-radius:4px;}
+.ia-bot{align-self:flex-start;background:#fff;color:#1B2A4A;border:1px solid #e2e7f2;border-bottom-left-radius:4px;}
+.ia-typing{align-self:flex-start;color:#8a93a8;font-size:13px;font-style:italic;}
+#iaFoot{display:flex;gap:6px;padding:10px;border-top:1px solid #e2e7f2;background:#fff;}
+#iaInput{flex:1;border:1px solid #cfd6e4;border-radius:10px;padding:9px 11px;font-size:14px;outline:none;resize:none;font-family:inherit;}
+#iaInput:focus{border-color:#1B2A4A;}
+#iaSend{background:#1B2A4A;color:#fff;border:none;border-radius:10px;padding:0 14px;cursor:pointer;font-size:14px;}
+#iaSend:disabled{opacity:.5;cursor:default;}
+@media (max-width:900px){#iaPanel{right:10px;bottom:76px;width:calc(100vw - 20px);height:calc(100vh - 100px);}#iaFab{right:12px;bottom:12px;}}
 </style>
 </head>
 <body>
@@ -189,6 +207,16 @@ html,body{background:#1B2A4A !important;}
 <div class="placeholder-panel" id="placeholderPanel">Selecciona una conversaci&oacute;n para empezar.</div>
 </div>
 </div>
+</div>
+</div>
+
+<button id="iaFab" title="Asistente IA" aria-label="Asistente IA">&#129302;</button>
+<div id="iaPanel" role="dialog" aria-label="Asistente IA">
+<div id="iaHead"><span>&#129302; Asistente IA</span><button id="iaClose" aria-label="Cerrar">&times;</button></div>
+<div id="iaBody"></div>
+<div id="iaFoot">
+<textarea id="iaInput" rows="1" placeholder="Escribe tu consulta..."></textarea>
+<button id="iaSend">Enviar</button>
 </div>
 </div>
 
@@ -487,6 +515,78 @@ document.getElementById("msgInput").addEventListener("keydown", function(e){
 if (e.key === "Enter") doSend();
 });
 }
+})();
+
+/* ===== Asistente IA (IIFE independiente, no toca el chat) ===== */
+(function(){
+var IA_API = __API_BASE__;
+var IA_DNI = __AUTH_DNI__;
+var fab = document.getElementById("iaFab");
+var panel = document.getElementById("iaPanel");
+var closeBtn = document.getElementById("iaClose");
+var body = document.getElementById("iaBody");
+var input = document.getElementById("iaInput");
+var sendBtn = document.getElementById("iaSend");
+if(!fab || !panel){ return; }
+var greeted = false;
+function addMsg(text, who){
+  var d = document.createElement("div");
+  d.className = "ia-msg " + (who === "user" ? "ia-user" : "ia-bot");
+  d.textContent = text;
+  body.appendChild(d);
+  body.scrollTop = body.scrollHeight;
+  return d;
+}
+function openPanel(){
+  panel.classList.add("open");
+  if(!greeted){
+    greeted = true;
+    addMsg("Hola, soy tu asistente de SYNTRA. Pregúntame sobre turnos, incidencias, novedades o el uso de la plataforma.", "bot");
+  }
+  setTimeout(function(){ input.focus(); }, 50);
+}
+function closePanel(){ panel.classList.remove("open"); }
+fab.addEventListener("click", function(){ panel.classList.contains("open") ? closePanel() : openPanel(); });
+closeBtn.addEventListener("click", closePanel);
+function doSend(){
+  var q = (input.value || "").trim();
+  if(!q){ return; }
+  addMsg(q, "user");
+  input.value = "";
+  input.style.height = "auto";
+  sendBtn.disabled = true;
+  var typing = document.createElement("div");
+  typing.className = "ia-typing";
+  typing.textContent = "Escribiendo...";
+  body.appendChild(typing);
+  body.scrollTop = body.scrollHeight;
+  fetch(IA_API + "/api/chat-ia", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ consulta: q, user_id: IA_DNI })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(typing.parentNode){ typing.parentNode.removeChild(typing); }
+    var reply = (data && (data.respuesta || data.reply || data.message)) || "";
+    if(data && data.ok === false && data.error){ reply = "⚠️ " + data.error; }
+    if(!reply){ reply = "No recibí respuesta. Intenta de nuevo."; }
+    addMsg(reply, "bot");
+  })
+  .catch(function(){
+    if(typing.parentNode){ typing.parentNode.removeChild(typing); }
+    addMsg("⚠️ Error de conexión con el asistente.", "bot");
+  })
+  .then(function(){ sendBtn.disabled = false; input.focus(); });
+}
+sendBtn.addEventListener("click", doSend);
+input.addEventListener("keydown", function(e){
+  if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); doSend(); }
+});
+input.addEventListener("input", function(){
+  input.style.height = "auto";
+  input.style.height = Math.min(input.scrollHeight, 96) + "px";
+});
 })();
 </script>
 </body>
