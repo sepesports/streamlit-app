@@ -2,20 +2,14 @@
 import json
 import streamlit as st
 import streamlit.components.v1 as components
+from syntra_core import sync_auth, go, shell_css, NAV_JS
 
 st.set_page_config(layout="wide", page_title="SYNTRA")
+sync_auth()
 
 # GATE: solo entra con ?auth=ok
 if st.query_params.get("auth") != "ok":
-    st.markdown(
-        """
-        <script>
-        window.location.href="/admin";
-        </script>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.stop()
+    go("pages/admin.py")
 
 USER_NAME = st.query_params.get("usuario") or st.query_params.get("user") or "Usuario"
 USER_ROLE = st.query_params.get("rol") or st.query_params.get("role") or ""
@@ -45,6 +39,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+shell_css()
 
 
 def _js_str(value) -> str:
@@ -378,6 +373,7 @@ gap:3px;font-size:10.5px;color:var(--muted);cursor:pointer;font-weight:600;
 
 </div>
 <script>
+__SYNTRA_NAV__
 (function(){
 var API_BASE = __API_BASE__;
 var USER_NAME = __USER_NAME_JS__;
@@ -395,9 +391,7 @@ p.set("dni", USER_DNI);
 return "?" + p.toString();
 }
 
-function goToPage(path){
-window.open(path + qs(), "_blank");
-}
+function goToPage(path){ syntraGoTo(path, function(){ window.open(path + qs(), "_blank"); }); }
 
 var NAV_ITEMS = [
 {label:"Inicio", icon:"&#8962;", go:"/", active:true},
@@ -434,7 +428,7 @@ if (go) goToPage(go);
 });
 
 var lo = document.getElementById("logoutBtn_" + containerId);
-if (lo) lo.addEventListener("click", function(){ window.open("/admin", "_blank"); });
+if (lo) lo.addEventListener("click", function(){ syntraTopNav("/admin"); });
 }
 
 renderNav("navList");
@@ -724,5 +718,7 @@ html = (
     .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
     .replace("__CAN_REGISTER_USERS__", "true" if CAN_REGISTER_USERS else "false")
 )
+
+html = html.replace("__SYNTRA_NAV__", NAV_JS)
 
 components.html(html, height=860, scrolling=True)
