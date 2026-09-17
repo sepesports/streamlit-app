@@ -1,6 +1,7 @@
 # pages/admin.py
 import streamlit as st
 import streamlit.components.v1 as components
+from syntra_core import sync_auth, go, shell_css, NAV_JS
 
 st.set_page_config(layout="wide")
 
@@ -15,6 +16,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+shell_css("#040e31")
 
 html = """
 <!doctype html>
@@ -525,7 +527,7 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
         <div id="btnLogin" class="btn" style="top:67%;" onclick="doLogin()">Login</div>
 
         <div id="linkPol" class="link" style="top:78%; left:20%;">Politicas:</div>
-        <div id="linkReg" class="link" style="top:78%; left:68%;"><a href="/altas_registro" style="color:inherit; text-decoration:none;">Registrarse:</a></div>
+        <div id="linkReg" class="link" style="top:78%; left:68%;"><a href="/altas_registro" onclick="event.preventDefault(); syntraTopNav('/altas_registro');" style="color:inherit; text-decoration:none;">Registrarse:</a></div>
       </form>
     </div>
 
@@ -553,6 +555,7 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
 <div id="fullscreenToggleBtn" class="fullscreen-toggle">⤢</div>
 
 <script>
+__SYNTRA_NAV__
 // ---------- SPLASH TIMER (2 segundos) ----------
 window.addEventListener('load', function() {
   setTimeout(function() {
@@ -583,7 +586,7 @@ async function doLogin(){
     if (j && j.ok === true){
       const rol = (j.rol || "").toString();
       const dni = (j.dni || "").toString();
-      window.location.href = "/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol) + "&dni=" + encodeURIComponent(dni);
+      syntraTopNav("/?auth=ok&usuario=" + encodeURIComponent(u) + "&rol=" + encodeURIComponent(rol) + "&dni=" + encodeURIComponent(dni));
     } else {
       alert("Credenciales inválidas");
     }
@@ -674,5 +677,7 @@ if (window.innerWidth <= 768) {
 </body>
 </html>
 """
+
+html = html.replace("__SYNTRA_NAV__", NAV_JS)
 
 components.html(html, height=1000, scrolling=False)

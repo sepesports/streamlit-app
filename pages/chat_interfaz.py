@@ -2,8 +2,10 @@
 import json
 import streamlit as st
 import streamlit.components.v1 as components
+from syntra_core import sync_auth, go, shell_css, NAV_JS
 
 st.set_page_config(page_title="Incidencias y Comunicados", layout="wide")
+sync_auth()
 
 query_params = st.query_params
 AUTH_USER = query_params.get("usuario") or query_params.get("user") or ""
@@ -11,15 +13,7 @@ AUTH_ROLE = query_params.get("rol") or query_params.get("role") or ""
 AUTH_DNI = query_params.get("dni") or ""
 
 if not AUTH_USER or not AUTH_ROLE:
-        st.markdown(
-                    """
-                            <script>
-                                      window.location.href="/admin";
-                                              </script>
-                                                      """,
-                    unsafe_allow_html=True,
-        )
-        st.stop()
+        go("pages/admin.py")
 
 NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
 CAN_MANAGE_SCHEDULES = NORMALIZED_ROLE == "administrador"
@@ -39,6 +33,7 @@ st.markdown(
                                             """,
         unsafe_allow_html=True,
 )
+shell_css()
 
 
 def _js_str(value) -> str:
@@ -237,6 +232,7 @@ html,body{background:#1B2A4A !important;}
 </div>
 
 <script>
+__SYNTRA_NAV__
 (function(){
 var API_BASE = __API_BASE__;
 var AUTH_USER = __AUTH_USER__;
@@ -252,7 +248,7 @@ p.set("rol", AUTH_ROLE);
 p.set("dni", AUTH_DNI);
 return "?" + p.toString();
 }
-function goToPage(path){ window.open(path + qs(), "_blank"); }
+function goToPage(path){ syntraGoTo(path, function(){ window.open(path + qs(), "_blank"); }); }
 
 var NAV_ITEMS = [
 {label:"Inicio", icon:"&#8962;", go:"/"},
@@ -278,7 +274,7 @@ el.querySelectorAll(".nav-item[data-go]").forEach(function(node){
 node.addEventListener("click", function(){ goToPage(node.getAttribute("data-go")); });
 });
 var lo = document.getElementById("logout_" + containerId);
-if (lo) lo.addEventListener("click", function(){ window.open("/admin", "_blank"); });
+if (lo) lo.addEventListener("click", function(){ syntraTopNav("/admin"); });
 }
 renderNav("navList");
 renderNav("navListMobile");
@@ -804,5 +800,7 @@ html = (
             .replace("__CAN_MANAGE_SCHEDULES__", "true" if CAN_MANAGE_SCHEDULES else "false")
             .replace("__CAN_REGISTER_USERS__", "true" if CAN_REGISTER_USERS else "false")
 )
+
+html = html.replace("__SYNTRA_NAV__", NAV_JS)
 
 components.html(html, height=850, scrolling=False)
