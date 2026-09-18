@@ -429,7 +429,7 @@ threadListEl.innerHTML = filtered.map(function(t){
 var cls = "thread-item" + (t.id === currentThreadId ? " active" : "");
 var unread = t.unread_count > 0 ? '<span class="unread-dot">' + t.unread_count + '</span>' : "";
 var subAtt = attInfo(t.last_message);
-var sub = subAtt ? (subAtt.kind === "image" ? "&#128247; Imagen" : "&#127908; Nota de voz") : (t.last_message || (t.type === "installation" ? "Instalaci&oacute;n" : "Privado"));
+var sub = subAtt ? (subAtt.kind === "image" ? "&#128247; Imagen" : "&#127908; Nota de voz") : (t.last_message || (t.type === "installation" ? "Instalaci&oacute;n" : (t.type === "group" ? "Sin mensajes a&uacute;n" : "Privado")));
 return '<div class="' + cls + '" data-id="' + t.id + '">' +
 '<div class="thread-avatar">' + (t.type === "installation" ? "&#127970;" : (t.type === "group" ? "&#128101;" : avatarHtml(t.other_dni || "", initials(t.title)))) + '</div>' +
 '<div class="thread-info">' +
