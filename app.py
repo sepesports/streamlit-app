@@ -233,6 +233,23 @@ padding:0 26px;display:flex;align-items:center;justify-content:space-between;fle
 #franjaC .brand{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:1.5px;color:var(--navy);font-size:14px;}
 #franjaC .brand img{width:24px;height:24px;object-fit:contain;border-radius:5px;}
 
+/* ===== Barra superior fija (movil) ===== */
+#topbarMobile{display:none;}
+@media (max-width:768px){
+#topbarMobile{
+display:flex;position:fixed;left:0;right:0;top:0;height:56px;z-index:60;
+background:#fff;border-bottom:1px solid var(--border);align-items:center;
+padding:0 14px;gap:10px;padding-top:env(safe-area-inset-top);
+}
+#topbarMobile .tb-burger{background:none;border:0;font-size:20px;color:var(--navy);cursor:pointer;line-height:1;padding:4px;}
+#topbarMobile .tb-brand{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;letter-spacing:2px;font-size:16px;color:var(--navy);}
+#topbarMobile .tb-bell{position:relative;background:none;border:0;font-size:19px;cursor:pointer;padding:4px;}
+#topbarMobile .tb-bell .dot{position:absolute;top:0;right:0;background:var(--red);color:#fff;font-size:9.5px;font-weight:700;border-radius:99px;padding:1px 5px;display:none;}
+#pagewrap{padding-top:68px !important;}
+.mp-header .hamburger, .mp-header .bell{display:none !important;}
+.mp-header{padding-bottom:10px;}
+}
+
 /* ===== Inicio movil (por rol) ===== */
 #homeMobile{display:none;}
 .hm-hero{border-radius:16px;padding:16px 16px 14px 16px;color:#fff;background:linear-gradient(135deg,#1F4FD8 0%,#1B2A4A 100%);margin-bottom:12px;}
@@ -305,6 +322,12 @@ gap:3px;font-size:10.5px;color:var(--muted);cursor:pointer;font-weight:600;
 </style>
 </head>
 <body>
+<div id="topbarMobile">
+<button class="tb-burger" id="tbBurger" aria-label="Men&uacute;">&#9776;</button>
+<div class="tb-brand"><svg viewBox="0 0 40 40" width="26" height="26" role="img" aria-label="SYNTRA" style="flex:0 0 auto;display:block;border-radius:7px;"><rect width="40" height="40" rx="10" fill="#1F4FD8"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M20 6.5v27M6.5 20h27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="20" r="3.4" fill="#ffffff"/></svg>SYNTRA</div>
+<button class="tb-bell" id="tbBell" aria-label="Avisos">&#128276;<span class="dot" id="tbBellDot"></span></button>
+</div>
+
 <div id="pagewrap">
 
 <div id="franjaA">
@@ -514,6 +537,11 @@ var drawerOverlay = document.getElementById("drawerOverlay");
 if (hamburgerBtn) hamburgerBtn.addEventListener("click", function(){ drawer.classList.add("open"); });
 if (drawerOverlay) drawerOverlay.addEventListener("click", function(){ drawer.classList.remove("open"); });
 
+var tbBurger = document.getElementById("tbBurger");
+if (tbBurger) tbBurger.addEventListener("click", function(){ drawer.classList.add("open"); });
+var tbBell = document.getElementById("tbBell");
+if (tbBell) tbBell.addEventListener("click", function(){ goToPage("/chat_interfaz"); });
+
 document.querySelectorAll("#bottomnav .bn-item[data-goto]").forEach(function(node){
 node.addEventListener("click", function(){ goToPage(node.getAttribute("data-goto")); });
 });
@@ -670,6 +698,8 @@ if (d.mensajes_no_leidos > 0){
 var dot = document.getElementById("bellDot");
 dot.style.display = "inline-block";
 dot.textContent = d.mensajes_no_leidos;
+var dot2 = document.getElementById("tbBellDot");
+if (dot2){ dot2.style.display = "inline-block"; dot2.textContent = d.mensajes_no_leidos; }
 }
 })
 .catch(function(){});
@@ -777,8 +807,11 @@ return;
 wrap.innerHTML = threads.slice(0, 4).map(function(t){
 var unread = t.unread_count > 0 ? '<span class="mini-unread">' + t.unread_count + '</span>' : "";
 var init = (t.title || "?").charAt(0).toUpperCase();
+var prev = String(t.last_message || "");
+if (prev.indexOf("[[adj:image:") === 0) prev = "Imagen adjunta";
+else if (prev.indexOf("[[adj:audio:") === 0) prev = "Nota de voz";
 return '<div class="mini-thread"><div class="mini-avatar">' + (t.type === "installation" ? "&#127970;" : init) + '</div>' +
-'<div class="info"><div class="title">' + (t.title||"") + '</div><div class="sub">' + (t.last_message||"") + '</div></div>' + unread + '</div>';
+'<div class="info"><div class="title">' + (t.title||"") + '</div><div class="sub">' + prev + '</div></div>' + unread + '</div>';
 }).join("");
 })
 .catch(function(){
