@@ -78,7 +78,7 @@ html = """
 --manana:#12B39A;--tarde:#F5B642;--noche:#7C5CFF;--libre:#D1D5DB;
 }
 *{box-sizing:border-box;}
-html,body{margin:0;padding:0;height:100%;width:100%;font-family:"Inter","Segoe UI",Arial,Helvetica,sans-serif;background:var(--navy);color:var(--ink);}
+html,body{margin:0;padding:0;height:100%;width:100%;font-family:"Inter","Segoe UI",Arial,Helvetica,sans-serif;background:radial-gradient(1100px 520px at 10% -10%, rgba(64,132,255,.30) 0%, rgba(64,132,255,0) 60%), radial-gradient(900px 460px at 108% 4%, rgba(31,79,216,.26) 0%, rgba(31,79,216,0) 55%), linear-gradient(165deg,#17274f 0%,#101d3d 48%,#0a142b 100%);background-attachment:fixed;color:var(--ink);}
 
 #pagewrap{display:flex;flex-direction:column;height:100vh;padding:16px;gap:16px;overflow:hidden;}
 
@@ -144,6 +144,7 @@ box-shadow:0 4px 12px rgba(27,42,74,.06);min-height:0;
 width:60px;height:60px;border-radius:14px;background:var(--blue-soft);
 display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--blue);flex:0 0 auto;
 }
+.qa-icon.qa-icon-chat{background:linear-gradient(140deg,#1faa52 0%,#128C7E 100%);box-shadow:0 6px 14px rgba(18,140,126,.25);}
 .qa-card h3{margin:0;font-size:14px;font-weight:700;color:var(--navy);}
 .qa-card p{margin:0;font-size:12px;color:var(--muted);line-height:1.35;}
 .qa-pill{align-self:flex-start;background:var(--blue-soft);color:var(--blue);font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;}
@@ -246,11 +247,13 @@ padding:0 26px;display:flex;align-items:center;justify-content:space-between;fle
 @media (max-width:768px){
 #topbarMobile{
 display:flex;position:fixed;left:0;right:0;top:0;height:60px;z-index:60;
-background:#fff;border-bottom:1px solid var(--border);align-items:center;
-padding:0 14px;gap:10px;padding-top:env(safe-area-inset-top);
+background:linear-gradient(135deg,#182a54 0%,#0d1a37 100%);
+border-bottom:1px solid rgba(255,255,255,.12);
+box-shadow:0 10px 26px rgba(0,0,0,.30);
+align-items:center;padding:0 14px;gap:10px;padding-top:env(safe-area-inset-top);
 }
-#topbarMobile .tb-burger{background:none;border:0;font-size:20px;color:var(--navy);cursor:pointer;line-height:1;padding:4px;}
-#topbarMobile .tb-brand{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;letter-spacing:2px;font-size:16px;color:var(--navy);}
+#topbarMobile .tb-burger{background:none;border:0;font-size:20px;color:#eaf2ff;cursor:pointer;line-height:1;padding:4px;}
+#topbarMobile .tb-brand{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;letter-spacing:2px;font-size:16px;color:#eaf2ff;}
 #topbarMobile .tb-bell{position:relative;background:none;border:0;font-size:19px;cursor:pointer;padding:4px;}
 #topbarMobile .tb-bell .dot{position:absolute;top:0;right:0;background:var(--red);color:#fff;font-size:9.5px;font-weight:700;border-radius:99px;padding:1px 5px;display:none;}
 #pagewrap{padding-top:72px !important;}
@@ -318,13 +321,14 @@ padding:0 14px;gap:10px;padding-top:env(safe-area-inset-top);
 #franjaC{flex:none;padding:16px 18px;}
 #bottomnav{
 display:flex;position:fixed;left:0;right:0;bottom:0;height:60px;
-background:#fff;border-top:1px solid var(--border);z-index:50;
+background:linear-gradient(180deg,#16264d 0%,#0b162f 100%);
+border-top:1px solid rgba(255,255,255,.12);box-shadow:0 -8px 22px rgba(0,0,0,.28);z-index:50;
 }
 #bottomnav .bn-item{
 flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-gap:3px;font-size:10.5px;color:var(--muted);cursor:pointer;font-weight:600;
+gap:3px;font-size:10.5px;color:rgba(234,242,255,.70);cursor:pointer;font-weight:600;
 }
-#bottomnav .bn-item.active{color:var(--blue);}
+#bottomnav .bn-item.active{color:#8ab4ff;}
 #bottomnav .bn-item .ic{font-size:18px;}
 }
 </style>
@@ -506,7 +510,7 @@ icon:"&#128197;", title:"Horarios", desc:"Consulta tus turnos y horarios asignad
 btn:"Ver horarios &rarr;", go:"/calendario", locked:false
 },
 {
-icon:"&#128172;", title:"Incidencias y Comunicados", desc:"Comun&iacute;cate con tu equipo o por instalaciones.",
+icon:'<svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true"><path fill="#ffffff" d="M24 7c-9.4 0-17 7.2-17 16.1 0 3.1.9 6 2.6 8.5L7 41l9.8-2.5c2.2 1.1 4.7 1.7 7.2 1.7 9.4 0 17-7.2 17-16.1S33.4 7 24 7z"/><path fill="#25D366" d="M24 9.5c-8 0-14.5 6.1-14.5 13.6 0 2.9 1 5.6 2.6 7.8l-1.2 4.4 4.6-1.2c2.1 1.3 4.7 2.1 7.4 2.1 8 0 14.5-6.1 14.5-13.6S32 9.5 24 9.5z"/><path fill="#ffffff" d="M19.6 16.4c-.3-.7-.6-.7-.9-.7h-.8c-.3 0-.8.1-1.2.6-.4.5-1.6 1.5-1.6 3.6s1.6 4.2 1.9 4.5c.2.3 3.1 4.9 7.7 6.7 3.8 1.5 4.6 1.2 5.4 1.1.8-.1 2.6-1 3-2 .4-1 .4-1.8.3-2-.1-.2-.4-.3-.8-.5-.4-.2-2.6-1.3-3-1.4-.4-.1-.7-.2-1 .2-.3.5-1.1 1.4-1.4 1.7-.3.3-.5.3-.9.1-.4-.2-1.9-.7-3.6-2.2-1.3-1.2-2.2-2.6-2.5-3.1-.3-.5 0-.7.2-.9.2-.2.4-.5.6-.8.2-.3.3-.5.4-.8.1-.3.1-.6 0-.8-.1-.2-1-2.6-1.4-3.5z"/></svg>', iconCls:"qa-icon-chat", title:"Incidencias y Comunicados", desc:"Comun&iacute;cate con tu equipo o por instalaciones.",
 btn:"Abrir chat &rarr;", go:"/chat_interfaz", locked:false
 },
 {
@@ -524,7 +528,7 @@ CARDS.forEach(function(c){
 var div = document.createElement("div");
 div.className = "qa-card";
 div.innerHTML =
-'<div class="qa-top"><div class="qa-icon">' + c.icon + '</div>' +
+'<div class="qa-top"><div class="qa-icon' + (c.iconCls ? " " + c.iconCls : "") + '">' + c.icon + '</div>' +
 '<div class="qa-textcol"><h3>' + c.title + '</h3>' +
 '<p>' + c.desc + '</p></div></div>' +
 (c.pill ? '<span class="qa-pill">' + c.pill + '</span>' : '') +

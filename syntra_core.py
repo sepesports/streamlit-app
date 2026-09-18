@@ -42,7 +42,7 @@ def shell_css(bg="#1B2A4A"):
     st.markdown(
         """
         <style>
-        html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"]{background:__BG__ !important;}
+        html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"]{background:radial-gradient(1100px 520px at 10% -10%, rgba(64,132,255,.30) 0%, rgba(64,132,255,0) 60%), radial-gradient(900px 460px at 108% 4%, rgba(31,79,216,.26) 0%, rgba(31,79,216,0) 55%), linear-gradient(165deg,#17274f 0%,#101d3d 48%,#0a142b 100%)  !important;}
         html, body{overflow:hidden !important;}
         [data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"],
         [data-testid="stToolbar"], [data-testid="stDecoration"], [data-testid="stStatusWidget"], [data-testid="stHeader"]{display:none !important;}
@@ -132,9 +132,16 @@ st.textContent = "#syntraBn{display:none;}" +
 "#app{padding-left:5px !important;padding-right:5px !important;}" +
 "#content{padding-left:7px !important;padding-right:7px !important;}" +
 "#app, #pagewrap{zoom:1.1;}" +
+"html,body{background:radial-gradient(1100px 520px at 10% -10%, rgba(64,132,255,.30) 0%, rgba(64,132,255,0) 60%), radial-gradient(900px 460px at 108% 4%, rgba(31,79,216,.26) 0%, rgba(31,79,216,0) 55%), linear-gradient(165deg,#17274f 0%,#101d3d 48%,#0a142b 100%) !important;background-attachment:fixed !important;}" +
+"#topbar{background:linear-gradient(135deg,#182a54 0%,#0d1a37 100%) !important;border:1px solid rgba(255,255,255,.12) !important;box-shadow:0 10px 26px rgba(0,0,0,.30) !important;}" +
+"#topbar h1, .mobile-logo{color:#eaf2ff !important;}" +
+".hamburger{color:#eaf2ff !important;}" +
+"#syntraBn{background:linear-gradient(180deg,#16264d 0%,#0b162f 100%) !important;border-top:1px solid rgba(255,255,255,.12) !important;box-shadow:0 -8px 22px rgba(0,0,0,.28) !important;}" +
+"#syntraBn .sbn{color:rgba(234,242,255,.70) !important;}" +
+"#syntraBn .sbn.on{color:#8ab4ff !important;}" +
 "}";
 if (document.getElementById("chatBody")){
-st.textContent += "@media (max-width:900px){#app{height:calc(100dvh - 62px) !important;min-height:0 !important;max-height:calc(100dvh - 62px) !important;}#main{height:100% !important;min-height:0 !important;}body{padding-bottom:0 !important;}#iaFab{bottom:74px !important;}#iaPanel{bottom:140px !important;height:calc(100dvh - 215px) !important;}}";
+st.textContent += "@media (max-width:900px){#app{height:calc((100dvh - 62px) / 1.1) !important;min-height:0 !important;max-height:calc((100dvh - 62px) / 1.1) !important;}#main{height:100% !important;min-height:0 !important;}body{padding-bottom:0 !important;}#iaFab{bottom:calc(74px / 1.1) !important;right:calc(14px / 1.1) !important;}#iaPanel{bottom:calc(140px / 1.1) !important;height:calc((100dvh - 230px) / 1.1) !important;}}";
 }
 document.head.appendChild(st);
 
