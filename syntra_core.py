@@ -129,6 +129,9 @@ st.textContent = "#syntraBn{display:none;}" +
 "#syntraBn .sbn.on{color:#1F4FD8;}" +
 "#syntraBn .sbn .ic{font-size:18px;line-height:1;}" +
 "body{padding-bottom:62px !important;}" +
+"#app{padding-left:5px !important;padding-right:5px !important;}" +
+"#content{padding-left:7px !important;padding-right:7px !important;}" +
+"#app, #pagewrap{zoom:1.1;}" +
 "}";
 if (document.getElementById("chatBody")){
 st.textContent += "@media (max-width:900px){#app{height:calc(100dvh - 62px) !important;min-height:0 !important;max-height:calc(100dvh - 62px) !important;}#main{height:100% !important;min-height:0 !important;}body{padding-bottom:0 !important;}#iaFab{bottom:74px !important;}#iaPanel{bottom:140px !important;height:calc(100dvh - 215px) !important;}}";
