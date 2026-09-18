@@ -447,7 +447,7 @@ gap:3px;font-size:10.5px;color:rgba(234,242,255,.70);cursor:pointer;font-weight:
 <div id="franjaC">
 <div class="brand"><img class="brand-mark" src="__LOGO_URL__" alt="SYNTRA" style="height:46px;width:auto;flex:0 0 auto;display:block;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(120,170,255,.35));"/></div>
 <div>Sistema de gesti&oacute;n de turnos y comunicaci&oacute;n interna para socorristas</div>
-<div>&copy; 2025 SYNTRA</div>
+<div>&copy; 2026 SYNTRA</div>
 </div>
 
 <div id="bottomnav">
