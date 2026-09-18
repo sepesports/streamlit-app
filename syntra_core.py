@@ -158,7 +158,7 @@ st.textContent = "#syntraBn{display:none;}" +
 ".day-tab:active, .new-btn:active, .send-btn:active, .save-btn:active, .thread-item:active, .inst-item:active, .qa-btn:active{transform:translateY(1px);}" +
 "}";
 if (document.getElementById("chatBody")){
-st.textContent += "@media (max-width:900px){#app{height:calc((100dvh - 62px) / 1.1) !important;min-height:0 !important;max-height:calc((100dvh - 62px) / 1.1) !important;}#main{height:100% !important;min-height:0 !important;}body{padding-bottom:0 !important;}#iaFab{bottom:calc(74px / 1.1) !important;right:calc(14px / 1.1) !important;}#iaPanel{bottom:calc(140px / 1.1) !important;height:calc((100dvh - 230px) / 1.1) !important;}}";
+st.textContent += "@media (max-width:900px){#app{height:calc((100dvh - 62px) / 1.1) !important;min-height:0 !important;max-height:calc((100dvh - 62px) / 1.1) !important;}#main{height:100% !important;min-height:0 !important;}body{padding-bottom:0 !important;}#iaFab{bottom:calc(150px / 1.1) !important;right:calc(14px / 1.1) !important;}#iaPanel{bottom:calc(216px / 1.1) !important;height:calc((100dvh - 306px) / 1.1) !important;}}";
 }
 document.head.appendChild(st);
 
