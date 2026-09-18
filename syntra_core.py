@@ -108,6 +108,7 @@ window.location.href = url;
 /* Barra inferior fija, igual en todas las pantallas (movil) */
 function syntraBottomNav(){
 if (document.getElementById("bottomnav") || document.getElementById("syntraBn")) return;
+if (document.getElementById("btnLogin")) return;  /* pantalla de login: sin barra */
 var path = "";
 try{ path = window.parent.location.pathname; }catch(e){ path = location.pathname; }
 var segs = path.split("/").filter(function(s){ return s && s !== "~" && s !== "+"; });
