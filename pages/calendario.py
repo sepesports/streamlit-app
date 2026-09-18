@@ -103,12 +103,29 @@ table.cal td.inst-cell{font-weight:700;font-size:13px;background:#fafbfd;positio
 .legend{display:flex;gap:18px;margin-top:14px;font-size:12px;color:var(--muted);flex-wrap:wrap;}
 .legend span{display:inline-flex;align-items:center;gap:6px;}
 .legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
-.dot.manana{background:#3fbf76;}
-.dot.tarde{background:#3f7fd6;}
-.dot.noche{background:#d64f4f;}
+.dot.manana{background:#12B39A;}
+.dot.tarde{background:#2f6fe0;}
+.dot.noche{background:#7C5CFF;}
 .dot.libre{background:#9aa3b5;}
 
 .mobile-list{display:none;}
+.day-heading{font-size:15px;font-weight:800;margin:0 0 4px 0;}
+.day-sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.shift{display:flex;gap:12px;align-items:stretch;background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:10px;}
+.shift .bar{width:5px;border-radius:99px;flex:0 0 5px;}
+.shift .bar.manana{background:#12B39A;}
+.shift .bar.tarde{background:#2f6fe0;}
+.shift .bar.noche{background:#7C5CFF;}
+.shift .body{flex:1;min-width:0;}
+.shift .hours{font-size:15px;font-weight:800;letter-spacing:.2px;}
+.shift .who{font-size:13.5px;margin-top:2px;}
+.shift .place{font-size:12px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:5px;}
+.shift .tag{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:99px;align-self:flex-start;text-transform:uppercase;letter-spacing:.3px;}
+.tag.manana{background:#e3f7f2;color:#0c7a69;}
+.tag.tarde{background:#e6eeff;color:#1f4fd8;}
+.tag.noche{background:#efeaff;color:#5b3fd6;}
+.empty-day{background:#fff;border:1px dashed var(--border);border-radius:14px;padding:26px 16px;text-align:center;color:var(--muted);font-size:13.5px;}
+.empty-day .big{font-size:26px;display:block;margin-bottom:6px;}
 .mobile-day-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:12px;}
 .mobile-day-card .inst-name{font-size:13px;font-weight:700;margin-bottom:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;}
 .mobile-turno{border-radius:10px;padding:9px 12px;margin-bottom:6px;}
@@ -132,13 +149,22 @@ padding:26px 18px;color:#eaf2ff;overflow-y:auto;
 .mobile-logo{display:flex;}
 #topbar h1{display:none;}
 #topbar{padding:12px 14px;}
-#content{padding:14px 12px 90px 12px;}
+#content{padding:14px 12px 90px 12px;display:flex;flex-direction:column;flex:1;min-height:0;}
+.mobile-list{flex:1;}
+.legend{margin-top:auto;padding-top:12px;}
 .filters-row{gap:10px;}
 .filter-field select{min-width:0;flex:1;}
 .date-nav{width:100%;margin-left:0;justify-content:space-between;}
-.day-tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;}
-.day-tab{flex:0 0 auto;padding:8px 14px;border-radius:10px;background:#fff;border:1px solid var(--border);font-size:12.5px;font-weight:700;cursor:pointer;color:var(--muted);}
-.day-tab.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+.day-tabs{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:2px 0 16px 0;}
+.day-tab{padding:7px 0 6px 0;border-radius:12px;background:#fff;border:1px solid var(--border);cursor:pointer;color:var(--ink);text-align:center;line-height:1.1;}
+.day-tab .dw{display:block;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+.day-tab .dn{display:block;font-size:16px;font-weight:800;margin-top:2px;}
+.day-tab .dd{display:block;width:5px;height:5px;border-radius:50%;background:var(--blue);margin:3px auto 0 auto;}
+.day-tab .dd.off{background:transparent;}
+.day-tab.today{border-color:var(--blue);}
+.day-tab.active{background:var(--blue);border-color:var(--blue);}
+.day-tab.active .dw,.day-tab.active .dn{color:#fff;}
+.day-tab.active .dd{background:#fff;}
 .grid-wrap{display:none;}
 .mobile-list{display:block;}
 }
@@ -147,7 +173,8 @@ padding:26px 18px;color:#eaf2ff;overflow-y:auto;
 html,body{background:#1B2A4A !important;}
 #app{min-height:100vh;gap:14px !important;padding:14px !important;box-sizing:border-box !important;align-items:stretch !important;}
 #sidebar{background:#1B2A4A !important;border:1px solid rgba(255,255,255,.16) !important;border-radius:12px !important;min-height:0 !important;}
-#main{gap:14px !important;}
+#main{gap:14px !important;min-height:0 !important;}
+@media (max-width:900px){#app{height:100vh;overflow:hidden;}#main{flex:1;min-height:0;}#content{overflow-y:auto;}}
 #topbar{background:#fff !important;border-bottom:none !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;flex:0 0 auto !important;}
 #content{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;padding-bottom:22px !important;}
 #chatBody{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;overflow:hidden !important;}
@@ -156,16 +183,16 @@ html,body{background:#1B2A4A !important;}
 </head>
 <body>
 <div id="app">
-<div id="sidebar"><div class="logo-row"><img src="__LOGO_URL__"/><span>SYNTRA</span></div><div id="navList"></div></div>
+<div id="sidebar"><div class="logo-row"><svg class="brand-mark" viewBox="0 0 40 40" width="32" height="32" role="img" aria-label="SYNTRA" style="flex:0 0 auto;display:block;border-radius:9px;"><rect width="40" height="40" rx="10" fill="#1F4FD8"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M20 6.5v27M6.5 20h27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="20" r="3.4" fill="#ffffff"/></svg><span>SYNTRA</span></div><div id="navList"></div></div>
 <div class="mobile-drawer" id="drawer">
 <div class="overlay" id="drawerOverlay"></div>
-<div class="panel"><div class="logo-row"><img src="__LOGO_URL__"/><span>SYNTRA</span></div><div id="navListMobile"></div></div>
+<div class="panel"><div class="logo-row"><svg class="brand-mark" viewBox="0 0 40 40" width="32" height="32" role="img" aria-label="SYNTRA" style="flex:0 0 auto;display:block;border-radius:9px;"><rect width="40" height="40" rx="10" fill="#1F4FD8"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M20 6.5v27M6.5 20h27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="20" r="3.4" fill="#ffffff"/></svg><span>SYNTRA</span></div><div id="navListMobile"></div></div>
 </div>
 <div id="main">
 <div id="topbar">
 <button class="hamburger" id="hamburgerBtn">&#9776;</button>
 <h1>Horarios</h1>
-<div class="mobile-logo"><img src="__LOGO_URL__"/>SYNTRA</div>
+<div class="mobile-logo"><svg class="brand-mark" viewBox="0 0 40 40" width="32" height="32" role="img" aria-label="SYNTRA" style="flex:0 0 auto;display:block;border-radius:9px;"><rect width="40" height="40" rx="10" fill="#1F4FD8"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M20 6.5v27M6.5 20h27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="20" r="3.4" fill="#ffffff"/></svg>SYNTRA</div>
 <div></div>
 </div>
 <div id="content">
@@ -245,8 +272,8 @@ var drawer = document.getElementById("drawer");
 document.getElementById("hamburgerBtn").addEventListener("click", function(){ drawer.classList.add("open"); });
 document.getElementById("drawerOverlay").addEventListener("click", function(){ drawer.classList.remove("open"); });
 
-var DIAS_ES = ["Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sabado"];
-var DIAS_CORTO = ["Dom","Lun","Mar","Mie","Jue","Vie","Sab"];
+var DIAS_ES = ["Domingo","Lunes","Martes","Mi\u00e9rcoles","Jueves","Viernes","S\u00e1bado"];
+var DIAS_CORTO = ["Dom","Lun","Mar","Mi\u00e9","Jue","Vie","S\u00e1b"];
 
 function pad2(n){ return String(n).padStart(2,"0"); }
 function ymd(d){ return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate()); }
@@ -387,26 +414,57 @@ grouped[inst].push(r);
 
 var instNames = Object.keys(grouped).sort();
 var wrap = document.getElementById("mobileList");
-if (!instNames.length){
-wrap.innerHTML = "<div class='empty-note'>Sin turnos para este d&iacute;a.</div>";
+var MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+var esHoy = ymd(new Date()) === key;
+var cab = "<div class='day-heading'>" + DIAS_ES[activeDay.getDay()] + " " + activeDay.getDate() + " de " + MESES[activeDay.getMonth()] + "</div>" +
+"<div class='day-sub'>" + (esHoy ? "Hoy &middot; " : "") + rows.length + (rows.length === 1 ? " turno programado" : " turnos programados") + "</div>";
+
+if (!rows.length){
+wrap.innerHTML = cab + "<div class='empty-day'><span class='big'>&#127958;</span>Sin turnos para este d&iacute;a.<br/>Toca otro d&iacute;a de la semana para ver sus turnos.</div>";
 return;
 }
-wrap.innerHTML = instNames.map(function(inst){
-var turnos = grouped[inst].map(function(r){
+
+var NOMBRE_TURNO = {manana:"Ma&ntilde;ana", tarde:"Tarde", noche:"Noche"};
+var orden = {manana:0, tarde:1, noche:2};
+
+var items = [];
+instNames.forEach(function(inst){
+grouped[inst].forEach(function(r){ items.push(r); });
+});
+items.sort(function(a,b){
+var ca = turnoClass(a["Ingreso"]), cb = turnoClass(b["Ingreso"]);
+if (orden[ca] !== orden[cb]) return orden[ca] - orden[cb];
+return String(a["Ingreso"]||"").localeCompare(String(b["Ingreso"]||""));
+});
+
+wrap.innerHTML = cab + items.map(function(r){
 var cls = turnoClass(r["Ingreso"]);
-var bg = cls === "manana" ? "var(--manana)" : cls === "tarde" ? "var(--tarde)" : "var(--noche)";
-return "<div class='mobile-turno' style='background:" + bg + ";'><div class='t'>" + (r["Ingreso"]||"") + " - " + (r["Salida"]||"") + "</div><div class='n'>" + (r["Socorrista"]||"") + "</div></div>";
-}).join("");
-return "<div class='mobile-day-card'><div class='inst-name'>" + inst + "</div>" + turnos + "</div>";
+return "<div class='shift'>" +
+"<div class='bar " + cls + "'></div>" +
+"<div class='body'>" +
+"<div class='hours'>" + (r["Ingreso"]||"--:--") + " &ndash; " + (r["Salida"]||"--:--") + "</div>" +
+"<div class='who'>" + (r["Socorrista"]||"Sin asignar") + "</div>" +
+"<div class='place'>&#127958; " + (r["Instalacion"]||"") + "</div>" +
+"</div>" +
+"<span class='tag " + cls + "'>" + NOMBRE_TURNO[cls] + "</span>" +
+"</div>";
 }).join("");
 }
 
 function renderDayTabs(){
 var days = getWeekDays();
 var tabsEl = document.getElementById("dayTabs");
+var rowsWeek = filteredRows();
+var hoy = ymd(new Date());
 tabsEl.innerHTML = days.map(function(d, i){
-var cls = "day-tab" + (i === activeDayIndex ? " active" : "");
-return "<div class='" + cls + "' data-idx='" + i + "'>" + DIAS_CORTO[d.getDay()] + " " + d.getDate() + "</div>";
+var key = ymd(d);
+var tiene = rowsWeek.some(function(r){ var rd = parseFecha(r["Fecha"]); return rd && ymd(rd) === key; });
+var cls = "day-tab" + (i === activeDayIndex ? " active" : "") + (key === hoy ? " today" : "");
+return "<div class='" + cls + "' data-idx='" + i + "'>" +
+"<span class='dw'>" + DIAS_CORTO[d.getDay()] + "</span>" +
+"<span class='dn'>" + d.getDate() + "</span>" +
+"<span class='dd" + (tiene ? "" : " off") + "'></span>" +
+"</div>";
 }).join("");
 tabsEl.querySelectorAll(".day-tab").forEach(function(node){
 node.addEventListener("click", function(){

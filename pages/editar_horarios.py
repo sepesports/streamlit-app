@@ -144,16 +144,16 @@ html,body{background:#1B2A4A !important;}
 </head>
 <body>
 <div id="app">
-<div id="sidebar"><div class="logo-row"><img src="__LOGO_URL__"/><span>SYNTRA</span></div><div id="navList"></div></div>
+<div id="sidebar"><div class="logo-row"><svg class="brand-mark" viewBox="0 0 40 40" width="32" height="32" role="img" aria-label="SYNTRA" style="flex:0 0 auto;display:block;border-radius:9px;"><rect width="40" height="40" rx="10" fill="#1F4FD8"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M20 6.5v27M6.5 20h27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="20" r="3.4" fill="#ffffff"/></svg><span>SYNTRA</span></div><div id="navList"></div></div>
 <div class="mobile-drawer" id="drawer">
 <div class="overlay" id="drawerOverlay"></div>
-<div class="panel"><div class="logo-row"><img src="__LOGO_URL__"/><span>SYNTRA</span></div><div id="navListMobile"></div></div>
+<div class="panel"><div class="logo-row"><svg class="brand-mark" viewBox="0 0 40 40" width="32" height="32" role="img" aria-label="SYNTRA" style="flex:0 0 auto;display:block;border-radius:9px;"><rect width="40" height="40" rx="10" fill="#1F4FD8"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M20 6.5v27M6.5 20h27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="20" r="3.4" fill="#ffffff"/></svg><span>SYNTRA</span></div><div id="navListMobile"></div></div>
 </div>
 <div id="main">
 <div id="topbar">
 <button class="hamburger" id="hamburgerBtn">&#9776;</button>
 <h1>Gesti&oacute;n de Horarios</h1>
-<div class="mobile-logo"><img src="__LOGO_URL__"/>SYNTRA</div>
+<div class="mobile-logo"><svg class="brand-mark" viewBox="0 0 40 40" width="32" height="32" role="img" aria-label="SYNTRA" style="flex:0 0 auto;display:block;border-radius:9px;"><rect width="40" height="40" rx="10" fill="#1F4FD8"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M20 6.5v27M6.5 20h27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="20" r="3.4" fill="#ffffff"/></svg>SYNTRA</div>
 <button class="primary-btn" id="addBtn">+ Nueva Asignaci&oacute;n</button>
 </div>
 <div id="content">
