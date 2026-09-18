@@ -112,6 +112,7 @@ color:#eaf2ff;display:flex;flex-direction:column;padding:26px 18px;height:100vh;
 #threadPanel{flex:1;min-width:0;display:flex;flex-direction:column;background:#fbfcfe;}
 #threadHeader{padding:14px 22px;border-bottom:1px solid var(--border);background:#fff;display:flex;align-items:center;gap:12px;flex:0 0 auto;}
 .back-btn{display:none;background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink);}
+#threadHeader .hav{width:36px;height:36px;border-radius:12px;background:var(--navy2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;overflow:hidden;flex:0 0 36px;}
 #threadHeaderTitle{font-size:15px;font-weight:700;}
 #threadHeaderSub{font-size:11.5px;color:var(--muted);}
 #messagesWrap{flex:1;min-height:0;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:12px;}
@@ -883,6 +884,7 @@ var esGrupo = meta && meta.type === "group";
 threadPanel.innerHTML =
 '<div id="threadHeader">' +
 '<button class="back-btn" id="backBtn">&#8592;</button>' +
+'<div class="hav">' + (meta && meta.type === "installation" ? "&#127970;" : (esGrupo ? "&#128101;" : avatarHtml((meta && meta.other_dni) || "", initials(title)))) + '</div>' +
 '<div><div id="threadHeaderTitle">' + esc(title) + '</div><div id="threadHeaderSub">' + sub + '</div></div>' +
 (esGrupo ? '<button class="head-btn" id="membersBtn">&#128101; Integrantes</button>' : '') +
 '</div>' +
