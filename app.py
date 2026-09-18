@@ -149,6 +149,13 @@ display:flex;align-items:center;justify-content:center;font-size:28px;color:var(
 .qa-card h3{margin:0;font-size:14px;font-weight:700;color:var(--navy);}
 .qa-card p{margin:0;font-size:12px;color:var(--muted);line-height:1.35;}
 .qa-pill{align-self:flex-start;background:var(--blue-soft);color:var(--blue);font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;}
+@keyframes syntraSheen{0%{left:-45%;}55%{left:115%;}100%{left:115%;}}
+.qa-btn{position:relative;overflow:hidden;}
+.qa-btn:not([disabled])::after{content:'';position:absolute;top:0;left:-45%;width:38%;height:100%;
+background:linear-gradient(105deg, rgba(255,255,255,0) 0%, rgba(190,215,255,.30) 45%, rgba(255,255,255,0) 100%);
+transform:skewX(-18deg);animation:syntraSheen 7s ease-in-out infinite;pointer-events:none;}
+.qa-btn:not([disabled]):active{transform:translateY(1px);box-shadow:0 0 0 3px rgba(138,180,255,.25);}
+@media (prefers-reduced-motion: reduce){.qa-btn::after{animation:none;}}
 .qa-btn{
 margin-top:auto;background:var(--navy-dark);color:#fff;border:none;border-radius:10px;
 padding:9px 12px;font-size:12.5px;font-weight:700;cursor:pointer;
