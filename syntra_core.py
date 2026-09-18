@@ -92,6 +92,66 @@ return;
 }catch(e){}
 window.location.href = url;
 }
+/* Barra inferior fija, igual en todas las pantallas (movil) */
+function syntraBottomNav(){
+if (document.getElementById("bottomnav") || document.getElementById("syntraBn")) return;
+var path = "";
+try{ path = window.parent.location.pathname; }catch(e){ path = location.pathname; }
+var segs = path.split("/").filter(function(s){ return s && s !== "~" && s !== "+"; });
+var here = segs.length ? segs[segs.length - 1] : "";
+
+var items = [
+{k:"", go:"/", ic:"&#8962;", lab:"Inicio"},
+{k:"calendario", go:"/calendario", ic:"&#128197;", lab:"Horarios"},
+{k:"chat_interfaz", go:"/chat_interfaz", ic:"&#128172;", lab:"Chat"},
+{k:"mas", go:"", ic:"&#8942;", lab:"M\u00e1s"}
+];
+
+var st = document.createElement("style");
+st.textContent = "#syntraBn{display:none;}" +
+"@media (max-width:900px){" +
+"#syntraBn{display:flex;position:fixed;left:0;right:0;bottom:0;height:62px;background:#fff;border-top:1px solid #e5e7eb;z-index:9998;padding-bottom:env(safe-area-inset-bottom);}" +
+"#syntraBn .sbn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10.5px;font-weight:600;color:#6B7280;cursor:pointer;font-family:inherit;background:none;border:0;}" +
+"#syntraBn .sbn.on{color:#1F4FD8;}" +
+"#syntraBn .sbn .ic{font-size:18px;line-height:1;}" +
+"body{padding-bottom:62px !important;}" +
+"}";
+if (document.getElementById("chatBody")){
+st.textContent += "@media (max-width:900px){#app{height:calc(100dvh - 62px) !important;min-height:0 !important;max-height:calc(100dvh - 62px) !important;}#main{height:100% !important;min-height:0 !important;}body{padding-bottom:0 !important;}#iaFab{bottom:74px !important;}#iaPanel{bottom:140px !important;height:calc(100dvh - 215px) !important;}}";
+}
+document.head.appendChild(st);
+
+var bar = document.createElement("div");
+bar.id = "syntraBn";
+bar.innerHTML = items.map(function(it){
+var on = (it.k === here) || (it.k === "" && here === "");
+return '<button class="sbn' + (on ? " on" : "") + '" data-k="' + it.k + '"><span class="ic">' + it.ic + '</span>' + it.lab + '</button>';
+}).join("");
+document.body.appendChild(bar);
+
+bar.querySelectorAll(".sbn").forEach(function(btn){
+btn.addEventListener("click", function(){
+var k = btn.getAttribute("data-k");
+if (k === "mas"){
+var dr = document.getElementById("drawer");
+if (dr){ dr.classList.add("open"); return; }
+}
+var it = items.filter(function(x){ return x.k === k; })[0];
+if (!it || !it.go) return;
+syntraGoTo(it.go, function(){
+try{ window.parent.location.href = it.go + window.parent.location.search; }
+catch(e){ window.location.href = it.go; }
+});
+});
+});
+}
+
+if (document.readyState === "loading"){
+document.addEventListener("DOMContentLoaded", function(){ setTimeout(syntraBottomNav, 0); });
+} else {
+setTimeout(syntraBottomNav, 0);
+}
+
 function syntraGoTo(path, fallback){
 try{
 var want = String(path || "/").split("?")[0].replace(/^\/+|\/+$/g, "");
