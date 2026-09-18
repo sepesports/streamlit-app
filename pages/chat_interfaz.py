@@ -117,7 +117,9 @@ color:#eaf2ff;display:flex;flex-direction:column;padding:26px 18px;height:100vh;
 #messagesWrap{flex:1;min-height:0;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:12px;}
 .msg-row{display:flex;flex-direction:column;max-width:70%;}
 .msg-row.mine{align-self:flex-end;align-items:flex-end;}
-.msg-sender{font-size:11px;color:var(--muted);margin-bottom:3px;padding:0 4px;}
+.msg-sender{font-size:11px;color:var(--muted);margin-bottom:3px;padding:0 4px;display:flex;align-items:center;gap:6px;}
+.msg-sender .sav{width:22px;height:22px;border-radius:7px;background:var(--navy2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;overflow:hidden;flex:0 0 22px;}
+.avatar-img{cursor:pointer;}
 .msg-bubble{background:#fff;border:1px solid var(--border);border-radius:14px 14px 14px 4px;padding:10px 14px;font-size:13.5px;line-height:1.4;}
 .msg-row.mine .msg-bubble{background:var(--blue);color:#fff;border-color:var(--blue);border-radius:14px 14px 4px 14px;}
 .msg-time{font-size:10px;color:var(--muted);margin-top:3px;padding:0 4px;}
@@ -189,6 +191,7 @@ html,body{background:#1B2A4A !important;}
 .mem-row:last-child{border-bottom:none;}
 .mem-x{margin-left:auto;background:#ffeceb;color:#d33;border:0;border-radius:8px;padding:5px 10px;font-size:11.5px;font-weight:700;cursor:pointer;}
 .mem-owner{margin-left:auto;font-size:10.5px;font-weight:800;color:var(--blue);background:#eaf1ff;padding:3px 8px;border-radius:99px;}
+.modal-btn.salir{background:#ffeceb;color:#d33;margin-right:auto;}
 .head-btn{margin-left:auto;background:#eef2fa;border:0;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:700;color:var(--ink);cursor:pointer;}
 /* ===== Adjuntos y tiempo real ===== */
 .att-btn{width:40px;height:40px;border-radius:50%;background:#eef2fa;color:#1B2A4A;border:none;cursor:pointer;font-size:17px;flex:0 0 40px;display:flex;align-items:center;justify-content:center;}
@@ -200,9 +203,10 @@ html,body{background:#1B2A4A !important;}
 .msg-img{display:block;width:240px;max-width:100%;height:auto;max-height:260px;border-radius:10px;cursor:pointer;object-fit:cover;background:#eef2fa;}
 .msg-audio{display:block;width:240px;max-width:100%;height:40px;}
 .msg-bubble.has-att{padding:6px;}
-#imgViewer{position:fixed;inset:0;background:rgba(2,7,28,.85);z-index:10000;display:none;align-items:center;justify-content:center;padding:16px;}
+#imgViewer{position:fixed;inset:0;background:rgba(2,7,28,.85);z-index:10100;display:none;align-items:center;justify-content:center;padding:16px;}
 #imgViewer.open{display:flex;}
 #imgViewer img{max-width:100%;max-height:100%;border-radius:8px;}
+#imgViewer img.retrato{width:min(78vw,340px);height:auto;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
 @media (max-width:768px){.msg-row{max-width:85%;}.msg-img{width:200px;}.msg-audio{width:200px;}#composer{padding:10px 12px;gap:6px;}}
 /* ===== Asistente IA (overlay aislado) ===== */
 #iaFab{position:fixed;right:18px;bottom:96px;width:56px;height:56px;border-radius:50%;background:#1B2A4A;color:#fff;border:none;box-shadow:0 6px 18px rgba(27,42,74,.35);font-size:24px;cursor:pointer;z-index:9999;display:flex;align-items:center;justify-content:center;}
@@ -617,12 +621,39 @@ cuerpo += '<div style="font-size:12px;color:#6b7688;font-weight:700;margin:14px 
 '<div id="memLista">' + fuera.map(function(u){ return filaElegible(u, false); }).join("") + '</div>';
 }
 
-var pie = puedeEditar
+var soyCreador = (info.created_by || "").toLowerCase() === String(AUTH_DNI).toLowerCase();
+var botonSalir = soyCreador ? '' : '<button class="modal-btn salir" id="memSalir">Salir del grupo</button>';
+var pie = botonSalir + (puedeEditar
 ? '<button class="modal-btn ghost" id="memCerrar">Cerrar</button><button class="modal-btn" id="memGuardar">Guardar cambios</button>'
-: '<button class="modal-btn ghost" id="memCerrar">Cerrar</button>';
+: '<button class="modal-btn ghost" id="memCerrar">Cerrar</button>');
 
 abrirModal("Integrantes del grupo", cuerpo, pie);
 document.getElementById("memCerrar").addEventListener("click", cerrarModal);
+
+var salirBtn = document.getElementById("memSalir");
+if (salirBtn){
+salirBtn.addEventListener("click", function(){
+if (!confirm("\u00bfSeguro que quieres salir del grupo?")) return;
+salirBtn.disabled = true; salirBtn.textContent = "Saliendo...";
+fetch(API_BASE + "/api/chat/threads/" + encodeURIComponent(threadId) + "/members", {
+method: "POST", headers: {"Content-Type": "application/json"},
+body: JSON.stringify({user_id: AUTH_DNI, add: [], remove: [AUTH_DNI]})
+})
+.then(function(r){ return r.json(); })
+.then(function(d){
+salirBtn.disabled = false; salirBtn.textContent = "Salir del grupo";
+if (d && d.ok){
+cerrarModal();
+chatBody.classList.remove("thread-open");
+if (pollTimer) clearInterval(pollTimer);
+currentThreadId = null;
+renderedThreadId = null;
+loadThreads();
+} else { alert((d && d.error) || "No se pudo salir del grupo."); }
+})
+.catch(function(){ salirBtn.disabled = false; salirBtn.textContent = "Salir del grupo"; alert("Error de conexi\u00f3n."); });
+});
+}
 
 var buscar = document.getElementById("memBuscar");
 if (buscar){
@@ -756,6 +787,19 @@ if (currentThreadId) checkUpdates(currentThreadId);
 var imgViewer = document.getElementById("imgViewer");
 imgViewer.addEventListener("click", function(){ imgViewer.classList.remove("open"); });
 
+/* tocar la foto de cualquier persona la muestra en grande */
+document.addEventListener("click", function(e){
+var t = e.target;
+if (!t || !t.classList || !t.classList.contains("avatar-img")) return;
+if (t.closest && t.closest("#meAvatar")) return;
+e.preventDefault();
+e.stopPropagation();
+var visor = document.getElementById("imgViewerImg");
+visor.className = "retrato";
+visor.src = t.src;
+imgViewer.classList.add("open");
+}, true);
+
 function esc(s){
 return (s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
@@ -793,7 +837,7 @@ var inner = esc(m.body);
 if (att && att.kind === "image"){ inner = '<img class="msg-img" src="' + att.url + '" loading="lazy" alt="Imagen"/>'; }
 if (att && att.kind === "audio"){ inner = '<audio class="msg-audio" controls preload="metadata" src="' + att.url + '"></audio>'; }
 return '<div class="msg-row' + (mine ? ' mine' : '') + '">' +
-(mine ? '' : '<div class="msg-sender">' + esc(m.sender_alias) + '</div>') +
+(mine ? '' : '<div class="msg-sender"><span class="sav">' + avatarHtml(m.sender_id, initials(m.sender_alias)) + '</span>' + esc(m.sender_alias) + '</div>') +
 '<div class="msg-bubble' + (att ? ' has-att' : '') + '">' + inner + '</div>' +
 '<div class="msg-time">' + timeAgo(m.created_at) + '</div>' +
 '</div>';
@@ -803,7 +847,9 @@ return '<div class="msg-row' + (mine ? ' mine' : '') + '">' +
 function bindImgs(wrap){
 wrap.querySelectorAll(".msg-img").forEach(function(img){
 img.addEventListener("click", function(){
-document.getElementById("imgViewerImg").src = img.src;
+var v = document.getElementById("imgViewerImg");
+v.className = "";
+v.src = img.src;
 imgViewer.classList.add("open");
 });
 img.addEventListener("load", function(){ if (wrap.getAttribute("data-stick") === "1") wrap.scrollTop = wrap.scrollHeight; });
