@@ -125,7 +125,7 @@ display:flex;align-items:center;justify-content:space-between;gap:12px;flex:0 0 
 .mp-header .greet h1{font-size:20px;margin:0 0 3px 0;font-weight:800;color:var(--navy);}
 .mp-header .greet p{margin:0;color:var(--muted);font-size:13px;}
 .mp-right{display:flex;align-items:center;gap:16px;}
-.desktop-brand{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:1.5px;font-size:15px;color:var(--navy);}
+.desktop-brand{display:inline-flex;align-items:center;gap:8px;font-weight:800;letter-spacing:1.5px;font-size:15px;color:#eaf2ff;background:linear-gradient(135deg,#182a54 0%,#0d1a37 100%);padding:6px 12px;border-radius:10px;box-shadow:0 5px 14px rgba(3,10,28,.20);}
 .desktop-brand img{width:26px;height:26px;object-fit:contain;border-radius:6px;}
 .bell{position:relative;font-size:19px;color:var(--navy);cursor:pointer;}
 .bell .dot{position:absolute;top:-5px;right:-7px;background:var(--red);color:#fff;font-size:10px;font-weight:800;border-radius:999px;padding:1px 5px;}
@@ -247,14 +247,14 @@ flex:7 1 0;min-height:0;
 background:#fff;border-radius:12px;color:var(--muted);box-shadow:0 4px 12px rgba(27,42,74,.08);
 padding:0 26px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px;
 }
-#franjaC .brand{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:1.5px;color:var(--navy);font-size:14px;}
-#franjaC .brand img{width:24px;height:24px;object-fit:contain;border-radius:5px;}
+#franjaC .brand{display:inline-flex;align-items:center;gap:7px;font-weight:800;letter-spacing:1.2px;color:#eaf2ff;font-size:12px;background:linear-gradient(135deg,#182a54 0%,#0d1a37 100%);padding:5px 10px;border-radius:10px;box-shadow:0 6px 16px rgba(3,10,28,.22);max-height:100%;}
+#franjaC .brand img{width:20px;height:20px;object-fit:contain;border-radius:5px;}
 
 /* ===== Barra superior fija (movil) ===== */
 #topbarMobile{display:none;}
 @media (max-width:768px){
 #topbarMobile{
-display:flex;position:fixed;left:0;right:0;top:0;height:60px;z-index:60;
+display:flex;position:fixed;left:0;right:0;top:0;height:60px;z-index:60;zoom:1.1;
 background:linear-gradient(135deg,#182a54 0%,#0d1a37 100%);
 border-bottom:1px solid rgba(255,255,255,.12);
 box-shadow:0 10px 26px rgba(0,0,0,.30);
@@ -266,8 +266,8 @@ overflow:hidden;
 @keyframes syntraSheen{0%{left:-40%;}55%{left:115%;}100%{left:115%;}}
 @media (prefers-reduced-motion: reduce){#topbarMobile::after{animation:none;}}
 #topbarMobile .tb-burger{background:none;border:0;font-size:20px;color:#eaf2ff;cursor:pointer;line-height:1;padding:4px;}
-#topbarMobile .tb-brand{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;letter-spacing:2px;font-size:16px;color:#eaf2ff;}
-#topbarMobile .tb-bell{position:relative;background:none;border:0;font-size:19px;cursor:pointer;padding:4px;}
+#topbarMobile .tb-brand{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:2px;font-size:16px;color:#eaf2ff;pointer-events:none;}
+#topbarMobile .tb-bell{position:relative;background:none;border:0;font-size:19px;cursor:pointer;padding:4px;margin-left:auto;}
 #topbarMobile .tb-bell .dot{position:absolute;top:0;right:0;background:var(--red);color:#fff;font-size:9.5px;font-weight:700;border-radius:99px;padding:1px 5px;display:none;}
 #pagewrap{padding-top:72px !important;}
 .mp-header .hamburger, .mp-header .bell{display:none !important;}
