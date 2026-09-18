@@ -1,7 +1,7 @@
 # pages/admin.py
 import streamlit as st
 import streamlit.components.v1 as components
-from syntra_core import sync_auth, go, shell_css, NAV_JS
+from syntra_core import sync_auth, go, shell_css, NAV_JS, LOGO_DATA_URI
 
 st.set_page_config(layout="wide")
 
@@ -506,7 +506,7 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
     <div id="frame"></div>
 
     <div id="card">
-      <img class="logo" src="https://files.catbox.moe/056m6v.jpg" alt="Logo"/>
+      <img class="logo" src="__LOGO_URL__" alt="Logo"/>
       <div class="title">¡BIENVENIDO!</div>
 
       <form autocomplete="off" style="margin:0; padding:0; position:relative; height:100%; width:100%;">
@@ -678,6 +678,6 @@ if (window.innerWidth <= 768) {
 </html>
 """
 
-html = html.replace("__SYNTRA_NAV__", NAV_JS)
+html = html.replace("__SYNTRA_NAV__", NAV_JS).replace("__LOGO_URL__", LOGO_DATA_URI)
 
 components.html(html, height=1000, scrolling=False)

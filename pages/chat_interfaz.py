@@ -2,7 +2,7 @@
 import json
 import streamlit as st
 import streamlit.components.v1 as components
-from syntra_core import sync_auth, go, shell_css, NAV_JS
+from syntra_core import sync_auth, go, shell_css, NAV_JS, LOGO_DATA_URI
 
 st.set_page_config(page_title="Incidencias y Comunicados", layout="wide")
 sync_auth()
@@ -20,7 +20,7 @@ CAN_MANAGE_SCHEDULES = NORMALIZED_ROLE == "administrador"
 CAN_REGISTER_USERS = NORMALIZED_ROLE == "administrador"
 
 API_BASE = "https://camilo27.pythonanywhere.com"
-LOGO_URL = "https://files.catbox.moe/056m6v.jpg"
+LOGO_URL = LOGO_DATA_URI
 
 st.markdown(
         """
@@ -187,16 +187,16 @@ html,body{background:#1B2A4A !important;}
 </head>
 <body>
 <div id="app">
-<div id="sidebar"><div class="logo-row"><svg class="brand-mark" viewBox="0 0 40 40" width="32" height="32" role="img" aria-label="SYNTRA" style="flex:0 0 auto;display:block;border-radius:9px;"><rect width="40" height="40" rx="10" fill="#1F4FD8"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M20 6.5v27M6.5 20h27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="20" r="3.4" fill="#ffffff"/></svg><span>SYNTRA</span></div><div id="navList"></div></div>
+<div id="sidebar"><div class="logo-row"><img class="brand-mark" src="__LOGO_URL__" alt="SYNTRA" style="width:32px;height:32px;flex:0 0 auto;display:block;border-radius:8px;object-fit:cover;"/><span>SYNTRA</span></div><div id="navList"></div></div>
 <div class="mobile-drawer" id="drawer">
 <div class="overlay" id="drawerOverlay"></div>
-<div class="panel"><div class="logo-row"><svg class="brand-mark" viewBox="0 0 40 40" width="32" height="32" role="img" aria-label="SYNTRA" style="flex:0 0 auto;display:block;border-radius:9px;"><rect width="40" height="40" rx="10" fill="#1F4FD8"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M20 6.5v27M6.5 20h27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="20" r="3.4" fill="#ffffff"/></svg><span>SYNTRA</span></div><div id="navListMobile"></div></div>
+<div class="panel"><div class="logo-row"><img class="brand-mark" src="__LOGO_URL__" alt="SYNTRA" style="width:32px;height:32px;flex:0 0 auto;display:block;border-radius:8px;object-fit:cover;"/><span>SYNTRA</span></div><div id="navListMobile"></div></div>
 </div>
 <div id="main">
 <div id="topbar">
 <button class="hamburger" id="hamburgerBtn">&#9776;</button>
 <h1>Incidencias y Comunicados</h1>
-<div class="mobile-logo"><svg class="brand-mark" viewBox="0 0 40 40" width="32" height="32" role="img" aria-label="SYNTRA" style="flex:0 0 auto;display:block;border-radius:9px;"><rect width="40" height="40" rx="10" fill="#1F4FD8"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M20 6.5v27M6.5 20h27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="20" r="3.4" fill="#ffffff"/></svg>SYNTRA</div>
+<div class="mobile-logo"><img class="brand-mark" src="__LOGO_URL__" alt="SYNTRA" style="width:32px;height:32px;flex:0 0 auto;display:block;border-radius:8px;object-fit:cover;"/>SYNTRA</div>
 <div></div>
 </div>
 
