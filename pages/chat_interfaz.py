@@ -87,10 +87,10 @@ color:#eaf2ff;display:flex;flex-direction:column;padding:26px 18px;height:100vh;
 #chatBody{flex:1;min-height:0;display:flex;}
 
 #listPanel{width:340px;flex:0 0 340px;border-right:1px solid var(--border);background:#fff;display:flex;flex-direction:column;}
-.list-tabs{display:flex;gap:18px;padding:14px 18px 0 18px;border-bottom:1px solid var(--border);}
-.list-tab{padding:0 0 12px 0;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;}
+.list-tabs{display:flex;align-items:flex-start;gap:13px;padding:14px 12px 0 12px;border-bottom:1px solid var(--border);}
+.list-tab{padding:0 0 12px 0;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;flex:0 0 auto;}
 .list-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
-.new-btn{margin-left:auto;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;align-self:flex-start;}
+.new-btn{margin-left:auto;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:11.5px;font-weight:700;cursor:pointer;align-self:flex-start;white-space:nowrap;flex:0 0 auto;}
 .search-box{margin:12px 16px;padding:8px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;width:calc(100% - 32px);}
 #threadList, #instList{flex:1;overflow-y:auto;padding:0 8px 8px 8px;}
 .thread-item{display:flex;gap:10px;align-items:flex-start;padding:12px 10px;border-radius:12px;cursor:pointer;}
@@ -159,6 +159,37 @@ html,body{background:#1B2A4A !important;}
 #content{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;padding-bottom:22px !important;}
 #chatBody{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;overflow:hidden !important;}
 @media (max-width:900px){#app{padding:10px !important;gap:10px !important;}}
+/* ===== Grupos, integrantes y foto de perfil ===== */
+.avatar-img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;}
+.me-row{display:flex;align-items:center;gap:10px;padding:10px 16px 4px 16px;}
+.me-av{width:38px;height:38px;border-radius:12px;background:var(--navy2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;overflow:hidden;cursor:pointer;flex:0 0 38px;position:relative;}
+.me-av .cam{position:absolute;right:-2px;bottom:-2px;background:#1F4FD8;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
+.me-name{font-size:13px;font-weight:700;}
+.me-hint{font-size:11px;color:var(--muted);}
+.thread-tag{font-size:9.5px;font-weight:800;letter-spacing:.3px;padding:2px 6px;border-radius:99px;background:#eaf1ff;color:#1F4FD8;text-transform:uppercase;margin-left:6px;}
+#modalBack{position:fixed;inset:0;background:rgba(5,12,32,.55);z-index:10050;display:none;align-items:flex-end;justify-content:center;}
+#modalBack.open{display:flex;}
+#modalCard{background:#fff;width:100%;max-width:520px;border-radius:16px 16px 0 0;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;}
+#modalHead{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+#modalHead b{font-size:15px;}
+#modalClose{background:none;border:0;font-size:22px;line-height:1;cursor:pointer;color:var(--muted);}
+#modalBody{padding:14px 16px;overflow-y:auto;flex:1;}
+#modalFoot{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+.modal-input{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:10px;font-size:14px;margin-bottom:12px;}
+.modal-btn{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-size:13.5px;font-weight:700;cursor:pointer;}
+.modal-btn.ghost{background:#eef2fa;color:var(--ink);}
+.modal-btn:disabled{opacity:.5;cursor:not-allowed;}
+.pick{display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px solid var(--border);cursor:pointer;}
+.pick:last-child{border-bottom:none;}
+.pick input{width:18px;height:18px;}
+.pick .pav, .mem-row .pav{width:32px;height:32px;border-radius:10px;background:var(--navy2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;overflow:hidden;flex:0 0 32px;}
+.pick .pname{font-size:13.5px;font-weight:600;}
+.pick .prole{font-size:11px;color:var(--muted);}
+.mem-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--border);}
+.mem-row:last-child{border-bottom:none;}
+.mem-x{margin-left:auto;background:#ffeceb;color:#d33;border:0;border-radius:8px;padding:5px 10px;font-size:11.5px;font-weight:700;cursor:pointer;}
+.mem-owner{margin-left:auto;font-size:10.5px;font-weight:800;color:var(--blue);background:#eaf1ff;padding:3px 8px;border-radius:99px;}
+.head-btn{margin-left:auto;background:#eef2fa;border:0;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:700;color:var(--ink);cursor:pointer;}
 /* ===== Adjuntos y tiempo real ===== */
 .att-btn{width:40px;height:40px;border-radius:50%;background:#eef2fa;color:#1B2A4A;border:none;cursor:pointer;font-size:17px;flex:0 0 40px;display:flex;align-items:center;justify-content:center;}
 .att-btn:hover{background:#e0e7f5;}
@@ -212,8 +243,14 @@ html,body{background:#1B2A4A !important;}
 <div id="listPanel">
 <div class="list-tabs">
 <div class="list-tab active" data-tab="conversaciones">Conversaciones</div>
+<div class="list-tab" data-tab="grupos">Grupos</div>
 <div class="list-tab" data-tab="instalaciones">Instalaciones</div>
-<button class="new-btn" id="newBtn">+ Nueva</button>
+<button class="new-btn" id="newBtn">+ Grupo</button>
+</div>
+<div class="me-row">
+<div class="me-av" id="meAvatar" title="Cambiar foto de perfil"><span id="meAvatarTxt">?</span><span class="cam">&#128247;</span></div>
+<div><div class="me-name" id="meName">&nbsp;</div><div class="me-hint">Toca tu foto para cambiarla</div></div>
+<input type="file" id="avatarInput" accept="image/*" style="display:none;" />
 </div>
 <input class="search-box" id="searchBox" placeholder="Buscar conversaciones..." />
 <div id="threadList"></div>
@@ -228,6 +265,14 @@ html,body{background:#1B2A4A !important;}
 </div>
 
 <div id="imgViewer"><img id="imgViewerImg" alt=""/></div>
+
+<div id="modalBack">
+<div id="modalCard">
+<div id="modalHead"><b id="modalTitle">Nuevo grupo</b><button id="modalClose" aria-label="Cerrar">&times;</button></div>
+<div id="modalBody"></div>
+<div id="modalFoot"></div>
+</div>
+</div>
 
 <button id="iaFab" title="Asistente IA" aria-label="Asistente IA">&#129302;</button>
 <div id="iaPanel" role="dialog" aria-label="Asistente IA">
@@ -314,34 +359,70 @@ if (!m) return null;
 return {kind: m[1], url: API_BASE + m[2] + "?user_id=" + encodeURIComponent(AUTH_DNI)};
 }
 
+var DIAS_SEM = ["domingo","lunes","martes","mi\u00e9rcoles","jueves","viernes","s\u00e1bado"];
+
+function soloFecha(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+function horaCorta(d){
+try{
+return d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit", hour12:true}).toLowerCase();
+}catch(e){
+var h = d.getHours(), m = ("0"+d.getMinutes()).slice(-2);
+var ap = h >= 12 ? "p. m." : "a. m.";
+h = h % 12; if (h === 0) h = 12;
+return h + ":" + m + " " + ap;
+}
+}
+
+/* Fecha y hora claras, en la hora del propio celular */
 function timeAgo(iso){
 if (!iso) return "";
 try{
 var d = new Date(iso);
-var now = new Date();
-var diffMs = now - d;
-var mins = Math.floor(diffMs / 60000);
-if (mins < 1) return "ahora";
-if (mins < 60) return mins + "m";
-var hrs = Math.floor(mins / 60);
-if (hrs < 24) return hrs + "h";
-var days = Math.floor(hrs / 24);
-return days + "d";
+if (isNaN(d.getTime())) return "";
+var hoy = soloFecha(new Date());
+var dia = soloFecha(d);
+var difDias = Math.round((hoy - dia) / 86400000);
+if (difDias <= 0) return "Hoy " + horaCorta(d);
+if (difDias === 1) return "Ayer " + horaCorta(d);
+if (difDias < 7) return DIAS_SEM[d.getDay()] + " " + horaCorta(d);
+if (difDias < 14) return "Hace 1 semana";
+if (difDias < 31) return "Hace " + Math.floor(difDias / 7) + " semanas";
+return ("0"+d.getDate()).slice(-2) + "/" + ("0"+(d.getMonth()+1)).slice(-2) + "/" + d.getFullYear();
 }catch(e){ return ""; }
 }
+
+function avatarHtml(dni, texto){
+var url = API_BASE + "/api/chat/avatar/" + encodeURIComponent(dni || "");
+var alt = esc(texto || "?");
+return '<img class="avatar-img" src="' + url + '" alt="' + alt + '" data-inicial="' + alt + '"/>';
+}
+
+/* si el usuario no tiene foto, se muestran sus iniciales */
+document.addEventListener("error", function(e){
+var t = e.target;
+if (t && t.classList && t.classList.contains("avatar-img")){
+var ini = t.getAttribute("data-inicial") || "?";
+var padre = t.parentNode;
+if (padre){ padre.textContent = ini; }
+}
+}, true);
 
 function initials(name){
 name = (name || "?").trim();
 return name.charAt(0).toUpperCase();
 }
 
+var vistaLista = "conversaciones";
+
 function renderThreadList(filter){
 filter = (filter || "").toLowerCase();
 var filtered = threadsCache.filter(function(t){
+if (vistaLista === "grupos" && t.type !== "group") return false;
 return !filter || (t.title || "").toLowerCase().indexOf(filter) !== -1;
 });
 if (!filtered.length){
-threadListEl.innerHTML = '<div class="empty-note">No hay conversaciones.</div>';
+threadListEl.innerHTML = '<div class="empty-note">' + (vistaLista === "grupos" ? 'Todav&iacute;a no tienes grupos. Crea uno con "+ Grupo".' : 'No hay conversaciones.') + '</div>';
 return;
 }
 threadListEl.innerHTML = filtered.map(function(t){
@@ -350,9 +431,9 @@ var unread = t.unread_count > 0 ? '<span class="unread-dot">' + t.unread_count +
 var subAtt = attInfo(t.last_message);
 var sub = subAtt ? (subAtt.kind === "image" ? "&#128247; Imagen" : "&#127908; Nota de voz") : (t.last_message || (t.type === "installation" ? "Instalaci&oacute;n" : "Privado"));
 return '<div class="' + cls + '" data-id="' + t.id + '">' +
-'<div class="thread-avatar">' + (t.type === "installation" ? "&#127970;" : initials(t.title)) + '</div>' +
+'<div class="thread-avatar">' + (t.type === "installation" ? "&#127970;" : (t.type === "group" ? "&#128101;" : avatarHtml(t.other_dni || "", initials(t.title)))) + '</div>' +
 '<div class="thread-info">' +
-'<div class="thread-title"><span>' + t.title + '</span><span class="thread-time">' + timeAgo(t.last_message_at) + '</span></div>' +
+'<div class="thread-title"><span>' + esc(t.title) + (t.type === "group" ? '<span class="thread-tag">Grupo</span>' : '') + '</span><span class="thread-time">' + timeAgo(t.last_message_at) + '</span></div>' +
 '<div style="display:flex;justify-content:space-between;gap:6px;align-items:center;">' +
 '<span class="thread-sub">' + sub + '</span>' + unread +
 '</div>' +
@@ -420,13 +501,15 @@ tab.addEventListener("click", function(){
 tabs.forEach(function(t){ t.classList.remove("active"); });
 tab.classList.add("active");
 var name = tab.getAttribute("data-tab");
-if (name === "conversaciones"){
-threadListEl.style.display = "";
-instListEl.style.display = "none";
-} else {
+if (name === "instalaciones"){
 threadListEl.style.display = "none";
 instListEl.style.display = "";
 loadInstallations();
+} else {
+vistaLista = name;
+threadListEl.style.display = "";
+instListEl.style.display = "none";
+renderThreadList(document.getElementById("searchBox").value);
 }
 });
 });
@@ -435,28 +518,207 @@ document.getElementById("searchBox").addEventListener("input", function(e){
 renderThreadList(e.target.value);
 });
 
-document.getElementById("newBtn").addEventListener("click", function(){
-fetch(API_BASE + "/api/chat/users")
-.then(function(r){ return r.json(); })
-.then(function(users){
-var others = (users || []).filter(function(u){ return u.dni !== AUTH_DNI; });
-if (!others.length){ alert("No hay usuarios disponibles."); return; }
-var names = others.map(function(u, idx){ return (idx+1) + ". " + (u.alias || u.nombre || u.dni); }).join(String.fromCharCode(10));
-var pick = window.prompt("Elige un numero para iniciar chat privado:" + String.fromCharCode(10) + names);
-var idx = parseInt(pick, 10) - 1;
-if (isNaN(idx) || !others[idx]) return;
-var target = others[idx];
-fetch(API_BASE + "/api/chat/private/" + encodeURIComponent(target.dni) + "?user_id=" + encodeURIComponent(AUTH_DNI))
+var modalBack = document.getElementById("modalBack");
+var modalBody = document.getElementById("modalBody");
+var modalFoot = document.getElementById("modalFoot");
+var modalTitle = document.getElementById("modalTitle");
+
+function abrirModal(titulo, cuerpo, pie){
+modalTitle.innerHTML = titulo;
+modalBody.innerHTML = cuerpo;
+modalFoot.innerHTML = pie || "";
+modalBack.classList.add("open");
+}
+function cerrarModal(){ modalBack.classList.remove("open"); }
+document.getElementById("modalClose").addEventListener("click", cerrarModal);
+modalBack.addEventListener("click", function(e){ if (e.target === modalBack) cerrarModal(); });
+
+function listaUsuarios(){
+return fetch(API_BASE + "/api/chat/users").then(function(r){ return r.json(); }).then(function(d){ return Array.isArray(d) ? d : ((d && d.users) || []); });
+}
+
+function filaElegible(u, marcado){
+return '<label class="pick">' +
+'<input type="checkbox" value="' + esc(u.dni) + '"' + (marcado ? " checked" : "") + '/>' +
+'<span class="pav">' + avatarHtml(u.dni, initials(u.alias || u.nombre || u.dni)) + '</span>' +
+'<span><span class="pname">' + esc(u.alias || u.nombre || u.dni) + '</span><br/><span class="prole">' + esc(u.rol || "") + (u.instalacion ? " &middot; " + esc(u.instalacion) : "") + '</span></span>' +
+'</label>';
+}
+
+/* ---- Crear grupo ---- */
+function abrirNuevoGrupo(){
+abrirModal("Nuevo grupo", '<div class="empty-note">Cargando...</div>', "");
+listaUsuarios().then(function(users){
+var otros = (users || []).filter(function(u){ return u.dni !== AUTH_DNI; });
+var cuerpo = '<input class="modal-input" id="grpNombre" maxlength="60" placeholder="Nombre del grupo (ej. Turno noche)" />' +
+'<input class="modal-input" id="grpBuscar" placeholder="Buscar socorrista..." />' +
+'<div id="grpLista">' + otros.map(function(u){ return filaElegible(u, false); }).join("") + '</div>';
+var pie = '<button class="modal-btn ghost" id="grpCancelar">Cancelar</button><button class="modal-btn" id="grpCrear">Crear grupo</button>';
+abrirModal("Nuevo grupo", cuerpo, pie);
+document.getElementById("grpBuscar").addEventListener("input", function(e){
+var q = (e.target.value || "").toLowerCase();
+document.querySelectorAll("#grpLista .pick").forEach(function(el){
+el.style.display = el.textContent.toLowerCase().indexOf(q) === -1 ? "none" : "";
+});
+});
+document.getElementById("grpCancelar").addEventListener("click", cerrarModal);
+document.getElementById("grpCrear").addEventListener("click", function(){
+var nombre = (document.getElementById("grpNombre").value || "").trim();
+var elegidos = [].slice.call(document.querySelectorAll("#grpLista input:checked")).map(function(i){ return i.value; });
+if (!nombre){ alert("Ponle un nombre al grupo."); return; }
+if (elegidos.length < 2){ alert("Elige al menos 2 integrantes."); return; }
+var btn = this; btn.disabled = true; btn.textContent = "Creando...";
+fetch(API_BASE + "/api/chat/groups", {
+method: "POST", headers: {"Content-Type": "application/json"},
+body: JSON.stringify({user_id: AUTH_DNI, title: nombre, members: elegidos})
+})
 .then(function(r){ return r.json(); })
 .then(function(d){
+btn.disabled = false; btn.textContent = "Crear grupo";
 if (d && d.ok && d.thread_id){
+cerrarModal();
+vistaLista = "grupos";
 loadThreads();
-setTimeout(function(){ openThread(d.thread_id); }, 300);
+setTimeout(function(){ openThread(d.thread_id); }, 600);
+} else {
+alert((d && d.error) || "No se pudo crear el grupo.");
 }
-});
 })
-.catch(function(){ alert("Error al cargar usuarios."); });
+.catch(function(){ btn.disabled = false; btn.textContent = "Crear grupo"; alert("Error de conexi\u00f3n."); });
 });
+}).catch(function(){ abrirModal("Nuevo grupo", '<div class="empty-note">Error al cargar la lista.</div>', ""); });
+}
+
+/* ---- Integrantes del grupo ---- */
+function abrirIntegrantes(threadId){
+abrirModal("Integrantes", '<div class="empty-note">Cargando...</div>', "");
+Promise.all([
+fetch(API_BASE + "/api/chat/threads/" + encodeURIComponent(threadId) + "/members?user_id=" + encodeURIComponent(AUTH_DNI)).then(function(r){ return r.json(); }),
+listaUsuarios()
+]).then(function(res){
+var info = res[0] || {}, users = res[1] || [];
+var miembros = info.members || [];
+var puedeEditar = (info.created_by || "").toLowerCase() === String(AUTH_DNI).toLowerCase() || String(AUTH_ROLE).toLowerCase() === "administrador";
+var dentro = {};
+miembros.forEach(function(m){ dentro[m.dni.toLowerCase()] = true; });
+var fuera = users.filter(function(u){ return !dentro[String(u.dni).toLowerCase()]; });
+
+var cuerpo = '<div style="font-size:12px;color:#6b7688;font-weight:700;margin-bottom:6px;">EN EL GRUPO (' + miembros.length + ')</div>' +
+miembros.map(function(m){
+return '<div class="mem-row"><span class="pav">' + avatarHtml(m.dni, initials(m.alias)) + '</span>' +
+'<span><span class="pname">' + esc(m.alias) + '</span><br/><span class="prole">' + esc(m.rol || "") + '</span></span>' +
+(m.es_creador ? '<span class="mem-owner">Creador</span>' : (puedeEditar ? '<button class="mem-x" data-quitar="' + esc(m.dni) + '">Quitar</button>' : '')) +
+'</div>';
+}).join("");
+
+if (puedeEditar && fuera.length){
+cuerpo += '<div style="font-size:12px;color:#6b7688;font-weight:700;margin:14px 0 6px 0;">AGREGAR</div>' +
+'<input class="modal-input" id="memBuscar" placeholder="Buscar socorrista..." />' +
+'<div id="memLista">' + fuera.map(function(u){ return filaElegible(u, false); }).join("") + '</div>';
+}
+
+var pie = puedeEditar
+? '<button class="modal-btn ghost" id="memCerrar">Cerrar</button><button class="modal-btn" id="memGuardar">Guardar cambios</button>'
+: '<button class="modal-btn ghost" id="memCerrar">Cerrar</button>';
+
+abrirModal("Integrantes del grupo", cuerpo, pie);
+document.getElementById("memCerrar").addEventListener("click", cerrarModal);
+
+var buscar = document.getElementById("memBuscar");
+if (buscar){
+buscar.addEventListener("input", function(e){
+var q = (e.target.value || "").toLowerCase();
+document.querySelectorAll("#memLista .pick").forEach(function(el){
+el.style.display = el.textContent.toLowerCase().indexOf(q) === -1 ? "none" : "";
+});
+});
+}
+
+var quitar = [];
+document.querySelectorAll("[data-quitar]").forEach(function(btn){
+btn.addEventListener("click", function(){
+var dni = btn.getAttribute("data-quitar");
+if (quitar.indexOf(dni) === -1){ quitar.push(dni); btn.textContent = "Se quitar\u00e1"; btn.style.opacity = ".6"; }
+else { quitar.splice(quitar.indexOf(dni), 1); btn.textContent = "Quitar"; btn.style.opacity = "1"; }
+});
+});
+
+var guardar = document.getElementById("memGuardar");
+if (guardar){
+guardar.addEventListener("click", function(){
+var agregar = [].slice.call(document.querySelectorAll("#memLista input:checked")).map(function(i){ return i.value; });
+if (!agregar.length && !quitar.length){ cerrarModal(); return; }
+guardar.disabled = true; guardar.textContent = "Guardando...";
+fetch(API_BASE + "/api/chat/threads/" + encodeURIComponent(threadId) + "/members", {
+method: "POST", headers: {"Content-Type": "application/json"},
+body: JSON.stringify({user_id: AUTH_DNI, add: agregar, remove: quitar})
+})
+.then(function(r){ return r.json(); })
+.then(function(d){
+guardar.disabled = false; guardar.textContent = "Guardar cambios";
+if (d && d.ok){ cerrarModal(); loadThreads(); loadThreadPanel(threadId, true); }
+else { alert((d && d.error) || "No se pudo actualizar."); }
+})
+.catch(function(){ guardar.disabled = false; guardar.textContent = "Guardar cambios"; alert("Error de conexi\u00f3n."); });
+});
+}
+}).catch(function(){ abrirModal("Integrantes", '<div class="empty-note">Error al cargar.</div>', ""); });
+}
+
+/* ---- Foto de perfil desde la galeria ---- */
+(function(){
+var meAv = document.getElementById("meAvatar");
+var input = document.getElementById("avatarInput");
+var txt = document.getElementById("meAvatarTxt");
+var nombre = document.getElementById("meName");
+if (nombre) nombre.textContent = AUTH_USER || AUTH_DNI || "";
+function pintarMiFoto(){
+if (!txt) return;
+var img = new Image();
+img.onload = function(){
+meAv.innerHTML = '<img class="avatar-img" src="' + img.src + '"/><span class="cam">&#128247;</span>';
+};
+img.onerror = function(){
+meAv.innerHTML = '<span id="meAvatarTxt">' + initials(AUTH_USER || AUTH_DNI) + '</span><span class="cam">&#128247;</span>';
+};
+img.src = API_BASE + "/api/chat/avatar/" + encodeURIComponent(AUTH_DNI) + "?t=" + Date.now();
+}
+pintarMiFoto();
+if (meAv) meAv.addEventListener("click", function(){ input.click(); });
+if (input) input.addEventListener("change", function(e){
+var f = e.target.files && e.target.files[0];
+e.target.value = "";
+if (!f) return;
+if (f.type.indexOf("image/") !== 0){ alert("Elige una imagen."); return; }
+var reader = new FileReader();
+reader.onload = function(){
+var img = new Image();
+img.onload = function(){
+var lado = 320;
+var c = document.createElement("canvas");
+c.width = lado; c.height = lado;
+var ctx = c.getContext("2d");
+var min = Math.min(img.width, img.height);
+ctx.drawImage(img, (img.width - min) / 2, (img.height - min) / 2, min, min, 0, 0, lado, lado);
+var dataUrl = c.toDataURL("image/jpeg", 0.85);
+fetch(API_BASE + "/api/chat/avatar", {
+method: "POST", headers: {"Content-Type": "application/json"},
+body: JSON.stringify({user_id: AUTH_DNI, mime: "image/jpeg", data: dataUrl})
+})
+.then(function(r){ return r.json(); })
+.then(function(d){
+if (d && d.ok){ pintarMiFoto(); loadThreads(); }
+else { alert((d && d.error) || "No se pudo guardar la foto."); }
+})
+.catch(function(){ alert("Error de conexi\u00f3n al subir la foto."); });
+};
+img.src = reader.result;
+};
+reader.readAsDataURL(f);
+});
+})();
+
+document.getElementById("newBtn").addEventListener("click", abrirNuevoGrupo);
 
 function openThread(threadId){
 currentThreadId = threadId;
@@ -548,6 +810,13 @@ img.addEventListener("load", function(){ if (wrap.getAttribute("data-stick") ===
 });
 }
 
+function subtituloHilo(meta){
+if (!meta) return "Conversaci&oacute;n";
+if (meta.type === "installation") return "Instalaci&oacute;n";
+if (meta.type === "group") return "Grupo";
+return "Privado";
+}
+
 function renderThreadPanel(meta, messages, threadId){
 var existingWrap = document.getElementById("messagesWrap");
 if (threadId && renderedThreadId === threadId && existingWrap && document.getElementById("msgInput")){
@@ -563,11 +832,13 @@ return;
 }
 renderedThreadId = threadId || null;
 var title = meta ? meta.title : "Conversaci&oacute;n";
-var sub = meta && meta.type === "installation" ? "Instalaci&oacute;n" : "Privado";
+var sub = subtituloHilo(meta);
+var esGrupo = meta && meta.type === "group";
 threadPanel.innerHTML =
 '<div id="threadHeader">' +
 '<button class="back-btn" id="backBtn">&#8592;</button>' +
 '<div><div id="threadHeaderTitle">' + esc(title) + '</div><div id="threadHeaderSub">' + sub + '</div></div>' +
+(esGrupo ? '<button class="head-btn" id="membersBtn">&#128101; Integrantes</button>' : '') +
 '</div>' +
 '<div id="messagesWrap"></div>' +
 '<div id="composer">' +
@@ -589,6 +860,9 @@ wrap.setAttribute("data-sig", messages.length ? messages[messages.length - 1].id
 wrap.setAttribute("data-stick", "1");
 bindImgs(wrap);
 wrap.scrollTop = wrap.scrollHeight;
+
+var mb = document.getElementById("membersBtn");
+if (mb) mb.addEventListener("click", function(){ abrirIntegrantes(threadId || currentThreadId); });
 
 document.getElementById("backBtn").addEventListener("click", function(){
 chatBody.classList.remove("thread-open");
