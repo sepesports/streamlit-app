@@ -401,6 +401,9 @@ fetch(API_BASE + "/api/chat/installation/" + encodeURIComponent(name) + "?user_i
 if (d2 && d2.ok && d2.thread_id){
 loadThreads();
 setTimeout(function(){ openThread(d2.thread_id); }, 300);
+} else {
+threadPanel.innerHTML = '<div class="placeholder-panel">No tienes acceso al chat de esta instalaci&oacute;n.</div>';
+chatBody.classList.add("thread-open");
 }
 });
 });
