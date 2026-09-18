@@ -139,6 +139,15 @@ st.textContent = "#syntraBn{display:none;}" +
 "#syntraBn{background:linear-gradient(180deg,#16264d 0%,#0b162f 100%) !important;border-top:1px solid rgba(255,255,255,.12) !important;box-shadow:0 -8px 22px rgba(0,0,0,.28) !important;}" +
 "#syntraBn .sbn{color:rgba(234,242,255,.70) !important;}" +
 "#syntraBn .sbn.on{color:#8ab4ff !important;}" +
+"#topbar{position:relative;overflow:hidden;}" +
+"#topbar::after{content:\'\';position:absolute;top:0;left:-40%;width:35%;height:100%;background:linear-gradient(105deg, rgba(255,255,255,0) 0%, rgba(160,200,255,.16) 45%, rgba(255,255,255,0) 100%);transform:skewX(-18deg);animation:syntraSheen 7s ease-in-out infinite;pointer-events:none;}" +
+"@keyframes syntraSheen{0%{left:-40%;}55%{left:115%;}100%{left:115%;}}" +
+"#topbar::before{content:\'\';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg, rgba(255,255,255,0), rgba(170,205,255,.55), rgba(255,255,255,0));pointer-events:none;}" +
+"#syntraBn::before{content:\'\';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg, rgba(255,255,255,0), rgba(170,205,255,.45), rgba(255,255,255,0));}" +
+"#syntraBn .sbn.on{position:relative;}" +
+"#syntraBn .sbn.on::after{content:\'\';position:absolute;top:0;left:22%;right:22%;height:2px;border-radius:0 0 3px 3px;background:linear-gradient(90deg, rgba(138,180,255,0), #8ab4ff, rgba(138,180,255,0));box-shadow:0 0 10px rgba(138,180,255,.8);}" +
+"#content, #chatBody, .card, .mobile-day-card, .shift, .grid-wrap{box-shadow:0 10px 30px rgba(3,10,28,.28), 0 1px 0 rgba(255,255,255,.55) inset !important;}" +
+"@media (prefers-reduced-motion: reduce){#topbar::after{animation:none;}}" +
 "}";
 if (document.getElementById("chatBody")){
 st.textContent += "@media (max-width:900px){#app{height:calc((100dvh - 62px) / 1.1) !important;min-height:0 !important;max-height:calc((100dvh - 62px) / 1.1) !important;}#main{height:100% !important;min-height:0 !important;}body{padding-bottom:0 !important;}#iaFab{bottom:calc(74px / 1.1) !important;right:calc(14px / 1.1) !important;}#iaPanel{bottom:calc(140px / 1.1) !important;height:calc((100dvh - 230px) / 1.1) !important;}}";
