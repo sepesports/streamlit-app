@@ -471,6 +471,15 @@ loadThreads();
 
 setInterval(function(){ if (!document.hidden) loadThreads(); }, 10000);
 
+document.addEventListener("visibilitychange", function(){
+if (document.hidden) return;
+loadThreads();
+if (currentThreadId) checkUpdates(currentThreadId);
+});
+window.addEventListener("focus", function(){
+if (currentThreadId) checkUpdates(currentThreadId);
+});
+
 var imgViewer = document.getElementById("imgViewer");
 imgViewer.addEventListener("click", function(){ imgViewer.classList.remove("open"); });
 
