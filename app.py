@@ -306,8 +306,8 @@ padding:0 14px;gap:10px;padding-top:env(safe-area-inset-top);
 .hamburger{display:block;}
 .mp-header .desktop-brand{display:none;}
 .mp-header .greet h1{font-size:17px;}
-.mp-qa, .kpi-row, #franjaB, #franjaC{display:none !important;}
-#homeMobile{display:block;margin-top:14px;}
+.mp-qa{flex:none;}
+#homeMobile{display:none !important;}
 #mainpanel{overflow:visible;}
 .cards-grid{grid-template-columns:1fr;gap:10px;}
 .qa-card p{min-height:0;}
