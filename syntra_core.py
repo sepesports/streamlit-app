@@ -54,6 +54,32 @@ def shell_css(bg="#1B2A4A"):
 
 
 NAV_JS = r"""
+/* Ajusta el alto real de la pantalla del movil (barra del navegador que aparece y desaparece) */
+(function(){
+var fe = window.frameElement;
+if (!fe) return;
+function fit(){
+try{
+var vv = window.parent.visualViewport;
+var h = (vv && vv.height) || window.parent.innerHeight || window.innerHeight;
+fe.style.position = "fixed";
+fe.style.left = "0";
+fe.style.top = "0";
+fe.style.width = "100%";
+fe.style.height = h + "px";
+fe.style.border = "0";
+fe.style.margin = "0";
+}catch(e){}
+}
+fit();
+setTimeout(fit, 300);
+try{
+var vv = window.parent.visualViewport;
+if (vv){ vv.addEventListener("resize", fit); vv.addEventListener("scroll", fit); }
+window.parent.addEventListener("resize", fit);
+window.parent.addEventListener("orientationchange", function(){ setTimeout(fit, 250); });
+}catch(e){}
+})();
 function syntraTopNav(url){
 try{
 var pd = window.parent.document;

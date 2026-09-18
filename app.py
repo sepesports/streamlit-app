@@ -233,6 +233,38 @@ padding:0 26px;display:flex;align-items:center;justify-content:space-between;fle
 #franjaC .brand{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:1.5px;color:var(--navy);font-size:14px;}
 #franjaC .brand img{width:24px;height:24px;object-fit:contain;border-radius:5px;}
 
+/* ===== Inicio movil (por rol) ===== */
+#homeMobile{display:none;}
+.hm-hero{border-radius:16px;padding:16px 16px 14px 16px;color:#fff;background:linear-gradient(135deg,#1F4FD8 0%,#1B2A4A 100%);margin-bottom:12px;}
+.hm-hero .lab{font-size:11.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;opacity:.75;}
+.hm-hero .big{font-size:26px;font-weight:800;margin-top:6px;letter-spacing:.3px;line-height:1.15;}
+.hm-hero .sub{font-size:13px;opacity:.9;margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.hm-hero .chips{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.hm-chip{background:rgba(255,255,255,.16);border-radius:99px;padding:5px 11px;font-size:11.5px;font-weight:700;}
+.hm-week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:14px;}
+.hm-day{background:#fff;border:1px solid var(--border);border-radius:12px;padding:7px 0 6px 0;text-align:center;line-height:1.1;cursor:pointer;}
+.hm-day .w{display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;}
+.hm-day .n{display:block;font-size:15px;font-weight:800;margin-top:2px;}
+.hm-day .d{display:block;width:5px;height:5px;border-radius:50%;background:var(--blue);margin:3px auto 0 auto;}
+.hm-day .d.off{background:transparent;}
+.hm-day.today{border-color:var(--blue);background:var(--blue-soft);}
+.hm-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.hm-tile{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 13px;cursor:pointer;}
+.hm-tile .v{font-size:22px;font-weight:800;color:var(--navy);line-height:1;}
+.hm-tile .l{font-size:11.5px;color:var(--muted);margin-top:5px;font-weight:600;}
+.hm-sec{font-size:13px;font-weight:800;color:var(--navy);margin:0 0 8px 2px;display:flex;align-items:center;justify-content:space-between;}
+.hm-sec a{font-size:12px;color:var(--blue);font-weight:700;text-decoration:none;}
+.hm-list{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+.hm-row{display:flex;align-items:center;gap:11px;padding:11px 13px;border-bottom:1px solid var(--border);cursor:pointer;}
+.hm-row:last-child{border-bottom:none;}
+.hm-av{width:34px;height:34px;border-radius:10px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex:0 0 34px;}
+.hm-row .info{flex:1;min-width:0;}
+.hm-row .t{font-size:13.5px;font-weight:700;}
+.hm-row .s{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hm-badge{background:var(--blue);color:#fff;border-radius:99px;font-size:11px;font-weight:700;padding:2px 8px;}
+.hm-arrow{color:var(--muted);font-size:16px;}
+.hm-empty{padding:18px 14px;text-align:center;color:var(--muted);font-size:13px;}
+
 /* mobile drawer + bottomnav */
 .mobile-drawer{display:none;position:fixed;inset:0;z-index:100;}
 .mobile-drawer.open{display:block;}
@@ -249,7 +281,9 @@ padding:0 26px;display:flex;align-items:center;justify-content:space-between;fle
 .hamburger{display:block;}
 .mp-header .desktop-brand{display:none;}
 .mp-header .greet h1{font-size:17px;}
-.mp-qa{flex:none;}
+.mp-qa, .kpi-row, #franjaB, #franjaC{display:none !important;}
+#homeMobile{display:block;margin-top:14px;}
+#mainpanel{overflow:visible;}
 .cards-grid{grid-template-columns:1fr;gap:10px;}
 .qa-card p{min-height:0;}
 .kpi-row{grid-template-columns:repeat(2,1fr);gap:12px;}
@@ -275,7 +309,7 @@ gap:3px;font-size:10.5px;color:var(--muted);cursor:pointer;font-weight:600;
 
 <div id="franjaA">
 <div id="sidebar">
-<div class="logo-row"><img src="__LOGO_URL__" alt="logo"/><span>SYNTRA</span></div>
+<div class="logo-row"><svg class="brand-mark" viewBox="0 0 40 40" width="32" height="32" role="img" aria-label="SYNTRA" style="flex:0 0 auto;display:block;border-radius:9px;"><rect width="40" height="40" rx="10" fill="#1F4FD8"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M20 6.5v27M6.5 20h27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="20" r="3.4" fill="#ffffff"/></svg><span>SYNTRA</span></div>
 <div id="navList"></div>
 </div>
 <div id="mainpanel">
@@ -285,11 +319,12 @@ gap:3px;font-size:10.5px;color:var(--muted);cursor:pointer;font-weight:600;
 <p>Rol: __ROLE_DISPLAY__ &bull; DNI: __USER_DNI__</p>
 </div>
 <div class="mp-right">
-<div class="desktop-brand"><img src="__LOGO_URL__" alt="logo"/>SYNTRA</div>
+<div class="desktop-brand"><svg class="brand-mark" viewBox="0 0 40 40" width="32" height="32" role="img" aria-label="SYNTRA" style="flex:0 0 auto;display:block;border-radius:9px;"><rect width="40" height="40" rx="10" fill="#1F4FD8"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M20 6.5v27M6.5 20h27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="20" r="3.4" fill="#ffffff"/></svg>SYNTRA</div>
 <div class="bell">&#128276;<span class="dot" id="bellDot" style="display:none;">0</span></div>
 <button class="hamburger" id="hamburgerBtn">&#9776;</button>
 </div>
 </div>
+<div id="homeMobile"></div>
 <div class="mp-qa">
 <h2>Accesos r&aacute;pidos</h2>
 <div class="cards-grid" id="cardsGrid"></div>
@@ -306,7 +341,7 @@ gap:3px;font-size:10.5px;color:var(--muted);cursor:pointer;font-weight:600;
 <div class="mobile-drawer" id="drawer">
 <div class="overlay" id="drawerOverlay"></div>
 <div class="panel">
-<div class="logo-row"><img src="__LOGO_URL__" alt="logo"/><span>SYNTRA</span></div>
+<div class="logo-row"><svg class="brand-mark" viewBox="0 0 40 40" width="32" height="32" role="img" aria-label="SYNTRA" style="flex:0 0 auto;display:block;border-radius:9px;"><rect width="40" height="40" rx="10" fill="#1F4FD8"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M20 6.5v27M6.5 20h27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="20" r="3.4" fill="#ffffff"/></svg><span>SYNTRA</span></div>
 <div id="navListMobile"></div>
 </div>
 </div>
@@ -359,7 +394,7 @@ gap:3px;font-size:10.5px;color:var(--muted);cursor:pointer;font-weight:600;
 </div>
 
 <div id="franjaC">
-<div class="brand"><img src="__LOGO_URL__" alt="logo"/>SYNTRA</div>
+<div class="brand"><svg class="brand-mark" viewBox="0 0 40 40" width="32" height="32" role="img" aria-label="SYNTRA" style="flex:0 0 auto;display:block;border-radius:9px;"><rect width="40" height="40" rx="10" fill="#1F4FD8"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M20 6.5v27M6.5 20h27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="20" r="3.4" fill="#ffffff"/></svg>SYNTRA</div>
 <div>Sistema de gesti&oacute;n de turnos y comunicaci&oacute;n interna para socorristas</div>
 <div>&copy; 2025 SYNTRA</div>
 </div>
@@ -485,10 +520,148 @@ node.addEventListener("click", function(){ goToPage(node.getAttribute("data-goto
 var masBtn = document.getElementById("masBtn");
 if (masBtn) masBtn.addEventListener("click", function(){ drawer.classList.add("open"); });
 
+var HOME = {dash:null, rows:null, threads:null};
+var HM_DIAS = ["Dom","Lun","Mar","Mi\u00e9","Jue","Vie","S\u00e1b"];
+var HM_DIAS_L = ["domingo","lunes","martes","mi\u00e9rcoles","jueves","viernes","s\u00e1bado"];
+
+function hmNorm(v){ return String(v||"").trim().toLowerCase(); }
+
+function hmTurno(ingreso){
+var h = parseInt((ingreso || "0").split(":")[0], 10);
+if (h < 13) return "Ma\u00f1ana";
+if (h < 19) return "Tarde";
+return "Noche";
+}
+
+function hmMisFilas(rows){
+return rows.filter(function(r){
+var inst = hmNorm(r["Instalacion"]);
+if (!inst || inst === "descanso") return false;
+var dni = hmNorm(r["DNI"] || r["dni"]);
+if (dni && dni === hmNorm(USER_DNI)) return true;
+return hmNorm(r["Socorrista"]) === hmNorm(USER_NAME);
+});
+}
+
+function hmEsc(t){ return String(t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function renderHome(){
+var box = document.getElementById("homeMobile");
+if (!box) return;
+var rows = HOME.rows || [];
+var hoy = new Date(); hoy.setHours(0,0,0,0);
+var mias = hmMisFilas(rows);
+var esAdmin = CAN_MANAGE_SCHEDULES;
+var base = esAdmin ? rows.filter(function(r){ var i = hmNorm(r["Instalacion"]); return i && i !== "descanso"; }) : mias;
+
+var proximos = base.map(function(r){
+var f = parseFecha(r["Fecha"]);
+return f ? {f:f, r:r} : null;
+}).filter(function(x){ return x && x.f >= hoy; }).sort(function(a,b){
+if (a.f - b.f !== 0) return a.f - b.f;
+return String(a.r["Ingreso"]||"").localeCompare(String(b.r["Ingreso"]||""));
+});
+
+var deHoy = proximos.filter(function(x){ return ymd(x.f) === ymd(hoy); });
+var html = "";
+
+if (!esAdmin){
+if (proximos.length){
+var p = proximos[0];
+var esHoy = ymd(p.f) === ymd(hoy);
+html += '<div class="hm-hero">' +
+'<div class="lab">' + (esHoy ? "Tu turno de hoy" : "Tu pr\u00f3ximo turno") + '</div>' +
+'<div class="big">' + hmEsc(p.r["Ingreso"]||"--:--") + " &ndash; " + hmEsc(p.r["Salida"]||"--:--") + '</div>' +
+'<div class="sub">&#127958; ' + hmEsc(p.r["Instalacion"]||"") + '</div>' +
+'<div class="chips"><span class="hm-chip">' + (esHoy ? "Hoy" : HM_DIAS_L[p.f.getDay()] + " " + p.f.getDate()) + '</span>' +
+'<span class="hm-chip">' + hmTurno(p.r["Ingreso"]) + '</span></div>' +
+'</div>';
+} else {
+html += '<div class="hm-hero"><div class="lab">Tus turnos</div><div class="big">Sin turnos asignados</div>' +
+'<div class="sub">Cuando te asignen un turno aparecer\u00e1 aqu\u00ed.</div></div>';
+}
+} else {
+var instHoy = {};
+deHoy.forEach(function(x){ instHoy[x.r["Instalacion"]] = true; });
+html += '<div class="hm-hero"><div class="lab">Cobertura de hoy</div>' +
+'<div class="big">' + deHoy.length + (deHoy.length === 1 ? " turno" : " turnos") + '</div>' +
+'<div class="sub">' + Object.keys(instHoy).length + (Object.keys(instHoy).length === 1 ? ' instalaci\u00f3n con personal hoy' : ' instalaciones con personal hoy') + '</div>' +
+'<div class="chips"><span class="hm-chip">Semana: ' + ((HOME.dash && HOME.dash.turnos_semana) || base.length) + ' turnos</span>' +
+'<span class="hm-chip">' + ((HOME.dash && HOME.dash.total_socorristas) || "-") + ' socorristas</span></div></div>';
+}
+
+// tira de la semana
+var ws = startOfWeek(new Date());
+var semana = "";
+for (var i = 0; i < 7; i++){
+var d = new Date(ws); d.setDate(ws.getDate() + i);
+var key = ymd(d);
+var tiene = base.some(function(r){ var f = parseFecha(r["Fecha"]); return f && ymd(f) === key; });
+semana += '<div class="hm-day' + (key === ymd(hoy) ? " today" : "") + '" data-go="/calendario">' +
+'<span class="w">' + HM_DIAS[d.getDay()] + '</span><span class="n">' + d.getDate() + '</span>' +
+'<span class="d' + (tiene ? "" : " off") + '"></span></div>';
+}
+html += '<div class="hm-sec">' + (esAdmin ? "Semana del equipo" : "Tu semana") + '<a href="#" data-go="/calendario">Ver horarios &rarr;</a></div>';
+html += '<div class="hm-week">' + semana + '</div>';
+
+// tarjetas de cifras
+var sinLeer = (HOME.dash && HOME.dash.mensajes_no_leidos) || (HOME.threads || []).reduce(function(a,t){ return a + (t.unread_count||0); }, 0);
+if (esAdmin){
+html += '<div class="hm-tiles">' +
+'<div class="hm-tile" data-go="/altas_registro"><div class="v">' + ((HOME.dash && HOME.dash.total_socorristas) || "-") + '</div><div class="l">Socorristas</div></div>' +
+'<div class="hm-tile" data-go="/calendario"><div class="v">' + ((HOME.dash && HOME.dash.instalaciones_activas) || Object.keys(instHoy).length) + '</div><div class="l">Instalaciones activas</div></div>' +
+'</div>';
+} else {
+var miSemana = base.filter(function(r){
+var f = parseFecha(r["Fecha"]);
+if (!f) return false;
+var fin = new Date(ws); fin.setDate(ws.getDate() + 6);
+return f >= ws && f <= fin;
+}).length;
+html += '<div class="hm-tiles">' +
+'<div class="hm-tile" data-go="/calendario"><div class="v">' + miSemana + '</div><div class="l">Tus turnos esta semana</div></div>' +
+'<div class="hm-tile" data-go="/chat_interfaz"><div class="v">' + sinLeer + '</div><div class="l">Mensajes sin leer</div></div>' +
+'</div>';
+}
+
+// mensajes recientes
+html += '<div class="hm-sec">Mensajes<a href="#" data-go="/chat_interfaz">Abrir chat &rarr;</a></div>';
+var th = (HOME.threads || []).slice(0, 3);
+if (!th.length){
+html += '<div class="hm-list"><div class="hm-empty">Sin conversaciones a\u00fan.</div></div>';
+} else {
+html += '<div class="hm-list">' + th.map(function(t){
+var ini = (t.title || "?").charAt(0).toUpperCase();
+var prev = String(t.last_message || "");
+if (prev.indexOf("[[adj:image:") === 0) prev = "\u00a0Imagen adjunta";
+else if (prev.indexOf("[[adj:audio:") === 0) prev = "\u00a0Nota de voz";
+return '<div class="hm-row" data-go="/chat_interfaz">' +
+'<div class="hm-av">' + (t.type === "installation" ? "&#127970;" : ini) + '</div>' +
+'<div class="info"><div class="t">' + hmEsc(t.title) + '</div><div class="s">' + hmEsc(prev) + '</div></div>' +
+(t.unread_count > 0 ? '<span class="hm-badge">' + t.unread_count + '</span>' : '<span class="hm-arrow">&rsaquo;</span>') +
+'</div>';
+}).join("") + '</div>';
+}
+
+if (esAdmin){
+html += '<div class="hm-sec">Administraci\u00f3n</div><div class="hm-list">' +
+'<div class="hm-row" data-go="/editar_horarios"><div class="hm-av">&#9881;</div><div class="info"><div class="t">Gesti\u00f3n de Horarios</div><div class="s">Crear, editar o eliminar bloques</div></div><span class="hm-arrow">&rsaquo;</span></div>' +
+'<div class="hm-row" data-go="/altas_registro"><div class="hm-av">&#128100;</div><div class="info"><div class="t">Registro de Personal</div><div class="s">Registrar socorristas y personal</div></div><span class="hm-arrow">&rsaquo;</span></div>' +
+'</div>';
+}
+
+box.innerHTML = html;
+box.querySelectorAll("[data-go]").forEach(function(n){
+n.addEventListener("click", function(e){ e.preventDefault(); goToPage(n.getAttribute("data-go")); });
+});
+}
+
 fetch(API_BASE + "/api/dashboard?dni=" + encodeURIComponent(USER_DNI))
 .then(function(r){ return r.json(); })
 .then(function(d){
 if (!d || !d.ok) return;
+HOME.dash = d;
+renderHome();
 document.getElementById("kpiSocorristas").textContent = d.total_socorristas;
 document.getElementById("kpiTurnos").textContent = d.turnos_semana;
 document.getElementById("kpiInstalaciones").textContent = d.instalaciones_activas;
@@ -534,6 +707,8 @@ fetch(API_BASE + "/api/mallas")
 .then(function(r){ return r.json(); })
 .then(function(d){
 var rows = (d && d.ok && d.rows) ? d.rows : [];
+HOME.rows = rows;
+renderHome();
 var wStart = startOfWeek(new Date());
 var days = [];
 for (var i = 0; i < 7; i++){
@@ -592,6 +767,8 @@ fetch(API_BASE + "/api/chat/threads?user_id=" + encodeURIComponent(USER_DNI))
 .then(function(r){ return r.json(); })
 .then(function(d){
 var threads = (d && d.ok && d.threads) ? d.threads : [];
+HOME.threads = threads;
+renderHome();
 var wrap = document.getElementById("previewChat");
 if (!threads.length){
 wrap.innerHTML = '<div class="empty-note">Sin conversaciones a&uacute;n.</div>';
