@@ -133,13 +133,16 @@ st.textContent = "#syntraBn{display:none;}" +
 "#content{padding-left:7px !important;padding-right:7px !important;}" +
 "#app, #pagewrap{zoom:1.1;}" +
 "html,body{background:radial-gradient(1100px 520px at 10% -10%, rgba(64,132,255,.30) 0%, rgba(64,132,255,0) 60%), radial-gradient(900px 460px at 108% 4%, rgba(31,79,216,.26) 0%, rgba(31,79,216,0) 55%), linear-gradient(165deg,#17274f 0%,#101d3d 48%,#0a142b 100%) !important;background-attachment:fixed !important;}" +
-"#topbar{background:linear-gradient(135deg,#182a54 0%,#0d1a37 100%) !important;border:1px solid rgba(255,255,255,.12) !important;box-shadow:0 10px 26px rgba(0,0,0,.30) !important;}" +
+"#topbar{position:fixed !important;top:0 !important;left:0 !important;right:0 !important;z-index:60 !important;height:60px !important;min-height:60px !important;padding:0 14px !important;border-radius:0 !important;display:flex !important;align-items:center !important;justify-content:flex-start !important;background:linear-gradient(135deg,#182a54 0%,#0d1a37 100%) !important;border:0 !important;border-bottom:1px solid rgba(255,255,255,.12) !important;box-shadow:0 10px 26px rgba(0,0,0,.30) !important;}" +
+"#topbar .mobile-logo{position:absolute !important;left:50% !important;transform:translateX(-50%) !important;display:flex !important;align-items:center !important;}" +
+"#topbar h1{display:none !important;}" +
+"#app{padding-top:70px !important;}" +
 "#topbar h1, .mobile-logo{color:#eaf2ff !important;}" +
 ".hamburger{color:#eaf2ff !important;}" +
 "#syntraBn{background:linear-gradient(180deg,#16264d 0%,#0b162f 100%) !important;border-top:1px solid rgba(255,255,255,.12) !important;box-shadow:0 -8px 22px rgba(0,0,0,.28) !important;}" +
 "#syntraBn .sbn{color:rgba(234,242,255,.70) !important;}" +
 "#syntraBn .sbn.on{color:#8ab4ff !important;}" +
-"#topbar{position:relative;overflow:hidden;}" +
+"#topbar{overflow:hidden;}" +
 "#topbar::after{content:\'\';position:absolute;top:0;left:-40%;width:35%;height:100%;background:linear-gradient(105deg, rgba(255,255,255,0) 0%, rgba(160,200,255,.16) 45%, rgba(255,255,255,0) 100%);transform:skewX(-18deg);animation:syntraSheen 7s ease-in-out infinite;pointer-events:none;}" +
 "@keyframes syntraSheen{0%{left:-40%;}55%{left:115%;}100%{left:115%;}}" +
 "#topbar::before{content:\'\';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg, rgba(255,255,255,0), rgba(170,205,255,.55), rgba(255,255,255,0));pointer-events:none;}" +
