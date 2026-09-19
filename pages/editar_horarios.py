@@ -124,6 +124,8 @@ tbody tr:last-child td{border-bottom:none;}
 .bloque-prev .bp-row{padding:2px 0;}
 .loading-row td{text-align:center;color:var(--muted);padding:24px;}
 .tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.panel-tools{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:flex-end;}
+.primary-btn.sm{padding:7px 12px;font-size:12px;}
 
 @media (max-width:768px){
 #sidebar{display:none;}
@@ -182,6 +184,7 @@ html,body{background:#1B2A4A !important;}
 </div>
 
 <div class="card" id="panel-bloques">
+<div class="panel-tools"><button class="primary-btn sm" id="btnCrearBloque">+ A&ntilde;adir a un bloque</button></div>
 <div class="tscroll"><table>
 <thead><tr><th>Instalaci&oacute;n</th><th>Bloque</th><th>D&iacute;a</th><th>Horario</th><th>Socorristas</th></tr></thead>
 <tbody id="bloquesBody"><tr class="loading-row"><td colspan="5">Cargando...</td></tr></tbody>
@@ -190,6 +193,7 @@ html,body{background:#1B2A4A !important;}
 </div>
 
 <div class="card" id="panel-asignaciones" style="display:none;">
+<div class="panel-tools"><button class="primary-btn sm" id="btnAsignar">+ Asignar a socorrista</button></div>
 <div class="tscroll"><table>
 <thead><tr><th>Fecha</th><th>Instalaci&oacute;n</th><th>Socorrista</th><th>Ingreso</th><th>Salida</th><th>Estado</th><th></th></tr></thead>
 <tbody id="asigBody"><tr class="loading-row"><td colspan="7">Cargando...</td></tr></tbody>
@@ -222,6 +226,44 @@ html,body{background:#1B2A4A !important;}
 </div>
 </div>
 </div>
+
+<div class="modal-overlay" id="asigModal">
+<div class="modal">
+<h3>Asignar turno a un socorrista</h3>
+<p class="modal-help">Crea un turno para <b>una persona</b> en una fecha concreta (no usa plantilla de bloque).</p>
+<div class="field"><label>Fecha</label><input id="as_fecha" type="date"/></div>
+<div class="field"><label>Socorrista</label><input id="as_socorrista" list="dlSocorristas" placeholder="Nombre del socorrista"/></div>
+<div class="field"><label>Instalaci&oacute;n</label><input id="as_instalacion" list="dlInstalaciones" placeholder="Instalaci&oacute;n"/></div>
+<div class="field"><label>Ingreso</label><input id="as_ingreso" placeholder="08:00"/></div>
+<div class="field"><label>Salida</label><input id="as_salida" placeholder="16:00"/></div>
+<div class="msg" id="asMsg"></div>
+<div class="actions">
+<button class="btn-cancel" id="asCancelBtn">Cancelar</button>
+<button class="primary-btn" id="asSaveBtn">Asignar</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="crearBloqueModal">
+<div class="modal">
+<h3>A&ntilde;adir a un bloque</h3>
+<p class="modal-help">A&ntilde;ade una l&iacute;nea a una plantilla de bloque (instalaci&oacute;n, d&iacute;a, horario y un socorrista). Repite para agregar m&aacute;s socorristas al mismo bloque.</p>
+<div class="field"><label>Bloque</label><input id="cb_bloque" placeholder="N&uacute;mero o nombre del bloque"/></div>
+<div class="field"><label>D&iacute;a</label><input id="cb_dia" list="dlDias" placeholder="lunes"/></div>
+<div class="field"><label>Socorrista</label><input id="cb_socorrista" list="dlSocorristas" placeholder="Nombre del socorrista"/></div>
+<div class="field"><label>Instalaci&oacute;n</label><input id="cb_instalacion" list="dlInstalaciones" placeholder="Instalaci&oacute;n"/></div>
+<div class="field"><label>Ingreso</label><input id="cb_ingreso" placeholder="08:00"/></div>
+<div class="msg" id="cbMsg"></div>
+<div class="actions">
+<button class="btn-cancel" id="cbCancelBtn">Cancelar</button>
+<button class="primary-btn" id="cbSaveBtn">Guardar</button>
+</div>
+</div>
+</div>
+
+<datalist id="dlSocorristas"></datalist>
+<datalist id="dlInstalaciones"></datalist>
+<datalist id="dlDias"><option value="lunes"></option><option value="martes"></option><option value="mi&eacute;rcoles"></option><option value="jueves"></option><option value="viernes"></option><option value="s&aacute;bado"></option><option value="domingo"></option></datalist>
 
 <div class="modal-overlay" id="addModal">
 <div class="modal">
@@ -327,6 +369,16 @@ return '<span class="pill off">' + estado + '</span>';
 }
 
 var bloqueDetalle = {};
+function llenarDatalist(id, valores){
+var dl=document.getElementById(id); if(!dl) return;
+var existentes={}; [].slice.call(dl.querySelectorAll("option")).forEach(function(o){ existentes[o.value]=1; });
+valores.forEach(function(v){ if(v && !existentes[v]){ var o=document.createElement("option"); o.value=v; dl.appendChild(o); existentes[v]=1; } });
+}
+fetch(API_BASE + "/api/chat/users").then(function(r){ return r.json(); }).then(function(d){
+var us = Array.isArray(d) ? d : ((d && d.users) || []);
+llenarDatalist("dlSocorristas", us.map(function(u){ return (u.nombre || u.alias || "").trim(); }).filter(Boolean).sort());
+}).catch(function(){});
+function loadBloques(){
 fetch(API_BASE + "/api/bloques")
 .then(function(r){ return r.json(); })
 .then(function(d){
@@ -354,6 +406,12 @@ var rango = horas.length ? (horas[0] + " - " + horas[horas.length-1]) : "-";
 if (!bloqueDetalle[g.bloque]) bloqueDetalle[g.bloque] = [];
 bloqueDetalle[g.bloque].push({inst:g.inst, dia:g.dia, rango:rango, count:g.count});
 });
+try{
+var setS={}, setI={};
+d.rows.forEach(function(r){ var sc=(r["Socorrista"]||"").trim(); var ins=(r["Instalacion"]||"").trim(); if(sc) setS[sc]=1; if(ins) setI[ins]=1; });
+llenarDatalist("dlSocorristas", Object.keys(setS).sort());
+llenarDatalist("dlInstalaciones", Object.keys(setI).sort());
+}catch(e){}
 rows.sort(function(a,b){
 if (a.inst !== b.inst) return a.inst.localeCompare(b.inst);
 return a.bloque.localeCompare(b.bloque);
@@ -378,6 +436,17 @@ sel.appendChild(opt);
 .catch(function(){
 document.getElementById("bloquesBody").innerHTML = '<tr class="empty-row"><td colspan="5">Error al cargar bloques.</td></tr>';
 });
+}
+loadBloques();
+
+function diaSemana(iso){
+try{
+var pr=(iso||"").split("-"); if(pr.length!==3) return "";
+var d=new Date(parseInt(pr[0],10), parseInt(pr[1],10)-1, parseInt(pr[2],10));
+var dias=["domingo","lunes","martes","mi\u00e9rcoles","jueves","viernes","s\u00e1bado"];
+return dias[d.getDay()] || "";
+}catch(e){ return ""; }
+}
 
 var mallasCache = [];
 
@@ -555,6 +624,70 @@ msgEl.className = "msg err"; msgEl.textContent = (d && d.error) || "Error al agr
 }
 })
 .catch(function(){ msgEl.className = "msg err"; msgEl.textContent = "Error de conexi&oacute;n."; });
+});
+
+/* ---- Asignar turno a un socorrista ---- */
+var asigModal = document.getElementById("asigModal");
+var btnAsignar = document.getElementById("btnAsignar");
+if (btnAsignar) btnAsignar.addEventListener("click", function(){
+["as_fecha","as_socorrista","as_instalacion","as_ingreso","as_salida"].forEach(function(id){ document.getElementById(id).value=""; });
+var mm=document.getElementById("asMsg"); mm.className="msg"; mm.textContent="";
+asigModal.classList.add("open");
+});
+document.getElementById("asCancelBtn").addEventListener("click", function(){ asigModal.classList.remove("open"); });
+document.getElementById("asSaveBtn").addEventListener("click", function(){
+var msgEl=document.getElementById("asMsg");
+var fechaVal=document.getElementById("as_fecha").value;
+var soc=document.getElementById("as_socorrista").value.trim();
+var ins=document.getElementById("as_instalacion").value.trim();
+var ing=document.getElementById("as_ingreso").value.trim();
+var sal=document.getElementById("as_salida").value.trim();
+if(!fechaVal || !soc || !ins){ msgEl.className="msg err"; msgEl.textContent="Fecha, socorrista e instalaci\u00f3n son obligatorios."; return; }
+var pr=fechaVal.split("-"); var fechaDMY=pr[2]+"/"+pr[1]+"/"+pr[0];
+var dia=diaSemana(fechaVal);
+var btn=this; btn.disabled=true; btn.textContent="Guardando...";
+fetch(API_BASE + "/api/horarios/asignar", {
+method:"POST", headers:{"Content-Type":"application/json"},
+body: JSON.stringify({fecha:fechaDMY, dia:dia, socorrista:soc, instalacion:ins, ingreso:ing, salida:sal})
+})
+.then(function(r){ return r.json(); })
+.then(function(d){
+btn.disabled=false; btn.textContent="Asignar";
+if(d && d.ok){ msgEl.className="msg ok"; msgEl.textContent=d.mensaje || "Turno asignado."; setTimeout(function(){ asigModal.classList.remove("open"); loadMallas(); }, 800); }
+else { msgEl.className="msg err"; msgEl.textContent=(d && d.error) || "Error al asignar."; }
+})
+.catch(function(){ btn.disabled=false; btn.textContent="Asignar"; msgEl.className="msg err"; msgEl.textContent="Error de conexi\u00f3n."; });
+});
+
+/* ---- A\u00f1adir a un bloque ---- */
+var cbModal = document.getElementById("crearBloqueModal");
+var btnCrearBloque = document.getElementById("btnCrearBloque");
+if (btnCrearBloque) btnCrearBloque.addEventListener("click", function(){
+["cb_bloque","cb_dia","cb_socorrista","cb_instalacion","cb_ingreso"].forEach(function(id){ document.getElementById(id).value=""; });
+var mm=document.getElementById("cbMsg"); mm.className="msg"; mm.textContent="";
+cbModal.classList.add("open");
+});
+document.getElementById("cbCancelBtn").addEventListener("click", function(){ cbModal.classList.remove("open"); });
+document.getElementById("cbSaveBtn").addEventListener("click", function(){
+var msgEl=document.getElementById("cbMsg");
+var bl=document.getElementById("cb_bloque").value.trim();
+var dia=document.getElementById("cb_dia").value.trim();
+var soc=document.getElementById("cb_socorrista").value.trim();
+var ins=document.getElementById("cb_instalacion").value.trim();
+var ing=document.getElementById("cb_ingreso").value.trim();
+if(!bl || !soc || !ins){ msgEl.className="msg err"; msgEl.textContent="Bloque, socorrista e instalaci\u00f3n son obligatorios."; return; }
+var btn=this; btn.disabled=true; btn.textContent="Guardando...";
+fetch(API_BASE + "/api/bloques/crear", {
+method:"POST", headers:{"Content-Type":"application/json"},
+body: JSON.stringify({bloque:bl, dia:dia, socorrista:soc, instalacion:ins, ingreso:ing})
+})
+.then(function(r){ return r.json(); })
+.then(function(d){
+btn.disabled=false; btn.textContent="Guardar";
+if(d && d.ok){ msgEl.className="msg ok"; msgEl.textContent=d.mensaje || "Bloque actualizado."; setTimeout(function(){ cbModal.classList.remove("open"); loadBloques(); }, 800); }
+else { msgEl.className="msg err"; msgEl.textContent=(d && d.error) || "Error al guardar."; }
+})
+.catch(function(){ btn.disabled=false; btn.textContent="Guardar"; msgEl.className="msg err"; msgEl.textContent="Error de conexi\u00f3n."; });
 });
 })();
 </script>
