@@ -105,6 +105,14 @@ font-size:13.5px;color:var(--ink);background:#fbfcfe;
 .msg{font-size:13px;margin-top:14px;padding:10px 14px;border-radius:10px;display:none;}
 .msg.ok{background:#e6f7ee;color:#1a7f4f;display:block;}
 .msg.err{background:#fde8e8;color:#b02a2a;display:block;}
+.msg.ok b{color:#0d5c39;}
+.cred-box{margin-top:12px;padding:12px 14px;border-radius:10px;background:#eef4ff;border:1px solid #cfe0ff;font-size:13px;display:none;}
+.cred-box.show{display:block;}
+.cred-box .cred-t{font-weight:800;color:#123a8a;margin-bottom:6px;}
+.cred-box .cred-row{display:flex;justify-content:space-between;gap:10px;padding:4px 0;}
+.cred-box .cred-row span:first-child{color:#5a6b8c;}
+.cred-box .cred-row b{color:#0f1f45;word-break:break-all;text-align:right;}
+.hint{font-size:12px;color:#6b7688;margin:2px 0 0 2px;}
 
 @media (max-width:768px){
 #sidebar{display:none;}
@@ -156,8 +164,8 @@ html,body{background:#1B2A4A !important;}
 <p class="section-title">Datos personales</p>
 <div class="field-grid">
 <div class="field"><label>Nombre completo</label><input id="f_nombre" placeholder="Mar&iacute;a Fern&aacute;ndez L&oacute;pez"/></div>
-<div class="field"><label>DNI</label><input id="f_dni" placeholder="12345678B"/></div>
-<div class="field"><label>Correo electr&oacute;nico</label><input id="f_correo" placeholder="maria.fernandez@syntra.com"/></div>
+<div class="field"><label>DNI</label><input id="f_dni" placeholder="12345678B"/><div class="hint">Ser&aacute; su contrase&ntilde;a para iniciar sesi&oacute;n.</div></div>
+<div class="field"><label>Correo electr&oacute;nico <span style="color:#b02a2a;">*</span></label><input id="f_correo" placeholder="maria.fernandez@syntra.com"/><div class="hint">Ser&aacute; su usuario para iniciar sesi&oacute;n.</div></div>
 <div class="field"><label>Tel&eacute;fono</label><input id="f_telefono" placeholder="600 123 456"/></div>
 <div class="field"><label>Fecha de nacimiento</label><input id="f_nacimiento" type="date"/></div>
 </div>
@@ -191,6 +199,11 @@ html,body{background:#1B2A4A !important;}
 </div>
 </div>
 <div class="msg" id="formMsg"></div>
+<div class="cred-box" id="credBox">
+<div class="cred-t">Datos de acceso del nuevo usuario</div>
+<div class="cred-row"><span>Usuario (correo)</span><b id="credUser"></b></div>
+<div class="cred-row"><span>Contrase&ntilde;a (DNI)</span><b id="credPass"></b></div>
+</div>
 <div class="actions-row">
 <button class="cancel-btn" id="cancelBtn">Cancelar</button>
 <button class="save-btn" id="saveBtn2">Guardar</button>
@@ -269,8 +282,8 @@ var contrato = document.getElementById("f_contrato").value;
 var fecha_inicio = document.getElementById("f_fecha_inicio").value;
 var rol = document.getElementById("f_rol").value;
 
-if (!nombre || !dni){
-showMsg("Nombre y DNI son obligatorios.", false);
+if (!nombre || !dni || !correo){
+showMsg("Nombre, DNI y correo son obligatorios. El correo ser\u00e1 el usuario y el DNI la contrase\u00f1a.", false);
 return;
 }
 
@@ -298,8 +311,12 @@ body: JSON.stringify(payload)
 .then(function(d){
 btns.forEach(function(b){ b.disabled = false; b.textContent = "Guardar"; });
 if (d && d.ok){
-showMsg("Personal registrado correctamente.", true);
-setTimeout(function(){ goToPage("/"); }, 1200);
+showMsg("Personal registrado. Comp\u00e1rtele estos datos para iniciar sesi\u00f3n:", true);
+document.getElementById("credUser").textContent = correo;
+document.getElementById("credPass").textContent = dni;
+document.getElementById("credBox").classList.add("show");
+var f = document.querySelector("form") || document; 
+["f_nombre","f_dni","f_correo","f_telefono","f_nacimiento","f_fecha_inicio"].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=""; });
 } else {
 showMsg((d && d.error) || "Error al guardar.", false);
 }
