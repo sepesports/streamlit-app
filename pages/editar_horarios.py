@@ -85,6 +85,7 @@ color:#eaf2ff;display:flex;flex-direction:column;padding:26px 18px;min-height:10
 .mobile-logo img{width:26px;height:26px;border-radius:6px;object-fit:contain;}
 .primary-btn{background:var(--blue);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;}
 .primary-btn:hover{background:#1e4fb8;}
+.primary-btn .lbl-short{display:none;}
 #content{padding:22px 30px 90px 30px;}
 .tabbar{display:flex;gap:6px;border-bottom:1px solid var(--border);margin-bottom:18px;}
 .tabbtn{padding:10px 4px;margin-right:22px;background:none;border:none;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;}
@@ -116,7 +117,13 @@ tbody tr:last-child td{border-bottom:none;}
 .msg{font-size:12.5px;margin-top:10px;padding:8px 12px;border-radius:9px;display:none;}
 .msg.ok{background:#e6f7ee;color:#1a7f4f;display:block;}
 .msg.err{background:#fde8e8;color:#b02a2a;display:block;}
+.modal-help{font-size:12.5px;color:#5a6b8c;background:#f3f7ff;border:1px solid #dbe6ff;border-radius:9px;padding:9px 11px;margin:0 0 14px 0;line-height:1.4;}
+.bloque-prev{display:none;font-size:12.5px;color:#2f5fc4;background:#eef4ff;border-radius:9px;padding:10px 12px;margin-top:4px;}
+.bloque-prev.show{display:block;}
+.bloque-prev .bp-t{font-weight:800;margin-bottom:5px;color:#123a8a;}
+.bloque-prev .bp-row{padding:2px 0;}
 .loading-row td{text-align:center;color:var(--muted);padding:24px;}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
 
 @media (max-width:768px){
 #sidebar{display:none;}
@@ -124,9 +131,12 @@ tbody tr:last-child td{border-bottom:none;}
 .mobile-logo{display:flex;}
 #topbar h1{display:none;}
 #topbar{padding:14px 16px;}
+#topbar .primary-btn{margin-left:auto;padding:7px 11px;font-size:11.5px;white-space:nowrap;}
+.primary-btn .lbl-full{display:none;}
+.primary-btn .lbl-short{display:inline;}
 #content{padding:14px 12px 90px 12px;}
-table{font-size:12px;}
-thead th, tbody td{padding:9px 10px;}
+table{font-size:12px;min-width:600px;}
+thead th, tbody td{padding:9px 10px;white-space:nowrap;}
 }
 
 .mobile-drawer{display:none;position:fixed;inset:0;z-index:100;}
@@ -147,7 +157,7 @@ html,body{background:#1B2A4A !important;}
 #content{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;padding-bottom:22px !important;}
 #chatBody{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;overflow:hidden !important;}
 @media (max-width:900px){#app{padding:10px !important;gap:10px !important;}}
-@media (max-width:768px){#content{overflow-x:auto !important;} table{min-width:520px;}}
+@media (max-width:768px){#content{overflow-x:hidden !important;}}
 </style>
 </head>
 <body>
@@ -162,7 +172,7 @@ html,body{background:#1B2A4A !important;}
 <button class="hamburger" id="hamburgerBtn">&#9776;</button>
 <h1>Gesti&oacute;n de Horarios</h1>
 <div class="mobile-logo"><img class="brand-mark" src="__LOGO_URL__" alt="SYNTRA" style="height:46px;width:auto;flex:0 0 auto;display:block;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(120,170,255,.35));"/></div>
-<button class="primary-btn" id="addBtn">+ Nueva Asignaci&oacute;n</button>
+<button class="primary-btn" id="addBtn"><span class="lbl-full">+ Nueva Asignaci&oacute;n</span><span class="lbl-short">+ Nueva</span></button>
 </div>
 <div id="content">
 <div class="tabbar">
@@ -172,26 +182,26 @@ html,body{background:#1B2A4A !important;}
 </div>
 
 <div class="card" id="panel-bloques">
-<table>
+<div class="tscroll"><table>
 <thead><tr><th>Instalaci&oacute;n</th><th>Bloque</th><th>D&iacute;a</th><th>Horario</th><th>Socorristas</th></tr></thead>
 <tbody id="bloquesBody"><tr class="loading-row"><td colspan="5">Cargando...</td></tr></tbody>
-</table>
+</table></div>
 <div class="info-bar">Datos reales de la hoja Bloques, agrupados por instalaci&oacute;n + bloque + d&iacute;a. Solo lectura.</div>
 </div>
 
 <div class="card" id="panel-asignaciones" style="display:none;">
-<table>
+<div class="tscroll"><table>
 <thead><tr><th>Fecha</th><th>Instalaci&oacute;n</th><th>Socorrista</th><th>Ingreso</th><th>Salida</th><th>Estado</th><th></th></tr></thead>
 <tbody id="asigBody"><tr class="loading-row"><td colspan="7">Cargando...</td></tr></tbody>
-</table>
+</table></div>
 <div class="info-bar">Turnos desde hoy en adelante. Edita o elimina cada asignaci&oacute;n.</div>
 </div>
 
 <div class="card" id="panel-historial" style="display:none;">
-<table>
+<div class="tscroll"><table>
 <thead><tr><th>Fecha</th><th>Instalaci&oacute;n</th><th>Socorrista</th><th>Ingreso</th><th>Salida</th><th>Estado</th></tr></thead>
 <tbody id="histBody"><tr class="loading-row"><td colspan="6">Cargando...</td></tr></tbody>
-</table>
+</table></div>
 <div class="info-bar">Turnos anteriores a hoy. Solo lectura.</div>
 </div>
 </div>
@@ -216,10 +226,12 @@ html,body{background:#1B2A4A !important;}
 <div class="modal-overlay" id="addModal">
 <div class="modal">
 <h3>Nueva asignaci&oacute;n desde bloque</h3>
+<p class="modal-help">Un <b>bloque</b> es una plantilla de turnos ya creada en la hoja de horarios (instalaci&oacute;n, d&iacute;a, horario y socorristas). Elige una fecha y un bloque: se generar&aacute;n esos turnos para esa fecha.</p>
 <div class="field"><label>Fecha</label><input id="add_fecha" type="date"/></div>
 <div class="field"><label>Bloque</label>
 <select id="add_bloque"><option value="">Selecciona...</option></select>
 </div>
+<div id="bloquePrev" class="bloque-prev"></div>
 <div class="msg" id="addMsg"></div>
 <div class="actions">
 <button class="btn-cancel" id="addCancelBtn">Cancelar</button>
@@ -314,6 +326,7 @@ if (!e) return '<span class="pill off">-</span>';
 return '<span class="pill off">' + estado + '</span>';
 }
 
+var bloqueDetalle = {};
 fetch(API_BASE + "/api/bloques")
 .then(function(r){ return r.json(); })
 .then(function(d){
@@ -334,6 +347,13 @@ if (ingreso) groups[key].horas.push(ingreso);
 groups[key].count += 1;
 });
 var rows = Object.keys(groups).map(function(k){ return groups[k]; });
+bloqueDetalle = {};
+rows.forEach(function(g){
+var horas = g.horas.slice().sort();
+var rango = horas.length ? (horas[0] + " - " + horas[horas.length-1]) : "-";
+if (!bloqueDetalle[g.bloque]) bloqueDetalle[g.bloque] = [];
+bloqueDetalle[g.bloque].push({inst:g.inst, dia:g.dia, rango:rango, count:g.count});
+});
 rows.sort(function(a,b){
 if (a.inst !== b.inst) return a.inst.localeCompare(b.inst);
 return a.bloque.localeCompare(b.bloque);
@@ -495,7 +515,18 @@ document.getElementById("add_fecha").value = "";
 document.getElementById("add_bloque").value = "";
 document.getElementById("addMsg").className = "msg";
 document.getElementById("addMsg").textContent = "";
+var prev0 = document.getElementById("bloquePrev"); prev0.className = "bloque-prev"; prev0.innerHTML = "";
 addModal.classList.add("open");
+});
+document.getElementById("add_bloque").addEventListener("change", function(){
+var prev = document.getElementById("bloquePrev");
+var det = bloqueDetalle[this.value] || [];
+if (!this.value || !det.length){ prev.className = "bloque-prev"; prev.innerHTML = ""; return; }
+var html = '<div class="bp-t">Este bloque genera:</div>';
+det.forEach(function(x){
+html += '<div class="bp-row">&#8226; ' + x.inst + ' &middot; ' + x.dia + ' &middot; ' + x.rango + ' &middot; ' + x.count + ' socorrista(s)</div>';
+});
+prev.innerHTML = html; prev.className = "bloque-prev show";
 });
 document.getElementById("addCancelBtn").addEventListener("click", function(){ addModal.classList.remove("open"); });
 
