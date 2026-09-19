@@ -753,6 +753,11 @@ var mm=document.getElementById("cbMsg"); mm.className="msg"; mm.textContent="";
 cbModal.classList.add("open");
 });
 document.getElementById("cbCancelBtn").addEventListener("click", function(){ cbModal.classList.remove("open"); });
+function runSeq(items, makeFetch, done){
+var res=[]; var i=0;
+function next(){ if(i>=items.length){ done(res); return; } makeFetch(items[i]).then(function(r){ res.push(r); }).catch(function(){ res.push({ok:false}); }).then(function(){ i++; next(); }); }
+next();
+}
 function fechasRango(iso1, iso2){
 if(!iso1) return [];
 var a=iso1, b=iso2||iso1;
@@ -773,15 +778,14 @@ var sal=document.getElementById("cb_salida").value.trim();
 if(!bl || !soc || !ins || !f1){ msgEl.className="msg err"; msgEl.textContent="Bloque, fecha, socorrista e instalaci\u00f3n son obligatorios."; return; }
 var fechas=fechasRango(f1,f2);
 var btn=this; btn.disabled=true; btn.textContent="Guardando...";
-var pend=fechas.map(function(fe){
+runSeq(fechas, function(fe){
 return fetch(API_BASE + "/api/bloques/crear", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({bloque:bl, dia:fe, socorrista:soc, instalacion:ins, ingreso:ing, salida:sal}) }).then(function(r){ return r.json(); });
-});
-Promise.all(pend).then(function(rs){
+}, function(rs){
 btn.disabled=false; btn.textContent="Guardar";
 var ok=rs.filter(function(x){ return x && x.ok; }).length;
 if(ok){ msgEl.className="msg ok"; msgEl.textContent="Bloque actualizado ("+ok+" fecha"+(ok!==1?"s":"")+")."; setTimeout(function(){ cbModal.classList.remove("open"); loadBloques(); }, 1600); }
 else { msgEl.className="msg err"; msgEl.textContent=(rs[0] && rs[0].error) || "Error al guardar."; }
-}).catch(function(){ btn.disabled=false; btn.textContent="Guardar"; msgEl.className="msg err"; msgEl.textContent="Error de conexi\u00f3n."; });
+});
 });
 
 /* ---- Buscador desplegable reutilizable ---- */
@@ -830,16 +834,16 @@ var marcados=[].slice.call(document.querySelectorAll("#bloquesBody .bchk:checked
 if(!marcados.length){ msgEl.className="msg err"; msgEl.textContent="No hay bloques seleccionados."; return; }
 var pr=fechaVal.split("-"); var fechaDMY=pr[2]+"/"+pr[1]+"/"+pr[0]; var dia=diaSemana(fechaVal);
 var btn=this; btn.disabled=true; btn.textContent="Asignando...";
-var pend=[];
-marcados.forEach(function(g){ g.lineas.forEach(function(l){ var horas=l.ingresos.slice().sort(); var ing=horas[0]||"";
-pend.push(fetch(API_BASE + "/api/horarios/asignar", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({fecha:fechaDMY, dia:dia, socorrista:soc, instalacion:l.inst, ingreso:ing, salida:l.salida||""}) }).then(function(r){ return r.json(); }));
-}); });
-Promise.all(pend).then(function(rs){
+var tareas=[];
+marcados.forEach(function(g){ g.lineas.forEach(function(l){ var horas=l.ingresos.slice().sort(); tareas.push({inst:l.inst, ing:horas[0]||"", sal:l.salida||""}); }); });
+runSeq(tareas, function(t){
+return fetch(API_BASE + "/api/horarios/asignar", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({fecha:fechaDMY, dia:dia, socorrista:soc, instalacion:t.inst, ingreso:t.ing, salida:t.sal}) }).then(function(r){ return r.json(); });
+}, function(rs){
 btn.disabled=false; btn.textContent="Asignar";
 var ok=rs.filter(function(x){ return x && x.ok; }).length;
-if(ok){ msgEl.className="msg ok"; msgEl.textContent="Se asignaron "+ok+" turno(s)."; setTimeout(function(){ aselModal.classList.remove("open"); }, 1200); }
+if(ok){ msgEl.className="msg ok"; msgEl.textContent="Se asignaron "+ok+" turno(s)."; setTimeout(function(){ aselModal.classList.remove("open"); loadMallas(); }, 1200); }
 else { msgEl.className="msg err"; msgEl.textContent="No se pudo asignar."; }
-}).catch(function(){ btn.disabled=false; btn.textContent="Asignar"; msgEl.className="msg err"; msgEl.textContent="Error de conexi\u00f3n."; });
+});
 });
 })();
 </script>
