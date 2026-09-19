@@ -618,7 +618,7 @@ body: JSON.stringify({fecha: fechaDMY, bloque: bloqueVal})
 .then(function(d){
 if (d && d.ok){
 msgEl.className = "msg ok"; msgEl.textContent = d.mensaje || "Agregado.";
-setTimeout(function(){ addModal.classList.remove("open"); loadMallas(); }, 800);
+setTimeout(function(){ addModal.classList.remove("open"); loadMallas(); }, 1600);
 } else {
 msgEl.className = "msg err"; msgEl.textContent = (d && d.error) || "Error al agregar.";
 }
@@ -653,7 +653,7 @@ body: JSON.stringify({fecha:fechaDMY, dia:dia, socorrista:soc, instalacion:ins, 
 .then(function(r){ return r.json(); })
 .then(function(d){
 btn.disabled=false; btn.textContent="Asignar";
-if(d && d.ok){ msgEl.className="msg ok"; msgEl.textContent=d.mensaje || "Turno asignado."; setTimeout(function(){ asigModal.classList.remove("open"); loadMallas(); }, 800); }
+if(d && d.ok){ msgEl.className="msg ok"; msgEl.textContent=d.mensaje || "Turno asignado."; setTimeout(function(){ asigModal.classList.remove("open"); loadMallas(); }, 1600); }
 else { msgEl.className="msg err"; msgEl.textContent=(d && d.error) || "Error al asignar."; }
 })
 .catch(function(){ btn.disabled=false; btn.textContent="Asignar"; msgEl.className="msg err"; msgEl.textContent="Error de conexi\u00f3n."; });
@@ -684,7 +684,7 @@ body: JSON.stringify({bloque:bl, dia:dia, socorrista:soc, instalacion:ins, ingre
 .then(function(r){ return r.json(); })
 .then(function(d){
 btn.disabled=false; btn.textContent="Guardar";
-if(d && d.ok){ msgEl.className="msg ok"; msgEl.textContent=d.mensaje || "Bloque actualizado."; setTimeout(function(){ cbModal.classList.remove("open"); loadBloques(); }, 800); }
+if(d && d.ok){ msgEl.className="msg ok"; msgEl.textContent=d.mensaje || "Bloque actualizado."; setTimeout(function(){ cbModal.classList.remove("open"); loadBloques(); }, 1600); }
 else { msgEl.className="msg err"; msgEl.textContent=(d && d.error) || "Error al guardar."; }
 })
 .catch(function(){ btn.disabled=false; btn.textContent="Guardar"; msgEl.className="msg err"; msgEl.textContent="Error de conexi\u00f3n."; });
