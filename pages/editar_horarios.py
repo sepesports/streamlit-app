@@ -124,8 +124,21 @@ tbody tr:last-child td{border-bottom:none;}
 .bloque-prev .bp-row{padding:2px 0;}
 .loading-row td{text-align:center;color:var(--muted);padding:24px;}
 .tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-.panel-tools{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:flex-end;}
-.primary-btn.sm{padding:7px 12px;font-size:12px;}
+.panel-tools{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap;}
+.primary-btn.sm{padding:7px 12px;font-size:12px;white-space:nowrap;}
+.sd{position:relative;flex:1 1 170px;max-width:280px;min-width:150px;}
+.sd-input{width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:9px;font-size:12.5px;}
+.sd-list{position:absolute;z-index:60;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 28px rgba(10,20,50,.20);max-height:240px;overflow-y:auto;display:none;}
+.sd-list.open{display:block;}
+.sd-item{padding:9px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f2f7;}
+.sd-item:last-child{border-bottom:none;}
+.sd-item:hover,.sd-item.active{background:#eef4ff;}
+.sd-empty{padding:9px 12px;font-size:12px;color:var(--muted);}
+.chkcol{width:38px;text-align:center;}
+tbody td.chkcol input{width:17px;height:17px;cursor:pointer;}
+.modal .field.two{display:flex;gap:10px;}
+.modal .field.two > div{flex:1;}
+.modal .field select{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:9px;font-size:13px;background:#fff;}
 
 @media (max-width:768px){
 #sidebar{display:none;}
@@ -184,12 +197,16 @@ html,body{background:#1B2A4A !important;}
 </div>
 
 <div class="card" id="panel-bloques">
-<div class="panel-tools"><button class="primary-btn sm" id="btnCrearBloque">+ A&ntilde;adir a un bloque</button></div>
+<div class="panel-tools">
+<div class="sd" id="sdInst"><input class="sd-input" id="filtroInst" placeholder="Filtrar por instalaci&oacute;n..." autocomplete="off"/><div class="sd-list" id="filtroInstList"></div></div>
+<button class="primary-btn sm" id="btnAsignarSel" style="display:none;">Asignar seleccionados</button>
+<button class="primary-btn sm" id="btnCrearBloque">+ A&ntilde;adir a un bloque</button>
+</div>
 <div class="tscroll"><table>
-<thead><tr><th>Instalaci&oacute;n</th><th>Bloque</th><th>D&iacute;a</th><th>Horario</th><th>Socorristas</th></tr></thead>
+<thead><tr><th class="chkcol"></th><th>Bloque</th><th>D&iacute;a</th><th>Horario</th><th>Socorristas</th></tr></thead>
 <tbody id="bloquesBody"><tr class="loading-row"><td colspan="5">Cargando...</td></tr></tbody>
 </table></div>
-<div class="info-bar">Datos reales de la hoja Bloques, agrupados por instalaci&oacute;n + bloque + d&iacute;a. Solo lectura.</div>
+<div class="info-bar">Elige una instalaci&oacute;n para ver sus bloques. Marca uno o varios y usa <b>Asignar seleccionados</b> para dar ese turno a un socorrista en una fecha.</div>
 </div>
 
 <div class="card" id="panel-asignaciones" style="display:none;">
@@ -247,16 +264,31 @@ html,body{background:#1B2A4A !important;}
 <div class="modal-overlay" id="crearBloqueModal">
 <div class="modal">
 <h3>A&ntilde;adir a un bloque</h3>
-<p class="modal-help">A&ntilde;ade una l&iacute;nea a una plantilla de bloque (instalaci&oacute;n, d&iacute;a, horario y un socorrista). Repite para agregar m&aacute;s socorristas al mismo bloque.</p>
+<p class="modal-help">Un bloque es una plantilla que se repite un <b>d&iacute;a de la semana</b>. A&ntilde;ade una l&iacute;nea (instalaci&oacute;n, d&iacute;a, horario y un socorrista); repite para sumar m&aacute;s socorristas al mismo bloque.</p>
 <div class="field"><label>Bloque</label><input id="cb_bloque" placeholder="N&uacute;mero o nombre del bloque"/></div>
-<div class="field"><label>D&iacute;a</label><input id="cb_dia" list="dlDias" placeholder="lunes"/></div>
-<div class="field"><label>Socorrista</label><input id="cb_socorrista" list="dlSocorristas" placeholder="Nombre del socorrista"/></div>
-<div class="field"><label>Instalaci&oacute;n</label><input id="cb_instalacion" list="dlInstalaciones" placeholder="Instalaci&oacute;n"/></div>
-<div class="field"><label>Ingreso</label><input id="cb_ingreso" placeholder="08:00"/></div>
+<div class="field"><label>D&iacute;a de la semana</label><select id="cb_dia"><option value="">Selecciona...</option><option value="lunes">Lunes</option><option value="martes">Martes</option><option value="mi&eacute;rcoles">Mi&eacute;rcoles</option><option value="jueves">Jueves</option><option value="viernes">Viernes</option><option value="s&aacute;bado">S&aacute;bado</option><option value="domingo">Domingo</option></select></div>
+<div class="field"><label>Socorrista</label><div class="sd"><input class="sd-input" id="cb_socorrista" placeholder="Buscar socorrista..." autocomplete="off"/><div class="sd-list" id="cb_socorrista_list"></div></div></div>
+<div class="field"><label>Instalaci&oacute;n</label><div class="sd"><input class="sd-input" id="cb_instalacion" placeholder="Buscar instalaci&oacute;n..." autocomplete="off"/><div class="sd-list" id="cb_instalacion_list"></div></div></div>
+<div class="field two"><div><label>Ingreso</label><input id="cb_ingreso" placeholder="08:00"/></div><div><label>Salida</label><input id="cb_salida" placeholder="16:00"/></div></div>
 <div class="msg" id="cbMsg"></div>
 <div class="actions">
 <button class="btn-cancel" id="cbCancelBtn">Cancelar</button>
 <button class="primary-btn" id="cbSaveBtn">Guardar</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="asignarSelModal">
+<div class="modal">
+<h3>Asignar bloque(s) a un socorrista</h3>
+<p class="modal-help">Se crear&aacute;n turnos para el socorrista elegido en la fecha indicada, copiando instalaci&oacute;n y horario de los bloques marcados.</p>
+<div id="aselResumen" class="bloque-prev show"></div>
+<div class="field"><label>Fecha</label><input id="asel_fecha" type="date"/></div>
+<div class="field"><label>Socorrista</label><div class="sd"><input class="sd-input" id="asel_socorrista" placeholder="Buscar socorrista..." autocomplete="off"/><div class="sd-list" id="asel_socorrista_list"></div></div></div>
+<div class="msg" id="aselMsg"></div>
+<div class="actions">
+<button class="btn-cancel" id="aselCancelBtn">Cancelar</button>
+<button class="primary-btn" id="aselSaveBtn">Asignar</button>
 </div>
 </div>
 </div>
@@ -378,6 +410,45 @@ fetch(API_BASE + "/api/chat/users").then(function(r){ return r.json(); }).then(f
 var us = Array.isArray(d) ? d : ((d && d.users) || []);
 llenarDatalist("dlSocorristas", us.map(function(u){ return (u.nombre || u.alias || "").trim(); }).filter(Boolean).sort());
 }).catch(function(){});
+var gruposBloque = {};   // key -> {inst,bloque,dia,ingreso,salida,socorristas:[]}
+var sugSocorristas = [];  // nombres para buscadores
+var sugInstalaciones = [];
+var filtroInstSel = "";
+
+function renderBloquesTabla(){
+var tbody = document.getElementById("bloquesBody");
+var keys = Object.keys(gruposBloque);
+if (!keys.length){ tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Sin datos de bloques.</td></tr>'; return; }
+var filtro = (filtroInstSel || "").toLowerCase();
+var lista = keys.map(function(k){ return gruposBloque[k]; });
+if (filtro){ lista = lista.filter(function(g){ return g.inst.toLowerCase().indexOf(filtro) !== -1; }); }
+lista.sort(function(a,b){ if (a.inst!==b.inst) return a.inst.localeCompare(b.inst); if (a.bloque!==b.bloque) return String(a.bloque).localeCompare(String(b.bloque)); return a.dia.localeCompare(b.dia); });
+if (!lista.length){ tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No hay bloques para esa instalaci&oacute;n.</td></tr>'; document.getElementById("btnAsignarSel").style.display="none"; return; }
+tbody.innerHTML = lista.map(function(g){
+var horas = g.ingresos.slice().sort();
+var rango = horas.length ? (horas[0] + (g.salida ? " - " + g.salida : (horas.length>1 ? " - " + horas[horas.length-1] : ""))) : (g.salida||"-");
+var nombres = g.socorristas.length ? g.socorristas.join(", ") : "-";
+return '<tr>' +
+'<td class="chkcol"><input type="checkbox" class="bchk" data-k="'+g.key+'"/></td>' +
+'<td>Bloque ' + esc(g.bloque) + '<div style="font-size:11px;color:#6b7688;">' + esc(g.inst) + '</div></td>' +
+'<td>' + esc(g.dia) + '</td>' +
+'<td>' + esc(rango) + '</td>' +
+'<td>' + esc(nombres) + '</td>' +
+'</tr>';
+}).join("");
+tbody.querySelectorAll(".bchk").forEach(function(c){ c.addEventListener("change", actualizarSeleccion); });
+actualizarSeleccion();
+}
+
+function actualizarSeleccion(){
+var n = document.querySelectorAll("#bloquesBody .bchk:checked").length;
+var b = document.getElementById("btnAsignarSel");
+b.style.display = n ? "" : "none";
+b.textContent = n>1 ? ("Asignar seleccionados ("+n+")") : "Asignar seleccionado";
+}
+
+function esc(t){ return String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;"); }
+
 function loadBloques(){
 fetch(API_BASE + "/api/bloques")
 .then(function(r){ return r.json(); })
@@ -387,51 +458,48 @@ if (!d || !d.ok || !d.rows || !d.rows.length){
 tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Sin datos de bloques.</td></tr>';
 return;
 }
-var groups = {};
+gruposBloque = {};
 d.rows.forEach(function(r){
 var inst = (r["Instalacion"] || "").trim();
 var bloque = (r["bloque"] || "").trim();
 var dia = (r["Dia"] || "").trim();
 var ingreso = (r["Ingreso"] || "").trim();
-var key = inst + "|" + bloque + "|" + dia;
-if (!groups[key]) groups[key] = {inst:inst, bloque:bloque, dia:dia, horas:[], count:0};
-if (ingreso) groups[key].horas.push(ingreso);
-groups[key].count += 1;
+var salida = (r["Salida"] || "").trim();
+var soc = (r["Socorrista"] || "").trim();
+if (!inst && !bloque) return;
+var key = (inst + "|" + bloque + "|" + dia).replace(/\s+/g,"_");
+if (!gruposBloque[key]) gruposBloque[key] = {key:key, inst:inst, bloque:bloque, dia:dia, ingresos:[], salida:"", socorristas:[]};
+var g = gruposBloque[key];
+if (ingreso) g.ingresos.push(ingreso);
+if (salida && !g.salida) g.salida = salida;
+if (soc && g.socorristas.indexOf(soc) === -1) g.socorristas.push(soc);
 });
-var rows = Object.keys(groups).map(function(k){ return groups[k]; });
+// preview para "Nueva desde bloque"
 bloqueDetalle = {};
-rows.forEach(function(g){
-var horas = g.horas.slice().sort();
-var rango = horas.length ? (horas[0] + " - " + horas[horas.length-1]) : "-";
+Object.keys(gruposBloque).forEach(function(k){
+var g = gruposBloque[k];
+var horas = g.ingresos.slice().sort();
+var rango = horas.length ? (horas[0] + " - " + (g.salida || horas[horas.length-1])) : (g.salida||"-");
 if (!bloqueDetalle[g.bloque]) bloqueDetalle[g.bloque] = [];
-bloqueDetalle[g.bloque].push({inst:g.inst, dia:g.dia, rango:rango, count:g.count});
+bloqueDetalle[g.bloque].push({inst:g.inst, dia:g.dia, rango:rango, count:g.socorristas.length});
 });
-try{
+// sugerencias para buscadores
 var setS={}, setI={};
 d.rows.forEach(function(r){ var sc=(r["Socorrista"]||"").trim(); var ins=(r["Instalacion"]||"").trim(); if(sc) setS[sc]=1; if(ins) setI[ins]=1; });
-llenarDatalist("dlSocorristas", Object.keys(setS).sort());
-llenarDatalist("dlInstalaciones", Object.keys(setI).sort());
-}catch(e){}
-rows.sort(function(a,b){
-if (a.inst !== b.inst) return a.inst.localeCompare(b.inst);
-return a.bloque.localeCompare(b.bloque);
-});
-tbody.innerHTML = rows.map(function(g){
-var horas = g.horas.slice().sort();
-var rango = horas.length ? (horas[0] + " - " + horas[horas.length-1]) : "-";
-return "<tr><td>" + g.inst + "</td><td>Bloque " + g.bloque + "</td><td>" + g.dia + "</td><td>" + rango + "</td><td>" + g.count + "</td></tr>";
-}).join("");
-
+Object.keys(setS).forEach(function(x){ if(sugSocorristas.indexOf(x)===-1) sugSocorristas.push(x); });
+sugSocorristas.sort();
+sugInstalaciones = Object.keys(setI).sort();
+llenarDatalist("dlSocorristas", sugSocorristas);
+llenarDatalist("dlInstalaciones", sugInstalaciones);
+// selector "Nueva desde bloque"
 var sel = document.getElementById("add_bloque");
-var bloqueSet = {};
-d.rows.forEach(function(r){ bloqueSet[(r["bloque"]||"").trim()] = true; });
-Object.keys(bloqueSet).sort().forEach(function(b){
-if (!b) return;
-var opt = document.createElement("option");
-opt.value = b;
-opt.textContent = "Bloque " + b;
-sel.appendChild(opt);
-});
+if (sel){
+sel.innerHTML = '<option value="">Selecciona...</option>';
+var bset={};
+d.rows.forEach(function(r){ bset[(r["bloque"]||"").trim()]=true; });
+Object.keys(bset).sort().forEach(function(b){ if(!b) return; var o=document.createElement("option"); o.value=b; o.textContent="Bloque "+b; sel.appendChild(o); });
+}
+renderBloquesTabla();
 })
 .catch(function(){
 document.getElementById("bloquesBody").innerHTML = '<tr class="empty-row"><td colspan="5">Error al cargar bloques.</td></tr>';
@@ -663,7 +731,7 @@ else { msgEl.className="msg err"; msgEl.textContent=(d && d.error) || "Error al 
 var cbModal = document.getElementById("crearBloqueModal");
 var btnCrearBloque = document.getElementById("btnCrearBloque");
 if (btnCrearBloque) btnCrearBloque.addEventListener("click", function(){
-["cb_bloque","cb_dia","cb_socorrista","cb_instalacion","cb_ingreso"].forEach(function(id){ document.getElementById(id).value=""; });
+["cb_bloque","cb_dia","cb_socorrista","cb_instalacion","cb_ingreso","cb_salida"].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=""; });
 var mm=document.getElementById("cbMsg"); mm.className="msg"; mm.textContent="";
 cbModal.classList.add("open");
 });
@@ -679,7 +747,7 @@ if(!bl || !soc || !ins){ msgEl.className="msg err"; msgEl.textContent="Bloque, s
 var btn=this; btn.disabled=true; btn.textContent="Guardando...";
 fetch(API_BASE + "/api/bloques/crear", {
 method:"POST", headers:{"Content-Type":"application/json"},
-body: JSON.stringify({bloque:bl, dia:dia, socorrista:soc, instalacion:ins, ingreso:ing})
+body: JSON.stringify({bloque:bl, dia:dia, socorrista:soc, instalacion:ins, ingreso:ing, salida:document.getElementById("cb_salida").value.trim()})
 })
 .then(function(r){ return r.json(); })
 .then(function(d){
@@ -688,6 +756,62 @@ if(d && d.ok){ msgEl.className="msg ok"; msgEl.textContent=d.mensaje || "Bloque 
 else { msgEl.className="msg err"; msgEl.textContent=(d && d.error) || "Error al guardar."; }
 })
 .catch(function(){ btn.disabled=false; btn.textContent="Guardar"; msgEl.className="msg err"; msgEl.textContent="Error de conexi\u00f3n."; });
+});
+
+/* ---- Buscador desplegable reutilizable ---- */
+function attachSearch(inputId, listId, getOptions, onPick){
+var inp=document.getElementById(inputId), lst=document.getElementById(listId);
+if(!inp || !lst) return;
+function pintar(){
+var q=(inp.value||"").toLowerCase();
+var ops=getOptions().filter(function(v){ return v.toLowerCase().indexOf(q)!==-1; }).slice(0,50);
+if(!ops.length){ lst.innerHTML='<div class="sd-empty">Sin coincidencias</div>'; }
+else { lst.innerHTML=ops.map(function(v){ return '<div class="sd-item" data-v="'+esc(v)+'">'+esc(v)+'</div>'; }).join(""); }
+lst.querySelectorAll(".sd-item").forEach(function(it){ it.addEventListener("mousedown", function(e){ e.preventDefault(); inp.value=it.getAttribute("data-v"); lst.classList.remove("open"); if(onPick) onPick(inp.value); }); });
+lst.classList.add("open");
+}
+inp.addEventListener("focus", pintar);
+inp.addEventListener("input", function(){ pintar(); if(onPick) onPick(inp.value); });
+document.addEventListener("click", function(e){ if(e.target!==inp && !lst.contains(e.target)) lst.classList.remove("open"); });
+}
+
+attachSearch("cb_socorrista","cb_socorrista_list", function(){ return sugSocorristas; });
+attachSearch("cb_instalacion","cb_instalacion_list", function(){ return sugInstalaciones; });
+attachSearch("filtroInst","filtroInstList", function(){ return sugInstalaciones; }, function(v){ filtroInstSel=v; renderBloquesTabla(); });
+attachSearch("asel_socorrista","asel_socorrista_list", function(){ return sugSocorristas; });
+
+/* ---- Asignar bloque(s) seleccionados a un socorrista ---- */
+var aselModal=document.getElementById("asignarSelModal");
+var btnAsignarSel=document.getElementById("btnAsignarSel");
+if(btnAsignarSel) btnAsignarSel.addEventListener("click", function(){
+var marcados=[].slice.call(document.querySelectorAll("#bloquesBody .bchk:checked")).map(function(c){ return gruposBloque[c.getAttribute("data-k")]; }).filter(Boolean);
+if(!marcados.length) return;
+var res=document.getElementById("aselResumen");
+res.innerHTML='<div class="bp-t">Se asignar&aacute;n estos turnos:</div>'+marcados.map(function(g){ var horas=g.ingresos.slice().sort(); var ing=horas[0]||""; return '<div class="bp-row">&#8226; '+esc(g.inst)+' &middot; '+esc(g.dia)+' &middot; '+esc(ing)+(g.salida?(" - "+esc(g.salida)):"")+'</div>'; }).join("");
+document.getElementById("asel_fecha").value="";
+document.getElementById("asel_socorrista").value="";
+var mm=document.getElementById("aselMsg"); mm.className="msg"; mm.textContent="";
+aselModal.classList.add("open");
+});
+document.getElementById("aselCancelBtn").addEventListener("click", function(){ aselModal.classList.remove("open"); });
+document.getElementById("aselSaveBtn").addEventListener("click", function(){
+var msgEl=document.getElementById("aselMsg");
+var fechaVal=document.getElementById("asel_fecha").value;
+var soc=document.getElementById("asel_socorrista").value.trim();
+if(!fechaVal || !soc){ msgEl.className="msg err"; msgEl.textContent="Elige fecha y socorrista."; return; }
+var marcados=[].slice.call(document.querySelectorAll("#bloquesBody .bchk:checked")).map(function(c){ return gruposBloque[c.getAttribute("data-k")]; }).filter(Boolean);
+if(!marcados.length){ msgEl.className="msg err"; msgEl.textContent="No hay bloques seleccionados."; return; }
+var pr=fechaVal.split("-"); var fechaDMY=pr[2]+"/"+pr[1]+"/"+pr[0]; var dia=diaSemana(fechaVal);
+var btn=this; btn.disabled=true; btn.textContent="Asignando...";
+var pend=marcados.map(function(g){ var horas=g.ingresos.slice().sort(); var ing=horas[0]||"";
+return fetch(API_BASE + "/api/horarios/asignar", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({fecha:fechaDMY, dia:dia, socorrista:soc, instalacion:g.inst, ingreso:ing, salida:g.salida||""}) }).then(function(r){ return r.json(); });
+});
+Promise.all(pend).then(function(rs){
+btn.disabled=false; btn.textContent="Asignar";
+var ok=rs.filter(function(x){ return x && x.ok; }).length;
+if(ok){ msgEl.className="msg ok"; msgEl.textContent="Se asignaron "+ok+" turno(s)."; setTimeout(function(){ aselModal.classList.remove("open"); }, 1200); }
+else { msgEl.className="msg err"; msgEl.textContent="No se pudo asignar."; }
+}).catch(function(){ btn.disabled=false; btn.textContent="Asignar"; msgEl.className="msg err"; msgEl.textContent="Error de conexi\u00f3n."; });
 });
 })();
 </script>
