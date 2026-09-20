@@ -308,6 +308,7 @@ overflow:hidden;
 
 /* mobile drawer + bottomnav */
 .mobile-drawer{display:none;position:fixed;inset:0;z-index:100;}
+.mobile-drawer .logo-row{justify-content:center;}
 .mobile-drawer.open{display:block;}
 .mobile-drawer .overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);}
 .mobile-drawer .panel{position:absolute;left:0;top:0;bottom:0;width:250px;background:var(--navy);padding:26px 18px;color:#eaf2ff;overflow-y:auto;}
