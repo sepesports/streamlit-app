@@ -132,6 +132,7 @@ color:#eaf2ff;display:flex;flex-direction:column;padding:26px 18px;height:100vh;
 .placeholder-panel{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13.5px;}
 
 .mobile-drawer{display:none;position:fixed;inset:0;z-index:100;}
+.mobile-drawer .logo-row{justify-content:center;}
 .mobile-drawer.open{display:block;}
 .mobile-drawer .overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);}
 .mobile-drawer .panel{
