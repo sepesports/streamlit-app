@@ -486,6 +486,7 @@ var NAV_ITEMS = [
 {sep:true},
 {label:"Registro", icon:"&#128100;+", go:"/altas_registro", adminOnly:true, badge:"Solo admin"},
 {label:"Gesti&oacute;n de Horarios", icon:"&#9881;", go:"/editar_horarios", adminOnly:true, badge:"Solo admin"},
+{label:"Perfiles", icon:"&#11088;", go:"/perfiles", adminOnly:true, badge:"Solo admin"},
 ];
 
 function renderNav(containerId){
