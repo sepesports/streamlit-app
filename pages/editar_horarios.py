@@ -124,6 +124,9 @@ tbody tr:last-child td{border-bottom:none;}
 .bloque-prev .bp-row{padding:2px 0;}
 .loading-row td{text-align:center;color:var(--muted);padding:24px;}
 .tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+#panel-bloques .tscroll{overflow-x:hidden;}
+#panel-bloques table{min-width:0 !important;}
+#panel-bloques thead th, #panel-bloques tbody td{white-space:normal;}
 .panel-tools{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap;}
 .primary-btn.sm{padding:7px 12px;font-size:12px;white-space:nowrap;}
 .sd{position:relative;flex:1 1 170px;max-width:280px;min-width:150px;}
@@ -160,6 +163,7 @@ thead th, tbody td{padding:9px 10px;white-space:nowrap;}
 }
 
 .mobile-drawer{display:none;position:fixed;inset:0;z-index:100;}
+.mobile-drawer .logo-row{justify-content:center;}
 .mobile-drawer.open{display:block;}
 .mobile-drawer .overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);}
 .mobile-drawer .panel{
@@ -289,7 +293,8 @@ html,body{background:#1B2A4A !important;}
 <div id="aselResumen" class="bloque-prev show"></div>
 <div class="field"><label>Socorrista</label><div class="sd"><input class="sd-input" id="asel_socorrista" placeholder="Buscar socorrista..." autocomplete="off"/><div class="sd-list" id="asel_socorrista_list"></div></div></div>
 <div class="field"><label>Instalaci&oacute;n (punto de trabajo)</label><div class="sd"><input class="sd-input" id="asel_instalacion" placeholder="Buscar o escribir instalaci&oacute;n..." autocomplete="off"/><div class="sd-list" id="asel_instalacion_list"></div></div></div>
-<div class="field"><label>Semana</label><input id="asel_fecha" type="date"/><div class="hint" style="margin:6px 0 0 2px;">Elige cualquier d&iacute;a de la semana destino.</div></div>
+<div class="field two"><div><label>Desde</label><input id="asel_desde" type="date"/></div><div><label>Hasta (opcional)</label><input id="asel_hasta" type="date"/></div></div>
+<div class="hint" style="margin:-4px 0 4px 2px;">Un solo d&iacute;a: usa solo <b>Desde</b>. Rango: agrega <b>Hasta</b>. Se crean los turnos de cada d&iacute;a del bloque que caiga en ese rango.</div>
 <div class="msg" id="aselMsg"></div>
 <div class="actions">
 <button class="btn-cancel" id="aselCancelBtn">Cancelar</button>
@@ -423,6 +428,7 @@ var filtroInstSel = "";
 var bloquesAbiertos = {};
 
 function esc(t){ return String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;"); }
+function cap(s){ s=String(s||""); return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
 
 function renderBloquesTabla(){
 var tbody = document.getElementById("bloquesBody");
@@ -441,7 +447,8 @@ html += '<tr class="brow" data-b="'+esc(g.bloque)+'">' +
 '</tr>';
 if (abierto){
 g.lineas.forEach(function(l){
-html += '<tr class="bdetail"><td></td><td style="font-size:12px;color:#40506e;"><b>'+esc(l.dia||"-")+'</b> &middot; Ingreso '+esc(l.ingreso||"-")+' &middot; Fin '+esc(l.salida||"-")+'</td></tr>';
+var _hor = esc(l.ingreso||"") + (l.salida ? (" - "+esc(l.salida)) : "");
+html += '<tr class="bdetail"><td></td><td style="font-size:12px;color:#40506e;"><b>'+esc(cap(l.dia||"-"))+'</b> '+_hor+'</td></tr>';
 });
 }
 });
@@ -775,7 +782,7 @@ var bl=document.getElementById("cb_bloque").value.trim();
 var dia=document.getElementById("cb_dia").value.trim();
 var ing=document.getElementById("cb_ingreso").value.trim();
 var sal=document.getElementById("cb_salida").value.trim();
-if(!bl || !dia || !ing){ msgEl.className="msg err"; msgEl.textContent="Bloque, d\u00eda e ingreso son obligatorios."; return; }
+if(!bl || !dia || !ing || !sal){ msgEl.className="msg err"; msgEl.textContent="Bloque, d\u00eda, ingreso y salida son obligatorios."; return; }
 var btn=this; btn.disabled=true; btn.textContent="Guardando...";
 fetch(API_BASE + "/api/bloques/crear", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({bloque:bl, dia:dia, ingreso:ing, salida:sal}) })
 .then(function(r){ return r.json(); })
@@ -822,7 +829,8 @@ if(!marcados.length) return;
 var res=document.getElementById("aselResumen");
 var lineas=[]; marcados.forEach(function(g){ g.lineas.forEach(function(l){ lineas.push('<div class="bp-row">&#8226; Bloque '+esc(g.bloque)+' &middot; '+esc(l.dia||"-")+' &middot; '+esc(l.ingreso||"")+(l.salida?(" - "+esc(l.salida)):"")+'</div>'); }); });
 res.innerHTML='<div class="bp-t">Se asignar&aacute;n '+lineas.length+' turno(s):</div>'+lineas.join("");
-document.getElementById("asel_fecha").value="";
+document.getElementById("asel_desde").value="";
+document.getElementById("asel_hasta").value="";
 document.getElementById("asel_socorrista").value="";
 document.getElementById("asel_instalacion").value="";
 var mm=document.getElementById("aselMsg"); mm.className="msg"; mm.textContent="";
@@ -831,16 +839,28 @@ aselModal.classList.add("open");
 document.getElementById("aselCancelBtn").addEventListener("click", function(){ aselModal.classList.remove("open"); });
 document.getElementById("aselSaveBtn").addEventListener("click", function(){
 var msgEl=document.getElementById("aselMsg");
-var fechaVal=document.getElementById("asel_fecha").value;
+var desde=document.getElementById("asel_desde").value;
+var hasta=document.getElementById("asel_hasta").value || desde;
 var soc=document.getElementById("asel_socorrista").value.trim();
 var ins=document.getElementById("asel_instalacion").value.trim();
-if(!soc || !ins || !fechaVal){ msgEl.className="msg err"; msgEl.textContent="Elige socorrista, instalación y una fecha de la semana."; return; }
+if(!soc || !ins || !desde){ msgEl.className="msg err"; msgEl.textContent="Elige socorrista, instalación y la fecha (Desde)."; return; }
+if(hasta<desde){ var _t=desde; desde=hasta; hasta=_t; }
 var marcados=[].slice.call(document.querySelectorAll("#bloquesBody .bchk:checked")).map(function(c){ return gruposBloque[c.getAttribute("data-b")]; }).filter(Boolean);
 if(!marcados.length){ msgEl.className="msg err"; msgEl.textContent="No hay bloques seleccionados."; return; }
 var btn=this; btn.disabled=true; btn.textContent="Asignando...";
+// Construir mapa dia-de-semana -> lineas del bloque
+var porDia={}; marcados.forEach(function(g){ g.lineas.forEach(function(l){ var idx=diaIndex(l.dia); if(idx<0) return; (porDia[idx]=porDia[idx]||[]).push({dia:l.dia, ing:l.ingreso||"", sal:l.salida||""}); }); });
+if(!Object.keys(porDia).length){ btn.disabled=false; btn.textContent="Asignar"; msgEl.className="msg err"; msgEl.textContent="El bloque no tiene días válidos (Lunes..Domingo)."; return; }
 var tareas=[];
-marcados.forEach(function(g){ g.lineas.forEach(function(l){ var idx=diaIndex(l.dia); if(idx<0) return; tareas.push({fecha:fechaEnSemana(fechaVal, idx), dia:l.dia, ing:l.ingreso||"", sal:l.salida||""}); }); });
-if(!tareas.length){ btn.disabled=false; btn.textContent="Asignar"; msgEl.className="msg err"; msgEl.textContent="El bloque no tiene días válidos (Lunes..Domingo)."; return; }
+var d=new Date(desde+"T00:00:00"); var fin=new Date(hasta+"T00:00:00"); var guard=0;
+while(d<=fin && guard<400){
+var idx=(d.getDay()+6)%7;
+var ls=porDia[idx];
+if(ls){ var y=d.getFullYear(), m=("0"+(d.getMonth()+1)).slice(-2), dd=("0"+d.getDate()).slice(-2); var fdmy=dd+"/"+m+"/"+y;
+ls.forEach(function(t){ tareas.push({fecha:fdmy, dia:t.dia, ing:t.ing, sal:t.sal}); }); }
+d.setDate(d.getDate()+1); guard++;
+}
+if(!tareas.length){ btn.disabled=false; btn.textContent="Asignar"; msgEl.className="msg err"; msgEl.textContent="Ningún día del bloque cae en ese rango de fechas."; return; }
 runSeq(tareas, function(t){
 return fetch(API_BASE + "/api/horarios/asignar", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({fecha:t.fecha, dia:t.dia, socorrista:soc, instalacion:ins, ingreso:t.ing, salida:t.sal}) }).then(function(r){ return r.json(); });
 }, function(rs){
