@@ -126,6 +126,7 @@ font-size:13.5px;color:var(--ink);background:#fbfcfe;
 }
 
 .mobile-drawer{display:none;position:fixed;inset:0;z-index:100;}
+.mobile-drawer .logo-row{justify-content:center;}
 .mobile-drawer.open{display:block;}
 .mobile-drawer .overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);}
 .mobile-drawer .panel{
