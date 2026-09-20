@@ -196,7 +196,7 @@ html,body{background:#1B2A4A !important;}
 <button class="hamburger" id="hamburgerBtn">&#9776;</button>
 <h1>Gesti&oacute;n de Horarios</h1>
 <div class="mobile-logo"><img class="brand-mark" src="__LOGO_URL__" alt="SYNTRA" style="height:46px;width:auto;flex:0 0 auto;display:block;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(120,170,255,.35));"/></div>
-<button class="primary-btn" id="addBtn"><span class="lbl-full">+ Nueva Asignaci&oacute;n</span><span class="lbl-short">+ Nueva</span></button>
+<button class="primary-btn" id="addBtn"><span class="lbl-full">+ Agregar turno directo</span><span class="lbl-short">+ Turno</span></button>
 </div>
 <div id="content">
 <div class="tabbar">
@@ -309,17 +309,17 @@ html,body{background:#1B2A4A !important;}
 
 <div class="modal-overlay" id="addModal">
 <div class="modal">
-<h3>Nueva asignaci&oacute;n desde bloque</h3>
-<p class="modal-help">Un <b>bloque</b> es una plantilla de turnos ya creada en la hoja de horarios (instalaci&oacute;n, d&iacute;a, horario y socorristas). Elige una fecha y un bloque: se generar&aacute;n esos turnos para esa fecha.</p>
-<div class="field"><label>Fecha</label><input id="add_fecha" type="date"/></div>
-<div class="field"><label>Bloque</label>
-<select id="add_bloque"><option value="">Selecciona...</option></select>
-</div>
-<div id="bloquePrev" class="bloque-prev"></div>
+<h3>Agregar turno directo</h3>
+<p class="modal-help">Crea turnos directamente (sin plantilla). Elige socorrista, instalaci&oacute;n, rango de fechas y horario. Al crear se avisa al socorrista por el chat.</p>
+<div class="field"><label>Socorrista</label><div class="sd"><input class="sd-input" id="add_socorrista" placeholder="Buscar socorrista..." autocomplete="off"/><div class="sd-list" id="add_socorrista_list"></div></div></div>
+<div class="field"><label>Instalaci&oacute;n (punto de trabajo)</label><div class="sd"><input class="sd-input" id="add_instalacion" placeholder="Buscar o escribir instalaci&oacute;n..." autocomplete="off"/><div class="sd-list" id="add_instalacion_list"></div></div></div>
+<div class="field two"><div><label>Desde</label><input id="add_desde" type="date"/></div><div><label>Hasta (opcional)</label><input id="add_hasta" type="date"/></div></div>
+<div class="field two"><div><label>Ingreso</label><input id="add_ingreso" placeholder="08:00"/></div><div><label>Salida</label><input id="add_salida" placeholder="16:00"/></div></div>
+<div class="hint" style="margin:-4px 0 4px 2px;">Un solo d&iacute;a: usa solo <b>Desde</b>. Rango: agrega <b>Hasta</b>.</div>
 <div class="msg" id="addMsg"></div>
 <div class="actions">
 <button class="btn-cancel" id="addCancelBtn">Cancelar</button>
-<button class="primary-btn" id="addSaveBtn">Agregar</button>
+<button class="primary-btn" id="addSaveBtn">Crear y avisar</button>
 </div>
 </div>
 </div>
@@ -417,8 +417,11 @@ var dl=document.getElementById(id); if(!dl) return;
 var existentes={}; [].slice.call(dl.querySelectorAll("option")).forEach(function(o){ existentes[o.value]=1; });
 valores.forEach(function(v){ if(v && !existentes[v]){ var o=document.createElement("option"); o.value=v; dl.appendChild(o); existentes[v]=1; } });
 }
+var socDni = {};
 fetch(API_BASE + "/api/chat/users").then(function(r){ return r.json(); }).then(function(d){
 var us = Array.isArray(d) ? d : ((d && d.users) || []);
+us.forEach(function(u){ var nm=(u.nombre||u.alias||"").trim(); if(nm){ socDni[nm.toLowerCase()]=u.dni||""; if(sugSocorristas.indexOf(nm)===-1) sugSocorristas.push(nm); } });
+sugSocorristas.sort();
 llenarDatalist("dlSocorristas", us.map(function(u){ return (u.nombre || u.alias || "").trim(); }).filter(Boolean).sort());
 }).catch(function(){});
 var gruposBloque = {};   // bloque -> {bloque, lineas:[{inst,dia,ingresos,salida,socorristas}], insts:{}}
@@ -673,52 +676,55 @@ body: JSON.stringify({llave: llave})
 .catch(function(){ alert("Error de conexi&oacute;n."); });
 }
 
+/* ---- Aviso al chat del socorrista al asignar ---- */
+function enviarAvisoChat(nombre, texto){
+try{
+var dni = socDni[(nombre||"").toLowerCase()] || "";
+if(!dni || !AUTH_DNI) return;
+fetch(API_BASE + "/api/chat/private/" + encodeURIComponent(dni) + "?user_id=" + encodeURIComponent(AUTH_DNI))
+.then(function(r){ return r.json(); })
+.then(function(d){
+var tid = d && d.thread_id; if(!tid) return;
+fetch(API_BASE + "/api/chat/threads/" + encodeURIComponent(tid) + "/messages", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({sender_id: AUTH_DNI, body: texto}) });
+}).catch(function(){});
+}catch(e){}
+}
+
 var addModal = document.getElementById("addModal");
 document.getElementById("addBtn").addEventListener("click", function(){
-document.getElementById("add_fecha").value = "";
-document.getElementById("add_bloque").value = "";
+["add_socorrista","add_instalacion","add_desde","add_hasta","add_ingreso","add_salida"].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=""; });
 document.getElementById("addMsg").className = "msg";
 document.getElementById("addMsg").textContent = "";
-var prev0 = document.getElementById("bloquePrev"); prev0.className = "bloque-prev"; prev0.innerHTML = "";
 addModal.classList.add("open");
-});
-document.getElementById("add_bloque").addEventListener("change", function(){
-var prev = document.getElementById("bloquePrev");
-var det = bloqueDetalle[this.value] || [];
-if (!this.value || !det.length){ prev.className = "bloque-prev"; prev.innerHTML = ""; return; }
-var html = '<div class="bp-t">Este bloque genera:</div>';
-det.forEach(function(x){
-html += '<div class="bp-row">&#8226; ' + x.dia + ' &middot; ' + x.rango + '</div>';
-});
-prev.innerHTML = html; prev.className = "bloque-prev show";
 });
 document.getElementById("addCancelBtn").addEventListener("click", function(){ addModal.classList.remove("open"); });
 
 document.getElementById("addSaveBtn").addEventListener("click", function(){
-var fechaVal = document.getElementById("add_fecha").value;
-var bloqueVal = document.getElementById("add_bloque").value;
 var msgEl = document.getElementById("addMsg");
-if (!fechaVal || !bloqueVal){
-msgEl.className = "msg err"; msgEl.textContent = "Selecciona fecha y bloque.";
-return;
-}
-var parts = fechaVal.split("-");
-var fechaDMY = parts[2] + "/" + parts[1] + "/" + parts[0];
-fetch(API_BASE + "/api/horarios/agregar", {
-method: "POST",
-headers: {"Content-Type": "application/json"},
-body: JSON.stringify({fecha: fechaDMY, bloque: bloqueVal})
-})
-.then(function(r){ return r.json(); })
-.then(function(d){
-if (d && d.ok){
-msgEl.className = "msg ok"; msgEl.textContent = d.mensaje || "Agregado.";
-setTimeout(function(){ addModal.classList.remove("open"); loadMallas(); }, 1600);
-} else {
-msgEl.className = "msg err"; msgEl.textContent = (d && d.error) || "Error al agregar.";
-}
-})
-.catch(function(){ msgEl.className = "msg err"; msgEl.textContent = "Error de conexi&oacute;n."; });
+var soc=document.getElementById("add_socorrista").value.trim();
+var ins=document.getElementById("add_instalacion").value.trim();
+var desde=document.getElementById("add_desde").value;
+var hasta=document.getElementById("add_hasta").value || desde;
+var ing=document.getElementById("add_ingreso").value.trim();
+var sal=document.getElementById("add_salida").value.trim();
+if(!soc || !ins || !desde || !ing || !sal){ msgEl.className="msg err"; msgEl.textContent="Socorrista, instalación, fecha (Desde), ingreso y salida son obligatorios."; return; }
+if(hasta<desde){ var _t=desde; desde=hasta; hasta=_t; }
+var fechas=fechasRango(desde, hasta);
+if(!fechas.length){ msgEl.className="msg err"; msgEl.textContent="Rango de fechas inválido."; return; }
+var btn=this; btn.disabled=true; btn.textContent="Creando...";
+var tareas=fechas.map(function(fdmy){ var pr=fdmy.split("/"); var iso=pr[2]+"-"+pr[1]+"-"+pr[0]; return {fecha:fdmy, dia:diaSemana(iso)}; });
+runSeq(tareas, function(t){
+return fetch(API_BASE + "/api/horarios/asignar", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({fecha:t.fecha, dia:t.dia, socorrista:soc, instalacion:ins, ingreso:ing, salida:sal}) }).then(function(r){ return r.json(); });
+}, function(rs){
+btn.disabled=false; btn.textContent="Crear y avisar";
+var ok=rs.filter(function(x){ return x && x.ok; }).length;
+if(ok){
+var rango = fechas.length>1 ? ("del "+fechas[0]+" al "+fechas[fechas.length-1]) : ("el "+fechas[0]);
+enviarAvisoChat(soc, "Has sido asignado a la instalación "+ins+" "+rango+", de "+ing+" a "+sal+". Contamos contigo, no olvides estar a tiempo.");
+msgEl.className="msg ok"; msgEl.textContent="Se crearon "+ok+" turno(s). Aviso enviado al chat.";
+setTimeout(function(){ addModal.classList.remove("open"); loadMallas(); }, 1500);
+} else { msgEl.className="msg err"; msgEl.textContent="No se pudo crear el turno."; }
+});
 });
 
 /* ---- Asignar turno a un socorrista ---- */
@@ -819,6 +825,8 @@ return Object.keys(set).sort();
 }
 attachSearch("asel_socorrista","asel_socorrista_list", function(){ return sugSocorristas; });
 attachSearch("asel_instalacion","asel_instalacion_list", function(){ return instalacionesActuales(); });
+attachSearch("add_socorrista","add_socorrista_list", function(){ return sugSocorristas; });
+attachSearch("add_instalacion","add_instalacion_list", function(){ return instalacionesActuales(); });
 
 /* ---- Asignar bloque(s) seleccionados a un socorrista ---- */
 var aselModal=document.getElementById("asignarSelModal");
