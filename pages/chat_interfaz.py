@@ -314,7 +314,8 @@ var NAV_ITEMS = [
 {label:"Incidencias y Comunicados", icon:"&#128172;", go:"/chat_interfaz", active:true},
 {sep:true},
 {label:"Registro", icon:"&#128100;+", go:"/altas_registro", badge:"Solo admin"},
-{label:"Gesti&oacute;n de Horarios", icon:"&#9881;", go:"/editar_horarios", badge:"Solo admin"}
+{label:"Gesti&oacute;n de Horarios", icon:"&#9881;", go:"/editar_horarios", badge:"Solo admin"},
+{label:"Perfiles", icon:"&#11088;", go:"/perfiles", badge:"Solo admin"}
 ];
 
 function renderNav(containerId){
