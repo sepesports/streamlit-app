@@ -143,6 +143,7 @@ table.cal td.inst-cell{font-weight:700;font-size:13px;background:#fafbfd;positio
 .empty-note{padding:30px;text-align:center;color:var(--muted);font-size:13px;}
 
 .mobile-drawer{display:none;position:fixed;inset:0;z-index:100;}
+.mobile-drawer .logo-row{justify-content:center;}
 .mobile-drawer.open{display:block;}
 .mobile-drawer .overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);}
 .mobile-drawer .panel{
