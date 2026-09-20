@@ -272,12 +272,16 @@ html,body{background:#1B2A4A !important;}
 <div class="modal-overlay" id="crearBloqueModal">
 <div class="modal">
 <h3>A&ntilde;adir a un bloque</h3>
-<p class="modal-help">Un bloque es una <b>plantilla de horario</b>. A&ntilde;ade una l&iacute;nea por d&iacute;a de la semana (d&iacute;a, ingreso y salida). El socorrista y la instalaci&oacute;n se eligen al asignar.</p>
+<p class="modal-help">Un bloque carga horarios de forma <b>masiva</b> por rango de fechas. Define el <b>rango</b> y el <b>horario base</b> (aplica a todos los d&iacute;as del rango). Opcionalmente agrega <b>d&iacute;as con horario distinto</b> (ej. fines de semana), que reemplazan el horario base en ese d&iacute;a de la semana. El socorrista y la instalaci&oacute;n se eligen al asignar.</p>
 <div class="field"><label>Bloque</label><input id="cb_bloque" placeholder="N&uacute;mero o nombre del bloque"/></div>
-<div class="field"><label>D&iacute;a de la semana</label>
-<select id="cb_dia"><option value="">Selecciona...</option><option value="Lunes">Lunes</option><option value="Martes">Martes</option><option value="Mi&eacute;rcoles">Mi&eacute;rcoles</option><option value="Jueves">Jueves</option><option value="Viernes">Viernes</option><option value="S&aacute;bado">S&aacute;bado</option><option value="Domingo">Domingo</option></select>
+<div class="field two"><div><label>Desde</label><input id="cb_desde" type="date"/></div><div><label>Hasta (opcional)</label><input id="cb_hasta" type="date"/></div></div>
+<div class="field two"><div><label>Ingreso base</label><input id="cb_ingreso" placeholder="08:00"/></div><div><label>Salida base</label><input id="cb_salida" placeholder="17:00"/></div></div>
+<div class="hint" style="margin:-2px 0 6px 2px;">Un solo d&iacute;a: usa solo <b>Desde</b>. Rango: agrega <b>Hasta</b>.</div>
+<div style="border-top:1px solid rgba(30,50,90,.10);margin:6px 0 8px;padding-top:8px;">
+<div style="font-size:12px;font-weight:700;color:#40506e;margin-bottom:6px;">D&iacute;as con horario distinto (opcional)</div>
+<div id="cb_excs"></div>
+<button type="button" class="primary-btn sm" id="cbAddExc" style="margin-top:2px;">+ Agregar d&iacute;a</button>
 </div>
-<div class="field two"><div><label>Ingreso</label><input id="cb_ingreso" placeholder="08:00"/></div><div><label>Salida</label><input id="cb_salida" placeholder="12:00"/></div></div>
 <div class="msg" id="cbMsg"></div>
 <div class="actions">
 <button class="btn-cancel" id="cbCancelBtn">Cancelar</button>
@@ -289,12 +293,10 @@ html,body{background:#1B2A4A !important;}
 <div class="modal-overlay" id="asignarSelModal">
 <div class="modal">
 <h3>Asignar bloque(s) a un socorrista</h3>
-<p class="modal-help">Elige socorrista, instalaci&oacute;n y una fecha de la semana. Cada d&iacute;a del bloque se crear&aacute; en esa semana.</p>
+<p class="modal-help">El bloque ya trae su <b>rango de fechas</b> y horarios. Solo elige <b>socorrista</b> e <b>instalaci&oacute;n</b>: se crean los turnos de cada d&iacute;a del rango y se avisa al socorrista por el chat.</p>
 <div id="aselResumen" class="bloque-prev show"></div>
 <div class="field"><label>Socorrista</label><div class="sd"><input class="sd-input" id="asel_socorrista" placeholder="Buscar socorrista..." autocomplete="off"/><div class="sd-list" id="asel_socorrista_list"></div></div></div>
 <div class="field"><label>Instalaci&oacute;n (punto de trabajo)</label><div class="sd"><input class="sd-input" id="asel_instalacion" placeholder="Buscar o escribir instalaci&oacute;n..." autocomplete="off"/><div class="sd-list" id="asel_instalacion_list"></div></div></div>
-<div class="field two"><div><label>Desde</label><input id="asel_desde" type="date"/></div><div><label>Hasta (opcional)</label><input id="asel_hasta" type="date"/></div></div>
-<div class="hint" style="margin:-4px 0 4px 2px;">Un solo d&iacute;a: usa solo <b>Desde</b>. Rango: agrega <b>Hasta</b>. Se crean los turnos de cada d&iacute;a del bloque que caiga en ese rango.</div>
 <div class="msg" id="aselMsg"></div>
 <div class="actions">
 <button class="btn-cancel" id="aselCancelBtn">Cancelar</button>
@@ -442,16 +444,19 @@ lista.sort(function(a,b){ return String(a.bloque).localeCompare(String(b.bloque)
 var html = "";
 lista.forEach(function(g){
 var abierto = !!bloquesAbiertos[g.bloque];
-var n = g.lineas.length;
-var resumen = '<span style="color:#6b7688;font-weight:400;">' + n + " turno" + (n!==1?"s":"") + '</span>';
+var rango = g.desde ? ("del "+fmtFecha(g.desde) + (g.hasta && g.hasta!==g.desde ? (" al "+fmtFecha(g.hasta)) : "")) : "sin fechas";
+var extra = g.excs.length ? (" &middot; "+g.excs.length+" excepción"+(g.excs.length!==1?"es":"")) : "";
+var resumen = '<span style="color:#6b7688;font-weight:400;">' + esc(rango) + extra + '</span>';
 html += '<tr class="brow" data-b="'+esc(g.bloque)+'">' +
 '<td class="chkcol"><input type="checkbox" class="bchk" data-b="'+esc(g.bloque)+'"/></td>' +
 '<td><b>Bloque '+esc(g.bloque)+'</b> &nbsp;'+resumen+' <span class="caret">'+(abierto?"&#9650;":"&#9660;")+'</span></td>' +
 '</tr>';
 if (abierto){
-g.lineas.forEach(function(l){
-var _hor = esc(l.ingreso||"") + (l.salida ? (" - "+esc(l.salida)) : "");
-html += '<tr class="bdetail"><td></td><td style="font-size:12px;color:#40506e;"><b>'+esc(cap(l.dia||"-"))+'</b> '+_hor+'</td></tr>';
+var baseHor = esc(g.ingBase||"") + (g.salBase ? (" - "+esc(g.salBase)) : "");
+html += '<tr class="bdetail"><td></td><td style="font-size:12px;color:#40506e;"><b>Todos los días</b> '+baseHor+'</td></tr>';
+g.excs.forEach(function(l){
+var _hor = esc(l.ing||"") + (l.sal ? (" - "+esc(l.sal)) : "");
+html += '<tr class="bdetail"><td></td><td style="font-size:12px;color:#40506e;"><b>'+esc(cap(l.dia||"-"))+'</b> '+_hor+' <span style="color:#8a97ad;">(excepción)</span></td></tr>';
 });
 }
 });
@@ -482,25 +487,28 @@ return;
 gruposBloque = {};
 d.rows.forEach(function(r){
 var bloque = (r["bloque"] || "").trim();
+if (!bloque) return;
+var tipo = (r["Tipo"]||"").trim().toLowerCase();
 var dia = (r["Dia"] || "").trim();
 var ingreso = (r["Ingreso"] || "").trim();
 var salida = (r["Salida"] || "").trim();
-if (!bloque) return;
-if (!gruposBloque[bloque]) gruposBloque[bloque] = {bloque:bloque, lineas:[], _idx:{}};
+var desde = (r["Desde"] || "").trim();
+var hasta = (r["Hasta"] || "").trim();
+if (!gruposBloque[bloque]) gruposBloque[bloque] = {bloque:bloque, desde:"", hasta:"", ingBase:"", salBase:"", excs:[], _ex:{}};
 var g = gruposBloque[bloque];
-var lk = dia+"|"+ingreso+"|"+salida;
-if (!g._idx[lk]){ g._idx[lk]={dia:dia, ingreso:ingreso, salida:salida}; g.lineas.push(g._idx[lk]); }
+var esRango = (tipo==="rango") || (!tipo && desde && !dia);
+if (esRango){
+if(!g.desde){ g.desde=desde; g.hasta=hasta||desde; g.ingBase=ingreso; g.salBase=salida; }
+} else if (dia){
+var lk=dia.toLowerCase()+"|"+ingreso+"|"+salida;
+if(!g._ex[lk]){ g._ex[lk]={dia:dia, ing:ingreso, sal:salida}; g.excs.push(g._ex[lk]); }
+}
 });
-// ordenar lineas por dia de la semana
+// ordenar excepciones por dia de la semana
 Object.keys(gruposBloque).forEach(function(bn){
-gruposBloque[bn].lineas.sort(function(a,b){ var ia=diaIndex(a.dia), ib=diaIndex(b.dia); if(ia<0)ia=99; if(ib<0)ib=99; return ia-ib; });
+gruposBloque[bn].excs.sort(function(a,b){ var ia=diaIndex(a.dia), ib=diaIndex(b.dia); if(ia<0)ia=99; if(ib<0)ib=99; return ia-ib; });
 });
-// preview para "Nueva desde bloque"
 bloqueDetalle = {};
-Object.keys(gruposBloque).forEach(function(bn){
-var g=gruposBloque[bn];
-bloqueDetalle[bn]=g.lineas.map(function(l){ return {dia:l.dia, rango:(l.ingreso||"-")+(l.salida?(" - "+l.salida):""), count:0}; });
-});
 // sugerencias para buscadores
 var setS={}, setI={};
 d.rows.forEach(function(r){ var sc=(r["Socorrista"]||"").trim(); var ins=(r["Instalacion"]||"").trim(); if(sc) setS[sc]=1; if(ins) setI[ins]=1; });
@@ -525,6 +533,7 @@ document.getElementById("bloquesBody").innerHTML = '<tr class="empty-row"><td co
 }
 loadBloques();
 
+function fmtFecha(iso){ var p=(iso||"").split("-"); return (p.length===3) ? (p[2]+"/"+p[1]+"/"+p[0]) : (iso||""); }
 function diaSemana(iso){
 try{
 var pr=(iso||"").split("-"); if(pr.length!==3) return "";
@@ -764,11 +773,26 @@ else { msgEl.className="msg err"; msgEl.textContent=(d && d.error) || "Error al 
 var cbModal = document.getElementById("crearBloqueModal");
 var btnCrearBloque = document.getElementById("btnCrearBloque");
 if (btnCrearBloque) btnCrearBloque.addEventListener("click", function(){
-["cb_bloque","cb_dia","cb_ingreso","cb_salida"].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=""; });
+["cb_bloque","cb_desde","cb_hasta","cb_ingreso","cb_salida"].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=""; });
+var ex=document.getElementById("cb_excs"); if(ex) ex.innerHTML="";
 var mm=document.getElementById("cbMsg"); mm.className="msg"; mm.textContent="";
 cbModal.classList.add("open");
 });
 document.getElementById("cbCancelBtn").addEventListener("click", function(){ cbModal.classList.remove("open"); });
+var CB_DIASOPT='<option value="">Día...</option><option value="Lunes">Lunes</option><option value="Martes">Martes</option><option value="Miércoles">Miércoles</option><option value="Jueves">Jueves</option><option value="Viernes">Viernes</option><option value="Sábado">Sábado</option><option value="Domingo">Domingo</option>';
+function cbAddExcRow(){
+var wrap=document.getElementById("cb_excs"); if(!wrap) return;
+var row=document.createElement("div");
+row.className="cbexc-row";
+row.style.cssText="display:flex;gap:6px;align-items:center;margin-bottom:6px;";
+row.innerHTML='<select class="cbx-dia" style="flex:1;min-width:0;padding:7px;border:1px solid #dbe3f0;border-radius:8px;">'+CB_DIASOPT+'</select>'+
+'<input class="cbx-ing" placeholder="Ingreso" style="width:76px;padding:7px;border:1px solid #dbe3f0;border-radius:8px;"/>'+
+'<input class="cbx-sal" placeholder="Salida" style="width:76px;padding:7px;border:1px solid #dbe3f0;border-radius:8px;"/>'+
+'<button type="button" class="cbx-del" title="Quitar" style="border:none;background:rgba(212,61,61,.12);color:#d43d3d;border-radius:8px;padding:7px 10px;font-weight:800;cursor:pointer;">&times;</button>';
+row.querySelector(".cbx-del").addEventListener("click", function(){ row.remove(); });
+wrap.appendChild(row);
+}
+var cbAddExcBtn=document.getElementById("cbAddExc"); if(cbAddExcBtn) cbAddExcBtn.addEventListener("click", cbAddExcRow);
 function runSeq(items, makeFetch, done){
 var res=[]; var i=0;
 function next(){ if(i>=items.length){ done(res); return; } makeFetch(items[i]).then(function(r){ res.push(r); }).catch(function(){ res.push({ok:false}); }).then(function(){ i++; next(); }); }
@@ -785,19 +809,33 @@ return out;
 document.getElementById("cbSaveBtn").addEventListener("click", function(){
 var msgEl=document.getElementById("cbMsg");
 var bl=document.getElementById("cb_bloque").value.trim();
-var dia=document.getElementById("cb_dia").value.trim();
+var desde=document.getElementById("cb_desde").value;
+var hasta=document.getElementById("cb_hasta").value || desde;
 var ing=document.getElementById("cb_ingreso").value.trim();
 var sal=document.getElementById("cb_salida").value.trim();
-if(!bl || !dia || !ing || !sal){ msgEl.className="msg err"; msgEl.textContent="Bloque, d\u00eda, ingreso y salida son obligatorios."; return; }
+if(!bl || !desde || !ing || !sal){ msgEl.className="msg err"; msgEl.textContent="Bloque, Desde, ingreso y salida base son obligatorios."; return; }
+if(hasta<desde){ var _t=desde; desde=hasta; hasta=_t; }
+var excs=[]; var bad=false;
+[].slice.call(document.querySelectorAll("#cb_excs .cbexc-row")).forEach(function(row){
+var dv=row.querySelector(".cbx-dia").value.trim();
+var iv=row.querySelector(".cbx-ing").value.trim();
+var sv=row.querySelector(".cbx-sal").value.trim();
+if(!dv && !iv && !sv) return;
+if(!dv || !iv || !sv){ bad=true; return; }
+excs.push({dia:dv, ingreso:iv, salida:sv});
+});
+if(bad){ msgEl.className="msg err"; msgEl.textContent="Completa d\u00eda, ingreso y salida en cada excepci\u00f3n (o el\u00edminala)."; return; }
 var btn=this; btn.disabled=true; btn.textContent="Guardando...";
-fetch(API_BASE + "/api/bloques/crear", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({bloque:bl, dia:dia, ingreso:ing, salida:sal}) })
-.then(function(r){ return r.json(); })
-.then(function(d){
+var posts=[{bloque:bl, tipo:"rango", desde:desde, hasta:hasta, ingreso:ing, salida:sal}];
+excs.forEach(function(e){ posts.push({bloque:bl, tipo:"dia", dia:e.dia, ingreso:e.ingreso, salida:e.salida}); });
+runSeq(posts, function(p){
+return fetch(API_BASE + "/api/bloques/crear", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(p) }).then(function(r){ return r.json(); });
+}, function(rs){
 btn.disabled=false; btn.textContent="Guardar";
-if(d && d.ok){ msgEl.className="msg ok"; msgEl.textContent="L\u00ednea a\u00f1adida al bloque."; setTimeout(function(){ cbModal.classList.remove("open"); loadBloques(); }, 1200); }
-else { msgEl.className="msg err"; msgEl.textContent=(d && d.error) || "Error al guardar."; }
-})
-.catch(function(){ btn.disabled=false; btn.textContent="Guardar"; msgEl.className="msg err"; msgEl.textContent="Error de conexi\u00f3n."; });
+var ok=rs.filter(function(x){ return x && x.ok; }).length;
+if(ok){ msgEl.className="msg ok"; msgEl.textContent="Bloque guardado ("+ok+" l\u00ednea"+(ok!==1?"s":"")+")."; setTimeout(function(){ cbModal.classList.remove("open"); loadBloques(); }, 1200); }
+else { msgEl.className="msg err"; msgEl.textContent=(rs[0] && rs[0].error) || "Error al guardar."; }
+});
 });
 
 /* ---- Buscador desplegable reutilizable ---- */
@@ -835,10 +873,11 @@ if(btnAsignarSel) btnAsignarSel.addEventListener("click", function(){
 var marcados=[].slice.call(document.querySelectorAll("#bloquesBody .bchk:checked")).map(function(c){ return gruposBloque[c.getAttribute("data-b")]; }).filter(Boolean);
 if(!marcados.length) return;
 var res=document.getElementById("aselResumen");
-var lineas=[]; marcados.forEach(function(g){ g.lineas.forEach(function(l){ lineas.push('<div class="bp-row">&#8226; Bloque '+esc(g.bloque)+' &middot; '+esc(l.dia||"-")+' &middot; '+esc(l.ingreso||"")+(l.salida?(" - "+esc(l.salida)):"")+'</div>'); }); });
-res.innerHTML='<div class="bp-t">Se asignar&aacute;n '+lineas.length+' turno(s):</div>'+lineas.join("");
-document.getElementById("asel_desde").value="";
-document.getElementById("asel_hasta").value="";
+var lineas=[]; marcados.forEach(function(g){
+var rango = g.desde ? ("del "+fmtFecha(g.desde)+(g.hasta&&g.hasta!==g.desde?(" al "+fmtFecha(g.hasta)):"")) : "sin fechas";
+lineas.push('<div class="bp-row">&#8226; Bloque '+esc(g.bloque)+' &middot; '+esc(rango)+' &middot; base '+esc(g.ingBase||"")+(g.salBase?(" - "+esc(g.salBase)):"")+(g.excs.length?(" &middot; "+g.excs.length+" excep."):"")+'</div>');
+});
+res.innerHTML='<div class="bp-t">Se asignar&aacute;n estos bloques:</div>'+lineas.join("");
 document.getElementById("asel_socorrista").value="";
 document.getElementById("asel_instalacion").value="";
 var mm=document.getElementById("aselMsg"); mm.className="msg"; mm.textContent="";
@@ -847,34 +886,38 @@ aselModal.classList.add("open");
 document.getElementById("aselCancelBtn").addEventListener("click", function(){ aselModal.classList.remove("open"); });
 document.getElementById("aselSaveBtn").addEventListener("click", function(){
 var msgEl=document.getElementById("aselMsg");
-var desde=document.getElementById("asel_desde").value;
-var hasta=document.getElementById("asel_hasta").value || desde;
 var soc=document.getElementById("asel_socorrista").value.trim();
 var ins=document.getElementById("asel_instalacion").value.trim();
-if(!soc || !ins || !desde){ msgEl.className="msg err"; msgEl.textContent="Elige socorrista, instalación y la fecha (Desde)."; return; }
-if(hasta<desde){ var _t=desde; desde=hasta; hasta=_t; }
+if(!soc || !ins){ msgEl.className="msg err"; msgEl.textContent="Elige socorrista e instalación."; return; }
 var marcados=[].slice.call(document.querySelectorAll("#bloquesBody .bchk:checked")).map(function(c){ return gruposBloque[c.getAttribute("data-b")]; }).filter(Boolean);
 if(!marcados.length){ msgEl.className="msg err"; msgEl.textContent="No hay bloques seleccionados."; return; }
 var btn=this; btn.disabled=true; btn.textContent="Asignando...";
-// Construir mapa dia-de-semana -> lineas del bloque
-var porDia={}; marcados.forEach(function(g){ g.lineas.forEach(function(l){ var idx=diaIndex(l.dia); if(idx<0) return; (porDia[idx]=porDia[idx]||[]).push({dia:l.dia, ing:l.ingreso||"", sal:l.salida||""}); }); });
-if(!Object.keys(porDia).length){ btn.disabled=false; btn.textContent="Asignar"; msgEl.className="msg err"; msgEl.textContent="El bloque no tiene días válidos (Lunes..Domingo)."; return; }
-var tareas=[];
-var d=new Date(desde+"T00:00:00"); var fin=new Date(hasta+"T00:00:00"); var guard=0;
+var tareas=[]; var minD=null, maxD=null;
+marcados.forEach(function(g){
+if(!g.desde || !g.ingBase) return;
+var overr={}; g.excs.forEach(function(e){ var ix=diaIndex(e.dia); if(ix>=0) overr[ix]={ing:e.ing, sal:e.sal}; });
+var d=new Date(g.desde+"T00:00:00"); var fin=new Date((g.hasta||g.desde)+"T00:00:00"); var guard=0;
 while(d<=fin && guard<400){
 var idx=(d.getDay()+6)%7;
-var ls=porDia[idx];
-if(ls){ var y=d.getFullYear(), m=("0"+(d.getMonth()+1)).slice(-2), dd=("0"+d.getDate()).slice(-2); var fdmy=dd+"/"+m+"/"+y;
-ls.forEach(function(t){ tareas.push({fecha:fdmy, dia:t.dia, ing:t.ing, sal:t.sal}); }); }
+var y=d.getFullYear(), m=("0"+(d.getMonth()+1)).slice(-2), dd=("0"+d.getDate()).slice(-2);
+var fdmy=dd+"/"+m+"/"+y; var iso=y+"-"+m+"-"+dd;
+var ov=overr[idx];
+tareas.push({fecha:fdmy, dia:diaSemana(iso), ing:(ov?ov.ing:g.ingBase), sal:(ov?ov.sal:g.salBase)});
+if(minD===null||iso<minD)minD=iso; if(maxD===null||iso>maxD)maxD=iso;
 d.setDate(d.getDate()+1); guard++;
 }
-if(!tareas.length){ btn.disabled=false; btn.textContent="Asignar"; msgEl.className="msg err"; msgEl.textContent="Ningún día del bloque cae en ese rango de fechas."; return; }
+});
+if(!tareas.length){ btn.disabled=false; btn.textContent="Asignar"; msgEl.className="msg err"; msgEl.textContent="Los bloques no tienen rango de fechas válido."; return; }
 runSeq(tareas, function(t){
 return fetch(API_BASE + "/api/horarios/asignar", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({fecha:t.fecha, dia:t.dia, socorrista:soc, instalacion:ins, ingreso:t.ing, salida:t.sal}) }).then(function(r){ return r.json(); });
 }, function(rs){
 btn.disabled=false; btn.textContent="Asignar";
 var ok=rs.filter(function(x){ return x && x.ok; }).length;
-if(ok){ msgEl.className="msg ok"; msgEl.textContent="Se asignaron "+ok+" turno(s)."; setTimeout(function(){ aselModal.classList.remove("open"); loadMallas(); }, 1200); }
+if(ok){
+var rango = (minD===maxD)? ("el "+fmtFecha(minD)) : ("del "+fmtFecha(minD)+" al "+fmtFecha(maxD));
+enviarAvisoChat(soc, "Has sido asignado a la instalación "+ins+" "+rango+". Revisa tu calendario en la app. Contamos contigo, no olvides estar a tiempo.");
+msgEl.className="msg ok"; msgEl.textContent="Se asignaron "+ok+" turno(s). Aviso enviado al chat."; setTimeout(function(){ aselModal.classList.remove("open"); loadMallas(); }, 1300);
+}
 else { msgEl.className="msg err"; msgEl.textContent="No se pudo asignar."; }
 });
 });
