@@ -280,7 +280,8 @@ var NAV_ITEMS = [
 {sep:true},
 {label:"Registro", icon:"&#128100;+", go:"/altas_registro", badge:"Solo admin"},
 {label:"Gesti&oacute;n de Horarios", icon:"&#9881;", go:"/editar_horarios", badge:"Solo admin"},
-{label:"Perfiles", icon:"&#11088;", go:"/perfiles", active:true, badge:"Solo admin"}
+{label:"Perfiles", icon:"&#11088;", go:"/perfiles", active:true, badge:"Solo admin"},
+{label:"Panel Directivo", icon:"&#128202;", go:"/directivo", badge:"Solo director"}
 ];
 function renderNav(containerId){
 var el = document.getElementById(containerId);
