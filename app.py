@@ -488,6 +488,7 @@ var NAV_ITEMS = [
 {label:"Registro", icon:"&#128100;+", go:"/altas_registro", adminOnly:true, badge:"Solo admin"},
 {label:"Gesti&oacute;n de Horarios", icon:"&#9881;", go:"/editar_horarios", adminOnly:true, badge:"Solo admin"},
 {label:"Perfiles", icon:"&#11088;", go:"/perfiles", adminOnly:true, badge:"Solo admin"},
+{label:"Panel Directivo", icon:"&#128202;", go:"/directivo", directorOnly:true, badge:"Solo director"},
 ];
 
 function renderNav(containerId){
@@ -495,7 +496,8 @@ var el = document.getElementById(containerId);
 var htmlParts = [];
 NAV_ITEMS.forEach(function(item){
 if (item.sep){ htmlParts.push('<div class="nav-sep"></div>'); return; }
-var locked = item.adminOnly && !CAN_MANAGE_SCHEDULES && !(item.label === "Registro" && CAN_REGISTER_USERS);
+var canDir = (function(){ var r=(USER_ROLE||"").trim().toLowerCase(); return r==="directivo"||r==="administrador"; })();
+var locked = (item.adminOnly && !CAN_MANAGE_SCHEDULES && !(item.label === "Registro" && CAN_REGISTER_USERS)) || (item.directorOnly && !canDir);
 var cls = "nav-item" + (item.active ? " active" : "") + (locked ? " disabled" : "");
 var badge = item.badge ? '<span class="nav-badge">' + item.badge + '</span>' : "";
 htmlParts.push(
