@@ -82,19 +82,18 @@ html,body{margin:0;padding:0;height:100%;width:100%;font-family:"Inter","Segoe U
 
 #pagewrap{display:flex;flex-direction:column;height:100vh;padding:16px;gap:16px;overflow:hidden;}
 
+/* ===== TOP WRAP: sidebar de altura completa + columna derecha ===== */
+#topwrap{flex:93 1 0;min-height:0;display:flex;flex-direction:row;gap:16px;}
+#rightcol{flex:1 1 0;min-width:0;min-height:0;display:flex;flex-direction:column;gap:16px;}
 /* ===== FRANJA A ===== */
 #franjaA{
-flex:55 1 0;min-height:0;
-display:grid;grid-template-columns:230px 1fr;gap:16px;
+flex:55 1 0;min-height:0;min-width:0;display:flex;
 }
-/* Contenedor 2 = sidebar (fondo navy con borde externo) */
+/* Contenedor 2 = sidebar (fondo navy con borde externo) — altura completa */
 #sidebar{
-min-height:0;display:flex;flex-direction:column;color:#eaf2ff;padding:18px 14px;
-border:1px solid rgba(255,255,255,.16);border-radius:12px;
-overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.22) transparent;
+flex:0 0 230px;min-height:0;display:flex;flex-direction:column;color:#eaf2ff;padding:18px 14px;
+border:1px solid rgba(255,255,255,.16);border-radius:12px;overflow:hidden;
 }
-#sidebar::-webkit-scrollbar{width:6px;}
-#sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:999px;}
 .logo-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:0 4px;flex:0 0 auto;}
 .logo-row img{width:32px;height:32px;object-fit:contain;border-radius:6px;}
 .logo-row span{font-weight:800;letter-spacing:2px;font-size:18px;color:#fff;}
@@ -116,7 +115,7 @@ padding:2px 8px;border-radius:999px;white-space:nowrap;
 
 /* Contenedor 1 = panel principal (una sola caja blanca) */
 #mainpanel{
-min-width:0;min-height:0;background:linear-gradient(180deg,#ffffff 0%,#f7f9ff 100%);border-radius:14px;
+flex:1 1 0;min-width:0;min-height:0;background:linear-gradient(180deg,#ffffff 0%,#f7f9ff 100%);border-radius:14px;
 box-shadow:0 14px 34px rgba(3,10,28,.30), 0 1px 0 rgba(255,255,255,.8) inset;
 display:flex;flex-direction:column;padding:16px 20px;gap:12px;
 box-shadow:0 4px 12px rgba(27,42,74,.08);overflow:hidden;
@@ -320,7 +319,9 @@ overflow:hidden;
 /* ===== MOBILE ===== */
 @media (max-width: 768px){
 #pagewrap{height:auto;min-height:100vh;overflow-x:hidden;padding:12px 6px 84px 6px;gap:12px;}
-#franjaA{flex:none;grid-template-columns:1fr;padding:6px;}
+#topwrap{flex:none;flex-direction:column;gap:12px;}
+#rightcol{flex:none;gap:12px;}
+#franjaA{flex:none;padding:6px;}
 #sidebar{display:none;}
 #mainpanel{padding:14px 14px;}
 .hamburger{display:block;}
@@ -362,11 +363,13 @@ gap:3px;font-size:10.5px;color:rgba(234,242,255,.70);cursor:pointer;font-weight:
 
 <div id="pagewrap">
 
-<div id="franjaA">
+<div id="topwrap">
 <div id="sidebar">
 <div class="logo-row"><img class="brand-mark" src="__LOGO_URL__" alt="SYNTRA" style="height:46px;width:auto;flex:0 0 auto;display:block;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(120,170,255,.35));"/></div>
 <div id="navList"></div>
 </div>
+<div id="rightcol">
+<div id="franjaA">
 <div id="mainpanel">
 <div class="mp-header">
 <div class="greet">
@@ -444,6 +447,8 @@ gap:3px;font-size:10.5px;color:rgba(234,242,255,.70);cursor:pointer;font-weight:
 </div>
 <div class="preview-body" id="previewRegistro">
 <div class="empty-note">Cargando...</div>
+</div>
+</div>
 </div>
 </div>
 </div>
