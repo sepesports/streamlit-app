@@ -504,8 +504,8 @@ var el = document.getElementById(containerId);
 var htmlParts = [];
 NAV_ITEMS.forEach(function(item){
 if (item.sep){ htmlParts.push('<div class="nav-sep"></div>'); return; }
-var canDir = (function(){ var r=(USER_ROLE||"").trim().toLowerCase(); return r==="directivo"||r==="administrador"; })();
-var locked = (item.adminOnly && !CAN_MANAGE_SCHEDULES && !(item.label === "Registro" && CAN_REGISTER_USERS)) || (item.directorOnly && !canDir);
+var canDir = (function(){ var r=(USER_ROLE||"").trim().toLowerCase(); return r==="directivo"; })();
+var locked = (item.adminOnly && !CAN_MANAGE_SCHEDULES && !(item.label === "Registro" && CAN_REGISTER_USERS) && !(item.label === "Perfiles" && canDir)) || (item.directorOnly && !canDir);
 var cls = "nav-item" + (item.active ? " active" : "") + (locked ? " disabled" : "");
 var badge = item.badge ? '<span class="nav-badge">' + item.badge + '</span>' : "";
 htmlParts.push(
