@@ -174,11 +174,7 @@ html,body{background:#1B2A4A !important;}
 <div class="field-grid">
 <div class="field"><label>Instalaci&oacute;n</label>
 <select id="f_instalacion">
-<option value="">Selecciona...</option>
-<option>Playa Norte</option>
-<option>Playa Sur</option>
-<option>Piscina Municipal</option>
-<option>Centro Deportivo</option>
+<option value="">Cargando instalaciones...</option>
 </select>
 </div>
 <div class="field"><label>Tipo de contrato</label>
@@ -261,6 +257,20 @@ if (lo) lo.addEventListener("click", function(){ syntraTopNav("/admin"); });
 }
 renderNav("navList");
 renderNav("navListMobile");
+
+// Cargar el listado real de instalaciones (mismo origen que el Panel Directivo)
+function escOpt(t){ return String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function cargarInstalaciones(){
+var sel=document.getElementById("f_instalacion");
+fetch(API_BASE+"/api/tarifas").then(function(r){return r.json();}).then(function(d){
+var items=(d&&d.items)||[];
+var names=items.map(function(i){return (i.instalacion||"").trim();}).filter(Boolean);
+names.sort(function(a,b){return a.localeCompare(b);});
+if(!names.length){ sel.innerHTML='<option value="">Sin instalaciones registradas</option>'; return; }
+sel.innerHTML='<option value="">Selecciona...</option>'+names.map(function(n){return '<option value="'+escOpt(n)+'">'+escOpt(n)+'</option>';}).join("");
+}).catch(function(){ sel.innerHTML='<option value="">Error al cargar instalaciones</option>'; });
+}
+cargarInstalaciones();
 
 var drawer = document.getElementById("drawer");
 document.getElementById("hamburgerBtn").addEventListener("click", function(){ drawer.classList.add("open"); });
