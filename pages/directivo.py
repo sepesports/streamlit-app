@@ -19,8 +19,8 @@ NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
 if not AUTH_USER or not AUTH_ROLE:
     go("pages/admin.py")
 
-# El panel del Directivo tambien es visible para el Administrador (rol superior)
-if NORMALIZED_ROLE not in ("directivo", "administrador"):
+# El panel del Directivo es exclusivo del rol Directivo
+if NORMALIZED_ROLE != "directivo":
     go("app.py")
 
 API_BASE = "https://camilo27.pythonanywhere.com"
@@ -89,7 +89,15 @@ th,td{text-align:left;padding:8px 8px;border-bottom:1px solid #eef1f7;}
 th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
 .tar-input{width:110px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-size:13px;text-align:right;}
+.tar-input:disabled{background:#f3f5fa;color:#9aa4b6;}
+.tar-editor{display:flex;flex-wrap:wrap;align-items:center;gap:10px;}
+.tar-editor select{flex:1;min-width:160px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;font-size:13px;background:#fff;}
+.tar-editor .mini:disabled{background:#c7cbd6;cursor:not-allowed;}
+.tar-hint{font-size:12px;color:var(--muted);margin-top:10px;}
+.tar-hint.warn{color:#a3690a;}
+.tar-hint.ok{color:#1a7f4f;}
 .mini{border:none;cursor:pointer;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:8px;background:var(--blue);color:#fff;}
+.mini:disabled{cursor:not-allowed;}
 .pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:700;}
 .pill.warn{background:#fff4e0;color:#a3690a;}
 .pill.ok{background:#e6f7ee;color:#1a7f4f;}
@@ -121,7 +129,8 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
  .mobile-logo{display:flex;align-items:center;}
  .kpis{grid-template-columns:1fr 1fr;gap:10px;}
  .grid2{grid-template-columns:1fr;gap:12px;}
- #content{margin:0 8px 16px;padding:12px;}
+ #content{margin:0 0 16px;padding:12px 10px;border-radius:0;}
+ #topbar{padding:10px 10px;}
  .card{padding:14px;}
  .mobile-drawer{display:block;}
  .mobile-drawer .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:.2s;z-index:80;}
@@ -187,10 +196,12 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
 <div class="grid2">
 <div class="card">
 <h3>Tarifas por instalaci&oacute;n <button class="mini" id="addInstBtn">+ Instalaci&oacute;n</button></h3>
-<div class="tscroll"><table>
-<thead><tr><th>Instalaci&oacute;n</th><th class="num">Valor/hora</th><th></th></tr></thead>
-<tbody id="tarBody"><tr><td colspan="3" class="empty">Cargando...</td></tr></tbody>
-</table></div>
+<div class="tar-editor">
+<select id="tarSelect"><option value="">Cargando...</option></select>
+<input id="tarValor" class="tar-input" type="number" step="0.01" min="0" placeholder="Valor/hora" disabled/>
+<button class="mini" id="tarGuardar" disabled>Guardar</button>
+</div>
+<div id="tarHint" class="tar-hint">Elige una instalaci&oacute;n para ver o fijar su valor por hora.</div>
 </div>
 <div class="card">
 <h3>Importe por instalaci&oacute;n (confirmado)</h3>
@@ -301,34 +312,55 @@ us.map(function(u){return (u.nombre||u.alias||"").trim();}).filter(Boolean).sort
 function cargarTarifas(){
 fetch(API_BASE+"/api/tarifas").then(function(r){return r.json();}).then(function(d){
 var items=(d&&d.items)||[];
-// llenar filtro de instalaciones
-var sel=document.getElementById("f_inst"); var prev=sel.value;
-sel.innerHTML='<option value="">Todas</option>'+items.map(function(i){return '<option value="'+esc(i.instalacion)+'">'+esc(i.instalacion)+'</option>';}).join("");
-sel.value=prev;
-var tb=document.getElementById("tarBody");
-if(!items.length){ tb.innerHTML='<tr><td colspan="3" class="empty">Sin instalaciones.</td></tr>'; return; }
-tb.innerHTML=items.map(function(i){
-var badge=i.definida?'':' <span class="pill warn">sin tarifa</span>';
-return '<tr><td>'+esc(i.instalacion)+badge+'</td>'+
-'<td class="num"><input class="tar-input" type="number" step="0.01" min="0" value="'+(i.definida?i.valor_hora:"")+'" data-inst="'+esc(i.instalacion)+'" placeholder="0"/></td>'+
-'<td class="num"><button class="mini" data-save="'+esc(i.instalacion)+'">Guardar</button></td></tr>';
-}).join("");
-tb.querySelectorAll("button[data-save]").forEach(function(b){
-b.addEventListener("click", function(){
-var inst=b.getAttribute("data-save");
-var inp=tb.querySelector('input[data-inst="'+inst.replace(/"/g,'\\"')+'"]');
-var val=(inp&&inp.value||"").trim();
+var map={}; items.forEach(function(i){ map[i.instalacion]={valor:i.valor_hora, definida:!!i.definida}; });
+window.__tarMap=map;
+// llenar filtro de instalaciones (arriba)
+var f=document.getElementById("f_inst"); var prevF=f.value;
+f.innerHTML='<option value="">Todas</option>'+items.map(function(i){return '<option value="'+esc(i.instalacion)+'">'+esc(i.instalacion)+'</option>';}).join("");
+f.value=prevF;
+// selector de tarifas (editar una a la vez)
+var sel=document.getElementById("tarSelect"); var prev=sel.value;
+if(!items.length){
+  sel.innerHTML='<option value="">Sin instalaciones</option>';
+  var h=document.getElementById("tarHint"); h.className="tar-hint warn"; h.textContent="No hay instalaciones registradas. Usa “+ Instalación” para crear una.";
+  return;
+}
+sel.innerHTML='<option value="">Selecciona instalación...</option>'+items.map(function(i){var s=i.definida?'':' (sin tarifa)'; return '<option value="'+esc(i.instalacion)+'">'+esc(i.instalacion)+s+'</option>';}).join("");
+sel.value=(prev&&map[prev])?prev:"";
+aplicarSeleccionTarifa();
+if(!window.__tarWired){
+  window.__tarWired=true;
+  document.getElementById("tarSelect").addEventListener("change", aplicarSeleccionTarifa);
+  document.getElementById("tarGuardar").addEventListener("click", guardarTarifa);
+}
+}).catch(function(){ var h=document.getElementById("tarHint"); h.className="tar-hint warn"; h.textContent="Error al cargar tarifas."; });
+}
+function aplicarSeleccionTarifa(){
+var inst=document.getElementById("tarSelect").value;
+var val=document.getElementById("tarValor");
+var btn=document.getElementById("tarGuardar");
+var hint=document.getElementById("tarHint");
+var map=window.__tarMap||{};
+if(!inst){ val.value=""; val.disabled=true; btn.disabled=true; hint.className="tar-hint"; hint.textContent="Elige una instalación para ver o fijar su valor por hora."; return; }
+var info=map[inst]||{};
+val.disabled=false; btn.disabled=false;
+val.value=info.definida?info.valor:"";
+if(info.definida){ hint.className="tar-hint ok"; hint.textContent="Valor actual: "+info.valor+" por hora. Edita y guarda para actualizar."; }
+else { hint.className="tar-hint warn"; hint.textContent="Esta instalación aún no tiene tarifa. Fija su valor/hora y guarda."; }
+}
+function guardarTarifa(){
+var inst=document.getElementById("tarSelect").value;
+var val=(document.getElementById("tarValor").value||"").trim();
+var btn=document.getElementById("tarGuardar");
+if(!inst) return;
 if(val===""){ alert("Indica un valor por hora."); return; }
-b.textContent="..."; b.disabled=true;
+btn.textContent="..."; btn.disabled=true;
 fetch(API_BASE+"/api/tarifas",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({instalacion:inst, valor:val})})
 .then(function(r){return r.json();}).then(function(d){
-b.disabled=false; b.textContent="Guardar";
-if(d&&d.ok){ b.textContent="✓"; setTimeout(function(){b.textContent="Guardar";},900); cargarTarifas(); cargarNomina(); }
+btn.disabled=false; btn.textContent="Guardar";
+if(d&&d.ok){ btn.textContent="✓"; setTimeout(function(){btn.textContent="Guardar";},900); cargarTarifas(); cargarNomina(); }
 else alert((d&&d.error)||"Error al guardar.");
-}).catch(function(){ b.disabled=false; b.textContent="Guardar"; alert("Error de conexión."); });
-});
-});
-}).catch(function(){ document.getElementById("tarBody").innerHTML='<tr><td colspan="3" class="empty">Error al cargar tarifas.</td></tr>'; });
+}).catch(function(){ btn.disabled=false; btn.textContent="Guardar"; alert("Error de conexión."); });
 }
 
 // ---- Nomina ----
