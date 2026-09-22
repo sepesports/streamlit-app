@@ -24,7 +24,7 @@ NORMALIZED_ROLE = AUTH_ROLE.strip().lower()
 if not AUTH_USER or not AUTH_ROLE:
           go("pages/admin.py")
 
-if NORMALIZED_ROLE != "administrador":
+if NORMALIZED_ROLE not in ("administrador", "directivo"):
           go("app.py")
 
 API_BASE = "https://camilo27.pythonanywhere.com"
