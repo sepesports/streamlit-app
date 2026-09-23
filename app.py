@@ -375,7 +375,7 @@ gap:3px;font-size:10.5px;color:rgba(234,242,255,.70);cursor:pointer;font-weight:
 <div id="mainpanel">
 <div class="mp-header">
 <div class="greet">
-<h1>&iexcl;Bienvenido, __USER_NAME__!</h1>
+<h1>&iexcl;Bienvenido, <span id="welcomeName">__USER_NAME__</span>!</h1>
 <p>Rol: __ROLE_DISPLAY__ &bull; DNI: __USER_DNI__</p>
 </div>
 <div class="mp-right">
@@ -541,6 +541,16 @@ if (lo) lo.addEventListener("click", function(){ syntraTopNav("/admin"); });
 
 renderNav("navList");
 renderNav("navListMobile");
+/* Saludo con el NOMBRE real (hoja Altas) en lugar del correo/usuario */
+fetch(API_BASE + "/api/chat/users")
+.then(function(r){ return r.json(); })
+.then(function(d){
+var us = Array.isArray(d) ? d : ((d && d.users) || []);
+var yo = us.filter(function(u){ return String(u.dni) === String(USER_DNI); })[0];
+var el = document.getElementById("welcomeName");
+if (yo && el && (yo.nombre || yo.alias)) el.textContent = yo.nombre || yo.alias;
+})
+.catch(function(){});
 
 var CARDS = [
 {
