@@ -188,6 +188,37 @@ html,body{background:#1B2A4A !important;}
 #content{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;padding-bottom:22px !important;}
 #chatBody{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;overflow:hidden !important;}
 @media (max-width:900px){#app{padding:10px !important;gap:10px !important;}}
+/* ===== Calendario mensual (movil) ===== */
+@media (max-width:900px){
+.day-tabs .mhead{font-size:10.5px;font-weight:700;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.3px;padding:2px 0;}
+.day-tabs .day-tab{padding:6px 0 5px 0;border-radius:10px;}
+.day-tabs .day-tab .dn{font-size:15px;margin-top:0;}
+.day-tabs .day-tab.out{opacity:.35;}
+}
+/* ===== Aceptar / rechazar turno (socorrista) ===== */
+.st{display:inline-block;font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:99px;margin-top:6px;}
+.st.acep{background:#e3f7f2;color:#0c7a69;}
+.st.rech{background:#ffeceb;color:#d33;}
+.st.pend{background:#fff4d6;color:#9a6b00;}
+.st.cerr{background:#eef0f4;color:#6b7688;}
+.acc{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.acc button{border:0;border-radius:9px;padding:7px 12px;font-size:12.5px;font-weight:700;cursor:pointer;}
+.acc .ok{background:#12B39A;color:#fff;}
+.acc .no{background:#ffeceb;color:#d33;}
+.turno-chip.clic{cursor:pointer;}
+#respBack{display:none;position:fixed;inset:0;background:rgba(10,20,50,.45);z-index:200;align-items:center;justify-content:center;padding:16px;}
+#respBack.open{display:flex;}
+#respCard{background:#fff;border-radius:16px;max-width:420px;width:100%;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);}
+#respCard h3{margin:0 0 8px 0;font-size:16px;}
+#respInfo{font-size:13.5px;color:var(--ink);margin-bottom:10px;line-height:1.45;}
+#respMotivo{width:100%;min-height:70px;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:13.5px;font-family:inherit;box-sizing:border-box;}
+#respMsg{font-size:12.5px;margin-top:8px;min-height:16px;}
+#respMsg.err{color:#d33;} #respMsg.ok{color:#0c7a69;}
+.resp-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap;}
+.resp-foot button{border:0;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;}
+.resp-foot .ghost{background:#eef0f4;color:var(--ink);}
+.resp-foot .ok{background:#12B39A;color:#fff;}
+.resp-foot .no{background:#d33;color:#fff;}
 </style>
 </head>
 <body>
@@ -227,6 +258,18 @@ html,body{background:#1B2A4A !important;}
 </div>
 </div>
 </div>
+
+<div id="respBack"><div id="respCard">
+<h3>Responder turno</h3>
+<div id="respInfo"></div>
+<textarea id="respMotivo" placeholder="Si rechazas, indica el motivo (se enviar&aacute; a tu administrador)"></textarea>
+<div id="respMsg"></div>
+<div class="resp-foot">
+<button class="ghost" id="respCerrar">Cerrar</button>
+<button class="no" id="respRechazar">Rechazar</button>
+<button class="ok" id="respAceptar">Aceptar</button>
+</div>
+</div></div>
 
 <script>
 __SYNTRA_NAV__
@@ -321,6 +364,11 @@ return res;
 var mallasCache = [];
 var weekStart = startOfWeek(new Date());
 var activeDayIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+/* Movil: calendario mensual (5-6 semanas, Lun a Dom) */
+var selDate = new Date(); selDate.setHours(0,0,0,0);
+var monthRef = new Date(selDate.getFullYear(), selDate.getMonth(), 1);
+function esMovil(){ try { return window.matchMedia("(max-width:900px)").matches; } catch(e){ return false; } }
+var MESES_L = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 
 function turnoClass(ingreso){
 var h = parseInt((ingreso || "0").split(":")[0], 10);
@@ -344,6 +392,7 @@ var days = getWeekDays();
 var first = days[0], last = days[6];
 var monthsEs = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
 var label = "&#128197; " + first.getDate() + " - " + last.getDate() + " " + monthsEs[last.getMonth()] + " " + last.getFullYear();
+if (esMovil()) label = "&#128197; " + MESES_L[monthRef.getMonth()].charAt(0).toUpperCase() + MESES_L[monthRef.getMonth()].slice(1) + " " + monthRef.getFullYear();
 document.getElementById("weekLabel").innerHTML = label;
 }
 
@@ -407,17 +456,21 @@ return r["Instalacion"] === inst && rd && ymd(rd) === key;
 if (!matches.length) return "<td></td>";
 var chips = matches.map(function(r){
 var cls = turnoClass(r["Ingreso"]);
+if (IS_SOCORRISTA){
+var est = estadoResp(r);
+return "<div class='turno-chip clic " + cls + "' data-chip='" + escR(r["llave"]||"") + "'><div class='t'>" + (r["Ingreso"]||"") + " - " + (r["Salida"]||"") + "</div><div>" + (r["Socorrista"]||"") + "</div><span class='st " + est.k + "'>" + est.t + "</span></div>";
+}
 return "<div class='turno-chip " + cls + "'><div class='t'>" + (r["Ingreso"]||"") + " - " + (r["Salida"]||"") + "</div><div>" + (r["Socorrista"]||"") + "</div></div>";
 }).join("");
 return "<td>" + chips + "</td>";
 }).join("");
 return "<tr><td class='inst-cell'>" + inst + "</td>" + cells + "</tr>";
 }).join("");
+if (IS_SOCORRISTA) body.querySelectorAll("[data-chip]").forEach(function(c){ c.addEventListener("click", function(){ abrirResp(c.getAttribute("data-chip")); }); });
 }
 
 function renderMobileList(){
-var days = getWeekDays();
-var activeDay = days[activeDayIndex];
+var activeDay = selDate;
 var key = ymd(activeDay);
 var rows = filteredRows().filter(function(r){
 var rd = parseFecha(r["Fecha"]);
@@ -439,7 +492,7 @@ var cab = "<div class='day-heading'>" + DIAS_ES[activeDay.getDay()] + " " + acti
 "<div class='day-sub'>" + (esHoy ? "Hoy &middot; " : "") + rows.length + (rows.length === 1 ? " turno programado" : " turnos programados") + "</div>";
 
 if (!rows.length){
-wrap.innerHTML = cab + "<div class='empty-day'><span class='big'>&#127958;</span>Sin turnos para este d&iacute;a.<br/>Toca otro d&iacute;a de la semana para ver sus turnos.</div>";
+wrap.innerHTML = cab + "<div class='empty-day'><span class='big'>&#127958;</span>Sin turnos para este d&iacute;a.<br/>Toca otro d&iacute;a del mes para ver sus turnos.</div>";
 return;
 }
 
@@ -464,32 +517,45 @@ return "<div class='shift'>" +
 "<div class='hours'>" + (r["Ingreso"]||"--:--") + " &ndash; " + (r["Salida"]||"--:--") + "</div>" +
 "<div class='who'>" + (r["Socorrista"]||"Sin asignar") + "</div>" +
 "<div class='place'>&#127958; " + (r["Instalacion"]||"") + "</div>" +
+(IS_SOCORRISTA ? respHtml(r) : "") +
 "</div>" +
 "<span class='tag " + cls + "'>" + NOMBRE_TURNO[cls] + "</span>" +
 "</div>";
 }).join("");
+wireResp(wrap);
 }
 
 function renderDayTabs(){
-var days = getWeekDays();
 var tabsEl = document.getElementById("dayTabs");
-var rowsWeek = filteredRows();
+var rowsAll = filteredRows();
+var conTurno = {};
+rowsAll.forEach(function(r){ var rd = parseFecha(r["Fecha"]); if (rd) conTurno[ymd(rd)] = true; });
 var hoy = ymd(new Date());
-tabsEl.innerHTML = days.map(function(d, i){
+var sel = ymd(selDate);
+var ini = startOfWeek(monthRef);
+var finMes = new Date(monthRef.getFullYear(), monthRef.getMonth() + 1, 0);
+var cab = ["Lun","Mar","Mi\u00e9","Jue","Vie","S\u00e1b","Dom"].map(function(n){ return "<div class='mhead'>" + n + "</div>"; }).join("");
+var celdas = [];
+var d = new Date(ini);
+while (d <= finMes || celdas.length % 7 !== 0){
 var key = ymd(d);
-var tiene = rowsWeek.some(function(r){ var rd = parseFecha(r["Fecha"]); return rd && ymd(rd) === key; });
-var cls = "day-tab" + (i === activeDayIndex ? " active" : "") + (key === hoy ? " today" : "");
-return "<div class='" + cls + "' data-idx='" + i + "'>" +
-"<span class='dw'>" + DIAS_CORTO[d.getDay()] + "</span>" +
+var cls = "day-tab" + (key === sel ? " active" : "") + (key === hoy ? " today" : "") + (d.getMonth() !== monthRef.getMonth() ? " out" : "");
+celdas.push("<div class='" + cls + "' data-key='" + key + "'>" +
 "<span class='dn'>" + d.getDate() + "</span>" +
-"<span class='dd" + (tiene ? "" : " off") + "'></span>" +
-"</div>";
-}).join("");
+"<span class='dd" + (conTurno[key] ? "" : " off") + "'></span>" +
+"</div>");
+d.setDate(d.getDate() + 1);
+}
+tabsEl.innerHTML = cab + celdas.join("");
 tabsEl.querySelectorAll(".day-tab").forEach(function(node){
 node.addEventListener("click", function(){
-activeDayIndex = parseInt(node.getAttribute("data-idx"), 10);
-renderDayTabs();
-renderMobileList();
+var p = node.getAttribute("data-key").split("-");
+selDate = new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10));
+if (selDate.getMonth() !== monthRef.getMonth() || selDate.getFullYear() !== monthRef.getFullYear()){
+monthRef = new Date(selDate.getFullYear(), selDate.getMonth(), 1);
+}
+weekStart = startOfWeek(selDate);
+renderAll();
 });
 });
 }
@@ -501,14 +567,120 @@ renderDayTabs();
 renderMobileList();
 }
 
+function moverMes(delta){
+monthRef = new Date(monthRef.getFullYear(), monthRef.getMonth() + delta, 1);
+var hoyD = new Date(); hoyD.setHours(0,0,0,0);
+selDate = (hoyD.getMonth() === monthRef.getMonth() && hoyD.getFullYear() === monthRef.getFullYear()) ? hoyD : new Date(monthRef);
+weekStart = startOfWeek(selDate);
+renderAll();
+}
 document.getElementById("prevWeek").addEventListener("click", function(){
+if (esMovil()){ moverMes(-1); return; }
 weekStart.setDate(weekStart.getDate() - 7);
 renderAll();
 });
 document.getElementById("nextWeek").addEventListener("click", function(){
+if (esMovil()){ moverMes(1); return; }
 weekStart.setDate(weekStart.getDate() + 7);
 renderAll();
 });
+
+/* ===== Aceptar / rechazar turno (socorrista) ===== */
+function ahoraMadrid(){
+try { return new Date(new Date().toLocaleString("en-US", {timeZone:"Europe/Madrid"})); } catch(e){ return new Date(); }
+}
+function inicioTurno(r){
+var f = parseFecha(r["Fecha"]); if (!f) return null;
+var hm = String(r["Ingreso"]||"").trim().split(":");
+return new Date(f.getFullYear(), f.getMonth(), f.getDate(), parseInt(hm[0]||"0",10)||0, parseInt(hm[1]||"0",10)||0);
+}
+function escR(t){ return String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function estadoResp(r){
+if ((r["h_estado"]||"").trim().toUpperCase() === "ON") return {k:"cerr", t:"Horas aprobadas", puede:false};
+var a = (r["acept_estado"]||"").trim().toUpperCase();
+var ini = inicioTurno(r);
+var abierto = !ini || ahoraMadrid() < ini;
+if (a === "ACEPTADO") return {k:"acep", t:"Aceptado", puede:abierto};
+if (a === "RECHAZADO") return {k:"rech", t:"Rechazado", puede:abierto};
+return abierto ? {k:"pend", t:"Pendiente de aceptar", puede:true} : {k:"cerr", t:"Sin respuesta", puede:false};
+}
+function respHtml(r){
+var e = estadoResp(r);
+var llave = escR(r["llave"]||"");
+var h = "<span class='st " + e.k + "'>" + e.t + "</span>";
+if (e.puede && e.k === "pend"){
+h += "<div class='acc'><button class='ok' data-resp='ACEPTADO' data-llave='" + llave + "'>&#10004; Aceptar</button><button class='no' data-resp='RECHAZADO' data-llave='" + llave + "'>&#10006; Rechazar</button></div>";
+} else if (e.puede){
+h += "<div class='acc'><button class='no' data-resp='CAMBIAR' data-llave='" + llave + "' style='background:#eef0f4;color:#0f1b3d;'>Cambiar respuesta</button></div>";
+}
+return h;
+}
+function wireResp(cont){
+if (!IS_SOCORRISTA || !cont) return;
+cont.querySelectorAll("[data-resp]").forEach(function(b){
+b.addEventListener("click", function(ev){
+ev.stopPropagation();
+var llave = b.getAttribute("data-llave"), accion = b.getAttribute("data-resp");
+if (accion === "ACEPTADO") enviarRespuesta(llave, "ACEPTADO", "", null);
+else abrirResp(llave);
+});
+});
+}
+var respLlave = null;
+function abrirResp(llave){
+var r = mallasCache.filter(function(x){ return x["llave"] === llave; })[0]; if (!r) return;
+var e = estadoResp(r);
+respLlave = llave;
+document.getElementById("respInfo").innerHTML = "<b>" + escR(r["Fecha"]) + "</b> &middot; " + escR(r["Instalacion"]) + "<br/>" + escR(r["Ingreso"]) + " &ndash; " + escR(r["Salida"]) + "<br/><span class='st " + e.k + "'>" + e.t + "</span>";
+document.getElementById("respMotivo").value = "";
+var m = document.getElementById("respMsg"); m.className = ""; m.textContent = e.puede ? "" : "El plazo para responder termin\u00f3 (hora de ingreso).";
+document.getElementById("respAceptar").style.display = e.puede ? "" : "none";
+document.getElementById("respRechazar").style.display = e.puede ? "" : "none";
+document.getElementById("respBack").classList.add("open");
+}
+function cerrarResp(){ document.getElementById("respBack").classList.remove("open"); }
+document.getElementById("respCerrar").addEventListener("click", cerrarResp);
+document.getElementById("respBack").addEventListener("click", function(e){ if (e.target.id === "respBack") cerrarResp(); });
+document.getElementById("respAceptar").addEventListener("click", function(){ enviarRespuesta(respLlave, "ACEPTADO", "", document.getElementById("respMsg")); });
+document.getElementById("respRechazar").addEventListener("click", function(){
+var mot = document.getElementById("respMotivo").value.trim();
+var m = document.getElementById("respMsg");
+if (!mot){ m.className = "err"; m.textContent = "Indica el motivo del rechazo."; return; }
+enviarRespuesta(respLlave, "RECHAZADO", mot, m);
+});
+function enviarRespuesta(llave, resp, motivo, msgEl){
+if (msgEl){ msgEl.className = ""; msgEl.textContent = "Enviando..."; }
+fetch(API_BASE + "/api/horarios/responder", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({llave: llave, dni: AUTH_DNI, respuesta: resp, motivo: motivo}) })
+.then(function(r){ return r.json(); })
+.then(function(d){
+if (!(d && d.ok)){
+var err = (d && d.error) || "No se pudo guardar la respuesta.";
+if (msgEl){ msgEl.className = "err"; msgEl.textContent = err; } else { abrirResp(llave); var m2 = document.getElementById("respMsg"); m2.className = "err"; m2.textContent = err; }
+return;
+}
+var r = mallasCache.filter(function(x){ return x["llave"] === llave; })[0];
+if (r){ r["acept_estado"] = resp; r["acept_motivo"] = motivo; }
+if (resp === "RECHAZADO" && r) avisarRechazo(r, motivo);
+cerrarResp();
+renderAll();
+})
+.catch(function(){ if (msgEl){ msgEl.className = "err"; msgEl.textContent = "Error de conexi\u00f3n."; } });
+}
+/* Aviso automatico al chat de los administradores cuando el socorrista rechaza */
+function avisarRechazo(r, motivo){
+var texto = "\u26a0\ufe0f Turno rechazado: " + (r["Socorrista"]||"") + " no podr\u00e1 cubrir el turno del " + (r["Fecha"]||"") + " en " + (r["Instalacion"]||"") + " (" + (r["Ingreso"]||"") + " - " + (r["Salida"]||"") + "). Motivo: " + motivo;
+fetch(API_BASE + "/api/chat/users").then(function(x){ return x.json(); }).then(function(u){
+var us = Array.isArray(u) ? u : ((u && u.users) || []);
+us.filter(function(x){ return String(x.rol||"").trim().toLowerCase() === "administrador" && String(x.dni) !== String(AUTH_DNI); }).forEach(function(adm){
+fetch(API_BASE + "/api/chat/private/" + encodeURIComponent(adm.dni) + "?user_id=" + encodeURIComponent(AUTH_DNI))
+.then(function(x){ return x.json(); })
+.then(function(d){
+if (!d || !d.thread_id) return;
+fetch(API_BASE + "/api/chat/threads/" + encodeURIComponent(d.thread_id) + "/messages", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({sender_id: AUTH_DNI, body: texto}) });
+}).catch(function(){});
+});
+}).catch(function(){});
+}
 document.getElementById("instFilter").addEventListener("change", renderAll);
 
 fetch(API_BASE + "/api/mallas")
