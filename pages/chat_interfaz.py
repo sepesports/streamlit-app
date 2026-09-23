@@ -611,6 +611,8 @@ function abrirNuevoChat(){
 abrirModal("Nueva conversaci&oacute;n", '<div class="empty-note">Cargando...</div>', "");
 listaUsuarios().then(function(users){
 var otros = (users || []).filter(function(u){ return String(u.dni) !== String(AUTH_DNI); });
+/* El socorrista solo puede iniciar conversacion con administradores */
+if (String(AUTH_ROLE || "").trim().toLowerCase() === "socorrista") otros = otros.filter(function(u){ return String(u.rol || "").trim().toLowerCase() === "administrador"; });
 var peso = function(u){ var r = String(u.rol || "").toLowerCase(); return r === "administrador" ? 0 : (r === "directivo" ? 1 : 2); };
 otros.sort(function(a, b){ return (peso(a) - peso(b)) || String(a.alias || a.nombre || a.dni).localeCompare(String(b.alias || b.nombre || b.dni)); });
 var fila = function(u){
@@ -817,6 +819,8 @@ reader.readAsDataURL(f);
 })();
 
 document.getElementById("newBtn").addEventListener("click", abrirNuevoGrupo);
+/* El socorrista no crea grupos */
+if (String(AUTH_ROLE || "").trim().toLowerCase() === "socorrista") document.getElementById("newBtn").style.display = "none";
 document.getElementById("newChatBtn").addEventListener("click", abrirNuevoChat);
 
 function openThread(threadId){
