@@ -630,7 +630,7 @@ return rows.filter(function(r){
 var inst = hmNorm(r["Instalacion"]);
 if (!inst || inst === "descanso") return false;
 var dni = hmNorm(r["DNI"] || r["dni"]);
-if (dni && dni === hmNorm(USER_DNI)) return true;
+if (dni) return dni === hmNorm(USER_DNI);
 return hmNorm(r["Socorrista"]) === hmNorm(USER_NAME) || MIS_NOMBRES.indexOf(hmNorm(r["Socorrista"])) !== -1;
 });
 }
