@@ -429,7 +429,7 @@ document.getElementById("panel-" + name).style.display = (name === btn.getAttrib
 });
 
 function todayStr(){
-var d = new Date();
+var d = ahoraMadrid();
 var m = String(d.getMonth()+1).padStart(2,"0");
 var day = String(d.getDate()).padStart(2,"0");
 return d.getFullYear() + "-" + m + "-" + day;
