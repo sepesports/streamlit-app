@@ -498,6 +498,14 @@ var NAV_ITEMS = [
 {label:"Perfiles", icon:"&#11088;", go:"/perfiles", adminOnly:true, badge:"Solo admin"},
 {label:"Panel Directivo", icon:"&#128202;", go:"/directivo", directorOnly:true, badge:"Solo director"},
 ];
+/* Menu por rol: solo se muestran las opciones habilitadas para cada perfil */
+(function(){
+var _rolNav = String(USER_ROLE || "").trim().toLowerCase();
+var _permNav = {"/altas_registro":["administrador"], "/editar_horarios":["administrador"], "/perfiles":["administrador","directivo"], "/directivo":["directivo"]};
+NAV_ITEMS = NAV_ITEMS.filter(function(it){ return it.sep || !_permNav[it.go] || _permNav[it.go].indexOf(_rolNav) !== -1; });
+if (NAV_ITEMS.length && NAV_ITEMS[NAV_ITEMS.length - 1].sep) NAV_ITEMS.pop();
+NAV_ITEMS.forEach(function(it){ if (it.go === "/perfiles" && _rolNav === "directivo") it.badge = "Solo ver"; });
+})();
 
 function renderNav(containerId){
 var el = document.getElementById(containerId);
@@ -553,6 +561,7 @@ btn:"Gestionar &rarr;", go:"/editar_horarios", locked:!CAN_MANAGE_SCHEDULES, pil
 
 var grid = document.getElementById("cardsGrid");
 CARDS.forEach(function(c){
+if (c.locked) return;
 var div = document.createElement("div");
 div.className = "qa-card";
 div.innerHTML =
