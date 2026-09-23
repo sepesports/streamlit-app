@@ -252,11 +252,11 @@ html,body{background:#1B2A4A !important;}
 <div class="list-tab" data-tab="grupos">Grupos</div>
 <div class="list-tab" data-tab="instalaciones">Instalaciones</div>
 <button class="new-btn" id="newBtn">+ Grupo</button>
-<button class="new-btn" id="newChatBtn" style="margin-left:0;">+ Chat</button>
 </div>
 <div class="me-row">
 <div class="me-av" id="meAvatar" title="Cambiar foto de perfil"><span id="meAvatarTxt">?</span><span class="cam">&#128247;</span></div>
 <div><div class="me-name" id="meName">&nbsp;</div><div class="me-hint">Toca tu foto para cambiarla</div></div>
+<button class="new-btn" id="newChatBtn" style="align-self:center;" title="Nueva conversaci&oacute;n">+ Chat</button>
 <input type="file" id="avatarInput" accept="image/*" style="display:none;" />
 </div>
 <input class="search-box" id="searchBox" placeholder="Buscar conversaciones..." />
