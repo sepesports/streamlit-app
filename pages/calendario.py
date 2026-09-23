@@ -530,7 +530,7 @@ if (yo){ if (yo.nombre) misNombres.push(_n(yo.nombre)); if (yo.alias) misNombres
 .then(function(){
 mallasCache = mallasCache.filter(function(r){
 var dni = _n(r["DNI"] || r["dni"]);
-if (dni && dni === _n(AUTH_DNI)) return true;
+if (dni) return dni === _n(AUTH_DNI);
 return misNombres.indexOf(_n(r["Socorrista"])) !== -1;
 });
 });
