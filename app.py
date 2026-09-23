@@ -181,6 +181,7 @@ display:grid;grid-template-columns:repeat(4,1fr);padding:12px 4px 2px 4px;flex:0
 flex:38 1 0;min-height:0;
 display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
 }
+#franjaB.cols-2, .cards-grid.cols-2{grid-template-columns:repeat(2,1fr);}
 .preview-card{
 background:#fff;border:1px solid var(--border);border-radius:16px;
 overflow:hidden;display:flex;flex-direction:column;min-height:0;
@@ -335,6 +336,7 @@ overflow:hidden;
 .kpi-row{grid-template-columns:repeat(2,1fr);gap:12px;}
 .kpi-item:nth-child(3){border-left:none;}
 #franjaB{flex:none;grid-template-columns:1fr;}
+#franjaB.cols-2, .cards-grid.cols-2{grid-template-columns:1fr;}
 .preview-body{max-height:320px;}
 #franjaC{flex:none;padding:16px 18px;}
 #bottomnav{
@@ -575,6 +577,7 @@ div.querySelector(".qa-btn").addEventListener("click", function(){ goToPage(c.go
 }
 grid.appendChild(div);
 });
+if (!CAN_MANAGE_SCHEDULES){ grid.classList.add("cols-2"); var _fb = document.getElementById("franjaB"); if (_fb) _fb.classList.add("cols-2"); }
 
 document.querySelectorAll(".preview-head .more[data-go]").forEach(function(btn){
 btn.addEventListener("click", function(){ goToPage(btn.getAttribute("data-go")); });
@@ -894,6 +897,7 @@ document.getElementById("previewHorarios").innerHTML = '<div class="empty-note">
 });
 } else {
 document.getElementById("previewHorarios").innerHTML = '<div class="locked-note">&#128274; Solo administradores</div>';
+document.getElementById("previewHorarios").closest(".preview-card").style.display = "none";
 }
 
 if (CAN_REGISTER_USERS){
@@ -958,6 +962,7 @@ msgEl.className = "mini-msg err"; msgEl.textContent = "Error de conexion.";
 });
 } else {
 document.getElementById("previewRegistro").innerHTML = '<div class="locked-note">&#128274; Solo administradores</div>';
+document.getElementById("previewRegistro").closest(".preview-card").style.display = "none";
 }
 })();
 </script>
