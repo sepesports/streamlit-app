@@ -530,6 +530,8 @@ valores.forEach(function(v){ if(v && !existentes[v]){ var o=document.createEleme
 var socDni = {};
 fetch(API_BASE + "/api/chat/users").then(function(r){ return r.json(); }).then(function(d){
 var us = Array.isArray(d) ? d : ((d && d.users) || []);
+/* Solo se asignan turnos a usuarios con rol Socorrista */
+us = us.filter(function(u){ return String(u.rol || "").trim().toLowerCase() === "socorrista"; });
 us.forEach(function(u){ var nm=(u.nombre||u.alias||"").trim(); if(nm){ socDni[nm.toLowerCase()]=u.dni||""; if(sugSocorristas.indexOf(nm)===-1) sugSocorristas.push(nm); } });
 sugSocorristas.sort();
 llenarDatalist("dlSocorristas", us.map(function(u){ return (u.nombre || u.alias || "").trim(); }).filter(Boolean).sort());
