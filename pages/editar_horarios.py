@@ -732,6 +732,8 @@ Instalacion: document.getElementById("edit_instalacion").value.trim(),
 Ingreso: document.getElementById("edit_ingreso").value.trim(),
 Salida: document.getElementById("edit_salida").value.trim()
 };
+var _dniEdit = socDni[(payload.Socorrista || "").toLowerCase()];
+if (_dniEdit) payload.DNI = _dniEdit;
 var msgEl = document.getElementById("editMsg");
 fetch(API_BASE + "/api/horarios/editar", {
 method: "POST",
@@ -850,7 +852,7 @@ if(!fechas.length){ msgEl.className="msg err"; msgEl.textContent="Rango de fecha
 var btn=this; btn.disabled=true; btn.textContent="Creando...";
 var tareas=fechas.map(function(fdmy){ var pr=fdmy.split("/"); var iso=pr[2]+"-"+pr[1]+"-"+pr[0]; return {fecha:fdmy, dia:diaSemana(iso)}; });
 runSeq(tareas, function(t){
-return fetch(API_BASE + "/api/horarios/asignar", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({fecha:t.fecha, dia:t.dia, socorrista:soc, instalacion:ins, ingreso:ing, salida:sal}) }).then(function(r){ return r.json(); });
+return fetch(API_BASE + "/api/horarios/asignar", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({fecha:t.fecha, dia:t.dia, socorrista:soc, instalacion:ins, ingreso:ing, salida:sal, dni:(socDni[(soc||"").toLowerCase()]||"")}) }).then(function(r){ return r.json(); });
 }, function(rs){
 btn.disabled=false; btn.textContent="Crear y avisar";
 var ok=rs.filter(function(x){ return x && x.ok; }).length;
@@ -885,7 +887,7 @@ var dia=diaSemana(fechaVal);
 var btn=this; btn.disabled=true; btn.textContent="Guardando...";
 fetch(API_BASE + "/api/horarios/asignar", {
 method:"POST", headers:{"Content-Type":"application/json"},
-body: JSON.stringify({fecha:fechaDMY, dia:dia, socorrista:soc, instalacion:ins, ingreso:ing, salida:sal})
+body: JSON.stringify({fecha:fechaDMY, dia:dia, socorrista:soc, instalacion:ins, ingreso:ing, salida:sal, dni:(socDni[(soc||"").toLowerCase()]||"")})
 })
 .then(function(r){ return r.json(); })
 .then(function(d){
@@ -1046,7 +1048,7 @@ d.setDate(d.getDate()+1); guard++;
 });
 if(!tareas.length){ btn.disabled=false; btn.textContent="Asignar"; msgEl.className="msg err"; msgEl.textContent="Los bloques no tienen rango de fechas válido."; return; }
 runSeq(tareas, function(t){
-return fetch(API_BASE + "/api/horarios/asignar", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({fecha:t.fecha, dia:t.dia, socorrista:soc, instalacion:ins, ingreso:t.ing, salida:t.sal}) }).then(function(r){ return r.json(); });
+return fetch(API_BASE + "/api/horarios/asignar", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({fecha:t.fecha, dia:t.dia, socorrista:soc, instalacion:ins, ingreso:t.ing, salida:t.sal, dni:(socDni[(soc||"").toLowerCase()]||"")}) }).then(function(r){ return r.json(); });
 }, function(rs){
 btn.disabled=false; btn.textContent="Asignar";
 var ok=rs.filter(function(x){ return x && x.ok; }).length;
