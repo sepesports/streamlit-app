@@ -758,6 +758,10 @@ var input = document.getElementById("avatarInput");
 var txt = document.getElementById("meAvatarTxt");
 var nombre = document.getElementById("meName");
 if (nombre) nombre.textContent = AUTH_USER || AUTH_DNI || "";
+listaUsuarios().then(function(us){
+var yo = (us || []).filter(function(u){ return String(u.dni) === String(AUTH_DNI); })[0];
+if (yo && nombre && (yo.nombre || yo.alias)) nombre.textContent = yo.nombre || yo.alias;
+}).catch(function(){});
 function pintarMiFoto(){
 if (!txt) return;
 var img = new Image();
