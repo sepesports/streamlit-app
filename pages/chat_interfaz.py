@@ -252,6 +252,7 @@ html,body{background:#1B2A4A !important;}
 <div class="list-tab" data-tab="grupos">Grupos</div>
 <div class="list-tab" data-tab="instalaciones">Instalaciones</div>
 <button class="new-btn" id="newBtn">+ Grupo</button>
+<button class="new-btn" id="newChatBtn" style="margin-left:0;">+ Chat</button>
 </div>
 <div class="me-row">
 <div class="me-av" id="meAvatar" title="Cambiar foto de perfil"><span id="meAvatarTxt">?</span><span class="cam">&#128247;</span></div>
@@ -597,6 +598,56 @@ alert((d && d.error) || "No se pudo crear el grupo.");
 }).catch(function(){ abrirModal("Nuevo grupo", '<div class="empty-note">Error al cargar la lista.</div>', ""); });
 }
 
+/* ---- Nueva conversacion directa (1 a 1) ---- */
+function abrirNuevoChat(){
+abrirModal("Nueva conversaci&oacute;n", '<div class="empty-note">Cargando...</div>', "");
+listaUsuarios().then(function(users){
+var otros = (users || []).filter(function(u){ return String(u.dni) !== String(AUTH_DNI); });
+var peso = function(u){ var r = String(u.rol || "").toLowerCase(); return r === "administrador" ? 0 : (r === "directivo" ? 1 : 2); };
+otros.sort(function(a, b){ return (peso(a) - peso(b)) || String(a.alias || a.nombre || a.dni).localeCompare(String(b.alias || b.nombre || b.dni)); });
+var fila = function(u){
+return '<div class="pick" data-dni="' + esc(u.dni) + '">' +
+'<span class="pav">' + avatarHtml(u.dni, initials(u.alias || u.nombre || u.dni)) + '</span>' +
+'<span><span class="pname">' + esc(u.alias || u.nombre || u.dni) + '</span><br/><span class="prole">' + esc(u.rol || "") + (u.instalacion ? " &middot; " + esc(u.instalacion) : "") + '</span></span>' +
+'</div>';
+};
+var cuerpo = '<input class="modal-input" id="dmBuscar" placeholder="Buscar persona por nombre, rol o instalaci&oacute;n..." />' +
+'<div id="dmLista">' + (otros.length ? otros.map(fila).join("") : '<div class="empty-note">No hay personas disponibles.</div>') + '</div>';
+abrirModal("Nueva conversaci&oacute;n", cuerpo, '<button class="modal-btn ghost" id="dmCancelar">Cancelar</button>');
+document.getElementById("dmCancelar").addEventListener("click", cerrarModal);
+document.getElementById("dmBuscar").addEventListener("input", function(e){
+var q = (e.target.value || "").toLowerCase();
+document.querySelectorAll("#dmLista .pick").forEach(function(el){
+el.style.display = el.textContent.toLowerCase().indexOf(q) === -1 ? "none" : "";
+});
+});
+document.querySelectorAll("#dmLista .pick").forEach(function(el){
+el.addEventListener("click", function(){
+var dni = el.getAttribute("data-dni");
+if (!dni) return;
+el.style.opacity = ".5";
+fetch(API_BASE + "/api/chat/private/" + encodeURIComponent(dni) + "?user_id=" + encodeURIComponent(AUTH_DNI))
+.then(function(r){ return r.json(); })
+.then(function(d){
+el.style.opacity = "";
+if (d && d.ok && d.thread_id){
+cerrarModal();
+vistaLista = "conversaciones";
+tabs.forEach(function(t){ t.classList.toggle("active", t.getAttribute("data-tab") === "conversaciones"); });
+threadListEl.style.display = "";
+instListEl.style.display = "none";
+loadThreads();
+setTimeout(function(){ openThread(d.thread_id); }, 600);
+} else {
+alert("No se pudo abrir la conversación. Verifica que tu usuario esté registrado.");
+}
+})
+.catch(function(){ el.style.opacity = ""; alert("Error de conexión."); });
+});
+});
+}).catch(function(){ abrirModal("Nueva conversaci&oacute;n", '<div class="empty-note">Error al cargar la lista.</div>', ""); });
+}
+
 /* ---- Integrantes del grupo ---- */
 function abrirIntegrantes(threadId){
 abrirModal("Integrantes", '<div class="empty-note">Cargando...</div>', "");
@@ -754,6 +805,7 @@ reader.readAsDataURL(f);
 })();
 
 document.getElementById("newBtn").addEventListener("click", abrirNuevoGrupo);
+document.getElementById("newChatBtn").addEventListener("click", abrirNuevoChat);
 
 function openThread(threadId){
 currentThreadId = threadId;
