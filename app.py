@@ -542,13 +542,15 @@ if (lo) lo.addEventListener("click", function(){ syntraTopNav("/admin"); });
 renderNav("navList");
 renderNav("navListMobile");
 /* Saludo con el NOMBRE real (hoja Altas) en lugar del correo/usuario */
-fetch(API_BASE + "/api/chat/users")
+var MIS_NOMBRES = [];
+var MIS_NOMBRES_P = fetch(API_BASE + "/api/chat/users")
 .then(function(r){ return r.json(); })
 .then(function(d){
 var us = Array.isArray(d) ? d : ((d && d.users) || []);
 var yo = us.filter(function(u){ return String(u.dni) === String(USER_DNI); })[0];
 var el = document.getElementById("welcomeName");
 if (yo && el && (yo.nombre || yo.alias)) el.textContent = yo.nombre || yo.alias;
+if (yo){ if (yo.nombre) MIS_NOMBRES.push(hmNorm(yo.nombre)); if (yo.alias) MIS_NOMBRES.push(hmNorm(yo.alias)); }
 })
 .catch(function(){});
 
@@ -629,7 +631,7 @@ var inst = hmNorm(r["Instalacion"]);
 if (!inst || inst === "descanso") return false;
 var dni = hmNorm(r["DNI"] || r["dni"]);
 if (dni && dni === hmNorm(USER_DNI)) return true;
-return hmNorm(r["Socorrista"]) === hmNorm(USER_NAME);
+return hmNorm(r["Socorrista"]) === hmNorm(USER_NAME) || MIS_NOMBRES.indexOf(hmNorm(r["Socorrista"])) !== -1;
 });
 }
 
@@ -797,8 +799,11 @@ var DIAS_CORTO = ["Dom","Lun","Mar","Mie","Jue","Vie","Sab"];
 
 fetch(API_BASE + "/api/mallas")
 .then(function(r){ return r.json(); })
+.then(function(d){ return MIS_NOMBRES_P.then(function(){ return d; }); })
 .then(function(d){
 var rows = (d && d.ok && d.rows) ? d.rows : [];
+/* El socorrista solo ve sus propios turnos */
+if (hmNorm(USER_ROLE) === "socorrista") rows = hmMisFilas(rows);
 HOME.rows = rows;
 renderHome();
 var wStart = startOfWeek(new Date());
