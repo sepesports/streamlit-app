@@ -260,6 +260,14 @@ var NAV_ITEMS = [
 {label:"Perfiles", icon:"&#11088;", go:"/perfiles", badge:"Solo admin"},
 {label:"Panel Directivo", icon:"&#128202;", go:"/directivo", active:true, badge:"Directivo"}
 ];
+/* Menu por rol: solo se muestran las opciones habilitadas para cada perfil */
+(function(){
+var _rolNav = String(AUTH_ROLE || "").trim().toLowerCase();
+var _permNav = {"/altas_registro":["administrador"], "/editar_horarios":["administrador"], "/perfiles":["administrador","directivo"], "/directivo":["directivo"]};
+NAV_ITEMS = NAV_ITEMS.filter(function(it){ return it.sep || !_permNav[it.go] || _permNav[it.go].indexOf(_rolNav) !== -1; });
+if (NAV_ITEMS.length && NAV_ITEMS[NAV_ITEMS.length - 1].sep) NAV_ITEMS.pop();
+NAV_ITEMS.forEach(function(it){ if (it.go === "/perfiles" && _rolNav === "directivo") it.badge = "Solo ver"; });
+})();
 function renderNav(id){
 var el=document.getElementById(id); var parts=[];
 NAV_ITEMS.forEach(function(it){
