@@ -515,6 +515,27 @@ fetch(API_BASE + "/api/mallas")
 .then(function(r){ return r.json(); })
 .then(function(d){
 mallasCache = (d && d.ok && d.rows) ? d.rows : [];
+if (!IS_SOCORRISTA) return;
+/* El socorrista solo ve sus propios turnos (por DNI o por su nombre en Altas) */
+var _n = function(v){ return String(v || "").trim().toLowerCase(); };
+var misNombres = [];
+return fetch(API_BASE + "/api/chat/users")
+.then(function(r){ return r.json(); })
+.then(function(u){
+var us = Array.isArray(u) ? u : ((u && u.users) || []);
+var yo = us.filter(function(x){ return String(x.dni) === String(AUTH_DNI); })[0];
+if (yo){ if (yo.nombre) misNombres.push(_n(yo.nombre)); if (yo.alias) misNombres.push(_n(yo.alias)); }
+})
+.catch(function(){})
+.then(function(){
+mallasCache = mallasCache.filter(function(r){
+var dni = _n(r["DNI"] || r["dni"]);
+if (dni && dni === _n(AUTH_DNI)) return true;
+return misNombres.indexOf(_n(r["Socorrista"])) !== -1;
+});
+});
+})
+.then(function(){
 populateInstFilter();
 renderAll();
 })
