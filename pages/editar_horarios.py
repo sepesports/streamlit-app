@@ -102,6 +102,9 @@ tbody tr:last-child td{border-bottom:none;}
 .pill.off{background:#f1f2f5;color:#6b7688;}
 .pill.err{background:#fde8e8;color:#b02a2a;}
 .pill.on{background:#e6f7ee;color:#1a7f4f;}
+.aprob-banner{display:flex;align-items:center;gap:10px;background:#fff4e0;border:1px solid #f5d9a6;color:#7a4f06;border-radius:12px;padding:10px 14px;margin:0 0 12px 0;font-size:13px;font-weight:600;}
+.aprob-banner.urg{background:#fde8e8;border-color:#f3b9b9;color:#8f1f1f;}
+.aprob-banner .ic{font-size:18px;}
 .mini-btn{border:none;cursor:pointer;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:8px;white-space:nowrap;}
 .mini-btn.ok{background:#1a7f4f;color:#fff;}
 .mini-btn.ok:hover{background:#166b43;}
@@ -214,6 +217,7 @@ html,body{background:#1B2A4A !important;}
 <button class="tabbtn" data-tab="asignaciones">Asignaciones</button>
 <button class="tabbtn" data-tab="historial">Historial</button>
 </div>
+<div id="aprobBanner" class="aprob-banner" style="display:none;"></div>
 
 <div class="card" id="panel-bloques">
 <div class="panel-tools">
@@ -457,13 +461,40 @@ function calcHoras(ing, sal){
 function mm(t){ t=(t||"").trim(); if(!t || t.indexOf(":")<0) return null; var p=t.split(":"); return parseInt(p[0],10)*60+parseInt(p[1],10); }
 var a=mm(ing), b=mm(sal); if(a==null||b==null) return 0; var d=b-a; if(d<0) d+=1440; return Math.round(d/60*100)/100;
 }
+/* Hora actual en Espana (Europe/Madrid), misma referencia que el servidor */
+function ahoraMadrid(){
+try { return new Date(new Date().toLocaleString("en-US", {timeZone:"Europe/Madrid"})); } catch(e){ return new Date(); }
+}
+function dtTurno(fecha, hora){
+var iso = parseFecha(fecha); if (!iso) return null;
+var p = iso.split("-"); var hm = String(hora||"").trim().split(":");
+var d = new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10), parseInt(hm[0]||"0",10)||0, parseInt(hm[1]||"0",10)||0);
+return isNaN(d.getTime()) ? null : d;
+}
+/* Plazo del administrador: 24 h despues de la hora de salida */
+function limiteAprob(r){
+var ini = dtTurno(r["Fecha"], r["Ingreso"]), fin = dtTurno(r["Fecha"], r["Salida"]);
+if (!fin) return null;
+if (ini && fin <= ini) fin = new Date(fin.getTime() + 86400000);
+return new Date(fin.getTime() + 86400000);
+}
+function fmtRestante(ms){
+if (ms <= 0) return "0 min";
+var m = Math.floor(ms/60000), h = Math.floor(m/60); m = m % 60;
+return (h ? h + "h " : "") + m + "m";
+}
+function aceptEstado(r){ return (r["acept_estado"]||"").trim().toUpperCase(); }
 function confState(r, today){
 var h = (r["h_estado"]||"").trim().toUpperCase();
 var f = parseFecha(r["Fecha"]);
 if (h === "ON") return "ON";
 if (h === "REABIERTO") return "REAB";
 if (f && f > today) return "FUT";
-if (f && f < today) return "OUT";
+var lim = limiteAprob(r);
+if (lim ? (ahoraMadrid() > lim) : (f && f < today)) return "OUT";
+var a = aceptEstado(r);
+if (a === "RECHAZADO") return "RECH";
+if (a !== "ACEPTADO") return "PEND";
 return "OFF";
 }
 function confPill(r, today){
@@ -471,8 +502,16 @@ var s = confState(r, today);
 if (s === "ON"){ var h=String(r["horas_aprob"]==null?"":r["horas_aprob"]).trim(); return '<span class="pill on">ON'+(h?(' &middot; '+h+'h'):'')+'</span>'; }
 if (s === "REAB") return '<span class="pill warn">Reabierto</span>';
 if (s === "OUT") return '<span class="pill err">OUT</span>';
-if (s === "FUT") return '<span class="pill off">-</span>';
-return '<span class="pill warn">Off</span>';
+if (s === "RECH") return '<span class="pill err" title="' + esc(r["acept_motivo"]||"") + '">Rechazado</span>';
+if (s === "PEND") return '<span class="pill off">Sin aceptar</span>';
+if (s === "FUT"){
+var a = aceptEstado(r);
+if (a === "ACEPTADO") return '<span class="pill ok">Aceptado</span>';
+if (a === "RECHAZADO") return '<span class="pill err" title="' + esc(r["acept_motivo"]||"") + '">Rechazado</span>';
+return '<span class="pill off">Pendiente</span>';
+}
+var lim = limiteAprob(r), resta = lim ? (lim - ahoraMadrid()) : 0;
+return '<span class="pill ' + (resta < 3*3600000 ? 'err' : 'warn') + '" title="Tiempo para aprobar horas">&#9201; ' + fmtRestante(resta) + '</span>';
 }
 function confAcciones(r, today){
 var s = confState(r, today);
@@ -691,7 +730,24 @@ else if (action === "reabrir") reabrirTurno(llave);
 }
 wireAcciones(asigBody);
 wireAcciones(histBody);
+pintarBannerAprob(today);
 }
+
+/* Alerta al administrador: turnos con horas por aprobar y el tiempo que queda */
+function pintarBannerAprob(today){
+var el = document.getElementById("aprobBanner"); if (!el) return;
+if (!ES_ADMIN){ el.style.display = "none"; return; }
+var pend = mallasCache.filter(function(r){ return confState(r, today) === "OFF"; })
+.map(function(r){ var l = limiteAprob(r); return {r:r, resta: l ? (l - ahoraMadrid()) : 0}; })
+.sort(function(a,b){ return a.resta - b.resta; });
+if (!pend.length){ el.style.display = "none"; return; }
+var p = pend[0];
+el.className = "aprob-banner" + (p.resta < 3*3600000 ? " urg" : "");
+el.innerHTML = '<span class="ic">&#9201;</span><span>' + pend.length + (pend.length === 1 ? ' turno con horas por aprobar' : ' turnos con horas por aprobar') +
+' &middot; el m&aacute;s pr&oacute;ximo vence en <b>' + fmtRestante(p.resta) + '</b> (' + esc(p.r["Socorrista"]||"") + ', ' + esc(p.r["Fecha"]||"") + ')</span>';
+el.style.display = "";
+}
+setInterval(function(){ if (mallasCache.length) renderMallas(); }, 60000);
 
 function loadMallas(){
 fetch(API_BASE + "/api/mallas")
