@@ -585,7 +585,7 @@ Object.keys(setS).forEach(function(x){ if(sugSocorristas.indexOf(x)===-1) sugSoc
 sugSocorristas.sort();
 sugInstalaciones = Object.keys(setI).sort();
 llenarDatalist("dlSocorristas", sugSocorristas);
-llenarDatalist("dlInstalaciones", sugInstalaciones);
+llenarDatalist("dlInstalaciones", (instOficiales && instOficiales.length) ? instOficiales : sugInstalaciones);
 // selector "Nueva desde bloque"
 var sel = document.getElementById("add_bloque");
 if (sel){
@@ -982,7 +982,17 @@ inp.addEventListener("input", function(){ pintar(); if(onPick) onPick(inp.value)
 document.addEventListener("click", function(e){ if(e.target!==inp && !lst.contains(e.target)) lst.classList.remove("open"); });
 }
 
+/* Listado oficial de instalaciones (mismo origen que Registro y Panel Directivo) */
+var instOficiales = [];
+fetch(API_BASE + "/api/tarifas")
+.then(function(r){ return r.json(); })
+.then(function(d){
+instOficiales = ((d && d.items) || []).map(function(x){ return String((x && x.instalacion) || "").trim(); }).filter(Boolean).sort(function(a,b){ return a.localeCompare(b); });
+if (instOficiales.length) llenarDatalist("dlInstalaciones", instOficiales);
+})
+.catch(function(){});
 function instalacionesActuales(){
+if (instOficiales.length) return instOficiales.slice();
 var set={};
 sugInstalaciones.forEach(function(x){ if(x) set[x]=1; });
 mallasCache.forEach(function(r){ var i=(r["Instalacion"]||"").trim(); if(i && i.toLowerCase()!=="descanso") set[i]=1; });
