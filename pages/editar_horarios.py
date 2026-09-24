@@ -462,8 +462,10 @@ function mm(t){ t=(t||"").trim(); if(!t || t.indexOf(":")<0) return null; var p=
 var a=mm(ing), b=mm(sal); if(a==null||b==null) return 0; var d=b-a; if(d<0) d+=1440; return Math.round(d/60*100)/100;
 }
 /* Hora actual en Espana (Europe/Madrid), misma referencia que el servidor */
+/* Zona horaria de los turnos. PRUEBAS: Colombia. AL ENTREGAR: cambiar a "Europe/Madrid" (y APP_TZ del servidor) */
+var APP_TZ = "America/Bogota";
 function ahoraMadrid(){
-try { return new Date(new Date().toLocaleString("en-US", {timeZone:"Europe/Madrid"})); } catch(e){ return new Date(); }
+try { return new Date(new Date().toLocaleString("en-US", {timeZone:APP_TZ})); } catch(e){ return new Date(); }
 }
 function dtTurno(fecha, hora){
 var iso = parseFecha(fecha); if (!iso) return null;
