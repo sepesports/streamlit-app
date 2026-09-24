@@ -786,7 +786,7 @@ return "<option value='" + escA(u.dni) + "'>" + escR(u.nombre || u.alias || u.dn
 var hs = huecosHermanos(r);
 var chk = document.getElementById("cubTodos");
 chk.checked = false; chk.disabled = !hs.length;
-document.getElementById("cubTodosTxt").textContent = hs.length ? ("Asignar también los otros " + hs.length + " huecos sin cubrir de " + r["Ingreso"] + " a " + r["Salida"] + " de este requerimiento") : "No hay más huecos con este mismo horario.";
+document.getElementById("cubTodosTxt").textContent = hs.length ? ((hs.length === 1 ? "Asignar también el otro hueco" : ("Asignar también los otros " + hs.length + " huecos")) + " sin cubrir de " + r["Ingreso"] + " a " + r["Salida"] + " de este requerimiento") : "No hay más huecos con este mismo horario.";
 var m = document.getElementById("cubMsg"); m.className = ""; m.textContent = "";
 document.getElementById("cubAsignar").disabled = false;
 document.getElementById("cubBack").classList.add("open");
