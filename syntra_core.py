@@ -187,10 +187,41 @@ catch(e){ window.location.href = it.go; }
 });
 }
 
+/* Acento sutil por perfil: Directivo = dorado, Administrador = plata. Socorrista sin cambios */
+function syntraRoleAccent(){
+if (document.getElementById("syntraRole")) return;
+var rol = "";
+try{ rol = new URLSearchParams(window.parent.location.search).get("rol") || ""; }catch(e){}
+if (!rol){ try{ rol = new URLSearchParams(location.search).get("rol") || ""; }catch(e){} }
+rol = String(rol).trim().toLowerCase();
+var pal = {
+directivo: {c1:"#f7dc86", c2:"#c9962b", txt:"#3a2a05", lab:"Directivo"},
+administrador: {c1:"#eef2f8", c2:"#9aabc4", txt:"#1b2740", lab:"Administrador"}
+}[rol];
+if (!pal) return;
+var st = document.createElement("style");
+st.id = "syntraRole";
+st.textContent =
+".role-pill{display:inline-block;margin:0 0 12px 10px;padding:3px 11px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:" + pal.txt + ";background:linear-gradient(135deg," + pal.c1 + "," + pal.c2 + ");box-shadow:0 0 12px " + pal.c2 + "66;}" +
+"#sidebar{box-shadow:inset -2px 0 0 " + pal.c2 + "59;}" +
+".nav-item.active{box-shadow:inset 3px 0 0 " + pal.c2 + ";}" +
+".logo-row img, .mobile-logo img{filter:drop-shadow(0 2px 9px " + pal.c2 + "a6) !important;}" +
+"#topbar{border-bottom:1px solid " + pal.c2 + "8c !important;}" +
+"#topbar::before{background:linear-gradient(90deg, rgba(255,255,255,0), " + pal.c1 + ", rgba(255,255,255,0)) !important;}";
+document.head.appendChild(st);
+document.querySelectorAll(".logo-row").forEach(function(lr){
+if (lr.closest("#topbar")) return;
+var p = document.createElement("div");
+p.className = "role-pill";
+p.textContent = pal.lab;
+lr.parentNode.insertBefore(p, lr.nextSibling);
+});
+}
 if (document.readyState === "loading"){
-document.addEventListener("DOMContentLoaded", function(){ setTimeout(syntraBottomNav, 0); });
+document.addEventListener("DOMContentLoaded", function(){ setTimeout(syntraBottomNav, 0); setTimeout(syntraRoleAccent, 0); });
 } else {
 setTimeout(syntraBottomNav, 0);
+setTimeout(syntraRoleAccent, 0);
 }
 
 function syntraGoTo(path, fallback){
