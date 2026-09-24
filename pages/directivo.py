@@ -564,9 +564,29 @@ var d = new Date(+p1[0], +p1[1]-1, +p1[2]), fin = new Date(+p2[0], +p2[1]-1, +p2
 while (d <= fin){ var wd = d.getDay(); n += (wd===0||wd===6) ? nf : ns; d.setDate(d.getDate()+1); }
 return n;
 }
+function contarDias(){
+var d1 = document.getElementById("rq_desde").value, d2 = document.getElementById("rq_hasta").value;
+var r = {lv:0, sd:0};
+if (!d1 || !d2 || d2 < d1) return r;
+var p1 = d1.split("-"), p2 = d2.split("-");
+var d = new Date(+p1[0], +p1[1]-1, +p1[2]), fin = new Date(+p2[0], +p2[1]-1, +p2[2]);
+while (d <= fin){ var wd = d.getDay(); if (wd===0||wd===6) r.sd++; else r.lv++; d.setDate(d.getDate()+1); }
+return r;
+}
+/* Explica por que un rango no genera turnos o deja dias sin horario */
+function avisoRango(){
+var c = contarDias(), ns = leerFranjas("frSemana").length, nf = leerFranjas("frFinde").length;
+if (!c.lv && !c.sd) return "";
+if (c.sd && !nf && c.lv && !ns) return "Indica al menos un horario.";
+if (c.sd && !nf && !c.lv) return "El rango solo tiene sábado/domingo: agrega un horario en Sábado y domingo.";
+if (c.lv && !ns && !c.sd) return "El rango solo tiene días de lunes a viernes: agrega un horario en Lunes a viernes.";
+if (c.sd && !nf) return "Ojo: "+c.sd+(c.sd===1?" día":" días")+" de fin de semana del rango no tendrá turnos (sin horario en Sábado y domingo).";
+if (c.lv && !ns) return "Ojo: "+c.lv+(c.lv===1?" día":" días")+" de lunes a viernes del rango no tendrá turnos (sin horario en Lunes a viernes).";
+return "";
+}
 function previewReq(){
-var n = contarTurnos();
-document.getElementById("rq_prev").textContent = n ? ("Se crearán "+n+" turnos por cubrir.") : "";
+var n = contarTurnos(), av = avisoRango();
+document.getElementById("rq_prev").textContent = (n ? ("Se crear"+(n===1?"á 1 turno":"án "+n+" turnos")+" por cubrir. ") : "") + av;
 }
 function fmtD(iso){ var p = String(iso||"").split("-"); return p.length===3 ? (p[2]+"/"+p[1]+"/"+p[0]) : iso; }
 function txtFranjas(a){ return (a||[]).map(function(f){ return f.ingreso+"-"+f.salida; }).join(", "); }
@@ -580,6 +600,7 @@ var sem = leerFranjas("frSemana"), fin = leerFranjas("frFinde");
 if (!inst){ m.className="msg err"; m.textContent="Elige la instalación."; return; }
 if (!d1 || !d2 || d2 < d1){ m.className="msg err"; m.textContent="Revisa las fechas desde / hasta."; return; }
 if (!sem.length && !fin.length){ m.className="msg err"; m.textContent="Indica al menos un horario."; return; }
+if (!contarTurnos()){ m.className="msg err"; m.textContent=avisoRango() || "El rango no genera turnos con los horarios indicados."; return; }
 var btn = this; btn.disabled = true; btn.textContent = "Enviando...";
 fetch(API_BASE+"/api/requerimientos",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({instalacion:inst, desde:d1, hasta:d2, semana:sem, finde:fin, creado_por:AUTH_DNI})})
 .then(function(r){return r.json();}).then(function(d){
@@ -595,7 +616,7 @@ fetch(API_BASE+"/api/chat/private/"+encodeURIComponent(adm)+"?user_id="+encodeUR
 .catch(function(){});
 });
 m.className = admins.length ? "msg ok" : "msg err";
-m.textContent = "Requerimiento creado: "+d.total+" turnos por cubrir. " + (admins.length ? ("Avisado a: "+admins.map(nombrePorDni).join(", ")+".") : "Esta instalación no tiene administrador asignado: asígnalo abajo para que lo vea.");
+m.textContent = "Requerimiento creado: "+d.total+(d.total===1?" turno":" turnos")+" por cubrir. " + (admins.length ? ("Avisado a: "+admins.map(nombrePorDni).join(", ")+".") : "Esta instalación no tiene administrador asignado: asígnalo abajo para que lo vea.");
 cargarReqs();
 }).catch(function(){ btn.disabled=false; btn.textContent="Enviar requerimiento"; m.className="msg err"; m.textContent="Error de conexión."; });
 });
