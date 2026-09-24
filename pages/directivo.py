@@ -123,6 +123,30 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
 .msg.ok{background:#e6f7ee;color:#1a7f4f;display:block;}
 .msg.err{background:#fde8e8;color:#b02a2a;display:block;}
 
+/* ===== Administradores por instalacion y requerimientos ===== */
+.adm-sel{padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-size:12.5px;background:#fff;max-width:170px;}
+.req-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end;}
+.req-form .fld{display:flex;flex-direction:column;gap:4px;}
+.req-form label,.fr-box .fr-t{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+.req-form input,.req-form select{padding:8px 10px;border:1px solid var(--border);border-radius:9px;font-size:13px;background:#fff;width:100%;}
+.fr-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+.fr-box{border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#fafbfe;}
+.fr-row{display:flex;align-items:center;gap:6px;margin-top:8px;}
+.fr-row input{padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-size:13px;width:100%;min-width:0;}
+.fr-x{border:none;background:#fde8e8;color:#b02a2a;border-radius:8px;padding:5px 9px;cursor:pointer;font-weight:800;}
+.fr-add{margin-top:8px;border:1px dashed #b9c6e6;background:#fff;color:#2f5bd0;border-radius:8px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:700;}
+.req-foot{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px;}
+.req-prev{font-size:12.5px;color:var(--muted);}
+.req-item{border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:10px;}
+.req-item .rt{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:800;}
+.req-item .rs{font-size:12px;color:var(--muted);margin-top:3px;}
+.req-bar{background:#eef1f7;border-radius:6px;height:10px;overflow:hidden;margin-top:8px;}
+.req-bar>div{height:100%;background:linear-gradient(90deg,#12B39A,#0c7a69);}
+.pill.err{background:#fde8e8;color:#b02a2a;}
+.pill.off{background:#eef0f4;color:#6b7688;}
+.mini.danger{background:#d64545;}
+@media (max-width:900px){ .req-form{grid-template-columns:1fr;} .fr-wrap{grid-template-columns:1fr;} .adm-sel{max-width:none;width:100%;} }
+
 @media (max-width:900px){
  #sidebar{display:none;}
  .hamburger{display:block;}
@@ -215,6 +239,39 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
 <thead><tr><th>Instalaci&oacute;n</th><th class="num">Valor/h</th><th class="num">H. conf.</th><th class="num">Importe</th><th class="num">H. prog.</th><th class="num">Proyect.</th></tr></thead>
 <tbody id="instBody"><tr><td colspan="6" class="empty">Cargando...</td></tr></tbody>
 </table></div>
+</div>
+
+<div class="card">
+<h3>Solicitar turnos a los administradores</h3>
+<div class="req-form">
+<div class="fld"><label>Instalaci&oacute;n</label><select id="rq_inst"><option value="">Cargando...</option></select></div>
+<div class="fld"><label>Desde</label><input type="date" id="rq_desde"/></div>
+<div class="fld"><label>Hasta</label><input type="date" id="rq_hasta"/></div>
+</div>
+<div class="fr-wrap">
+<div class="fr-box"><div class="fr-t">Lunes a viernes</div><div id="frSemana"></div><button class="fr-add" data-add="frSemana">+ Horario</button></div>
+<div class="fr-box"><div class="fr-t">S&aacute;bado y domingo</div><div id="frFinde"></div><button class="fr-add" data-add="frFinde">+ Horario</button></div>
+</div>
+<div class="req-foot">
+<button class="btn primary" id="rq_enviar">Enviar requerimiento</button>
+<span class="req-prev" id="rq_prev"></span>
+</div>
+<div class="msg" id="rq_msg"></div>
+</div>
+
+<div class="grid2">
+<div class="card">
+<h3>Requerimientos <button class="mini" id="rq_refresh">Actualizar</button></h3>
+<div id="reqList"><div class="empty">Cargando...</div></div>
+</div>
+<div class="card">
+<h3>Administradores por instalaci&oacute;n</h3>
+<div class="tscroll"><table>
+<thead><tr><th>Instalaci&oacute;n</th><th>Administrador 1</th><th>Administrador 2</th><th></th></tr></thead>
+<tbody id="admBody"><tr><td colspan="4" class="empty">Cargando...</td></tr></tbody>
+</table></div>
+<div class="tar-hint">Cada administrador ver&aacute; en Horarios solo las instalaciones que tenga asignadas.</div>
+</div>
 </div>
 
 </div>
@@ -437,8 +494,146 @@ else { m.className="msg err"; m.textContent=(d&&d.error)||"Error al agregar."; }
 }).catch(function(){ m.className="msg err"; m.textContent="Error de conexión."; });
 });
 
+// ---- Administradores por instalacion ----
+var USERS_ALL = [];
+var ADM_MAP = {};
+function normI(x){ return String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/ +/g," ").trim(); }
+function nombrePorDni(d){ var u=USERS_ALL.filter(function(x){ return String(x.dni)===String(d); })[0]; return u ? (u.nombre||u.alias||u.dni) : d; }
+function cargarAdmins(){
+Promise.all([
+fetch(API_BASE+"/api/chat/users").then(function(r){return r.json();}).catch(function(){ return []; }),
+fetch(API_BASE+"/api/tarifas").then(function(r){return r.json();}).catch(function(){ return {}; }),
+fetch(API_BASE+"/api/instalaciones/admins").then(function(r){return r.json();}).catch(function(){ return {}; })
+]).then(function(res){
+USERS_ALL = Array.isArray(res[0]) ? res[0] : ((res[0]&&res[0].users)||[]);
+var insts = ((res[1]&&res[1].items)||[]).map(function(i){ return i.instalacion; });
+var sel = document.getElementById("rq_inst");
+sel.innerHTML = '<option value="">Selecciona instalación...</option>' + insts.map(function(n){ return '<option value="'+esc(n)+'">'+esc(n)+'</option>'; }).join("");
+ADM_MAP = {};
+((res[2]&&res[2].items)||[]).forEach(function(it){ ADM_MAP[normI(it.instalacion)] = it; });
+var admins = USERS_ALL.filter(function(u){ return String(u.rol||"").trim().toLowerCase()==="administrador"; });
+var body = document.getElementById("admBody");
+if (!(res[2]&&res[2].ok)){ body.innerHTML = '<tr><td colspan="4" class="empty">No disponible (pendiente de actualizar el servidor).</td></tr>'; return; }
+if (!insts.length){ body.innerHTML = '<tr><td colspan="4" class="empty">Sin instalaciones.</td></tr>'; return; }
+function opts(actual){ return '<option value="">— Ninguno —</option>' + admins.map(function(a){ return '<option value="'+esc(a.dni)+'"'+(String(a.dni)===String(actual)?' selected':'')+'>'+esc(a.nombre||a.alias||a.dni)+'</option>'; }).join(""); }
+body.innerHTML = insts.map(function(n, i){
+var it = ADM_MAP[normI(n)] || {};
+return '<tr><td>'+esc(n)+'</td><td><select class="adm-sel" id="adm1_'+i+'">'+opts(it.admin1)+'</select></td><td><select class="adm-sel" id="adm2_'+i+'">'+opts(it.admin2)+'</select></td><td><button class="mini" data-admsave="'+i+'">Guardar</button></td></tr>';
+}).join("");
+body.querySelectorAll("[data-admsave]").forEach(function(b){
+b.addEventListener("click", function(){
+var i = b.getAttribute("data-admsave");
+var a1 = document.getElementById("adm1_"+i).value, a2 = document.getElementById("adm2_"+i).value;
+if (a1 && a1===a2){ alert("Elige dos administradores distintos."); return; }
+b.disabled = true; b.textContent = "...";
+fetch(API_BASE+"/api/instalaciones/admins",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({instalacion:insts[i], admin1:a1, admin2:a2})})
+.then(function(r){return r.json();}).then(function(d){
+b.disabled = false;
+if (d&&d.ok){ b.textContent = "✓"; ADM_MAP[normI(insts[i])] = {instalacion:insts[i], admin1:a1, admin2:a2}; setTimeout(function(){ b.textContent="Guardar"; },900); }
+else { b.textContent = "Guardar"; alert((d&&d.error)||"Error al guardar."); }
+}).catch(function(){ b.disabled=false; b.textContent="Guardar"; alert("Error de conexión."); });
+});
+});
+});
+}
+
+// ---- Requerimientos (Directivo -> Administradores) ----
+function addFranja(boxId, ing, sal){
+var box = document.getElementById(boxId);
+var row = document.createElement("div"); row.className = "fr-row";
+row.innerHTML = '<input type="time" class="fr-ing" value="'+(ing||"")+'"/><span>a</span><input type="time" class="fr-sal" value="'+(sal||"")+'"/><button class="fr-x" title="Quitar">&times;</button>';
+row.querySelector(".fr-x").addEventListener("click", function(){ row.remove(); previewReq(); });
+row.querySelectorAll("input").forEach(function(x){ x.addEventListener("change", previewReq); });
+box.appendChild(row);
+previewReq();
+}
+function leerFranjas(boxId){
+var out = [];
+document.querySelectorAll("#"+boxId+" .fr-row").forEach(function(r){
+var a = r.querySelector(".fr-ing").value, b = r.querySelector(".fr-sal").value;
+if (a && b && a !== b) out.push({ingreso:a, salida:b});
+});
+return out;
+}
+function contarTurnos(){
+var d1 = document.getElementById("rq_desde").value, d2 = document.getElementById("rq_hasta").value;
+if (!d1 || !d2 || d2 < d1) return 0;
+var ns = leerFranjas("frSemana").length, nf = leerFranjas("frFinde").length, n = 0;
+var p1 = d1.split("-"), p2 = d2.split("-");
+var d = new Date(+p1[0], +p1[1]-1, +p1[2]), fin = new Date(+p2[0], +p2[1]-1, +p2[2]);
+while (d <= fin){ var wd = d.getDay(); n += (wd===0||wd===6) ? nf : ns; d.setDate(d.getDate()+1); }
+return n;
+}
+function previewReq(){
+var n = contarTurnos();
+document.getElementById("rq_prev").textContent = n ? ("Se crearán "+n+" turnos por cubrir.") : "";
+}
+function fmtD(iso){ var p = String(iso||"").split("-"); return p.length===3 ? (p[2]+"/"+p[1]+"/"+p[0]) : iso; }
+function txtFranjas(a){ return (a||[]).map(function(f){ return f.ingreso+"-"+f.salida; }).join(", "); }
+document.querySelectorAll("[data-add]").forEach(function(b){ b.addEventListener("click", function(){ addFranja(b.getAttribute("data-add")); }); });
+["rq_desde","rq_hasta"].forEach(function(id){ document.getElementById(id).addEventListener("change", previewReq); });
+document.getElementById("rq_enviar").addEventListener("click", function(){
+var m = document.getElementById("rq_msg"); m.className = "msg"; m.textContent = "";
+var inst = document.getElementById("rq_inst").value;
+var d1 = document.getElementById("rq_desde").value, d2 = document.getElementById("rq_hasta").value;
+var sem = leerFranjas("frSemana"), fin = leerFranjas("frFinde");
+if (!inst){ m.className="msg err"; m.textContent="Elige la instalación."; return; }
+if (!d1 || !d2 || d2 < d1){ m.className="msg err"; m.textContent="Revisa las fechas desde / hasta."; return; }
+if (!sem.length && !fin.length){ m.className="msg err"; m.textContent="Indica al menos un horario."; return; }
+var btn = this; btn.disabled = true; btn.textContent = "Enviando...";
+fetch(API_BASE+"/api/requerimientos",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({instalacion:inst, desde:d1, hasta:d2, semana:sem, finde:fin, creado_por:AUTH_DNI})})
+.then(function(r){return r.json();}).then(function(d){
+btn.disabled = false; btn.textContent = "Enviar requerimiento";
+if (!(d&&d.ok)){ m.className="msg err"; m.textContent=(d&&d.error)||"No se pudo crear."; return; }
+var admins = d.admins || [];
+var texto = "📋 Nuevo requerimiento de turnos para "+inst+" del "+fmtD(d1)+" al "+fmtD(d2)+"."+(sem.length?(" Lunes a viernes: "+txtFranjas(sem)+"."):"")+(fin.length?(" Sábado y domingo: "+txtFranjas(fin)+"."):"")+" Total: "+d.total+" turnos por cubrir. Asígnalos desde Horarios.";
+admins.forEach(function(adm){
+if (String(adm)===String(AUTH_DNI)) return;
+fetch(API_BASE+"/api/chat/private/"+encodeURIComponent(adm)+"?user_id="+encodeURIComponent(AUTH_DNI))
+.then(function(x){ return x.json(); })
+.then(function(t){ if (!t||!t.thread_id) return; fetch(API_BASE+"/api/chat/threads/"+encodeURIComponent(t.thread_id)+"/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sender_id:AUTH_DNI, body:texto})}); })
+.catch(function(){});
+});
+m.className = admins.length ? "msg ok" : "msg err";
+m.textContent = "Requerimiento creado: "+d.total+" turnos por cubrir. " + (admins.length ? ("Avisado a: "+admins.map(nombrePorDni).join(", ")+".") : "Esta instalación no tiene administrador asignado: asígnalo abajo para que lo vea.");
+cargarReqs();
+}).catch(function(){ btn.disabled=false; btn.textContent="Enviar requerimiento"; m.className="msg err"; m.textContent="Error de conexión."; });
+});
+function cargarReqs(){
+var el = document.getElementById("reqList");
+fetch(API_BASE+"/api/requerimientos").then(function(r){return r.json();}).then(function(d){
+if (!(d&&d.ok)){ el.innerHTML = '<div class="empty">No disponible (pendiente de actualizar el servidor).</div>'; return; }
+var items = d.items || [];
+if (!items.length){ el.innerHTML = '<div class="empty">Aún no hay requerimientos.</div>'; return; }
+el.innerHTML = items.map(function(it){
+var tot = Number(it.total||0), cub = Number(it.cubiertos||0), pct = tot ? Math.round(cub/tot*100) : 0;
+var est = String(it.estado||"").toUpperCase();
+var pill = est==="CANCELADO" ? '<span class="pill off">Cancelado</span>' : (tot && cub>=tot ? '<span class="pill ok">Cubierto</span>' : '<span class="pill warn">En curso</span>');
+var fr = (it.turnos_semana&&it.turnos_semana.length ? ("L-V "+txtFranjas(it.turnos_semana)) : "") + (it.turnos_finde&&it.turnos_finde.length ? ((it.turnos_semana&&it.turnos_semana.length?" · ":"")+"S-D "+txtFranjas(it.turnos_finde)) : "");
+var btn = est==="ACTIVO" ? '<button class="mini danger" data-cancel="'+esc(it.req_id)+'">Cancelar</button>' : "";
+return '<div class="req-item"><div class="rt"><span>'+esc(it.instalacion)+' '+pill+'</span>'+btn+'</div>'+
+'<div class="rs">'+esc(it.desde)+' – '+esc(it.hasta)+' · '+esc(fr)+'</div>'+
+'<div class="req-bar"><div style="width:'+pct+'%"></div></div>'+
+'<div class="rs"><b>'+cub+'/'+tot+'</b> cubiertos ('+pct+'%) · '+Number(it.aceptados||0)+' aceptados</div></div>';
+}).join("");
+el.querySelectorAll("[data-cancel]").forEach(function(b){
+b.addEventListener("click", function(){
+if (b.getAttribute("data-conf")!=="1"){ b.setAttribute("data-conf","1"); b.textContent="¿Confirmar?"; setTimeout(function(){ b.setAttribute("data-conf","0"); b.textContent="Cancelar"; },4000); return; }
+b.disabled = true; b.textContent = "...";
+fetch(API_BASE+"/api/requerimientos/cancelar",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({req_id:b.getAttribute("data-cancel"), por:AUTH_DNI})})
+.then(function(r){return r.json();}).then(function(d){ if(!(d&&d.ok)) alert((d&&d.error)||"No se pudo cancelar."); cargarReqs(); cargarNomina(); })
+.catch(function(){ alert("Error de conexión."); cargarReqs(); });
+});
+});
+}).catch(function(){ el.innerHTML = '<div class="empty">Error al cargar.</div>'; });
+}
+document.getElementById("rq_refresh").addEventListener("click", cargarReqs);
+addFranja("frSemana"); addFranja("frFinde");
+
 cargarTarifas();
 cargarNomina();
+cargarAdmins();
+cargarReqs();
 })();
 </script>
 </body>
