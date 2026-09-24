@@ -222,6 +222,21 @@ html,body{background:#1B2A4A !important;}
 .resp-foot .ghost{background:#eef0f4;color:var(--ink);}
 .resp-foot .ok{background:#12B39A;color:#fff;}
 .resp-foot .no{background:#d33;color:#fff;}
+/* ===== Vista administrador: huecos de requerimientos ===== */
+#cubBack{display:none;position:fixed;inset:0;background:rgba(10,20,50,.45);z-index:200;align-items:center;justify-content:center;padding:16px;}
+#cubBack.open{display:flex;}
+#cubCard{background:#fff;border-radius:16px;max-width:420px;width:100%;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);}
+#cubCard h3{margin:0 0 8px 0;font-size:16px;}
+#cubInfo{font-size:13.5px;color:var(--ink);margin-bottom:10px;line-height:1.45;}
+#cubSoc{width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:10px;font-size:13.5px;background:#fff;}
+.cub-chk{display:flex;gap:8px;align-items:flex-start;font-size:13px;margin-top:10px;line-height:1.35;}
+#cubMsg{font-size:12.5px;margin-top:8px;min-height:16px;}
+#cubMsg.err{color:#d33;} #cubMsg.ok{color:#0c7a69;}
+.st.vac{background:#ffeceb;color:#d33;}
+.inst-head{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin:14px 2px 6px;}
+.adm-note{background:#fff4d6;color:#9a6b00;border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:10px;display:none;}
+.btn-cub{border:0;border-radius:9px;padding:7px 12px;font-size:12.5px;font-weight:700;cursor:pointer;background:#2f6fe0;color:#fff;margin-top:8px;}
+.turno-chip.vac{border:1px dashed #d33;}
 </style>
 </head>
 <body>
@@ -239,6 +254,7 @@ html,body{background:#1B2A4A !important;}
 <button class="tb-bell" id="tbBell" aria-label="Avisos">&#128276;<span class="dot" id="tbBellDot"></span></button>
 </div>
 <div id="content">
+<div class="adm-note" id="admNote"></div>
 <div class="filters-row">
 <div class="filter-field"><label>Instalaci&oacute;n</label>
 <select id="instFilter"><option value="">Todas</option></select>
@@ -274,6 +290,18 @@ html,body{background:#1B2A4A !important;}
 </div>
 </div></div>
 
+<div id="cubBack"><div id="cubCard">
+<h3>Asignar hueco</h3>
+<div id="cubInfo"></div>
+<select id="cubSoc"><option value="">Selecciona socorrista...</option></select>
+<label class="cub-chk"><input type="checkbox" id="cubTodos"/><span id="cubTodosTxt">Asignar tambi&eacute;n los dem&aacute;s huecos sin cubrir con este mismo horario</span></label>
+<div id="cubMsg"></div>
+<div class="resp-foot">
+<button class="ghost" id="cubCerrar">Cerrar</button>
+<button class="ok" id="cubAsignar">Asignar</button>
+</div>
+</div></div>
+
 <script>
 __SYNTRA_NAV__
 (function(){
@@ -284,6 +312,7 @@ var AUTH_DNI = __AUTH_DNI__;
 var CAN_MANAGE_SCHEDULES = __CAN_MANAGE_SCHEDULES__;
 var CAN_REGISTER_USERS = __CAN_REGISTER_USERS__;
 var IS_SOCORRISTA = __IS_SOCORRISTA__;
+var IS_ADMIN = String(AUTH_ROLE || "").trim().toLowerCase() === "administrador";
 
 function qs(){
 var p = new URLSearchParams();
@@ -474,13 +503,16 @@ if (IS_SOCORRISTA){
 var est = estadoResp(r);
 return "<div class='turno-chip clic " + cls + "' data-chip='" + escR(r["llave"]||"") + "'><div class='t'>" + (r["Ingreso"]||"") + " - " + (r["Salida"]||"") + "</div><div>" + (r["Socorrista"]||"") + "</div><span class='st " + est.k + "'>" + est.t + "</span></div>";
 }
-return "<div class='turno-chip " + cls + "'><div class='t'>" + (r["Ingreso"]||"") + " - " + (r["Salida"]||"") + "</div><div>" + (r["Socorrista"]||"") + "</div></div>";
+var ea = estadoAdmin(r);
+var vac = ea.k === "vac";
+return "<div class='turno-chip " + cls + (vac ? " vac" : "") + (vac && IS_ADMIN ? " clic" : "") + "'" + (vac && IS_ADMIN ? " data-cub='" + escR(r["llave"]||"") + "'" : "") + "><div class='t'>" + (r["Ingreso"]||"") + " - " + (r["Salida"]||"") + "</div><div>" + escR(r["Socorrista"]||"Sin cubrir") + "</div><span class='st " + ea.k + "'>" + ea.t + "</span></div>";
 }).join("");
 return "<td>" + chips + "</td>";
 }).join("");
 return "<tr><td class='inst-cell'>" + inst + "</td>" + cells + "</tr>";
 }).join("");
 if (IS_SOCORRISTA) body.querySelectorAll("[data-chip]").forEach(function(c){ c.addEventListener("click", function(){ abrirResp(c.getAttribute("data-chip")); }); });
+wireCub(body);
 }
 
 function renderMobileList(){
@@ -518,25 +550,31 @@ instNames.forEach(function(inst){
 grouped[inst].forEach(function(r){ items.push(r); });
 });
 items.sort(function(a,b){
+/* Administrador / Directivo: agrupado por instalacion */
+if (!IS_SOCORRISTA){ var ia = String(a["Instalacion"]||""), ib = String(b["Instalacion"]||""); if (ia !== ib) return ia.localeCompare(ib); }
 var ca = turnoClass(a["Ingreso"]), cb = turnoClass(b["Ingreso"]);
 if (orden[ca] !== orden[cb]) return orden[ca] - orden[cb];
 return String(a["Ingreso"]||"").localeCompare(String(b["Ingreso"]||""));
 });
 
+var _instPrev = null;
 wrap.innerHTML = cab + items.map(function(r){
 var cls = turnoClass(r["Ingreso"]);
-return "<div class='shift'>" +
+var _head = "";
+if (!IS_SOCORRISTA && r["Instalacion"] !== _instPrev){ _instPrev = r["Instalacion"]; _head = "<div class='inst-head'>&#127958; " + escR(_instPrev) + "</div>"; }
+return _head + "<div class='shift'>" +
 "<div class='bar " + cls + "'></div>" +
 "<div class='body'>" +
 "<div class='hours'>" + (r["Ingreso"]||"--:--") + " &ndash; " + (r["Salida"]||"--:--") + "</div>" +
-"<div class='who'>" + (r["Socorrista"]||"Sin asignar") + "</div>" +
+"<div class='who'>" + (r["Socorrista"]||(IS_SOCORRISTA ? "Sin asignar" : "Sin cubrir")) + "</div>" +
 "<div class='place'>&#127958; " + (r["Instalacion"]||"") + "</div>" +
-(IS_SOCORRISTA ? respHtml(r) : "") +
+(IS_SOCORRISTA ? respHtml(r) : admHtml(r)) +
 "</div>" +
 "<span class='tag " + cls + "'>" + NOMBRE_TURNO[cls] + "</span>" +
 "</div>";
 }).join("");
 wireResp(wrap);
+wireCub(wrap);
 }
 
 function renderDayTabs(){
@@ -696,13 +734,147 @@ fetch(API_BASE + "/api/chat/threads/" + encodeURIComponent(d.thread_id) + "/mess
 });
 }).catch(function(){});
 }
+/* ===== Vista Administrador / Directivo: estado de cada turno y huecos de requerimientos ===== */
+var USUARIOS = [];
+var ROL_POR_DNI = {};
+function escA(t){ return escR(t).replace(/'/g, "&#39;"); }
+function normI(s){ return String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/ +/g, " ").trim(); }
+function estadoAdmin(r){
+if (!String(r["Socorrista"] || "").trim()) return {k:"vac", t:"Sin cubrir"};
+if ((r["h_estado"] || "").trim().toUpperCase() === "ON") return {k:"acep", t:"Aprobado"};
+var dni = String(r["DNI"] || "").trim();
+if (dni && ROL_POR_DNI[dni] === "administrador") return {k:"cerr", t:"Admin"};
+var a = (r["acept_estado"] || "").trim().toUpperCase();
+if (a === "ACEPTADO") return {k:"acep", t:"Aceptado"};
+if (a === "RECHAZADO") return {k:"rech", t:"Rechazado"};
+var ini = inicioTurno(r);
+return (!ini || ahoraMadrid() < ini) ? {k:"pend", t:"Pendiente"} : {k:"cerr", t:"No respondió"};
+}
+function admHtml(r){
+var e = estadoAdmin(r);
+var h = "<span class='st " + e.k + "'>" + e.t + "</span>";
+if (e.k === "vac" && IS_ADMIN) h += "<div><button class='btn-cub' data-cub='" + escA(r["llave"] || "") + "'>Asignar</button></div>";
+return h;
+}
+function wireCub(cont){
+if (!IS_ADMIN || !cont) return;
+cont.querySelectorAll("[data-cub]").forEach(function(b){
+b.addEventListener("click", function(ev){ ev.stopPropagation(); abrirCub(b.getAttribute("data-cub")); });
+});
+}
+function huecosHermanos(r){
+var rid = String(r["req_id"] || "").trim();
+if (!rid) return [];
+return mallasCache.filter(function(x){
+return x !== r && String(x["req_id"] || "").trim() === rid && !String(x["Socorrista"] || "").trim() && x["Ingreso"] === r["Ingreso"] && x["Salida"] === r["Salida"];
+});
+}
+var cubLlave = null;
+function abrirCub(llave){
+var r = mallasCache.filter(function(x){ return x["llave"] === llave; })[0];
+if (!r) return;
+cubLlave = llave;
+document.getElementById("cubInfo").innerHTML = "<b>" + escR(r["Fecha"]) + "</b> &middot; " + escR(r["Instalacion"]) + "<br/>" + escR(r["Ingreso"]) + " &ndash; " + escR(r["Salida"]);
+var sel = document.getElementById("cubSoc");
+sel.innerHTML = "<option value=''>Selecciona socorrista...</option>" + USUARIOS.filter(function(u){
+var ro = String(u.rol || "").trim().toLowerCase();
+return ro === "socorrista" || ro === "administrador";
+}).map(function(u){
+var esAdm = String(u.rol || "").trim().toLowerCase() === "administrador";
+return "<option value='" + escA(u.dni) + "'>" + escR(u.nombre || u.alias || u.dni) + (esAdm ? " (Admin)" : "") + "</option>";
+}).join("");
+var hs = huecosHermanos(r);
+var chk = document.getElementById("cubTodos");
+chk.checked = false; chk.disabled = !hs.length;
+document.getElementById("cubTodosTxt").textContent = hs.length ? ("Asignar también los otros " + hs.length + " huecos sin cubrir de " + r["Ingreso"] + " a " + r["Salida"] + " de este requerimiento") : "No hay más huecos con este mismo horario.";
+var m = document.getElementById("cubMsg"); m.className = ""; m.textContent = "";
+document.getElementById("cubAsignar").disabled = false;
+document.getElementById("cubBack").classList.add("open");
+}
+function cerrarCub(){ document.getElementById("cubBack").classList.remove("open"); }
+document.getElementById("cubCerrar").addEventListener("click", cerrarCub);
+document.getElementById("cubBack").addEventListener("click", function(e){ if (e.target.id === "cubBack") cerrarCub(); });
+document.getElementById("cubAsignar").addEventListener("click", function(){
+var r = mallasCache.filter(function(x){ return x["llave"] === cubLlave; })[0];
+if (!r) return;
+var dni = document.getElementById("cubSoc").value;
+var m = document.getElementById("cubMsg");
+if (!dni){ m.className = "err"; m.textContent = "Elige un socorrista."; return; }
+var u = USUARIOS.filter(function(x){ return String(x.dni) === String(dni); })[0] || {};
+var nombre = u.nombre || u.alias || dni;
+var lista = [r].concat(document.getElementById("cubTodos").checked ? huecosHermanos(r) : []);
+var btn = document.getElementById("cubAsignar");
+btn.disabled = true; m.className = ""; m.textContent = "Asignando...";
+fetch(API_BASE + "/api/horarios/cubrir", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({llaves: lista.map(function(x){ return x["llave"]; }), socorrista: nombre, dni: dni}) })
+.then(function(x){ return x.json(); })
+.then(function(d){
+if (!(d && d.ok)){ btn.disabled = false; m.className = "err"; m.textContent = (d && d.error) || "No se pudo asignar."; return; }
+var ok = {};
+(d.llaves || []).forEach(function(k){ ok[k] = true; });
+var cub = lista.filter(function(x){ return ok[x["llave"]]; });
+cub.forEach(function(x){ x["Socorrista"] = nombre; x["DNI"] = dni; x["estado"] = ""; x["acept_estado"] = ""; });
+avisarAsignacion(dni, cub);
+m.className = "ok";
+m.textContent = cub.length + (cub.length === 1 ? " turno asignado" : " turnos asignados") + (d.omitidos ? (" · " + d.omitidos + " ya estaban cubiertos") : "");
+pintarNotaAdmin();
+renderAll();
+setTimeout(cerrarCub, 900);
+})
+.catch(function(){ btn.disabled = false; m.className = "err"; m.textContent = "Error de conexión."; });
+});
+/* Aviso al chat del socorrista asignado */
+function avisarAsignacion(dni, filas){
+if (!filas.length || String(dni) === String(AUTH_DNI)) return;
+var f0 = filas[0];
+var fechas = filas.map(function(x){ return x["Fecha"]; });
+var texto = "📅 Tienes " + (filas.length === 1 ? "un nuevo turno" : (filas.length + " nuevos turnos")) + " en " + (f0["Instalacion"] || "") + " (" + (f0["Ingreso"] || "") + " - " + (f0["Salida"] || "") + "): " + fechas.slice(0, 10).join(", ") + (fechas.length > 10 ? (" y " + (fechas.length - 10) + " más") : "") + ". Entra en Horarios para aceptar o rechazar.";
+fetch(API_BASE + "/api/chat/private/" + encodeURIComponent(dni) + "?user_id=" + encodeURIComponent(AUTH_DNI))
+.then(function(x){ return x.json(); })
+.then(function(d){
+if (!d || !d.thread_id) return;
+fetch(API_BASE + "/api/chat/threads/" + encodeURIComponent(d.thread_id) + "/messages", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({sender_id: AUTH_DNI, body: texto}) });
+}).catch(function(){});
+}
+function pintarNotaAdmin(){
+if (!IS_ADMIN) return;
+var note = document.getElementById("admNote");
+var nv = mallasCache.filter(function(r){ return !String(r["Socorrista"] || "").trim() && String(r["estado"] || "").trim().toUpperCase() === "VACANTE"; }).length;
+if (nv){ note.innerHTML = "&#9888; Tienes <b>" + nv + "</b> " + (nv === 1 ? "hueco" : "huecos") + " sin cubrir. Toca <b>Asignar</b> en el turno para cubrirlo."; note.style.display = "block"; }
+else if (note.getAttribute("data-fija") !== "1"){ note.style.display = "none"; }
+}
+/* Carga de usuarios y, para el Administrador, solo sus instalaciones (Administrador1 / Administrador2) */
+function cargarVistaAdmin(){
+var pUsers = fetch(API_BASE + "/api/chat/users").then(function(x){ return x.json(); }).then(function(u){
+USUARIOS = Array.isArray(u) ? u : ((u && u.users) || []);
+USUARIOS.forEach(function(x){ ROL_POR_DNI[String(x.dni)] = String(x.rol || "").trim().toLowerCase(); });
+}).catch(function(){});
+if (!IS_ADMIN) return pUsers;
+var pInst = fetch(API_BASE + "/api/instalaciones/admins").then(function(x){ return x.json(); }).then(function(d){
+if (!(d && d.ok)) return;
+var mias = {};
+(d.items || []).forEach(function(it){
+if (String(it.admin1) === String(AUTH_DNI) || String(it.admin2) === String(AUTH_DNI)) mias[normI(it.instalacion)] = true;
+});
+if (!Object.keys(mias).length){
+mallasCache = [];
+var note = document.getElementById("admNote");
+note.textContent = "Aún no tienes instalaciones asignadas. El Directivo las asigna desde el Panel Directivo.";
+note.setAttribute("data-fija", "1");
+note.style.display = "block";
+return;
+}
+mallasCache = mallasCache.filter(function(r){ return mias[normI(r["Instalacion"])]; });
+pintarNotaAdmin();
+}).catch(function(){});
+return Promise.all([pUsers, pInst]);
+}
 document.getElementById("instFilter").addEventListener("change", renderAll);
 
 fetch(API_BASE + "/api/mallas")
 .then(function(r){ return r.json(); })
 .then(function(d){
 mallasCache = (d && d.ok && d.rows) ? d.rows : [];
-if (!IS_SOCORRISTA) return;
+if (!IS_SOCORRISTA) return cargarVistaAdmin();
 /* El socorrista solo ve sus propios turnos (por DNI o por su nombre en Altas) */
 var _n = function(v){ return String(v || "").trim().toLowerCase(); };
 var misNombres = [];
