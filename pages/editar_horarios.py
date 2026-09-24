@@ -492,6 +492,7 @@ if (h === "REABIERTO") return "REAB";
 if (f && f > today) return "FUT";
 var lim = limiteAprob(r);
 if (lim ? (ahoraMadrid() > lim) : (f && f < today)) return "OUT";
+if (esTurnoAdmin(r)) return "OFF";
 var a = aceptEstado(r);
 if (a === "RECHAZADO") return "RECH";
 if (a !== "ACEPTADO") return "PEND";
@@ -505,6 +506,7 @@ if (s === "OUT") return '<span class="pill err">OUT</span>';
 if (s === "RECH") return '<span class="pill err" title="' + esc(r["acept_motivo"]||"") + '">Rechazado</span>';
 if (s === "PEND") return '<span class="pill off">Sin aceptar</span>';
 if (s === "FUT"){
+if (esTurnoAdmin(r)) return '<span class="pill off" title="Turno de administrador: no requiere aceptaci&oacute;n">Admin</span>';
 var a = aceptEstado(r);
 if (a === "ACEPTADO") return '<span class="pill ok">Aceptado</span>';
 if (a === "RECHAZADO") return '<span class="pill err" title="' + esc(r["acept_motivo"]||"") + '">Rechazado</span>';
@@ -528,10 +530,15 @@ var existentes={}; [].slice.call(dl.querySelectorAll("option")).forEach(function
 valores.forEach(function(v){ if(v && !existentes[v]){ var o=document.createElement("option"); o.value=v; dl.appendChild(o); existentes[v]=1; } });
 }
 var socDni = {};
+var rolPorDni = {};
+function esTurnoAdmin(r){ return rolPorDni[String(r["DNI"] || "").trim()] === "administrador"; }
 fetch(API_BASE + "/api/chat/users").then(function(r){ return r.json(); }).then(function(d){
 var us = Array.isArray(d) ? d : ((d && d.users) || []);
-/* Solo se asignan turnos a usuarios con rol Socorrista */
-us = us.filter(function(u){ return String(u.rol || "").trim().toLowerCase() === "socorrista"; });
+/* Rol por DNI: los turnos de administradores no requieren aceptacion */
+us.forEach(function(u){ if (u.dni) rolPorDni[String(u.dni).trim()] = String(u.rol || "").trim().toLowerCase(); });
+if (mallasCache.length) renderMallas();
+/* Se asignan turnos a Socorristas y Administradores (no a Directivos) */
+us = us.filter(function(u){ var r = String(u.rol || "").trim().toLowerCase(); return r === "socorrista" || r === "administrador"; });
 us.forEach(function(u){ var nm=(u.nombre||u.alias||"").trim(); if(nm){ socDni[nm.toLowerCase()]=u.dni||""; if(sugSocorristas.indexOf(nm)===-1) sugSocorristas.push(nm); } });
 sugSocorristas.sort();
 llenarDatalist("dlSocorristas", us.map(function(u){ return (u.nombre || u.alias || "").trim(); }).filter(Boolean).sort());
