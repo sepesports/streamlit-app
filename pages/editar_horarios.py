@@ -926,12 +926,13 @@ return fetch(API_BASE + "/api/horarios/asignar", { method:"POST", headers:{"Cont
 }, function(rs){
 btn.disabled=false; btn.textContent="Crear y avisar";
 var ok=rs.filter(function(x){ return x && x.ok; }).length;
+var errs=rs.filter(function(x){ return x && !x.ok && x.error; }).map(function(x){ return x.error; });
 if(ok){
 var rango = fechas.length>1 ? ("del "+fechas[0]+" al "+fechas[fechas.length-1]) : ("el "+fechas[0]);
 enviarAvisoChat(soc, "Has sido asignado a la instalación "+ins+" "+rango+", de "+ing+" a "+sal+". Contamos contigo, no olvides estar a tiempo.");
-msgEl.className="msg ok"; msgEl.textContent="Se crearon "+ok+" turno(s). Aviso enviado al chat.";
-setTimeout(function(){ addModal.classList.remove("open"); loadMallas(); }, 1500);
-} else { msgEl.className="msg err"; msgEl.textContent="No se pudo crear el turno."; }
+msgEl.className="msg ok"; msgEl.textContent="Se crearon "+ok+" turno(s). Aviso enviado al chat."+(errs.length?(" No se crearon "+errs.length+": "+errs[0]):"");
+if(!errs.length) setTimeout(function(){ addModal.classList.remove("open"); loadMallas(); }, 1500); else loadMallas();
+} else { msgEl.className="msg err"; msgEl.textContent=errs[0] || "No se pudo crear el turno."; }
 });
 });
 
@@ -1122,12 +1123,14 @@ return fetch(API_BASE + "/api/horarios/asignar", { method:"POST", headers:{"Cont
 }, function(rs){
 btn.disabled=false; btn.textContent="Asignar";
 var ok=rs.filter(function(x){ return x && x.ok; }).length;
+var errs=rs.filter(function(x){ return x && !x.ok && x.error; }).map(function(x){ return x.error; });
 if(ok){
 var rango = (minD===maxD)? ("el "+fmtFecha(minD)) : ("del "+fmtFecha(minD)+" al "+fmtFecha(maxD));
 enviarAvisoChat(soc, "Has sido asignado a la instalación "+ins+" "+rango+". Revisa tu calendario en la app. Contamos contigo, no olvides estar a tiempo.");
-msgEl.className="msg ok"; msgEl.textContent="Se asignaron "+ok+" turno(s). Aviso enviado al chat."; setTimeout(function(){ aselModal.classList.remove("open"); loadMallas(); }, 1300);
+msgEl.className="msg ok"; msgEl.textContent="Se asignaron "+ok+" turno(s). Aviso enviado al chat."+(errs.length?(" No se asignaron "+errs.length+": "+errs[0]):"");
+if(!errs.length) setTimeout(function(){ aselModal.classList.remove("open"); loadMallas(); }, 1300); else loadMallas();
 }
-else { msgEl.className="msg err"; msgEl.textContent="No se pudo asignar."; }
+else { msgEl.className="msg err"; msgEl.textContent=errs[0] || "No se pudo asignar."; }
 });
 });
 })();
