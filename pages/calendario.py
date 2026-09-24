@@ -815,10 +815,10 @@ var cub = lista.filter(function(x){ return ok[x["llave"]]; });
 cub.forEach(function(x){ x["Socorrista"] = nombre; x["DNI"] = dni; x["estado"] = ""; x["acept_estado"] = ""; });
 avisarAsignacion(dni, cub);
 m.className = "ok";
-m.textContent = cub.length + (cub.length === 1 ? " turno asignado" : " turnos asignados") + (d.omitidos ? (" · " + d.omitidos + " ya estaban cubiertos") : "");
+m.textContent = cub.length + (cub.length === 1 ? " turno asignado" : " turnos asignados") + (d.omitidos ? (" · " + d.omitidos + " ya estaban cubiertos") : "") + ((d.conflictos && d.conflictos.length) ? (" · No asignados por cruce: " + d.conflictos[0]) : "");
 pintarNotaAdmin();
 renderAll();
-setTimeout(cerrarCub, 900);
+if (!(d.conflictos && d.conflictos.length)) setTimeout(cerrarCub, 900);
 })
 .catch(function(){ btn.disabled = false; m.className = "err"; m.textContent = "Error de conexión."; });
 });
