@@ -600,8 +600,10 @@ renderAll();
 });
 
 /* ===== Aceptar / rechazar turno (socorrista) ===== */
+/* Zona horaria de los turnos. PRUEBAS: Colombia. AL ENTREGAR: cambiar a "Europe/Madrid" (y APP_TZ del servidor) */
+var APP_TZ = "America/Bogota";
 function ahoraMadrid(){
-try { return new Date(new Date().toLocaleString("en-US", {timeZone:"Europe/Madrid"})); } catch(e){ return new Date(); }
+try { return new Date(new Date().toLocaleString("en-US", {timeZone:APP_TZ})); } catch(e){ return new Date(); }
 }
 function inicioTurno(r){
 var f = parseFecha(r["Fecha"]); if (!f) return null;
