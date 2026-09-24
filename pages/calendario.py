@@ -188,6 +188,9 @@ html,body{background:#1B2A4A !important;}
 #content{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;padding-bottom:22px !important;}
 #chatBody{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;overflow:hidden !important;}
 @media (max-width:900px){#app{padding:10px !important;gap:10px !important;}}
+/* ===== Campana de avisos (igual que Inicio) ===== */
+#topbar .tb-bell{position:relative;background:none;border:0;font-size:19px;cursor:pointer;padding:4px;margin-left:auto;line-height:1;}
+#topbar .tb-bell .dot{position:absolute;top:0;right:0;background:#e5484d;color:#fff;font-size:9.5px;font-weight:700;border-radius:99px;padding:1px 5px;display:none;}
 /* ===== Calendario mensual (movil) ===== */
 @media (max-width:900px){
 .day-tabs .mhead{font-size:10.5px;font-weight:700;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.3px;padding:2px 0;}
@@ -233,7 +236,7 @@ html,body{background:#1B2A4A !important;}
 <button class="hamburger" id="hamburgerBtn">&#9776;</button>
 <h1>Horarios</h1>
 <div class="mobile-logo"><img class="brand-mark" src="__LOGO_URL__" alt="SYNTRA" style="height:46px;width:auto;flex:0 0 auto;display:block;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(120,170,255,.35));"/></div>
-<div></div>
+<button class="tb-bell" id="tbBell" aria-label="Avisos">&#128276;<span class="dot" id="tbBellDot"></span></button>
 </div>
 <div id="content">
 <div class="filters-row">
@@ -333,6 +336,17 @@ renderNav("navListMobile");
 var drawer = document.getElementById("drawer");
 document.getElementById("hamburgerBtn").addEventListener("click", function(){ drawer.classList.add("open"); });
 document.getElementById("drawerOverlay").addEventListener("click", function(){ drawer.classList.remove("open"); });
+/* Campana: abre el chat y muestra los mensajes sin leer (igual que Inicio) */
+var tbBell = document.getElementById("tbBell");
+if (tbBell) tbBell.addEventListener("click", function(){ goToPage("/chat_interfaz"); });
+fetch(API_BASE + "/api/dashboard?dni=" + encodeURIComponent(AUTH_DNI))
+.then(function(r){ return r.json(); })
+.then(function(d){
+var n = d && d.mensajes_no_leidos;
+var dot = document.getElementById("tbBellDot");
+if (dot && n > 0){ dot.style.display = "inline-block"; dot.textContent = n; }
+})
+.catch(function(){});
 
 var DIAS_ES = ["Domingo","Lunes","Martes","Mi\u00e9rcoles","Jueves","Viernes","S\u00e1bado"];
 var DIAS_CORTO = ["Dom","Lun","Mar","Mi\u00e9","Jue","Vie","S\u00e1b"];
@@ -600,8 +614,9 @@ if ((r["h_estado"]||"").trim().toUpperCase() === "ON") return {k:"cerr", t:"Hora
 var a = (r["acept_estado"]||"").trim().toUpperCase();
 var ini = inicioTurno(r);
 var abierto = !ini || ahoraMadrid() < ini;
-if (a === "ACEPTADO") return {k:"acep", t:"Aceptado", puede:abierto};
-if (a === "RECHAZADO") return {k:"rech", t:"Rechazado", puede:abierto};
+/* Una vez respondido, no se puede cambiar */
+if (a === "ACEPTADO") return {k:"acep", t:"Aceptado", puede:false};
+if (a === "RECHAZADO") return {k:"rech", t:"Rechazado", puede:false};
 return abierto ? {k:"pend", t:"Pendiente de aceptar", puede:true} : {k:"cerr", t:"Sin respuesta", puede:false};
 }
 function respHtml(r){
@@ -610,8 +625,6 @@ var llave = escR(r["llave"]||"");
 var h = "<span class='st " + e.k + "'>" + e.t + "</span>";
 if (e.puede && e.k === "pend"){
 h += "<div class='acc'><button class='ok' data-resp='ACEPTADO' data-llave='" + llave + "'>&#10004; Aceptar</button><button class='no' data-resp='RECHAZADO' data-llave='" + llave + "'>&#10006; Rechazar</button></div>";
-} else if (e.puede){
-h += "<div class='acc'><button class='no' data-resp='CAMBIAR' data-llave='" + llave + "' style='background:#eef0f4;color:#0f1b3d;'>Cambiar respuesta</button></div>";
 }
 return h;
 }
@@ -633,7 +646,7 @@ var e = estadoResp(r);
 respLlave = llave;
 document.getElementById("respInfo").innerHTML = "<b>" + escR(r["Fecha"]) + "</b> &middot; " + escR(r["Instalacion"]) + "<br/>" + escR(r["Ingreso"]) + " &ndash; " + escR(r["Salida"]) + "<br/><span class='st " + e.k + "'>" + e.t + "</span>";
 document.getElementById("respMotivo").value = "";
-var m = document.getElementById("respMsg"); m.className = ""; m.textContent = e.puede ? "" : "El plazo para responder termin\u00f3 (hora de ingreso).";
+var m = document.getElementById("respMsg"); m.className = ""; m.textContent = e.puede ? "" : ((e.k === "acep" || e.k === "rech") ? "Ya respondiste este turno." : "El plazo para responder termin\u00f3 (hora de ingreso).");
 document.getElementById("respAceptar").style.display = e.puede ? "" : "none";
 document.getElementById("respRechazar").style.display = e.puede ? "" : "none";
 document.getElementById("respBack").classList.add("open");
