@@ -490,6 +490,8 @@ function confState(r, today){
 var h = (r["h_estado"]||"").trim().toUpperCase();
 var f = parseFecha(r["Fecha"]);
 if (h === "ON") return "ON";
+/* Hueco de un requerimiento del Directivo, aun sin socorrista */
+if (!String(r["Socorrista"]||"").trim()) return "VAC";
 if (h === "REABIERTO") return "REAB";
 if (f && f > today) return "FUT";
 var lim = limiteAprob(r);
@@ -504,6 +506,7 @@ function confPill(r, today){
 var s = confState(r, today);
 if (s === "ON"){ var h=String(r["horas_aprob"]==null?"":r["horas_aprob"]).trim(); return '<span class="pill on">ON'+(h?(' &middot; '+h+'h'):'')+'</span>'; }
 if (s === "REAB") return '<span class="pill warn">Reabierto</span>';
+if (s === "VAC") return '<span class="pill err" title="Hueco de un requerimiento: as&iacute;gnalo desde Horarios">Sin cubrir</span>';
 if (s === "OUT") return '<span class="pill err">OUT</span>';
 if (s === "RECH") return '<span class="pill err" title="' + esc(r["acept_motivo"]||"") + '">Rechazado</span>';
 if (s === "PEND") return '<span class="pill off">Sin aceptar</span>';
