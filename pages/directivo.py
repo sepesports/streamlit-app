@@ -580,8 +580,8 @@ if (!c.lv && !c.sd) return "";
 if (c.sd && !nf && c.lv && !ns) return "Indica al menos un horario.";
 if (c.sd && !nf && !c.lv) return "El rango solo tiene sábado/domingo: agrega un horario en Sábado y domingo.";
 if (c.lv && !ns && !c.sd) return "El rango solo tiene días de lunes a viernes: agrega un horario en Lunes a viernes.";
-if (c.sd && !nf) return "Ojo: "+c.sd+(c.sd===1?" día":" días")+" de fin de semana del rango no tendrá turnos (sin horario en Sábado y domingo).";
-if (c.lv && !ns) return "Ojo: "+c.lv+(c.lv===1?" día":" días")+" de lunes a viernes del rango no tendrá turnos (sin horario en Lunes a viernes).";
+if (c.sd && !nf) return "Ojo: "+c.sd+(c.sd===1?" día de fin de semana del rango no tendrá":" días de fin de semana del rango no tendrán")+" turnos (sin horario en Sábado y domingo).";
+if (c.lv && !ns) return "Ojo: "+c.lv+(c.lv===1?" día de lunes a viernes del rango no tendrá":" días de lunes a viernes del rango no tendrán")+" turnos (sin horario en Lunes a viernes).";
 return "";
 }
 function previewReq(){
