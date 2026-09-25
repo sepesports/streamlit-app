@@ -144,6 +144,19 @@ html,body{background:#1B2A4A !important;}
 #content{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;padding-bottom:22px !important;}
 #chatBody{background:#fff !important;border-radius:12px !important;box-shadow:0 4px 12px rgba(27,42,74,.08) !important;overflow:hidden !important;}
 @media (max-width:900px){#app{padding:10px !important;gap:10px !important;}}
+/* ===== Solicitudes de alta pendientes (enviadas desde el login) ===== */
+#solCardAdm{display:none;margin-bottom:16px;border:1px solid #ffe0a3;background:#fffaf0;}
+#solCardAdm h2{display:flex;align-items:center;gap:8px;}
+.sol-count{background:#f0a500;color:#fff;border-radius:99px;font-size:11px;font-weight:800;padding:2px 8px;}
+.sol-item{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid #f3e6c8;}
+.sol-item:first-of-type{border-top:0;}
+.sol-item .si-n{font-weight:700;font-size:14px;}
+.sol-item .si-d{font-size:12.5px;color:#6b7688;margin-top:2px;word-break:break-word;}
+.sol-item .si-b{display:flex;gap:8px;}
+.sol-item button{border:0;border-radius:9px;padding:7px 12px;font-size:12.5px;font-weight:700;cursor:pointer;}
+.sol-item .usar{background:#2f6fe0;color:#fff;}
+.sol-item .desc{background:#fde8e8;color:#b02a2a;}
+.sol-item.sel{background:#eef4ff;border-radius:10px;padding:10px;}
 </style>
 </head>
 <body>
@@ -161,6 +174,7 @@ html,body{background:#1B2A4A !important;}
 <button class="save-btn" id="saveBtn">Guardar</button>
 </div>
 <div id="content">
+<div class="card" id="solCardAdm"><h2>Solicitudes de alta <span class="sol-count" id="solCount">0</span></h2><div id="solList"></div></div>
 <div class="card">
 <p class="section-title">Datos personales</p>
 <div class="field-grid">
@@ -286,6 +300,48 @@ document.getElementById("drawerOverlay").addEventListener("click", function(){ d
 
 document.getElementById("cancelBtn").addEventListener("click", function(){ goToPage("/"); });
 
+/* ---- Solicitudes de alta pendientes: se usan para rellenar el formulario ---- */
+var SOL_SEL = null;
+function escS(t){ return String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function cargarSolicitudes(){
+fetch(API_BASE + "/api/solicitudes").then(function(r){ return r.json(); }).then(function(d){
+var items = ((d && d.items) || []).filter(function(x){ return String(x.estado||"").toUpperCase() === "PENDIENTE"; });
+var card = document.getElementById("solCardAdm");
+if (!items.length){ card.style.display = "none"; return; }
+card.style.display = "block";
+document.getElementById("solCount").textContent = items.length;
+window.__sols = items;
+var fecha = function(iso){ var t = new Date(iso); return isNaN(t) ? "" : t.toLocaleDateString("es-ES"); };
+document.getElementById("solList").innerHTML = items.map(function(x, i){
+return '<div class="sol-item' + (SOL_SEL === x.id ? ' sel' : '') + '"><div><div class="si-n">' + escS(x.nombre) + '</div>' +
+'<div class="si-d">DNI ' + escS(x.dni) + ' &middot; ' + escS(x.correo) + (x.telefono ? ' &middot; ' + escS(x.telefono) : '') + (x.fecha ? ' &middot; ' + fecha(x.fecha) : '') + '</div>' +
+(x.mensaje ? '<div class="si-d">&laquo;' + escS(x.mensaje) + '&raquo;</div>' : '') + '</div>' +
+'<div class="si-b"><button class="usar" data-sol="' + i + '">Usar datos</button><button class="desc" data-desc="' + i + '">Descartar</button></div></div>';
+}).join("");
+document.querySelectorAll("[data-sol]").forEach(function(b){ b.addEventListener("click", function(){
+var x = window.__sols[+b.getAttribute("data-sol")];
+SOL_SEL = x.id;
+document.getElementById("f_nombre").value = x.nombre || "";
+document.getElementById("f_dni").value = x.dni || "";
+document.getElementById("f_correo").value = x.correo || "";
+document.getElementById("f_telefono").value = x.telefono || "";
+showMsg("Datos cargados de la solicitud. Completa instalación, contrato y rol, y pulsa Guardar.", true);
+cargarSolicitudes();
+}); });
+document.querySelectorAll("[data-desc]").forEach(function(b){ b.addEventListener("click", function(){
+if (b.getAttribute("data-conf") !== "1"){ b.setAttribute("data-conf","1"); b.textContent = "¿Confirmar?"; setTimeout(function(){ b.setAttribute("data-conf","0"); b.textContent = "Descartar"; }, 4000); return; }
+var x = window.__sols[+b.getAttribute("data-desc")];
+b.disabled = true;
+marcarSolicitud(x.id, "DESCARTADA");
+}); });
+}).catch(function(){});
+}
+function marcarSolicitud(id, estado){
+return fetch(API_BASE + "/api/solicitudes/estado", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({id:id, estado:estado, por:AUTH_DNI}) })
+.then(function(r){ return r.json(); }).then(function(){ if (SOL_SEL === id) SOL_SEL = null; cargarSolicitudes(); }).catch(function(){ cargarSolicitudes(); });
+}
+cargarSolicitudes();
+
 function showMsg(text, ok){
 var el = document.getElementById("formMsg");
 el.textContent = text;
@@ -336,6 +392,8 @@ showMsg("Personal registrado. Comp\u00e1rtele estos datos para iniciar sesi\u00f
 document.getElementById("credUser").textContent = correo;
 document.getElementById("credPass").textContent = dni;
 document.getElementById("credBox").classList.add("show");
+/* Si el alta viene de una solicitud, queda aprobada */
+if (SOL_SEL){ var _sol = (window.__sols || []).filter(function(x){ return x.id === SOL_SEL; })[0]; if (_sol && String(_sol.dni).trim().toLowerCase() === dni.toLowerCase()) marcarSolicitud(SOL_SEL, "APROBADA"); }
 var f = document.querySelector("form") || document; 
 ["f_nombre","f_dni","f_correo","f_telefono","f_nacimiento","f_fecha_inicio"].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=""; });
 } else {
