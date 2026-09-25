@@ -520,6 +520,28 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
   #card .logo{height:clamp(90px,22vh,170px) !important;}
   #card .login-links{padding:0 10px;}
 }
+/* Politicas: oculto hasta tener el contenido */
+#linkPol{display:none !important;}
+#card .login-links{justify-content:center !important;}
+#linkReg a{cursor:pointer;}
+
+/* ===== Solicitud de alta (publico) ===== */
+#solBack{display:none;position:fixed;inset:0;z-index:15000;background:rgba(2,8,28,.62);align-items:center;justify-content:center;padding:16px;box-sizing:border-box;}
+#solBack.open{display:flex;}
+#solCard{background:#fff;border-radius:18px;width:100%;max-width:440px;max-height:92vh;overflow-y:auto;padding:20px 20px 16px;box-shadow:0 24px 60px rgba(0,0,0,.45);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#0f1b3d;box-sizing:border-box;}
+#solCard h3{margin:0 0 4px;font-size:18px;font-weight:800;}
+#solCard .sol-sub{font-size:13px;color:#6b7688;margin:0 0 14px;line-height:1.4;}
+#solCard label{display:block;font-size:12px;font-weight:700;color:#6b7688;margin:10px 0 5px;}
+#solCard input, #solCard textarea{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #dfe4ee;border-radius:10px;font-size:16px;font-family:inherit;color:#0f1b3d;background:#fbfcfe;}
+#solCard textarea{min-height:64px;resize:vertical;}
+#solCard input:focus, #solCard textarea:focus{outline:none;border-color:#2f6fe0;}
+#solMsg{font-size:13px;margin-top:12px;min-height:18px;line-height:1.4;}
+#solMsg.err{color:#b02a2a;} #solMsg.ok{color:#1a7f4f;}
+.sol-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:14px;}
+.sol-foot button{border:0;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;}
+.sol-foot .ghost{background:#eef0f4;color:#0f1b3d;}
+.sol-foot .ok{background:#2f6fe0;color:#fff;}
+.sol-foot .ok[disabled]{opacity:.6;cursor:not-allowed;}
 </style>
 </head>
 <body>
@@ -550,7 +572,7 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
 
         <div class="login-links">
         <div id="linkPol" class="link" style="top:78%; left:20%;">Politicas:</div>
-        <div id="linkReg" class="link" style="top:78%; left:68%;"><a href="/altas_registro" onclick="event.preventDefault(); syntraTopNav('/altas_registro');" style="color:inherit; text-decoration:none;">Registrarse:</a></div>
+        <div id="linkReg" class="link" style="top:78%; left:68%;"><a href="#" onclick="event.preventDefault(); abrirSolicitud();" style="color:inherit; text-decoration:none;">Registrarse</a></div>
         </div>
       </form>
     </div>
@@ -558,6 +580,22 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
     <div id="hud"></div>
   </div>
 </div>
+
+<!-- SOLICITUD DE ALTA -->
+<div id="solBack"><div id="solCard">
+  <h3>Solicitud de alta</h3>
+  <p class="sol-sub">D&eacute;janos tus datos. Un administrador revisar&aacute; tu solicitud y te entregar&aacute; tu usuario y contrase&ntilde;a.</p>
+  <label>Nombre completo *</label><input id="sol_nombre" autocomplete="off"/>
+  <label>DNI *</label><input id="sol_dni" autocomplete="off"/>
+  <label>Correo electr&oacute;nico *</label><input id="sol_correo" type="email" autocomplete="off"/>
+  <label>Tel&eacute;fono</label><input id="sol_tel" type="tel" autocomplete="off"/>
+  <label>Mensaje (opcional)</label><textarea id="sol_msg" placeholder="Ej. instalaci&oacute;n donde trabajar&aacute;s"></textarea>
+  <div id="solMsg"></div>
+  <div class="sol-foot">
+    <button class="ghost" type="button" onclick="cerrarSolicitud()">Cancelar</button>
+    <button class="ok" type="button" id="solEnviar" onclick="enviarSolicitud()">Enviar solicitud</button>
+  </div>
+</div></div>
 
 <!-- SPLASH PROFESIONAL -->
 <div id="splash">
@@ -610,6 +648,46 @@ async function doLogin(){
     }
   }catch(e){
     alert("Error de conexión");
+  }
+}
+
+// ---------- SOLICITUD DE ALTA (queda pendiente hasta que un Administrador la gestione) ----------
+function abrirSolicitud(){
+  ["sol_nombre","sol_dni","sol_correo","sol_tel","sol_msg"].forEach(function(id){ document.getElementById(id).value = ""; });
+  var m = document.getElementById("solMsg"); m.className = ""; m.textContent = "";
+  var b = document.getElementById("solEnviar"); b.disabled = false; b.textContent = "Enviar solicitud"; b.style.display = "";
+  document.getElementById("solBack").classList.add("open");
+}
+function cerrarSolicitud(){ document.getElementById("solBack").classList.remove("open"); }
+document.getElementById("solBack").addEventListener("click", function(e){ if (e.target.id === "solBack") cerrarSolicitud(); });
+async function enviarSolicitud(){
+  var m = document.getElementById("solMsg");
+  var b = document.getElementById("solEnviar");
+  var body = {
+    nombre: document.getElementById("sol_nombre").value.trim(),
+    dni: document.getElementById("sol_dni").value.trim(),
+    correo: document.getElementById("sol_correo").value.trim(),
+    telefono: document.getElementById("sol_tel").value.trim(),
+    mensaje: document.getElementById("sol_msg").value.trim()
+  };
+  if (!body.nombre || !body.dni || !body.correo || body.correo.indexOf("@") === -1){
+    m.className = "err"; m.textContent = "Nombre, DNI y un correo válido son obligatorios."; return;
+  }
+  b.disabled = true; b.textContent = "Enviando..."; m.className = ""; m.textContent = "";
+  try{
+    const r = await fetch("https://camilo27.pythonanywhere.com/api/solicitudes", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
+    const j = await r.json();
+    if (j && j.ok){
+      m.className = "ok"; m.textContent = "Solicitud enviada. Un administrador la revisará y te entregará tus datos de acceso.";
+      b.style.display = "none";
+      setTimeout(cerrarSolicitud, 4000);
+    } else {
+      b.disabled = false; b.textContent = "Enviar solicitud";
+      m.className = "err"; m.textContent = (j && j.error) || "No se pudo enviar la solicitud.";
+    }
+  }catch(e){
+    b.disabled = false; b.textContent = "Enviar solicitud";
+    m.className = "err"; m.textContent = "Error de conexión.";
   }
 }
 
