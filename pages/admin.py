@@ -506,6 +506,20 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
     display: none;
   }
 }
+
+/* ===== Login fluido: logo, campos y boton se apilan centrados y nunca se montan ===== */
+#card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,2vh,20px);top:3% !important;bottom:3% !important;}
+#card .logo{position:static !important;transform:none !important;width:auto !important;height:clamp(96px,27vh,220px) !important;max-width:72%;object-fit:contain;flex:0 0 auto;margin:0 auto clamp(6px,2.2vh,20px);}
+#card form{height:auto !important;width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(12px,2.8vh,26px);}
+#card input.field{position:static !important;top:auto !important;left:auto !important;right:auto !important;width:min(620px,100%);height:clamp(46px,8vh,62px) !important;flex:0 0 auto;}
+#card .btn{position:static !important;top:auto !important;left:auto !important;right:auto !important;width:min(380px,72%);height:clamp(46px,8vh,62px) !important;flex:0 0 auto;margin-top:clamp(2px,1vh,10px);}
+#card .login-links{display:flex;justify-content:space-between;align-items:center;width:min(620px,100%);padding:0 22px;box-sizing:border-box;}
+#card .link{position:static !important;top:auto !important;left:auto !important;}
+@media (max-width:768px){
+  #card{left:7% !important;right:7% !important;}
+  #card .logo{height:clamp(90px,22vh,170px) !important;}
+  #card .login-links{padding:0 10px;}
+}
 </style>
 </head>
 <body>
@@ -534,8 +548,10 @@ html:-moz-full-screen #stage.fullscreen-mode #frame {
 
         <div id="btnLogin" class="btn" style="top:67%;" onclick="doLogin()">Login</div>
 
+        <div class="login-links">
         <div id="linkPol" class="link" style="top:78%; left:20%;">Politicas:</div>
         <div id="linkReg" class="link" style="top:78%; left:68%;"><a href="/altas_registro" onclick="event.preventDefault(); syntraTopNav('/altas_registro');" style="color:inherit; text-decoration:none;">Registrarse:</a></div>
+        </div>
       </form>
     </div>
 
