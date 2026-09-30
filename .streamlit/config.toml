@@ -3,3 +3,6 @@ headless = true
 
 [theme]
 base = "light"
+# Fondo azul SYNTRA desde el primer instante de cada pagina (sin destello blanco al navegar)
+backgroundColor = "#0A142B"
+secondaryBackgroundColor = "#0A142B"
